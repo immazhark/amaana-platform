@@ -1,4 +1,28 @@
 import {test,expect} from '@playwright/test';
+
+test('carousel leaves modified, composing and handled keys to their owner', async ({ page }) => {
+  const { carousel, viewport, progress } = await openPausedCarousel(page);
+  await viewport.focus();
+  for (const options of [
+    { key: 'ArrowRight', altKey: true }, { key: 'End', ctrlKey: true },
+    { key: 'End', metaKey: true }, { key: 'ArrowRight', shiftKey: true },
+    { key: 'ArrowRight', isComposing: true }, { key: 'End', handled: true },
+  ]) {
+    const prevented = await viewport.evaluate((node, { handled, ...input }) => {
+      const event = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, ...input });
+      if (handled) event.preventDefault();
+      node.dispatchEvent(event);
+      return event.defaultPrevented;
+    }, options);
+    expect(prevented).toBe(Boolean(options.handled));
+    await expect(progress).toHaveAttribute('aria-valuenow', '1');
+    await expect(viewport).toBeFocused();
+  }
+  await page.keyboard.press('ArrowRight');
+  await expect(progress).toHaveAttribute('aria-valuenow', '2');
+  await expectSelectedProgramme(carousel, 2);
+});
+
 for(const width of [375,600,768,1024,1440,1920])test(`left alignment and controls at ${width}`,async({page})=>{
  await page.setViewportSize({width,height:1000});
  await page.goto('/browser-acceptance/body-carousel');

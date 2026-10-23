@@ -8,6 +8,8 @@
 
 ## Release checkpoint — 23 October 2026
 
+AF-R042 prepared follow-up: preserve browser-modified navigation, composition and already-handled key events in carousel/gallery/Companion; prevent Companion Escape dismissal during composition or after child handling. Twenty-four fail-first regressions; full 2,011 passed / 15 skipped, 38 focused passes plus type/scoped lint/spec/diff. Three browser cases await hosted execution. Separate checkpoint protects #413's unchanged acceptance source; no new PR/release, complete accessibility acceptance or historical total change. #413 fast/production/database passed, browser pending; fresh hosted production install/build now passed. Production remains verified `03bb739`.
+
 AF-R042 next source batch: live rail and ScrollCarousel persist keyboard-focus pause until explicit Resume; pointer intent preserves the action shown before focus changes the control label; automatic live-rail announcements are off and the region node is stable across updates. Fail-first component/handler evidence, 15 focused passes and full 1,984 passed / 15 skipped; type/lint/spec/diff checks pass. Browser cases updated; hosted browser and fresh install/build acceptance remain pending. Includes saved dependency/fallback checkpoint on the existing branch, not merged/deployed. No complete accessibility or historical 149-entry closure claim. W3C APG carousel focus/restart and announcement guidance checked directly.
 
 Railway `797cd5bc-b2b6-4338-942d-32bd8d6c9731` SUCCESS and fresh public version/readiness confirm production/main `03bb73910ed531c92621d920ff84109b42d27c53` and ready. This supersedes pending deployment/public identity/readiness below; no live-payment or exhaustive device acceptance is inferred.

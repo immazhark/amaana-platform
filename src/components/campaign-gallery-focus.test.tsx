@@ -60,6 +60,13 @@ async function openFixture() {
 
   return {
     dialogRef, dialog, trigger, fallback, triggerFocus, fallbackFocus, body, firstFocus, lastFocus,
+    key(key: string, modifiers: object = {}) {
+      const event = new Event("keydown", { cancelable: true });
+      Object.defineProperties(event, Object.fromEntries(Object.entries({ key, ...modifiers }).map(([name, value]) => [name, { value }])));
+      const prevent = vi.spyOn(event, "preventDefault");
+      windowTarget.dispatchEvent(event);
+      return prevent;
+    },
     tab(shiftKey: boolean) {
       const event = new Event("keydown", { cancelable: true });
       Object.defineProperties(event, { key: { value: "Tab" }, shiftKey: { value: shiftKey } });
@@ -119,6 +126,15 @@ describe("gallery delayed focus restoration", () => {
 
 
 describe("gallery focus containment", () => {
+  it.each([
+    ["ArrowLeft", { altKey: true }], ["ArrowRight", { ctrlKey: true }],
+    ["ArrowRight", { metaKey: true }], ["ArrowLeft", { shiftKey: true }],
+    ["Escape", { isComposing: true }], ["ArrowRight", { defaultPrevented: true }],
+  ])("preserves browser-owned %s with %j", async (key, modifiers) => {
+    const fixture = await openFixture();
+    expect(fixture.key(key, modifiers)).not.toHaveBeenCalled();
+  });
+
   it.each([false, true])("recovers focus moved outside the modal, backwards=%s", async backwards => {
     const fixture = await openFixture();
     // Focus can be moved by browser UI, extensions or another script.

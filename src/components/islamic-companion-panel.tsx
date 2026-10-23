@@ -93,6 +93,7 @@ export function IslamicCompanionPanel({
   useEffect(() => {
     panelRef.current?.focus({ preventScroll: true });
     const onKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.isComposing || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
       if (event.key === "Escape") onClose();
     };
     document.addEventListener("keydown", onKeyDown);
@@ -173,6 +174,7 @@ export function IslamicCompanionPanel({
         <button type="button" onClick={onClose} aria-label="Close companion">{closeIcon}</button>
       </header>
       <div className="amaana-companion-tabs" role="tablist" aria-label="Companion sections" onKeyDown={event => {
+        if (event.defaultPrevented || event.nativeEvent.isComposing || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
         const key = ["Home", "End", "ArrowLeft", "ArrowRight"].indexOf(event.key);
         if (key < 0) return;
         event.preventDefault();

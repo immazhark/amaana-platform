@@ -171,6 +171,7 @@ export function ScrollCarousel({
   }, [autoAdvanceMs, activeIndex, goTo, paused, reducedMotion, slideCount]);
 
   const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (event.defaultPrevented || event.nativeEvent.isComposing || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
     if (event.currentTarget !== event.target) return;
     const target = {
       ArrowLeft: activeIndexRef.current - 1,

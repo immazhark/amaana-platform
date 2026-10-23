@@ -1,4 +1,14 @@
+## 2026-10-23 — Browser shortcut and composition preservation
+
+CODEX_ACTIVE prepares `fix/native-keyboard-shortcuts-20261023` separately to keep #413 head `a13e1d6` stable. #413 acceptance `39962079564`: fast/production/database passed, browser pending; fresh hosted production install/build resolves the local offline cache limitation. Production remains verified `03bb739`.
+
+Twenty-four fail-first actual-handler/effect regressions reproduced stolen Alt/Ctrl/Meta/Shift navigation, composition events and already-handled keys in carousel/gallery/Companion. Companion's document-level Escape also incorrectly closed on composing/handled/modified Escape. Narrow key guards now preserve browser/control ownership; unmodified arrows, plain Escape and gallery Shift+Tab containment stay covered. Full suite 2,011 passed / 15 skipped; 38 focused cases, TypeScript, scoped ESLint, spec syntax and diff pass. Three browser regressions added, not yet run. No visual/content/religious/financial/auth/data/provider or public-media changes; no new dependencies. Prepared source only, no PR/merge/deployment or historical master closure increase. Rollback is removal of the bounded keyboard guards/specs; no settings or data rollback.
+
+Use Superpowers verification and Agent Skills five-axis review, both installed and read, with the existing Karpathy minimal-change approach. Next: inspect actual #413 browser outcome, complete its protected promotion/merge/deployment if green, normally reconcile this checkpoint, and require fresh hosted acceptance for its eventual batch. Never promote this checkpoint based on #413's separate acceptance.
+
 ## 2026-10-23 — Persistent keyboard reading pause implemented
+
+Published draft PR #413 at `a13e1d608e59adbce8d8c366e0e07d75846e8a3b`; remote tree `66e6ec31f5676ab95ecf6de6a166c67d06387429` equals local validated `ab1950a`. Full run `39962079564` in progress. Keep source stable, inspect real selected jobs, then ready-state promotion/verify before authorized merge. Not merged/deployed; current production `03bb739`. This local coordination-only checkpoint need not restart acceptance.
 
 CODEX_ACTIVE on existing cleanup checkpoint branch, remote parent `e10b6a9`, main/production verified `03bb739`. Only open PR #374 is the blocked locales draft. Live rail and ScrollCarousel previously resumed after keyboard focus left; both now persist focus-induced pause until explicit Resume. Pointer intent survives focus-triggered Pause/Resume label change, keyboard follows the current label, and cancellation resets intent. Live rail announcements are off during rotation and its content region no longer remounts for each item. W3C APG carousel focus/live-region guidance was checked directly. No visual, canonical, prayer, financial, permission, provider or public-media changes.
 

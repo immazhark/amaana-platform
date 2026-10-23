@@ -1,5 +1,31 @@
 import { expect, test } from '@playwright/test';
 
+test('gallery preserves modified arrows and composing or handled Escape', async ({ page }) => {
+  await openGallery(page, 390);
+  await page.getByRole('button', { name: /^Enlarge image 1 of 13:/ }).click();
+  const dialog = page.getByRole('dialog');
+  for (const options of [
+    { key: 'ArrowRight', altKey: true }, { key: 'ArrowRight', ctrlKey: true },
+    { key: 'ArrowRight', metaKey: true }, { key: 'ArrowRight', shiftKey: true },
+    { key: 'Escape', isComposing: true }, { key: 'Escape', handled: true },
+  ]) {
+    const prevented = await dialog.evaluate((node, { handled, ...input }) => {
+      const event = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, ...input });
+      if (handled) event.preventDefault();
+      node.dispatchEvent(event);
+      return event.defaultPrevented;
+    }, options);
+    expect(prevented).toBe(Boolean(options.handled));
+    await expect(dialog).toContainText('Image 1 of 13');
+    await expect(dialog.getByRole('button', { name: 'Close', exact: true })).toBeFocused();
+  }
+  await page.keyboard.press('ArrowRight');
+  await expect(dialog).toContainText('Image 2 of 13');
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+});
+
+
 async function openGallery(page, width) {
   await page.setViewportSize({ width, height: width <= 430 ? 844 : 900 });
   await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));

@@ -25,6 +25,7 @@ function fixture() {
     onPointerMove: (event: object) => void;
     onPointerUp: (event: object) => void;
     onClickCapture: (event: object) => void;
+    onKeyDown: (event: object) => void;
   };
   return {
     drag(target: object | null = null) {
@@ -38,10 +39,27 @@ function fixture() {
       return event;
     },
     surface,
+    key(key: string, modifiers: object = {}) {
+      const event = { key, nativeEvent: { isComposing: false }, currentTarget: surface, target: surface, preventDefault: vi.fn(), ...modifiers };
+      props.onKeyDown(event);
+      return event;
+    },
   };
 }
 
 describe("carousel drag and activation boundaries", () => {
+  it.each([
+    ["ArrowLeft", { altKey: true }], ["Home", { ctrlKey: true }],
+    ["End", { metaKey: true }], ["ArrowRight", { shiftKey: true }],
+    ["ArrowRight", { nativeEvent: { isComposing: true } }], ["Home", { defaultPrevented: true }],
+  ])("preserves browser-owned %s with %j", (key, modifiers) => {
+    expect(fixture().key(key, modifiers).preventDefault).not.toHaveBeenCalled();
+  });
+
+  it("still handles unmodified carousel navigation", () => {
+    expect(fixture().key("ArrowRight").preventDefault).toHaveBeenCalledOnce();
+  });
+
   it("preserves keyboard activation after a pointer drag", () => {
     const carousel = fixture();
     carousel.drag();

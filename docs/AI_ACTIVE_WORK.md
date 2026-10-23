@@ -1,4 +1,16 @@
+## 2026-10-23 — Native keyboard shortcut boundaries checkpoint
+
+Owner: CODEX_ACTIVE, sole writer on `fix/native-keyboard-shortcuts-20261023`, based on published #413 source plus its local coordination checkpoint. Separate checkpoint branch protects the unchanged #413 acceptance head `a13e1d6`; do not update that PR with this work while its browser job runs. #413 full run `39962079564`: fast, production and database SUCCESS; browser pending. Hosted production npm ci/build passes, superseding the earlier local offline-cache install limitation for #413. Production remains verified `03bb739`.
+
+Source-grounded defects: carousel viewport and Companion tabs prevented modified navigation keys; gallery window handler also took modified arrows, handled events and composition Escape. Companion document Escape dismissed the panel during composition or after a child had already handled it. Added 24 fail-first regressions covering modifiers, composition and prior handling, plus ordinary navigation/close coverage. Runtime correction is bounded early returns and shifted-arrow exclusions; gallery Shift+Tab containment and plain arrows/Escape remain intact. No prayer calculation, factual, visual, media, auth, payment, data or provider changes.
+
+Validation: full suite 2,011 passed / 15 skipped; 38 focused tests across carousel/gallery/Companion keyboard suites pass; TypeScript, scoped ESLint, three browser-spec syntax checks and diff pass. Three actual-page synthetic-key browser cases added to existing suites; local browser execution remains infrastructure-blocked and hosted acceptance is pending. IMPLEMENTED_SOURCE / locally TESTED only. No new PR or deployment for this prepared checkpoint, no full accessibility/device or historical closure-count claim. Next: finish #413 acceptance/release, normally reconcile accepted main, then include this checkpoint in the next coherent batch with fresh hosted acceptance.
+
+Applied references: installed Superpowers verification-before-completion and Addy Osmani Agent Skills code-review-and-quality skills, alongside existing Karpathy guidance. Inspected the referenced agent-skills repository directly through GitHub. Use other owner-listed repositories only when their capability fits a verified task; no runtime dependencies or external automation installed for this checkpoint.
+
 ## 2026-10-23 — Persistent keyboard rotation pause batch
+
+Publication: draft PR #413, https://github.com/immazhark/amaana-platform/pull/413, exact head `a13e1d608e59adbce8d8c366e0e07d75846e8a3b`, tree `66e6ec31f5676ab95ecf6de6a166c67d06387429` matches local validated source `ab1950a`. Full hosted run `39962079564` is in progress. Preserve this published source until actual results; this local coordination checkpoint does not require restarting acceptance. No merge/deployment yet; production remains verified `03bb739`.
 
 Owner: CODEX_ACTIVE, sole writer, continuing on `chore/remove-unused-motion-runtime-20261023` from saved remote `e10b6a9`. Verified remote main remains deployed `03bb739`; only open PR is reviewed-locales draft #374, which remains blocked on approved translations. This batch includes the unreleased dependency removal and neutral live fallback already saved on this branch; no duplicate branch or runtime PR.
 
