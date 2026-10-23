@@ -27,9 +27,21 @@ function fixture() {
       readonly pointerId = 1,
     ) { super(type); }
   }
+  type KeyOptions = { composing?: boolean; ctrl?: boolean; alt?: boolean; meta?: boolean; handled?: boolean };
   class Keyboard extends Event {
     readonly repeat = false;
-    constructor(type: string, readonly key: string) { super(type); }
+    readonly isComposing: boolean;
+    readonly ctrlKey: boolean;
+    readonly altKey: boolean;
+    readonly metaKey: boolean;
+    constructor(type: string, readonly key: string, options: KeyOptions = {}) {
+      super(type, { cancelable: true });
+      this.isComposing = options.composing ?? false;
+      this.ctrlKey = options.ctrl ?? false;
+      this.altKey = options.alt ?? false;
+      this.metaKey = options.meta ?? false;
+      if (options.handled) this.preventDefault();
+    }
   }
   vi.stubGlobal("Element", Control);
   vi.stubGlobal("HTMLElement", Control);
@@ -69,8 +81,8 @@ function fixture() {
       Object.defineProperty(event, "target", { value: inside ? control : new EventTarget() });
       listeners.get(type)!(event);
     },
-    key(type: string, key: string) {
-      const event = new Keyboard(type, key);
+    key(type: string, key: string, options: KeyOptions = {}) {
+      const event = new Keyboard(type, key, options);
       Object.defineProperty(event, "target", { value: control });
       listeners.get(type)!(event);
     },
@@ -189,6 +201,20 @@ describe("site motion press recovery", () => {
     motion.send("pointerdown", 2);
     motion.control.disabled = true;
     motion.send("pointerdown", 0);
+    expect(motion.control.animate).not.toHaveBeenCalled();
+    motion.cleanup?.();
+  });
+
+  it.each([
+    { key: "Enter", options: { composing: true }, description: "IME composition" },
+    { key: "Enter", options: { ctrl: true }, description: "Ctrl+Enter" },
+    { key: "Enter", options: { alt: true }, description: "Alt+Enter" },
+    { key: " ", options: { meta: true }, description: "Meta+Space" },
+    { key: "Enter", options: { handled: true }, description: "previously handled Enter" },
+  ])("does not animate modified/native-owned $description input", ({ key, options }) => {
+    const motion = fixture();
+    motion.key("keydown", key, options);
+    motion.key("keyup", key, options);
     expect(motion.control.animate).not.toHaveBeenCalled();
     motion.cleanup?.();
   });
