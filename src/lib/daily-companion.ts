@@ -120,8 +120,12 @@ function avoidVoluntaryFast(date: string, confirmed: { day: number; month: numbe
   fastingEstimate = { date, excluded: blocked };
   return blocked;
 }
-export function remindersFor(now: Date, hijri: { day: number; month: number } | null = null): Reminder[] {
-  const { date, weekday, minutes } = hyderabadClock(now);
+export function remindersFor(
+  now: Date,
+  hijri: { day: number; month: number } | null = null,
+  clock = hyderabadClock(now),
+): Reminder[] {
+  const { date, weekday, minutes } = clock;
   const reminders: Reminder[] = [];
   // Clock windows are editorial reminders, not religious definitions of prayer/adhkar times.
   if ((weekday === 1 || weekday === 4) && minutes < 18 * 60 && !avoidVoluntaryFast(date, hijri)) {
