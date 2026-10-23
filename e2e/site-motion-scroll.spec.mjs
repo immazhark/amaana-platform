@@ -169,6 +169,37 @@ test('window blur clears pressed motion and a later interaction still works', as
   await expect(page).toHaveURL(/\/about$/);
 });
 
+test('a touch press recovers when its terminal pointer event targets the page instead of the action', async ({ page }) => {
+  await open(page);
+  const action = page.locator('.nav-donate');
+  await action.hover();
+  await expect.poll(() => action.evaluate(n => getComputedStyle(n).translate)).toBe('0px -1px');
+
+  const press = pointerId => action.evaluate((node, id) => node.dispatchEvent(
+    new PointerEvent('pointerdown', { bubbles: true, pointerType: 'touch', pointerId: id, button: 0, buttons: 1 }),
+  ), pointerId);
+  const releaseOutside = (type, pointerId) => page.evaluate(({ type: eventType, pointerId: id }) => {
+    document.body.dispatchEvent(new PointerEvent(eventType, {
+      bubbles: true, pointerType: 'touch', pointerId: id, button: -1, buttons: 0,
+    }));
+  }, { type, pointerId });
+
+  await press(42);
+  await expect.poll(() => action.evaluate(n => getComputedStyle(n).scale)).toBe('0.98');
+  // Synthetic touch pointerout is not treated as a mouse hover exit.
+  await action.evaluate(node => node.dispatchEvent(new PointerEvent('pointerout', {
+    bubbles: true, pointerType: 'touch', pointerId: 42, button: -1,
+  })));
+  await releaseOutside('pointerup', 42);
+  await expect.poll(() => action.evaluate(n => ['none', '1'].includes(getComputedStyle(n).scale))).toBe(true);
+
+  await press(43);
+  await expect.poll(() => action.evaluate(n => getComputedStyle(n).scale)).toBe('0.98');
+  await releaseOutside('pointercancel', 43);
+  await expect.poll(() => action.evaluate(n => ['none', '1'].includes(getComputedStyle(n).scale))).toBe(true);
+  await expect(page).toHaveURL(/\\/about$/);
+});
+
 test('route navigation destroys old scrolling and leaves the new page readable', async ({ page }) => {
   await open(page);
   await page.mouse.move(700, 500);
