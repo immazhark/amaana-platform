@@ -232,6 +232,35 @@ describe("site motion press recovery", () => {
     motion.cleanup?.();
   });
 
+  it("does not animate a keyup with no owned press after IME composition ends", () => {
+    const motion = fixture();
+    motion.key("keydown", "Enter", { composing: true });
+    motion.key("keyup", "Enter");
+    expect(motion.control.animate).not.toHaveBeenCalled();
+    motion.cleanup?.();
+  });
+
+  it.each([{ ctrl: true }, { handled: true }, { composing: true }])(
+    "releases an owned keyboard press even when the keyup becomes modified or handled: %o",
+    options => {
+      const motion = fixture();
+      motion.key("keydown", "Enter");
+      expect(motion.control.animate).toHaveBeenCalledTimes(1);
+      motion.key("keyup", "Enter", options);
+      expect(motion.control.animate).toHaveBeenCalledTimes(2);
+      expect(motion.control.animate.mock.calls.at(-1)?.[0])
+        .toEqual(expect.arrayContaining([expect.objectContaining({ scale: "1" })]));
+      motion.cleanup?.();
+    },
+  );
+
+  it("does not animate a stray Enter keyup with no preceding keydown", () => {
+    const motion = fixture();
+    motion.key("keyup", "Enter");
+    expect(motion.control.animate).not.toHaveBeenCalled();
+    motion.cleanup?.();
+  });
+
   it.each(["Enter", " "])("releases %j after the action becomes disabled", key => {
     const motion = fixture();
     motion.key("keydown", key);
