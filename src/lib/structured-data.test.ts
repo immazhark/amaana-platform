@@ -154,7 +154,7 @@ describe("public structured data", () => {
   });
 
   it("does not publish invented dates when an ISO calendar day does not exist", () => {
-    for (const invalidDate of ["2026-02-29", "2026-02-30", "2026-04-31", "2026-02-30T10:00:00+05:30"]) {
+    for (const invalidDate of ["2026-02-29", "2026-02-30", "2026-04-31", "2026-02-30T10:00:00+05:30", "2026-02-30Z", "2026-02-30t10:00:00z"]) {
       const data = buildPublicStructuredData({
         type: "Article",
         title: "Reviewed evidence",
