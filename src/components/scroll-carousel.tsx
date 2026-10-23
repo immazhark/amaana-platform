@@ -265,10 +265,13 @@ export function ScrollCarousel({
           const state = drag.current;
           if (!state || event.pointerId !== state.pointerId || !(event.buttons & 1)) return;
           const delta = event.clientX - state.x;
-          if (!state.moved && Math.abs(delta) > 6) { state.moved = true; event.currentTarget.setPointerCapture(event.pointerId); }
+          if (!state.moved && Math.abs(delta) > 6) {
+            state.moved = true;
+            event.currentTarget.setPointerCapture(event.pointerId);
+            event.currentTarget.style.scrollSnapType = "none";
+          }
           if (!state.moved) return;
           event.preventDefault();
-          event.currentTarget.style.scrollSnapType = "none";
           event.currentTarget.scrollLeft = state.scroll - delta;
         }}
         onPointerUp={releaseDrag}
