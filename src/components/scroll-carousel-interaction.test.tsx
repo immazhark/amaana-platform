@@ -18,7 +18,12 @@ function fixture() {
   const root = ScrollCarousel({ label: "Programmes", children: [createElement("a", { key: "one", href: "/about" }, "Explore")] });
   if (!root) throw new Error("Expected carousel");
   const viewport = (root.props.children as ReactElement[])[1];
-  const surface = { scrollLeft: 0, style: { removeProperty: vi.fn() }, setPointerCapture: vi.fn() };
+  const snapWrites = vi.fn();
+  const surface = {
+    scrollLeft: 0,
+    style: { removeProperty: vi.fn(), set scrollSnapType(value: string) { snapWrites(value); } },
+    setPointerCapture: vi.fn(),
+  };
   if (!viewport) throw new Error("Expected carousel viewport");
   const props = viewport.props as {
     onPointerDown: (event: object) => void;
@@ -55,6 +60,7 @@ function fixture() {
       return event;
     },
     surface,
+    snapWrites,
     key(key: string, modifiers: object = {}) {
       const event = { key, nativeEvent: { isComposing: false }, currentTarget: surface, target: surface, preventDefault: vi.fn(), ...modifiers };
       props.onKeyDown(event);
@@ -105,7 +111,10 @@ describe("carousel drag and activation boundaries", () => {
     expect(carousel.move(7)).toHaveBeenCalledOnce();
     expect(carousel.surface.setPointerCapture).toHaveBeenCalledTimes(1);
     expect(carousel.surface.setPointerCapture).toHaveBeenCalledWith(7);
+    expect(carousel.snapWrites).toHaveBeenCalledTimes(1);
+    expect(carousel.snapWrites).toHaveBeenCalledWith("none");
     carousel.end("up", 7);
+    expect(carousel.surface.style.removeProperty).toHaveBeenCalledWith("scroll-snap-type");
     expect(carousel.click(1).preventDefault).toHaveBeenCalledOnce();
   });
 
