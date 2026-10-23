@@ -21,6 +21,10 @@ export function SiteMotion() {
     const running = new Map<HTMLElement, Animation>();
     const owned = new Set<HTMLElement>();
     const activePointers = new Map<number, HTMLElement>();
+    const isHeld = (element: HTMLElement) => {
+      for (const owner of activePointers.values()) if (owner === element) return true;
+      return false;
+    };
     let disposed = false;
 
     const clear = (element: HTMLElement) => {
@@ -70,7 +74,7 @@ export function SiteMotion() {
       if (event instanceof PointerEvent && event.type === "pointerout" &&
           activePointers.get(event.pointerId) === element) activePointers.delete(event.pointerId);
       // A focus or unrelated hover change must not cancel a held touch.
-      if ([...activePointers.values()].includes(element)) return;
+      if (isHeld(element)) return;
       feedback(element);
     };
     const press = (event: Event) => {
@@ -88,7 +92,7 @@ export function SiteMotion() {
           const owner = activePointers.get(event.pointerId);
           activePointers.delete(event.pointerId);
           const element = owner ?? direct;
-          if (!element || [...activePointers.values()].includes(element)) return;
+          if (!element || isHeld(element)) return;
           if (!element.isConnected) clear(element);
           else feedback(element);
         }
