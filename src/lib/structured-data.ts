@@ -82,7 +82,7 @@ function isoDate(value: Date | string | null | undefined) {
   if (typeof value === "string") {
     // Date.parse silently rolls impossible ISO days into the next month.
     // Do not publish a date that was never supplied by the source.
-    const calendarDate = /^(\d{4})-(\d{2})-(\d{2})(?=$|[Tt\s])/.exec(value);
+    const calendarDate = /^(\d{4})-(\d{2})-(\d{2})(?!\d)/.exec(value);
     if (calendarDate) {
       const year = Number(calendarDate[1]);
       const month = Number(calendarDate[2]);
