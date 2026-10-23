@@ -1,3 +1,11 @@
+## 2026-10-23 — Audit clear-action navigation repaired
+
+Added source-proven Clear action filter correction to the combined PR #409 batch. Two rendered-link tests reproduced action preservation in the supposed clear link. Replacement link removes action/page and retains entity; 24 focused admin tests, TypeScript/scoped ESLint and full suite pass. Fresh hosted acceptance required after publication. No additional branch or separate micro-release.
+
+## 2026-10-23 — Combined main-target release prepared
+
+PR #409 at `3e43233` contains 1,967-passing-test admin fixes and latest #408 ancestry. Retargeted from unsupported stacked CI base to main; source unchanged. Ready-transition run `39909826148` passed metadata gates only; reopened event starts full application run `39909872027`. Do not merge on skipped application checks. Existing owner authorization covers merge after actual protected acceptance. Production remains independently verified at `00dce4d`; deployment of this batch is pending.
+
 ## 2026-10-23 — Audit filter-array crash recovery
 
 PR #409 extended within the same admin query normalization concern. Repeated audit action/entityType parameters caused `.trim is not a function` on the actual async page. New regressions reproduce both; type-aware scalar normalization preserves existing trimming/length bounds, permission check, facet and row queries. Shared pagination rejects array-valued pages explicitly. Twenty-two focused tests plus TypeScript/scoped lint pass; full suite running. Update the draft with normal ancestry including #408's latest test correction `a0c40ce`; require hosted acceptance and parent integration before main release. No schema/private-data/provider/auth-policy changes.

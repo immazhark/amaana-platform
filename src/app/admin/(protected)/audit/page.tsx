@@ -65,7 +65,7 @@ export default async function AuditHistoryPage({ searchParams }: Props) {
         {item.entityType} ({item._count._all})
       </Link>)}
     </div>
-    {action && <p className="muted">Showing exact action <strong>{action}</strong>. <Link href={entityHref(entityType)}>Clear action filter</Link></p>}
+    {action && <p className="muted">Showing exact action <strong>{action}</strong>. <Link href={{ pathname: "/admin/audit", query: entityType ? { entityType } : {} }}>Clear action filter</Link></p>}
     <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Audit events">
       <table>
         <thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Entity</th><th>Details</th></tr></thead>
