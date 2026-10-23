@@ -1,5 +1,39 @@
 import {test,expect} from '@playwright/test';
 
+test('capture loss before pointerup cannot activate a card after dragging', async ({ page }) => {
+  await page.goto('/browser-acceptance/body-carousel');
+  const viewport = page.getByRole('region', { name: 'Body carousel acceptance' }).locator('[id^="carousel-"]');
+  await expect(viewport).toBeVisible();
+  const suppressed = await viewport.evaluate(node => {
+    // Model the browser capture-loss ordering without relying on a real drag's
+    // timing or navigating from an actual anchor in this acceptance fixture.
+    const originalCapture = node.setPointerCapture;
+    node.setPointerCapture = () => undefined;
+    try {
+      node.dispatchEvent(new PointerEvent('pointerdown', {
+        bubbles: true, pointerType: 'mouse', pointerId: 27, button: 0, buttons: 1, clientX: 200,
+      }));
+      node.dispatchEvent(new PointerEvent('pointermove', {
+        bubbles: true, cancelable: true, pointerType: 'mouse', pointerId: 27, button: 0, buttons: 1, clientX: 100,
+      }));
+      node.dispatchEvent(new PointerEvent('lostpointercapture', {
+        bubbles: true, pointerType: 'mouse', pointerId: 27,
+      }));
+      node.dispatchEvent(new PointerEvent('pointerup', {
+        bubbles: true, pointerType: 'mouse', pointerId: 27, button: 0, buttons: 0,
+      }));
+      const slide = node.querySelector('[aria-roledescription="slide"]');
+      if (!slide) throw new Error('Carousel slide missing');
+      const click = new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 });
+      slide.dispatchEvent(click);
+      return click.defaultPrevented;
+    } finally {
+      node.setPointerCapture = originalCapture;
+    }
+  });
+  expect(suppressed).toBe(true);
+});
+
 test('carousel leaves modified, composing and handled keys to their owner', async ({ page }) => {
   const { carousel, viewport, progress } = await openPausedCarousel(page);
   await viewport.focus();
