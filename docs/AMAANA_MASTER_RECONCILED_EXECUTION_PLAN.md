@@ -8,6 +8,8 @@
 
 ## Release checkpoint — 23 October 2026
 
+AF-R042 next source batch: live rail and ScrollCarousel persist keyboard-focus pause until explicit Resume; pointer intent preserves the action shown before focus changes the control label; automatic live-rail announcements are off and the region node is stable across updates. Fail-first component/handler evidence, 15 focused passes and full 1,984 passed / 15 skipped; type/lint/spec/diff checks pass. Browser cases updated; hosted browser and fresh install/build acceptance remain pending. Includes saved dependency/fallback checkpoint on the existing branch, not merged/deployed. No complete accessibility or historical 149-entry closure claim. W3C APG carousel focus/restart and announcement guidance checked directly.
+
 Railway `797cd5bc-b2b6-4338-942d-32bd8d6c9731` SUCCESS and fresh public version/readiness confirm production/main `03bb73910ed531c92621d920ff84109b42d27c53` and ready. This supersedes pending deployment/public identity/readiness below; no live-payment or exhaustive device acceptance is inferred.
 
 Latest accepted release: #412 merged at `03bb73910ed531c92621d920ff84109b42d27c53` after full hosted run `39946900452` and ready-state promotion/verify `39959384678` passed. Railway `797cd5bc-b2b6-4338-942d-32bd8d6c9731` is DEPLOYING; public exact-SHA/readiness verification remains pending, last verified live `9c48065`. This supersedes earlier #412-pending statements. Cleanup checkpoint is normally reconciled with accepted main and remains unreleased. No historical totals or complete accessibility/performance closure inferred.

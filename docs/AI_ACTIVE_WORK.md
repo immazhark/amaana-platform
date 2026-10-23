@@ -1,3 +1,13 @@
+## 2026-10-23 — Persistent keyboard rotation pause batch
+
+Owner: CODEX_ACTIVE, sole writer, continuing on `chore/remove-unused-motion-runtime-20261023` from saved remote `e10b6a9`. Verified remote main remains deployed `03bb739`; only open PR is reviewed-locales draft #374, which remains blocked on approved translations. This batch includes the unreleased dependency removal and neutral live fallback already saved on this branch; no duplicate branch or runtime PR.
+
+Source evidence: live rail focus state and carousel focus-within only suppress rotation during focus, then restart without an explicit request. Both widgets now persist pause when focus enters. Pointerdown retains the action shown before focus changes Pause to Resume; keyboard/assistive activation follows the current label, cancellation clears the pointer intent. Live updates no longer request polite announcements while auto-rotating, and their live-region node retains identity across item updates. Guidance: https://www.w3.org/WAI/ARIA/apg/patterns/carousel/ (focus/restart and live-region sections). No visual redesign, facts, prayer calculation, provider, authorization or financial changes.
+
+Fail-first handler/component regressions exposed absent persistent focus pause and automatic live announcements. Focused 15 tests and full suite 1,984 passed / 15 skipped. TypeScript, scoped ESLint, browser-spec syntax and diff checks pass. Existing browser cases now cover persistent focus pause, explicit keyboard restart, pointer Pause intent and announcement attributes at 320/1440; drag-cleanup cases explicitly restart after their focus pause. Local Chromium remains unavailable under the established socket restriction; browser execution and fresh hosted install/build acceptance are pending. IMPLEMENTED_SOURCE / locally TESTED, not merged/deployed. Keep historical 149-entry totals unchanged.
+
+Next: publish this combined source once, run full protected hosted acceptance (including fresh npm ci for the dependency checkpoint), then ready-state promotion/verify and owner-authorized merge only after all required gates pass. Verify exact Railway/public version and readiness afterward. Production remains independently verified `03bb739`; paused worker configuration remains untouched.
+
 ## 2026-10-23 — Accessibility release merged; cleanup reconciled
 
 Railway `797cd5bc-b2b6-4338-942d-32bd8d6c9731` is SUCCESS. Fresh public verification now returns exact main `03bb73910ed531c92621d920ff84109b42d27c53`, production, and readiness ready. This supersedes pending deployment/public verification below. Identity/readiness only; no live transaction or complete device acceptance inferred.

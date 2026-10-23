@@ -1,3 +1,9 @@
+## 2026-10-23 — Persistent keyboard reading pause implemented
+
+CODEX_ACTIVE on existing cleanup checkpoint branch, remote parent `e10b6a9`, main/production verified `03bb739`. Only open PR #374 is the blocked locales draft. Live rail and ScrollCarousel previously resumed after keyboard focus left; both now persist focus-induced pause until explicit Resume. Pointer intent survives focus-triggered Pause/Resume label change, keyboard follows the current label, and cancellation resets intent. Live rail announcements are off during rotation and its content region no longer remounts for each item. W3C APG carousel focus/live-region guidance was checked directly. No visual, canonical, prayer, financial, permission, provider or public-media changes.
+
+New fail-first tests plus retained coverage: 15 focused tests pass; full suite 1,984 passed / 15 skipped; TypeScript/scoped lint/spec syntax/diff pass. Browser cases strengthened for focus-out persistence, explicit restart, pointer action and announcement attributes; drag recovery tests now explicitly Resume because focus pause is independently persistent. Browser execution remains pending in hosted CI; do not infer screen-reader/device acceptance. Combine with saved unused framer-motion graph removal and neutral fallback, requiring fresh hosted npm ci/build/runtime acceptance. IMPLEMENTED_SOURCE / TESTED only, no release or historical closure-count increase. Revert bounded runtime/spec/dependency changes for rollback; no settings or data rollback required.
+
 ## 2026-10-23 — #412 merged after protected acceptance
 
 Railway `797cd5bc-b2b6-4338-942d-32bd8d6c9731` is SUCCESS. Fresh public version/readiness independently confirm exact main `03bb73910ed531c92621d920ff84109b42d27c53`, production and ready. Pending deployment/public-verification notes below are superseded. No live transaction or exhaustive device acceptance claim.

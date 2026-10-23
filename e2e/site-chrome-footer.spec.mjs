@@ -236,6 +236,7 @@ for (const width of [320, 1440]) {
     await page.goto('/browser-acceptance/home-hero');
     const title = page.locator('.amaana-live-content strong');
     await expect(title).toHaveText(items[0].title);
+    await expect(page.locator('.amaana-live-content')).toHaveAttribute('aria-live', 'off');
     const pause = page.getByRole('button', { name: 'AMAANA LIVE: Pause updates', exact: true });
     await expect(pause).toBeVisible();
     const bounds = await pause.boundingBox();
@@ -244,9 +245,9 @@ for (const width of [320, 1440]) {
     expect(bounds.x).toBeGreaterThanOrEqual(0);
     expect(bounds.x + bounds.width).toBeLessThanOrEqual(width + 1);
     await pause.focus();
-    await page.keyboard.press('Enter');
     const resume = page.getByRole('button', { name: 'AMAANA LIVE: Resume updates', exact: true });
     await expect(resume).toBeFocused();
+    await expect(page.locator('.amaana-live-content')).toHaveAttribute('aria-live', 'polite');
     const leaveRail = async () => {
       await page.mouse.move(1, 500);
       await page.locator('main h1').evaluate(node => { node.tabIndex = -1; node.focus(); });
@@ -258,6 +259,14 @@ for (const width of [320, 1440]) {
     await page.keyboard.press('Enter');
     await leaveRail();
     await page.clock.runFor(12_100);
+    await expect(title).toHaveText(items[1].title);
+    await expect(page.locator('.amaana-live-content')).toHaveAttribute('aria-live', 'off');
+    // A pointer click must still mean Pause even though focusing the button
+    // pauses first and changes its accessible action to Resume.
+    await pause.click();
+    await expect(resume).toBeFocused();
+    await leaveRail();
+    await page.clock.runFor(24_100);
     await expect(title).toHaveText(items[1].title);
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await expect(pause).toHaveCount(0);
