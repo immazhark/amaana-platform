@@ -1,3 +1,4 @@
+import { hasUnsupportedPublicQueryFields } from "./public-navigation-query";
 type DatedInitiative = { slug?: string; parentSlug?: string | null; year: number | null; startYear: number | null; endYear: number | null };
 type Programme = { slug: string; initiatives: DatedInitiative[] };
 export type WorkSearch = { programme?: string | string[]; year?: string | string[] };
@@ -15,7 +16,7 @@ export function filterWork<T extends Programme>(programmes: T[], search: WorkSea
   const programme = typeof search.programme === "string" ? search.programme : "";
   const year = typeof search.year === "string" ? search.year : "";
   const years = [...new Set(programmes.flatMap(p => p.initiatives.flatMap(yearsFor)))].sort((a, b) => b - a);
-  const invalid = Object.keys(search).some(key => key !== "programme" && key !== "year")
+  const invalid = hasUnsupportedPublicQueryFields(search, ["programme", "year"])
     || Array.isArray(search.programme) || Array.isArray(search.year)
     || Boolean(programme && !programmes.some(p => p.slug === programme))
     || Boolean(year && !years.some(value => String(value) === year));
