@@ -1,3 +1,9 @@
+## 2026-10-24 — Codex owns implementation; Zod advisory remediation preempts carousel release
+
+CODEX_ACTIVE sole writer under owner assignment and renewed commit/publication/merge authorization. Production main d753be6 is LIVE_VERIFIED (#420). Carousel PR #421 published e73ba1ad; fresh CI 40023100020 failed at production dependency audit before browser/DB/build tests. Verified GHSA-mrhx-c7xc-m3w5 affects pinned Zod 4.1.5 (<4.6.6), independently reproduced locally. No gate bypass or #421 release claim.
+
+Current atomic branch fix/zod-resource-exhaustion-20261024 is based on released main. Pin Zod 4.6.7 plus exact lockfile integrity; no other dependency changes. Three regression tests assert oversized constrained collections stop before element validation/issue amplification in standard and mini APIs, while valid collections and in-bound error paths remain correct. Old dependency: two security tests fail; patched dependency: 3 tests pass, full suite 2,058 passed/15 skipped; npm audit --omit=dev reports zero vulnerabilities. No production-data test, schema, financial/auth logic, provider settings or budget changes. Full protected exact-head checks/build/browser/budgets and promotion gate required before authorized merge. Rollback: revert package manifest/lock/test change. After release, reconcile #421 normally, rerun full acceptance, preserve #374/#264 and 149-item counts.
+
 ## 2026-10-24 — #419 merged, #420 carousel optimization reconciliation
 
 CHATGPT_ACTIVE remains sole writer. PR #419 exact head `5b9daf3548c0020b272144738db693e16227d033` full `40008820718` SUCCESS: 2,053 unit tests, 1,335 Chromium and 24 Firefox/WebKit passed; fast/database/production/final verification and ready-state `40014760496` succeeded. Normal GitHub merge to main `9c70cfd302f6c2b4e5e25c4519c359fe709bb3fb` succeeded. Railway deployment `17e4c86c-37eb-46c4-8bb8-35ac631cc708` BUILDING on initial read; **public exact SHA/ready confirmation pending, do not claim live**.
