@@ -20,6 +20,10 @@ describe("admin pagination", () => {
     expect(getAdminPagination(151, page)).toMatchObject({ page: 1, skip: 0, hasPrevious: false });
   });
 
+  it.each([{ value: ["3"] }, { value: ["3", "4"] }])("rejects array-valued pages $value", ({ value }) => {
+    expect(parseAdminPage(value)).toBe(1);
+  });
+
   it("bounds requested pages and calculates offsets", () => {
     expect(getAdminPagination(0, 9)).toEqual({
       page: 1,

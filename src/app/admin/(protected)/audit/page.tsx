@@ -3,7 +3,7 @@ import { requirePermission } from "@/lib/auth";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { prisma } from "@/lib/prisma";
 
-type Props = { searchParams: Promise<{ page?: string; action?: string; entityType?: string }> };
+type Props = { searchParams: Promise<{ page?: string | string[]; action?: string | string[]; entityType?: string | string[] }> };
 
 function formatMetadata(metadata: unknown) {
   if (metadata == null) return "—";
@@ -17,8 +17,8 @@ function formatMetadata(metadata: unknown) {
 export default async function AuditHistoryPage({ searchParams }: Props) {
   await requirePermission("rbac.manage");
   const { page: pageParam, action: actionParam, entityType: entityTypeParam } = await searchParams;
-  const action = actionParam?.trim().slice(0, 120) || undefined;
-  const entityType = entityTypeParam?.trim().slice(0, 120) || undefined;
+  const action = typeof actionParam === "string" ? actionParam.trim().slice(0, 120) || undefined : undefined;
+  const entityType = typeof entityTypeParam === "string" ? entityTypeParam.trim().slice(0, 120) || undefined : undefined;
   const where = {
     ...(action ? { action } : {}),
     ...(entityType ? { entityType } : {}),

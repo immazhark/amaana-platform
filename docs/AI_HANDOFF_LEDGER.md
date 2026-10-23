@@ -1,3 +1,7 @@
+## 2026-10-23 — Audit filter-array crash recovery
+
+PR #409 extended within the same admin query normalization concern. Repeated audit action/entityType parameters caused `.trim is not a function` on the actual async page. New regressions reproduce both; type-aware scalar normalization preserves existing trimming/length bounds, permission check, facet and row queries. Shared pagination rejects array-valued pages explicitly. Twenty-two focused tests plus TypeScript/scoped lint pass; full suite running. Update the draft with normal ancestry including #408's latest test correction `a0c40ce`; require hosted acceptance and parent integration before main release. No schema/private-data/provider/auth-policy changes.
+
 ## 2026-10-23 — Shared pagination input correction
 
 Owner: CODEX_ACTIVE. `fix/admin-pagination-input-20261023` continues from #408 while its source head remains frozen for browser acceptance. Seven admin lists use the existing parser/helper. Fail-first tests expose seven malformed strings truncated to page 3 and three invalid numeric requests yielding NaN/fractional offsets or an unintended last page. Strict complete positive-decimal parsing now falls back to page 1; numeric offset input must be a positive safe integer before clamping. Seventeen focused tests pass. TypeScript/scoped ESLint passed; full unit suite running. No private record access, permission rule, query/sort, row size, schema or provider change. Publish as a scoped stacked draft until #408 merges; do not promote source/test evidence to deployment closure.
