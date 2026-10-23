@@ -1,3 +1,19 @@
+## 2026-10-23 — Standalone recovery mobile viewport
+
+Continue the same #410 recovery surface. Its isolated browser checks previously resized a desktop context, which could not catch the standalone document missing its mobile viewport declaration. Add explicit device-width viewport metadata to the root-error document and use mobile emulation for both compact/mobile cases, asserting actual document width before geometry/text-resize checks. No user zoom restriction is added. Preserve desktop coverage, 200% text sizing, reachable retry and axe checks. Existing source head `9a6ee96` passed fast/production/database; its browser run is still active. Updated source requires fresh hosted acceptance; do not cite older-head checks as its certification. Production remains independently verified at `ff3324a`.
+
+## 2026-10-23 — Self-contained root error typography
+
+Owner: CODEX_ACTIVE, sole writer on `fix/root-error-typography-20261023`, based on merged main `ff3324a` with preserved release notes. Bounded AF-R024/AF-R025 recovery-surface work: global-error replaces root layout yet its inline font declarations referenced layout variables without CSS var fallbacks; label was .72rem and heading line-height .85. Provide self-contained font fallbacks, .75rem label, 1.1 heading line-height and inherited text wrapping. Existing isolated root-error browser coverage now includes 320px and 200% text resizing with computed fallback-font, no-overflow and reachable-retry assertions. Keep recovery callback, copy, brand backgrounds and source isolation. No payment, data, schema/provider/auth changes. Browser acceptance required before release; do not claim full typography or real-device closure.
+
+Release #409 is DEPLOYED at `ff3324a88a49bdf7faaac3577e3a8e783493d1cb`: Railway deployment `39ab20b5-3619-4f9a-9d38-a1e2e69533a2` reports SUCCESS. Fresh public version independently confirms that commit/main/production and readiness returns ready. Earlier BUILDING statements below are superseded.
+
+## 2026-10-23 — Combined navigation/admin release merged
+
+Owner: CODEX_ACTIVE, sole writer. PR #409 merged into main at `ff3324a88a49bdf7faaac3577e3a8e783493d1cb` under standing owner authorization. Exact source `e3a0fe1962be255b5177c86bbccb1a51214223c5` passed full run `39910315425`: fast, production/budgets, database, browser, production readiness and verify all SUCCESS. Local suite: 1,969 passed / 15 skipped; 24 focused admin regressions, TypeScript/scoped ESLint. PR #408 is also merged/closed through preserved ancestry, confirmed by GitHub; do not merge it separately.
+
+Railway deployment `39ab20b5-3619-4f9a-9d38-a1e2e69533a2` is BUILDING for exact main `ff3324a`. Last independently verified live version is `00dce4d`. Next: confirm deployment success and fresh public version/readiness, then choose the next source task from the reconciled backlog. This checkpoint branch changes documentation only. No new runtime work, extra deployment, worker setting or historical defect closure is claimed.
+
 ## 2026-10-23 — Clear-action audit link correction
 
 Owner: CODEX_ACTIVE, same combined PR #409 source branch. Actual rendered audit link reused entityHref, which intentionally retains the active action; therefore Clear action filter reapplied the action. Two rendered-link regressions failed with and without an entity. The link now omits action/page while preserving a selected entity. Facet/pagination links still retain their intended filters. Twenty-four focused admin tests, TypeScript and scoped ESLint pass; full suite completed successfully. Include this bounded correction in the existing combined release, require fresh hosted acceptance on the new head, and do not treat earlier source checks as certification of it. No private-data, permission, schema/provider/payment changes. #408 source remains frozen for independent browser acceptance; production stays verified at `00dce4d`.

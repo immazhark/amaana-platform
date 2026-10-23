@@ -6,6 +6,14 @@
 **Historical source:** `docs/AMAANA_MASTER_RECONCILED_EXECUTION_PLAN.md` on preserved **old** branch `fix/direct-transfer-feedback-20261013` (2026-10-17 snapshot); the old branch is **read-only historical evidence**, NOT current `main`.  
 **Truth precedence:** Live `main` source + current PR/actual Railway release > older docs/PR assertions. User-confirmed legal/campaign evidence remains controlling until explicitly reconciled.
 
+## Release checkpoint — 23 October 2026
+
+PR #409 is MERGED at main `ff3324a88a49bdf7faaac3577e3a8e783493d1cb` after all actual application, production/budget, database, browser, readiness and verify jobs passed for source `e3a0fe1` in run `39910315425`. PR #408 is also merged/closed by ancestry. The accepted batch covers mobile-menu external-focus recovery; strict scalar/numeric pagination across seven admin lists; repeated audit filter crash recovery; and working Clear action filter links that retain entity. Local validation: 1,969 passed / 15 skipped, 24 focused admin tests, TypeScript/scoped ESLint. These are bounded source/acceptance improvements; no historical 149-item totals or complete screen-reader/device closure is inferred.
+
+Railway deployment `39ab20b5-3619-4f9a-9d38-a1e2e69533a2` reports SUCCESS for `ff3324a`. Fresh public version independently confirms that exact commit/main/production and readiness returns ready. This verifies release identity and readiness, not every live journey. This section supersedes older pending merge/parent sequencing statements below.
+
+Next AF-R024/AF-R025 sub-scope: isolated global-error typography uses valid font-variable fallbacks when the root layout is absent, a .75rem label, 1.1 heading line-height and text wrapping. Typography contract and type/lint/spec syntax checks pass; added 320px/200%-text browser assertions are awaiting hosted acceptance. Not merged/deployed; no complete typography or device acceptance claim.
+
 ## Current source delta — 23 October 2026
 
 This section supersedes earlier pending-release statements without changing the historical 149-entry totals. PR #405 is MERGED and DEPLOYED at `75cd3e1`; Railway SUCCESS and a fresh public `/api/health/version` read independently confirmed that exact commit. Includes #404 and original #406 ancestry, archive query optimization, carousel CTA compatibility/deduplication/schedules, and Next.js 16.4.2 remediation. This is deployed-version evidence, not full payment/security/performance acceptance.
