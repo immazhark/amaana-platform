@@ -16,7 +16,6 @@
 .v2-stories-ethic{position:relative;background:radial-gradient(circle at 88% 20%,rgb(224 179 24 / 8%),transparent 24%),linear-gradient(140deg,#0d1b2e,#1d3150 66%,#2f4c7a)}
 .v2-stories-ethic::after{content:"";position:absolute;right:5vw;top:clamp(3rem,7vw,6rem);width:clamp(7rem,12vw,11rem);aspect-ratio:1;border:1px solid rgb(224 179 24 / 14%);transform:rotate(45deg);pointer-events:none}
 .v2-stories-ethic-list span{color:var(--amaana-gold-soft)}
-.v2-story-detail-hero{background:radial-gradient(circle at 82% 18%,rgb(224 179 24 / 15%),transparent 24%),linear-gradient(132deg,#0d1d31 0%,#1d3150 58%,#2f4c7a 100%)}
 .v2-story-detail-lead,.v2-story-detail-gallery{background:var(--amaana-cream-muted)}
 .v2-story-detail-body{background:var(--amaana-paper)}
 .v2-story-detail-rule,.v2-story-source-note{border-color:var(--amaana-border-warm)}

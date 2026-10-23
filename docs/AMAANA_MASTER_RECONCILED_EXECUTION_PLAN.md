@@ -8,6 +8,10 @@
 
 ## Release checkpoint — 23 October 2026
 
+Latest live release: #411 at main `9c48065020d37a82a24597d92081bf2c6a6ad350`. Railway `ab26d603-1cb5-43e0-a2e9-2e901623f4df` SUCCESS and independent fresh public version/readiness reads match production/main SHA and ready. This supersedes earlier pending deployment notes, verifies identity/readiness, and does not close full performance/accessibility or live-payment acceptance. Historical totals unchanged.
+
+Current candidate supersedes earlier #412-pending notes: original motion head `2362d03` passed complete hosted run `39924862372`. Existing #412 is being expanded once to include prepared persistent live-update pause, unimported-file cleanup and normal main `9c48065` ancestry. Full local runtime suite: 1,977 passed / 15 skipped; type/lint/spec/CSS checks pass. Require fresh hosted application/browser/build/budget/database and promotion acceptance for this combined source. Not merged/deployed. No new PR or historical total change.
+
 PR #409 is MERGED at main `ff3324a88a49bdf7faaac3577e3a8e783493d1cb` after all actual application, production/budget, database, browser, readiness and verify jobs passed for source `e3a0fe1` in run `39910315425`. PR #408 is also merged/closed by ancestry. The accepted batch covers mobile-menu external-focus recovery; strict scalar/numeric pagination across seven admin lists; repeated audit filter crash recovery; and working Clear action filter links that retain entity. Local validation: 1,969 passed / 15 skipped, 24 focused admin tests, TypeScript/scoped ESLint. These are bounded source/acceptance improvements; no historical 149-item totals or complete screen-reader/device closure is inferred.
 
 Railway deployment `39ab20b5-3619-4f9a-9d38-a1e2e69533a2` reports SUCCESS for `ff3324a`. Fresh public version independently confirms that exact commit/main/production and readiness returns ready. This verifies release identity and readiness, not every live journey. This section supersedes older pending merge/parent sequencing statements below.
@@ -21,6 +25,7 @@ Repository hygiene checkpoint: home-wow.css, campaign-home.css and governance.cs
 AF-R042 live-update pause sub-scope: two fail-first actual-component regressions exposed missing persistent pause. Existing badge now offers native Pause/Resume for multiple rotating updates. Three focused tests, full suite 1,977 passed / 15 skipped and type/lint/CSS/spec checks pass. Two browser cases await execution. IMPLEMENTED_SOURCE / locally TESTED only, no new PR/merge/deployment and no site-wide accessibility closure.
 
 AF-R057 #411 compiled measurement: completed production job `120316470379` has 325,344 aggregate uncompressed CSS bytes versus 330,396 in #410 job `120301860649` (5,052 saved). JS unchanged at 816,017 bytes. Per-route attribution/transfer/CWV remain unmeasured; browser acceptance and release pending. This metric excludes the later live-rail control checkpoint. Historical totals unchanged.
+AF-R057 CSS release supersedes earlier pending statements: #411 MERGED at `9c48065020d37a82a24597d92081bf2c6a6ad350` after full run `39924005291` and ready-state promotion/verify `39928057248` passed. Five imported stylesheets remove 5,507 source bytes while all 357 retained CSS records remain identical. Compiled aggregate CSS reduction is 5,052 bytes; per-route transfer/CWV unmeasured. Railway deployment `ab26d603-1cb5-43e0-a2e9-2e901623f4df` BUILDING; deployed identity/readiness unverified, last live verification `abacce7`. Prepared live-rail/cleanup follow-up is locally reconciled with current main but requires fresh hosted acceptance. Historical totals unchanged.
 
 ## Current source delta — 23 October 2026
 
