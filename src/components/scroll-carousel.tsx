@@ -137,9 +137,9 @@ export function ScrollCarousel({
     drag.current = null;
     suppressClick.current = false;
     if (frameRef.current !== null) {
-        cancelAnimationFrame(frameRef.current);
-        frameRef.current = null;
-      }
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+    }
     setActiveIndex(index);
     const viewport = viewportRef.current;
     if (viewport) {
