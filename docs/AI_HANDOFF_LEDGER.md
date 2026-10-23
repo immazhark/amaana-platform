@@ -1,3 +1,7 @@
+## 2026-10-23 — Actual mobile viewport coverage for root recovery
+
+Same PR #410: standalone error document now declares device-width/initial-scale viewport without disabling zoom. Its 320/390px isolated browser cases use mobile emulation and assert document clientWidth, then check 200% text sizing and reachable retry. Compact evidence is retained in the existing mobile artifact directory under a distinct filename; no CI changes. Typography contract, TypeScript/scoped lint and spec syntax pass; fresh hosted browser acceptance remains required. Prior #410 fast/build/database results are not a pass for the updated head. Production stays verified at `ff3324a`.
+
 ## 2026-10-23 — Recovery typography and deployed source verification
 
 Railway #409 deployment `39ab20b5-3619-4f9a-9d38-a1e2e69533a2` is SUCCESS; fresh public version/readiness independently confirm `ff3324a` in production and ready. No live payment was performed.
