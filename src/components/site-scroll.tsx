@@ -55,6 +55,9 @@ export function useSiteScroll(pathname: string) {
       } finally { loading = false; }
     };
     const wheel = (event: WheelEvent) => {
+      // Ctrl+wheel also represents touchpad pinch zoom; scroll locks must
+      // leave the browser's zoom gesture available.
+      if (event.ctrlKey) return;
       if (document.body.matches(".af-menu-lock,.af-navigation-lock")) {
         event.preventDefault();
         return;
@@ -70,7 +73,7 @@ export function useSiteScroll(pathname: string) {
       destroy();
     };
     const key = (event: KeyboardEvent) => {
-      if (!nativeKeyboardNavigation.includes(event.key)) return;
+      if (event.isComposing || !nativeKeyboardNavigation.includes(event.key)) return;
       // Lenis is deliberately a wheel-only progressive enhancement. Destroy it
       // before native keyboard navigation so Home/End/Page/Arrow/Space and focus
       // movement retain the browser's exact scrolling semantics. A later wheel

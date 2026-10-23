@@ -7,6 +7,39 @@ afterEach(() => {
   vi.resetModules();
 });
 
+test.each(["af-menu-lock", "af-navigation-lock"])(
+  "%s preserves zoom gestures while ordinary wheel scrolling stays locked",
+  async lock => {
+    let cleanup: (() => void) | undefined;
+    const created = vi.fn();
+    vi.doMock("react", () => ({
+      useEffect: (effect: () => () => void) => { cleanup = effect(); },
+    }));
+    vi.doMock("lenis", () => ({ default: class { constructor() { created(); } } }));
+    const target = Object.assign(new EventTarget(), {
+      matchMedia: (query: string) => Object.assign(new EventTarget(), { matches: query === "(pointer: fine)" }),
+    });
+    vi.stubGlobal("window", target);
+    vi.stubGlobal("document", Object.assign(new EventTarget(), {
+      hidden: false,
+      body: { matches: (selector: string) => selector.split(",").includes(`.${lock}`) },
+    }));
+    vi.stubGlobal("Element", class {});
+    const { useSiteScroll } = await import("./site-scroll");
+    useSiteScroll("/about");
+    try {
+      const zoom = Object.assign(new Event("wheel", { cancelable: true }), { ctrlKey: true });
+      target.dispatchEvent(zoom);
+      expect(zoom.defaultPrevented).toBe(false);
+      const scroll = new Event("wheel", { cancelable: true });
+      target.dispatchEvent(scroll);
+      expect(scroll.defaultPrevented).toBe(true);
+      await vi.dynamicImportSettled();
+      expect(created).not.toHaveBeenCalled();
+    } finally { cleanup?.(); }
+  },
+);
+
 test.each(["Tab", "ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "])(
   "%s cancels pending wheel enhancement and a later wheel may restart it",
   async key => {
@@ -187,6 +220,11 @@ test.each(["Home", "End"])(
     try {
       target.dispatchEvent(new Event("wheel"));
       await vi.dynamicImportSettled();
+      // IME candidate navigation belongs to the input method, even when a
+      // smooth-wheel instance is active elsewhere on the page.
+      target.dispatchEvent(Object.assign(new Event("keydown"), { key, isComposing: true }));
+      expect(destroyed).not.toHaveBeenCalled();
+      expect(scrollTo).not.toHaveBeenCalled();
       target.dispatchEvent(Object.assign(new Event("keydown"), { key }));
       expect(destroyed).toHaveBeenCalledOnce();
       expect(scrollTo).toHaveBeenCalledOnce();

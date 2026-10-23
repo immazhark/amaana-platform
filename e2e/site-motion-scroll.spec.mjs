@@ -56,6 +56,48 @@ test('compact fine-pointer menus contain wheel scrolling and release it on dismi
   await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(250);
 });
 
+test('an open compact menu preserves browser zoom without releasing ordinary wheel containment', async ({ page }) => {
+  await page.setViewportSize({ width: 900, height: 1000 });
+  await open(page);
+  await page.getByRole('button', { name: 'Open navigation menu', exact: true }).click();
+  const menu = page.locator('#mobile-navigation');
+  await expect(menu).toBeVisible();
+  await expect(page.locator('body')).toHaveClass(/af-menu-lock/);
+  const prevented = await menu.evaluate(node => [true, false].map(ctrlKey => {
+    const event = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: 100, ctrlKey });
+    node.dispatchEvent(event);
+    return event.defaultPrevented;
+  }));
+  // Synthetic input proves cancellation policy, not an actual browser zoom.
+  expect(prevented).toEqual([false, true]);
+  await expect(menu).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(menu).toBeHidden();
+  await expect(page.locator('body')).not.toHaveClass(/af-menu-lock/);
+});
+
+test('composing Home and End do not force document navigation or destroy active wheel enhancement', async ({ page }) => {
+  await open(page);
+  await page.mouse.move(700, 600);
+  await page.mouse.wheel(0, 200);
+  await expect(page.locator('html')).toHaveClass(/lenis/);
+  const result = await page.evaluate(() => {
+    const original = window.scrollTo;
+    const calls = [];
+    window.scrollTo = (...args) => { calls.push(args); };
+    try {
+      for (const key of ['Home', 'End']) {
+        document.body.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key, isComposing: true }));
+      }
+      return { calls, enhanced: document.documentElement.classList.contains('lenis') };
+    } finally { window.scrollTo = original; }
+  });
+  // Synthetic composition input verifies the handler boundary, not an IME UI.
+  expect(result).toEqual({ calls: [], enhanced: true });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(page.locator('html')).not.toHaveClass(/lenis/);
+});
+
 test('Motion feedback restores styles and responds to live preference changes', async ({ page }) => {
   await open(page);
   const action = page.locator('.nav-donate');
