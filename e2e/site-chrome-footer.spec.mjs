@@ -223,6 +223,50 @@ test('Amaana Live rotates independently and pauses for hover, focus and reduced 
   await expect(title).toHaveText(items[1].title);
 });
 
+for (const width of [320, 1440]) {
+  test(`live updates stay paused while the visitor uses the page at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.clock.install();
+    const items = ['First verified need', 'Second verified need'].map((title, index) => ({
+      id: `pause-fixture-${index}`, kind: 'appeal', eyebrow: 'Live appeal', title,
+      detailsHref: '/appeals', supportHref: '/donate', detailsCta: 'View', supportCta: 'Donate',
+    }));
+    await page.route('**/api/public/live-rail', route => route.fulfill({ json: { items } }));
+    await page.goto('/browser-acceptance/home-hero');
+    const title = page.locator('.amaana-live-content strong');
+    await expect(title).toHaveText(items[0].title);
+    const pause = page.getByRole('button', { name: 'AMAANA LIVE: Pause updates', exact: true });
+    await expect(pause).toBeVisible();
+    const bounds = await pause.boundingBox();
+    expect(bounds.width).toBeGreaterThanOrEqual(44);
+    expect(bounds.height).toBeGreaterThanOrEqual(44);
+    expect(bounds.x).toBeGreaterThanOrEqual(0);
+    expect(bounds.x + bounds.width).toBeLessThanOrEqual(width + 1);
+    await pause.focus();
+    await page.keyboard.press('Enter');
+    const resume = page.getByRole('button', { name: 'AMAANA LIVE: Resume updates', exact: true });
+    await expect(resume).toBeFocused();
+    const leaveRail = async () => {
+      await page.mouse.move(1, 500);
+      await page.locator('main h1').evaluate(node => { node.tabIndex = -1; node.focus(); });
+    };
+    await leaveRail();
+    await page.clock.runFor(36_100);
+    await expect(title).toHaveText(items[0].title);
+    await resume.focus();
+    await page.keyboard.press('Enter');
+    await leaveRail();
+    await page.clock.runFor(12_100);
+    await expect(title).toHaveText(items[1].title);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await expect(pause).toHaveCount(0);
+    await page.clock.runFor(24_100);
+    await expect(title).toHaveText(items[1].title);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  });
+}
+
 for (const backwards of [false, true]) {
   test(`mobile menu recovers external focus on ${backwards ? 'Shift+Tab' : 'Tab'}`, async ({ page }) => {
     await openFixture(page, 390);

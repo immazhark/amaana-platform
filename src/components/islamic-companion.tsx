@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { UIIcon } from "./ui-icon";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { hyderabadClock, remindersFor } from "@/lib/daily-companion";
 import type { CompanionPanelKind } from "@/components/islamic-companion-panel";
@@ -55,6 +56,7 @@ export function IslamicCompanion() {
   const [focused, setFocused] = useState(false);
   const [liveItems, setLiveItems] = useState<LiveRailItem[]>([]);
   const [railIndex, setRailIndex] = useState(0);
+  const [railPaused, setRailPaused] = useState(false);
   const companionButton = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -115,12 +117,12 @@ export function IslamicCompanion() {
   const activeLiveItem = liveItems.length ? liveItems[railIndex % liveItems.length] : null;
 
   useEffect(() => {
-    if (reducedMotion || hovered || focused || panel || liveItems.length < 2) return;
+    if (railPaused || reducedMotion || hovered || focused || panel || liveItems.length < 2) return;
     const timer = window.setInterval(() => {
       if (!document.hidden) setRailIndex(index => index + 1);
     }, 12_000);
     return () => window.clearInterval(timer);
-  }, [focused, hovered, panel, reducedMotion, liveItems.length]);
+  }, [focused, hovered, panel, railPaused, reducedMotion, liveItems.length]);
 
   const closePanel = useCallback(() => {
     setPanel(null);
@@ -155,7 +157,17 @@ export function IslamicCompanion() {
           </div>
 
           <div className="amaana-live-lane" role="group" aria-label="Amaana live updates">
-            <span className="amaana-live-badge"><span aria-hidden="true" />AMAANA LIVE</span>
+            {!reducedMotion && liveItems.length > 1 ? (
+              <button
+                type="button"
+                className="amaana-live-badge"
+                aria-label={`AMAANA LIVE: ${railPaused ? "Resume" : "Pause"} updates`}
+                title={`${railPaused ? "Resume" : "Pause"} updates`}
+                onClick={() => setRailPaused(!railPaused)}
+              >
+                <UIIcon name={railPaused ? "play" : "pause"} />AMAANA LIVE
+              </button>
+            ) : <span className="amaana-live-badge"><span aria-hidden="true" />AMAANA LIVE</span>}
             {activeLiveItem ? (
               <div className="amaana-live-content" key={activeLiveItem.id} aria-live="polite" aria-atomic="true">
                 <span className="amaana-reminder-eyebrow">{activeLiveItem.eyebrow}</span>
