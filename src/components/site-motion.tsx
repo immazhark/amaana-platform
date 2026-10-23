@@ -20,6 +20,7 @@ export function SiteMotion() {
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
     const running = new Map<HTMLElement, Animation>();
     const owned = new Set<HTMLElement>();
+    const activePointers = new Map<number, HTMLElement>();
     let disposed = false;
 
     const clear = (element: HTMLElement) => {
@@ -28,7 +29,10 @@ export function SiteMotion() {
       element.style.translate = element.style.scale = element.style.opacity = "";
       owned.delete(element);
     };
-    const clearAll = () => { for (const element of owned) clear(element); };
+    const clearAll = () => {
+      activePointers.clear();
+      for (const element of owned) clear(element);
+    };
 
     const feedback = (element: HTMLElement, pressed = false) => {
       if (preference.matches) { clear(element); return; }
@@ -63,13 +67,30 @@ export function SiteMotion() {
       if (!element) return;
       const related = (event as PointerEvent | FocusEvent).relatedTarget;
       if (related instanceof Node && element.contains(related)) return;
+      if (event instanceof PointerEvent && event.type === "pointerout" &&
+          activePointers.get(event.pointerId) === element) activePointers.delete(event.pointerId);
       feedback(element);
     };
     const press = (event: Event) => {
       const pressed = event.type === "pointerdown" || event.type === "keydown";
-      // Cancellation/release must restore feedback even when the browser no
-      // longer reports a primary button or the control became disabled.
-      if (event instanceof PointerEvent && pressed && event.button !== 0) return;
+      if (event instanceof PointerEvent) {
+        if (pressed && event.button !== 0) return;
+        const direct = target(event, !pressed);
+        if (pressed) {
+          if (!direct) return;
+          activePointers.set(event.pointerId, direct);
+          feedback(direct, true);
+        } else {
+          // Touch releases can arrive outside the pressed action; unlike a
+          // mouse, touch pointerout does not reset hover feedback.
+          const owner = activePointers.get(event.pointerId);
+          activePointers.delete(event.pointerId);
+          const element = owner ?? direct;
+          if (element?.isConnected === false) clear(element);
+          else if (element) feedback(element);
+        }
+        return;
+      }
       if (event instanceof KeyboardEvent && (event.repeat || !["Enter", " "].includes(event.key))) return;
       const element = target(event, !pressed);
       if (element) feedback(element, pressed);
