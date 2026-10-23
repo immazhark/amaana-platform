@@ -20,6 +20,7 @@ function fixture() {
     contains() { return false; }
   }
   class Pointer extends Event {
+    readonly pointerType = "mouse";
     constructor(type: string, readonly button: number) { super(type); }
   }
   class Keyboard extends Event {
@@ -33,7 +34,8 @@ function fixture() {
   vi.stubGlobal("KeyboardEvent", Keyboard);
   vi.stubGlobal("IntersectionObserver", class { disconnect() {} observe() {} });
   vi.stubGlobal("getComputedStyle", () => ({ translate: "none", scale: "none" }));
-  vi.stubGlobal("window", { matchMedia: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }) });
+  const windowEvents = Object.assign(new EventTarget(), { matchMedia: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }) });
+  vi.stubGlobal("window", windowEvents);
   vi.stubGlobal("document", {
     getElementById: () => null,
     addEventListener: (name: string, handler: EventListener) => listeners.set(name, handler),
@@ -46,6 +48,12 @@ function fixture() {
   const control = new Control();
   return {
     control,
+    leave(type: "focusout" | "pointerout") {
+      const event = type === "pointerout" ? new Pointer(type, -1) : new Event(type);
+      Object.defineProperty(event, "target", { value: control });
+      listeners.get(type)!(event);
+    },
+    blur() { windowEvents.dispatchEvent(new Event("blur")); },
     send(type: string, button: number) {
       const event = new Pointer(type, button);
       Object.defineProperty(event, "target", { value: control });
@@ -61,6 +69,28 @@ function fixture() {
 }
 
 describe("site motion press recovery", () => {
+  it.each(["focusout", "pointerout"] as const)("settles a disabled action on %s without waiting for release", type => {
+    const motion = fixture();
+    motion.send("pointerdown", 0);
+    motion.control.disabled = true;
+    motion.leave(type);
+    expect(motion.control.animate).toHaveBeenCalledTimes(2);
+    expect(motion.control.animate.mock.calls.at(-1)?.[0]).toEqual(expect.arrayContaining([expect.objectContaining({ scale: "1" })]));
+    motion.cleanup?.();
+  });
+
+  it("clears a pressed animation when the window loses focus and accepts a later press", () => {
+    const motion = fixture();
+    motion.send("pointerdown", 0);
+    const first = motion.control.animate.mock.results[0]?.value;
+    motion.blur();
+    expect(first.cancel).toHaveBeenCalledOnce();
+    motion.send("pointerdown", 0);
+    expect(motion.control.animate).toHaveBeenCalledTimes(2);
+    expect(first.cancel).toHaveBeenCalledOnce();
+    motion.cleanup?.();
+  });
+
   it("releases a cancelled press regardless of the cancellation button code", () => {
     const motion = fixture();
     motion.send("pointerdown", 0);

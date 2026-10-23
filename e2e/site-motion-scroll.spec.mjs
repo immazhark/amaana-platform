@@ -56,6 +56,48 @@ test('compact fine-pointer menus contain wheel scrolling and release it on dismi
   await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(250);
 });
 
+test('an open compact menu preserves browser zoom without releasing ordinary wheel containment', async ({ page }) => {
+  await page.setViewportSize({ width: 900, height: 1000 });
+  await open(page);
+  await page.getByRole('button', { name: 'Open navigation menu', exact: true }).click();
+  const menu = page.locator('#mobile-navigation');
+  await expect(menu).toBeVisible();
+  await expect(page.locator('body')).toHaveClass(/af-menu-lock/);
+  const prevented = await menu.evaluate(node => [true, false].map(ctrlKey => {
+    const event = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: 100, ctrlKey });
+    node.dispatchEvent(event);
+    return event.defaultPrevented;
+  }));
+  // Synthetic input proves cancellation policy, not an actual browser zoom.
+  expect(prevented).toEqual([false, true]);
+  await expect(menu).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(menu).toBeHidden();
+  await expect(page.locator('body')).not.toHaveClass(/af-menu-lock/);
+});
+
+test('composing Home and End do not force document navigation or destroy active wheel enhancement', async ({ page }) => {
+  await open(page);
+  await page.mouse.move(700, 600);
+  await page.mouse.wheel(0, 200);
+  await expect(page.locator('html')).toHaveClass(/lenis/);
+  const result = await page.evaluate(() => {
+    const original = window.scrollTo;
+    const calls = [];
+    window.scrollTo = (...args) => { calls.push(args); };
+    try {
+      for (const key of ['Home', 'End']) {
+        document.body.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key, isComposing: true }));
+      }
+      return { calls, enhanced: document.documentElement.classList.contains('lenis') };
+    } finally { window.scrollTo = original; }
+  });
+  // Synthetic composition input verifies the handler boundary, not an IME UI.
+  expect(result).toEqual({ calls: [], enhanced: true });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect(page.locator('html')).not.toHaveClass(/lenis/);
+});
+
 test('Motion feedback restores styles and responds to live preference changes', async ({ page }) => {
   await open(page);
   const action = page.locator('.nav-donate');
@@ -74,6 +116,8 @@ test('Motion feedback restores styles and responds to live preference changes', 
 for (const scenario of [
   { name: 'pointer cancellation without a primary button code', event: 'pointercancel', button: -1, disabled: false },
   { name: 'release after the action becomes disabled', event: 'pointerup', button: 0, disabled: true },
+  { name: 'pointer exit after the action becomes disabled', event: 'pointerout', button: -1, disabled: true },
+  { name: 'focus exit after the action becomes disabled', event: 'focusout', button: -1, disabled: true },
 ]) {
   test(`motion press recovers from ${scenario.name}`, async ({ page }) => {
     await open(page);
@@ -87,9 +131,11 @@ for (const scenario of [
     await expect.poll(() => action.evaluate(n => getComputedStyle(n).scale)).toBe('0.98');
     await action.evaluate((n, input) => {
       if (input.disabled) n.setAttribute('aria-disabled', 'true');
-      n.dispatchEvent(new PointerEvent(input.event, {
-        bubbles: true, pointerType: 'mouse', button: input.button, buttons: 0,
-      }));
+      n.dispatchEvent(input.event === 'focusout'
+        ? new FocusEvent('focusout', { bubbles: true, relatedTarget: document.body })
+        : new PointerEvent(input.event, {
+          bubbles: true, pointerType: 'mouse', button: input.button, buttons: 0,
+        }));
     }, scenario);
     await expect.poll(() => action.evaluate(n => ['none', '1'].includes(getComputedStyle(n).scale))).toBe(true);
     if (scenario.disabled) {
@@ -99,6 +145,29 @@ for (const scenario of [
     await expect(page).toHaveURL(/\/about$/);
   });
 }
+
+test('window blur clears pressed motion and a later interaction still works', async ({ page }) => {
+  await open(page);
+  const action = page.locator('.nav-donate');
+  await action.hover();
+  await expect.poll(() => action.evaluate(n => getComputedStyle(n).translate)).toBe('0px -1px');
+  const press = () => action.evaluate(n => n.dispatchEvent(new PointerEvent('pointerdown', {
+    bubbles: true, pointerType: 'mouse', button: 0, buttons: 1,
+  })));
+  await press();
+  await expect.poll(() => action.evaluate(n => getComputedStyle(n).scale)).toBe('0.98');
+  // Verify the actual lifecycle handler without claiming an OS window-switch test.
+  await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+  await expect.poll(() => action.evaluate(n => n.getAnimations().length)).toBe(0);
+  await expect.poll(() => action.evaluate(n => ['none', '1'].includes(getComputedStyle(n).scale))).toBe(true);
+  await press();
+  await expect.poll(() => action.evaluate(n => getComputedStyle(n).scale)).toBe('0.98');
+  await action.evaluate(n => n.dispatchEvent(new PointerEvent('pointercancel', {
+    bubbles: true, pointerType: 'mouse', button: -1,
+  })));
+  await expect.poll(() => action.evaluate(n => ['none', '1'].includes(getComputedStyle(n).scale))).toBe(true);
+  await expect(page).toHaveURL(/\/about$/);
+});
 
 test('route navigation destroys old scrolling and leaves the new page readable', async ({ page }) => {
   await open(page);

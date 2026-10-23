@@ -1,4 +1,24 @@
+## 2026-10-23 — Combined input ownership and interrupted motion prepared
+
+CODEX_ACTIVE continues existing checkpoint branch from remote `8fa64cc`, main/live `4e8db34`; remote inventory shows only blocked locales #374 open. Add related interrupted-motion recovery to the saved zoom/composition guards for one new candidate, no extra branch.
+
+Three new actual-handler regressions failed first: disabled-action focusout/pointerout did not settle, and window blur did not cancel owned press feedback. Narrow end-event target inclusion and shared clearAll lifecycle cleanup now pass; a subsequent press still works, starts on disabled/secondary controls remain excluded, listener cleanup remains paired. Saved scroll guards preserve Ctrl+wheel and composition input. Full 2,026 tests passed / 15 skipped, 24 scrolling/motion cases, TypeScript/full ESLint/spec/diff pass. Five browser cases prepared; local Chromium remains infrastructure-unavailable. No physical pinch/IME/OS-switch/device or full accessibility claim. No CSS/content/media/dependency/security-settings/financial/data/provider changes. Require fresh hosted acceptance and protected promotion before authorized merge/release; no historical totals change. Rollback is bounded handler/spec revert, with no settings/data action.
+
+## 2026-10-23 — #413 merged after full and promotion acceptance
+
+Railway `b8264a9c-d551-4e67-b38e-f326ea8de9d2` SUCCESS and fresh public version/readiness confirm exact production/main `4e8db34ece2acce771565d56e0f8b2ba4a6d5d53` and ready. Pending deployment/public-verification statements below are superseded. No live transaction or exhaustive device certification inferred.
+
+Accepted #413 source `9886400`: full `39967751762` success (1,326 Chromium + 24 Firefox/WebKit smoke checks, plus fast/production/database/verify); ready-state `39974364680` promotion/verify success. Standing owner-authorized merge `4e8db34ece2acce771565d56e0f8b2ba4a6d5d53`. Railway `b8264a9c-d551-4e67-b38e-f326ea8de9d2` BUILDING, public exact-SHA/readiness pending; last live verification `03bb739`. Normal main merge preserves both source histories and the newer separate zoom/composition checkpoint `2da3f6e`, not included in this release. Require its own future hosted acceptance; no extra PR/deploy now. #413 JS 817,607 / CSS 325,561 aggregate uncompressed bytes, unchanged budgets pass; no transfer/CWV claim. Earlier pending/failure notes superseded, historical totals unchanged.
+
+## 2026-10-23 — Zoom and composition ownership preserved
+
+CODEX_ACTIVE on existing `fix/native-keyboard-shortcuts-20261023`, separate saved checkpoint from frozen #413 PR branch `9886400`. Run `39967751762` fast/production/database passed; browser still pending. No new PR or deployment; main remains last verified `03bb739`.
+
+Fail-first evidence: both menu and navigation-lock states canceled Ctrl+wheel. Early wheel Ctrl guard preserves browser zoom/pinch ownership while ordinary wheel remains locked and no enhancement initializes. MDN wheel semantics and installed Lenis guard inspected. Composing Home/End also reached global Lenis/native navigation handoff; two fail-first assertions now pass after a composition early return. Sixteen focused tests and full 2,023 passed / 15 skipped, type/scoped lint/spec/diff pass. Two browser cases prepared, not executed; synthetic policy checks are not physical pinch/zoom or full IME proof. Bounded two-guard source change, no visual/content/settings/dependency/data/financial/media modifications. Require fresh hosted acceptance for eventual batch; never reuse #413's different-source pass. Historical totals unchanged.
+
 ## 2026-10-23 — #413 browser failure localized; combined candidate prepared
+
+Combined #413 published at `9886400511a54c3e9897be7d29aab4458396dcdf`; exact tree `b4a0bc47511e6aa501c2585b7b910e4ccbcf0c71` equals local validated `9bb2b53`. Normal fast-forward on both saved branches, no extra PR or force. Full run `39967751762` in progress. Fresh local 2,021 tests / 15 skipped, TypeScript/full ESLint/spec/diff passed. Keep source stable, inspect actual gates, then promotion/verify and authorized merge only if green. Local metadata checkpoint need not trigger another run; no merge/deployment yet.
 
 CODEX_ACTIVE reuses #413 after original run `39962079564` completed: fast/production/database success; browser 1,319 passed, one failed, one flaky. Failed outside-pointer-release case waits for Resume although its blank mouse press did not establish focus. Explicitly focus viewport and verify Resume before the gesture, preserving original drag cleanup/restart assertions. Hosted failure reproduced on both attempts; local browser infrastructure still unavailable. Home/Lenis compact-menu check passed on retry; retain flake without speculative source changes.
 
