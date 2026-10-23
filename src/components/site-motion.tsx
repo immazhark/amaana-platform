@@ -86,8 +86,9 @@ export function SiteMotion() {
           const owner = activePointers.get(event.pointerId);
           activePointers.delete(event.pointerId);
           const element = owner ?? direct;
-          if (element && !element.isConnected) clear(element);
-          else if (element) feedback(element);
+          if (!element || [...activePointers.values()].includes(element)) return;
+          if (!element.isConnected) clear(element);
+          else feedback(element);
         }
         return;
       }
