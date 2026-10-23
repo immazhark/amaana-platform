@@ -197,7 +197,7 @@ test('a touch press recovers when its terminal pointer event targets the page in
   await expect.poll(() => action.evaluate(n => getComputedStyle(n).scale)).toBe('0.98');
   await releaseOutside('pointercancel', 43);
   await expect.poll(() => action.evaluate(n => ['none', '1'].includes(getComputedStyle(n).scale))).toBe(true);
-  await expect(page).toHaveURL(/\\/about$/);
+  await expect(page).toHaveURL(/\/about$/);
 });
 
 test('route navigation destroys old scrolling and leaves the new page readable', async ({ page }) => {
