@@ -1,10 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createElement, type ReactElement } from "react";
 
+const references = vi.hoisted(() => [] as Array<{ current: unknown }>);
+
 vi.mock("react", async original => ({
   ...await original<typeof import("react")>(),
   useState: (initial: unknown) => [typeof initial === "function" ? initial() : initial, vi.fn()],
-  useRef: (current: unknown) => ({ current }),
+  useRef: (current: unknown) => {
+    const ref = { current };
+    references.push(ref);
+    return ref;
+  },
   useCallback: (callback: unknown) => callback,
   useEffect: vi.fn(),
   useId: () => "interaction-test",
@@ -14,12 +20,20 @@ import { ScrollCarousel } from "./scroll-carousel";
 beforeEach(() => vi.stubGlobal("Element", class {}));
 afterEach(() => vi.unstubAllGlobals());
 
-function fixture() {
-  const root = ScrollCarousel({ label: "Programmes", children: [createElement("a", { key: "one", href: "/about" }, "Explore")] });
+function fixture(slideCount = 1) {
+  references.length = 0;
+  const root = ScrollCarousel({ label: "Programmes", children: Array.from({ length: slideCount }, (_, index) =>
+    createElement("a", { key: index, href: "/about" }, "Explore")) });
   if (!root) throw new Error("Expected carousel");
   const viewport = (root.props.children as ReactElement[])[1];
-  const surface = { scrollLeft: 0, style: { removeProperty: vi.fn() }, setPointerCapture: vi.fn() };
+  const snapWrites = vi.fn();
+  const surface = {
+    scrollLeft: 0,
+    style: { removeProperty: vi.fn(), set scrollSnapType(value: string) { snapWrites(value); } },
+    setPointerCapture: vi.fn(),
+  };
   if (!viewport) throw new Error("Expected carousel viewport");
+  if (references[0]) references[0].current = surface;
   const props = viewport.props as {
     onPointerDown: (event: object) => void;
     onPointerMove: (event: object) => void;
@@ -28,6 +42,7 @@ function fixture() {
     onLostPointerCapture: (event: object) => void;
     onClickCapture: (event: object) => void;
     onKeyDown: (event: object) => void;
+    onScroll: () => void;
   };
   return {
     drag(target: object | null = null) {
@@ -55,6 +70,8 @@ function fixture() {
       return event;
     },
     surface,
+    snapWrites,
+    scroll() { props.onScroll(); },
     key(key: string, modifiers: object = {}) {
       const event = { key, nativeEvent: { isComposing: false }, currentTarget: surface, target: surface, preventDefault: vi.fn(), ...modifiers };
       props.onKeyDown(event);
@@ -94,6 +111,42 @@ describe("carousel drag and activation boundaries", () => {
     carousel.end("cancel", 8);
     expect(carousel.move(7)).toHaveBeenCalledOnce();
     carousel.end("up", 7);
+    expect(carousel.click(1).preventDefault).toHaveBeenCalledOnce();
+  });
+
+  it("coalesces a burst of scroll events into one animation frame, then re-arms", () => {
+    const frames: FrameRequestCallback[] = [];
+    const request = vi.fn((callback: FrameRequestCallback) => {
+      frames.push(callback);
+      return frames.length;
+    });
+    const cancel = vi.fn();
+    vi.stubGlobal("requestAnimationFrame", request);
+    vi.stubGlobal("cancelAnimationFrame", cancel);
+    const carousel = fixture(2);
+    carousel.scroll();
+    carousel.scroll();
+    carousel.scroll();
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(cancel).not.toHaveBeenCalled();
+    frames[0]?.(0);
+    carousel.scroll();
+    expect(request).toHaveBeenCalledTimes(2);
+    expect(cancel).not.toHaveBeenCalled();
+  });
+
+  it("requests pointer capture exactly once while a dragged card continues moving", () => {
+    const carousel = fixture();
+    carousel.start(7);
+    expect(carousel.move(7)).toHaveBeenCalledOnce();
+    expect(carousel.move(7)).toHaveBeenCalledOnce();
+    expect(carousel.move(7)).toHaveBeenCalledOnce();
+    expect(carousel.surface.setPointerCapture).toHaveBeenCalledTimes(1);
+    expect(carousel.surface.setPointerCapture).toHaveBeenCalledWith(7);
+    expect(carousel.snapWrites).toHaveBeenCalledTimes(1);
+    expect(carousel.snapWrites).toHaveBeenCalledWith("none");
+    carousel.end("up", 7);
+    expect(carousel.surface.style.removeProperty).toHaveBeenCalledWith("scroll-snap-type");
     expect(carousel.click(1).preventDefault).toHaveBeenCalledOnce();
   });
 

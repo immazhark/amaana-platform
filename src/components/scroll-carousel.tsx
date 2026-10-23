@@ -70,8 +70,9 @@ export function ScrollCarousel({
   const updateActiveFromScroll = useCallback(() => {
     const viewport = viewportRef.current;
     if (!viewport || slideCount < 2) return;
-    if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+    if (frameRef.current !== null) return;
     frameRef.current = requestAnimationFrame(() => {
+      frameRef.current = null;
       const pending = navigation.current;
       if (pending !== null && Math.abs(viewport.scrollLeft - pending) > 2) return;
       navigation.current = null;
@@ -265,10 +266,13 @@ export function ScrollCarousel({
           const state = drag.current;
           if (!state || event.pointerId !== state.pointerId || !(event.buttons & 1)) return;
           const delta = event.clientX - state.x;
-          if (Math.abs(delta) > 6) { state.moved = true; event.currentTarget.setPointerCapture(event.pointerId); }
+          if (!state.moved && Math.abs(delta) > 6) {
+            state.moved = true;
+            event.currentTarget.setPointerCapture(event.pointerId);
+            event.currentTarget.style.scrollSnapType = "none";
+          }
           if (!state.moved) return;
           event.preventDefault();
-          event.currentTarget.style.scrollSnapType = "none";
           event.currentTarget.scrollLeft = state.scroll - delta;
         }}
         onPointerUp={releaseDrag}
