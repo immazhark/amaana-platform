@@ -103,16 +103,22 @@ export function dailyReading(now: Date) {
 }
 
 export type Reminder = { id: string; title: string; text: string; reference: string; source: string; readUrl?: string };
+// The site-wide clock re-renders every 30 seconds. Calendar estimates are
+// day-level, never visitor-specific: reuse the same three-day safety window.
+let fastingFormatter: Intl.DateTimeFormat | undefined;
+let fastingEstimate: { date: string; excluded: boolean } | undefined;
 function avoidVoluntaryFast(date: string, confirmed: { day: number; month: number } | null) {
   const excluded = ({ day, month }: { day: number; month: number }) => month === 9 || (month === 10 && day === 1) || (month === 12 && day >= 10 && day <= 13);
   if (confirmed) return excluded(confirmed);
-  // In the absence of a local announcement, suppress prompts near estimated
-  // Ramadan/Eid/Tashreeq dates too. This does not certify the fallback calendar.
-  const formatter = new Intl.DateTimeFormat("en-GB-u-ca-islamic-civil", { timeZone: "UTC", day: "numeric", month: "numeric" });
-  return [-1, 0, 1].some(offset => {
+  if (fastingEstimate?.date === date) return fastingEstimate.excluded;
+  // Estimated dates are safeguards, not verified local Hijri announcements.
+  const formatter = fastingFormatter ??= new Intl.DateTimeFormat("en-GB-u-ca-islamic-civil", { timeZone: "UTC", day: "numeric", month: "numeric" });
+  const blocked = [-1, 0, 1].some(offset => {
     const parts = Object.fromEntries(formatter.formatToParts(new Date(`${shiftDate(date, offset)}T12:00:00Z`)).map(p => [p.type, p.value]));
     return excluded({ day: Number(parts.day), month: Number(parts.month) });
   });
+  fastingEstimate = { date, excluded: blocked };
+  return blocked;
 }
 export function remindersFor(now: Date, hijri: { day: number; month: number } | null = null): Reminder[] {
   const { date, weekday, minutes } = hyderabadClock(now);
