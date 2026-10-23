@@ -1,5 +1,35 @@
 import { expect, test } from '@playwright/test';
 
+test('mobile menu preserves browser shortcuts and composing or handled Escape', async ({ page }) => {
+  await openFixture(page, 390);
+  const primary = page.getByRole('navigation', { name: 'Primary navigation', exact: true });
+  await primary.getByRole('button', { name: 'Open navigation menu', exact: true }).click();
+  const menu = page.getByRole('navigation', { name: 'Mobile navigation', exact: true });
+  const last = menu.getByRole('link', { name: 'Donate', exact: true });
+  await last.focus();
+  for (const options of [
+    { key: 'Tab', ctrlKey: true }, { key: 'Tab', metaKey: true }, { key: 'Tab', altKey: true },
+    { key: 'Escape', isComposing: true }, { key: 'Escape', handled: true },
+    { key: 'Escape', altKey: true }, { key: 'Escape', shiftKey: true },
+  ]) {
+    const prevented = await last.evaluate((node, { handled, ...input }) => {
+      const event = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, ...input });
+      if (handled) event.preventDefault();
+      node.dispatchEvent(event);
+      return event.defaultPrevented;
+    }, options);
+    expect(prevented).toBe(Boolean(options.handled));
+    await expect(menu).toBeVisible();
+    await expect(last).toBeFocused();
+  }
+  await page.keyboard.press('Tab');
+  await expect(primary.getByRole('button', { name: 'Close navigation menu', exact: true })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(menu).toBeHidden();
+  await expect(primary.getByRole('button', { name: 'Open navigation menu', exact: true })).toBeFocused();
+});
+
+
 async function openFixture(page, width = 1440) {
   await page.setViewportSize({ width, height: 900 });
   await page.route('**/api/public/live-rail', route => route.fulfill({
