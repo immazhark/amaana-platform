@@ -1,3 +1,11 @@
+## 2026-10-23 — Exact merge from live #416 to PR #417 pending combined acceptance
+
+CHATGPT_ACTIVE sole writer. Source `2bad2521...` passed full protected browser and ready-state; #416 merged to `463bbeecad48b527bec5d73a32083269987077ab` and verified Railway SUCCESS plus public exact SHA/ready/live paymentMode. #417 prior `999aa849` had fast/database/production pass; full browser running at checkpoint. Prepare normal two-parent merge commit to reconcile #417 with current main, using main docs history plus PR #417's scoped carousel notes, preserving both ancestries. A fresh combined full run is mandatory, with no bypass or merge to main before success. Other project scope and 149 historical items unchanged.
+
+## 2026-10-23 — Carousel pointer lifecycle independent source batch
+
+CHATGPT_ACTIVE sole writer. Main still `4006b9b8` at branch cut; prior #415 verified Railway live. PR #416 head `2bad2521` full run `39992918369` browser still executing; no merge claimed. Separate branch `fix/carousel-pointer-lifecycle-20261023` contains carousel pointerId drag isolation and preserved click suppression when `lostpointercapture` precedes `pointerup`, with unit and synthetic Playwright regressions. Old-state event sequence reproduced failing using source-equivalent Node, new isolated event-order checks green; full repository checks pending, so NOT merged or deployed. Keep release SHA leases, no forced pushes, no CI bypass. Source scope is client carousel input only; register counts, payment/consent/media policies unchanged.
+
 ## 2026-10-23 — #415 verified and merged; next motion candidate prepared
 
 CHATGPT_ACTIVE sole writer. Full #415 run `39987524639` PASS (2,032 unit, 1,332 Chromium, 24 Firefox/WebKit and all required jobs), promotion `39992210391` PASS, exact head `a7240c3` merged to `main` at `4006b9b8e12e3b0887de9450fa597ab3f0755f9d`. Railway was still building deployment `359fc666-be04-4f41-80f2-21ac945abcce` at read, so public/live SHA not yet verified. Separate source candidate on `fix/touch-press-ownership-20261023` is unaccepted; it adds keyboard/IME/reduced-input/hidden-tab recovery with tests and must receive its own protected full run before merge. Keep merge-on-main deployment policy, original 149 register, #374 locale draft and #264 staged worker.

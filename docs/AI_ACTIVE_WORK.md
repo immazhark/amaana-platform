@@ -1,3 +1,11 @@
+## 2026-10-23 — PR #417 integration tree prepared after live #416
+
+Owner CHATGPT_ACTIVE, sole implementation writer. Main `463bbeecad48b527bec5d73a32083269987077ab` is independently LIVE VERIFIED on Railway deployment `238a08a5-1dba-442e-b7d4-ade914ddb51e` with public production version/ready. PR #416 full `39992918369` passed 2,047 unit / 1,334 Chromium / 24 Firefox-WebKit and ready-state `39997896940` passed. PR #417 (`fix/carousel-pointer-lifecycle-20261023`) was based on #415; its old exact head `999aa84944360ad1fa078860f4724cbae8868e6e` had fast/database/production success, browser pending at checkpoint. Prepare normal non-force merge of #416 main and #417 source (no source-file overlaps) and run a NEW full protected acceptance against the combined SHA before PR promotion/merge. Modified scope: carousel pointer-ID ownership, lost-capture drag-click suppression, unit and browser regressions only; no changes to payment, auth, donor facts, images, CI gates, or budgets. No completion or production claim for #417. Historical 149 entries unchanged; #374 draft and #264 staged worker untouched.
+
+## 2026-10-23 — Carousel lost-capture click safety; independent draft candidate
+
+Owner CHATGPT_ACTIVE, sole repository implementation writer. Branch `fix/carousel-pointer-lifecycle-20261023` derives from main `4006b9b8e12e3b0887de9450fa597ab3f0755f9d` (PR #415 verified live). PR #416 is independent and frozen at exact head `2bad2521e7b0bdc0628eeffae95ec529e49affab`: fast 2,047 units/15 skipped, database, production SUCCESS, browser run `39992918369` in progress at last read; no merge/deployment until full verify/ready gate.
+
 ## 2026-10-23 — #415 protected release merged; next motion input hardening candidate
 
 Owner CHATGPT_ACTIVE, sole writer. PR #415 head `a7240c3f3f375f8c24ec989f01b70d39d980905e` full run `39987524639` SUCCESS: 2,032 unit tests passed/15 skipped, 1,332 Chromium passed, 24 Firefox/WebKit passed, database, production audits/budgets and final verify. Ready-state run `39992210391` verified successfully, application jobs intentionally skipped. PR #415 merged to main as `4006b9b8e12e3b0887de9450fa597ab3f0755f9d`; Railway deployment `359fc666-be04-4f41-80f2-21ac945abcce` was BUILDING at checkpoint, **do not claim production live until Railway SUCCESS and public version/ready confirm**.
