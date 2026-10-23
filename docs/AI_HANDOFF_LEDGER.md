@@ -1,3 +1,7 @@
+## 2026-10-24 — Carousel scrolling coalescing added to prepared optimization
+
+CHATGPT_ACTIVE sole writer. Prepared `perf/carousel-capture-once-20261024` carries test-first scroll event RAF coalescing in addition to single pointer capture and snap-style write per drag. Three burst events use one pending request; the completed callback clears the frame guard to permit next update. No hosted source acceptance or deployment yet. #419 combined head `5b9daf3` under full acceptance. Release order: #419 protected merge/live verified, then reconcile and fully test this branch before next normal protected merge. No alteration to public mission content, historical register counts, payments or CI gates.
+
 ## 2026-10-24 — Prepared carousel per-drag DOM-write optimization
 
 CHATGPT_ACTIVE sole writer. Following verified production #418 `acba777e3eb4c9cf47941fbc36ad679012a80c36`, PR #419 `5b9daf3` full browser acceptance in progress. Follow-up branch `perf/carousel-capture-once-20261024` descends from #419; original body-carousel move path repeatedly requests pointer capture and writes scrollSnapType every animation frame after crossing 6px. Regression first; source now performs both DOM mutations only on first threshold crossing and retains drag scrolling, release and click-suppression semantics. Not CI-certified, not merged, not deployed. No protected branch overwrite or CI budget increases. Require normal ancestry reconciliation after #419 production release, fresh full protected gates. Historical 149 entries unchanged.
