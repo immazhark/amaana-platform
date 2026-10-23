@@ -9,9 +9,9 @@ const TRACKING_PARAMETERS = new Set([
 ]);
 
 export function hasUnsupportedPublicQueryFields(
-  query: object,
-  ownedFields: readonly string[],
-): boolean {
+  query,
+  ownedFields,
+) {
   return Object.entries(query).some(([key, value]) =>
     !ownedFields.includes(key) &&
     (!TRACKING_PARAMETERS.has(key) || typeof value !== "string" || value.length > 256),

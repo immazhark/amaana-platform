@@ -1,4 +1,4 @@
-import { hasUnsupportedPublicQueryFields } from "./public-navigation-query";
+import { hasUnsupportedPublicQueryFields } from "./public-navigation-query.mjs";
 export type ImpactProgrammeSearch = Record<string, string | string[] | undefined>;
 
 type ImpactArea = Readonly<{ slug: string; title: string }>;
