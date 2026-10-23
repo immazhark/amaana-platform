@@ -200,6 +200,58 @@ test('a touch press recovers when its terminal pointer event targets the page in
   await expect(page).toHaveURL(/\/about$/);
 });
 
+test('background visibility releases a pressed action even without a window blur event', async ({ page }) => {
+  await open(page);
+  const action = page.locator('.nav-donate');
+  await action.hover();
+  await expect.poll(() => action.evaluate(n => getComputedStyle(n).translate)).toBe('0px -1px');
+  await action.evaluate(n => n.dispatchEvent(new PointerEvent('pointerdown', {
+    bubbles: true, pointerType: 'touch', pointerId: 81, button: 0, buttons: 1,
+  })));
+  await expect.poll(() => action.evaluate(n => getComputedStyle(n).scale)).toBe('0.98');
+
+  // Synthetic visibilitychange checks the registered handler, not an OS tab switch.
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'hidden', { configurable: true, value: true });
+    try {
+      document.dispatchEvent(new Event('visibilitychange'));
+    } finally {
+      delete document.hidden;
+    }
+  });
+  await expect.poll(() => action.evaluate(n => n.getAnimations().length)).toBe(0);
+  await expect.poll(() => action.evaluate(n => ['none', '1'].includes(getComputedStyle(n).scale))).toBe(true);
+  await expect(page).toHaveURL(/\/about$/);
+});
+
+test('delegated keyboard press ignores IME completion and releases owned modified keyups', async ({ page }) => {
+  await open(page);
+  const action = page.locator('.nav-donate');
+  await action.hover();
+  await expect.poll(() => action.evaluate(n => getComputedStyle(n).translate)).toBe('0px -1px');
+  await page.mouse.move(500, 400);
+  await expect.poll(() => action.evaluate(n => n.getAnimations().length)).toBe(0);
+
+  // Synthetic events test handler semantics, not a physical IME.
+  await action.evaluate(n => {
+    n.dispatchEvent(new KeyboardEvent('keydown', {
+      bubbles: true, key: 'Enter', isComposing: true,
+    }));
+    n.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'Enter' }));
+  });
+  await expect.poll(() => action.evaluate(n => n.getAnimations().length)).toBe(0);
+
+  await action.evaluate(n => n.dispatchEvent(new KeyboardEvent('keydown', {
+    bubbles: true, key: 'Enter',
+  })));
+  await expect.poll(() => action.evaluate(n => getComputedStyle(n).scale)).toBe('0.98');
+  await action.evaluate(n => n.dispatchEvent(new KeyboardEvent('keyup', {
+    bubbles: true, key: 'Enter', ctrlKey: true,
+  })));
+  await expect.poll(() => action.evaluate(n => ['none', '1'].includes(getComputedStyle(n).scale))).toBe(true);
+  await expect(page).toHaveURL(/\/about$/);
+});
+
 test('route navigation destroys old scrolling and leaves the new page readable', async ({ page }) => {
   await open(page);
   await page.mouse.move(700, 500);
