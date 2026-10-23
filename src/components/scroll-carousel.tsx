@@ -270,7 +270,11 @@ export function ScrollCarousel({
         }}
         onPointerMove={event => {
           const state = drag.current;
-          if (!state || event.pointerId !== state.pointerId || !(event.buttons & 1)) return;
+          if (!state || event.pointerId !== state.pointerId) return;
+          if (!(event.buttons & 1)) {
+            releaseDrag(event);
+            return;
+          }
           const delta = event.clientX - state.x;
           if (!state.moved && Math.abs(delta) > 6) {
             state.moved = true;

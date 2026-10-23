@@ -34,6 +34,41 @@ test('capture loss before pointerup cannot activate a card after dragging', asyn
   expect(suppressed).toBe(true);
 });
 
+test('a released-button move recovers a missing pointerup without blocking the next drag', async ({ page }) => {
+  const { viewport } = await openPausedCarousel(page);
+  const recovered = await viewport.evaluate(node => {
+    const originalCapture = node.setPointerCapture;
+    const captured = [];
+    node.setPointerCapture = id => { captured.push(id); };
+    const pointer = (type, pointerId, clientX, buttons) => node.dispatchEvent(new PointerEvent(type, {
+      bubbles: true, cancelable: true, pointerType: 'mouse', pointerId, button: 0, buttons, clientX,
+    }));
+    try {
+      pointer('pointerdown', 27, 200, 1);
+      pointer('pointermove', 27, 170, 1);
+      // Model an interrupted interaction whose pointerup never reached React.
+      pointer('pointermove', 27, 165, 0);
+      const snapRestored = node.style.scrollSnapType === '';
+      const slide = node.querySelector('[aria-roledescription="slide"]');
+      if (!slide) throw new Error('Carousel slide missing');
+      const click = new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 });
+      slide.dispatchEvent(click);
+      const before = node.scrollLeft;
+      pointer('pointerdown', 28, 200, 1);
+      pointer('pointermove', 28, 170, 1);
+      const distance = node.scrollLeft - before;
+      pointer('pointerup', 28, 170, 0);
+      return { snapRestored, suppressed: click.defaultPrevented, distance, captured };
+    } finally {
+      node.setPointerCapture = originalCapture;
+    }
+  });
+  expect(recovered.snapRestored).toBe(true);
+  expect(recovered.suppressed).toBe(true);
+  expect(recovered.distance).toBeCloseTo(30, 0);
+  expect(recovered.captured).toEqual([27, 28]);
+});
+
 test('carousel leaves modified, composing and handled keys to their owner', async ({ page }) => {
   const { carousel, viewport, progress } = await openPausedCarousel(page);
   await viewport.focus();
@@ -90,16 +125,21 @@ for (const update of ['Reverse programme order', 'Show two records']) {
     await viewport.evaluate(node => {
       const request = window.requestAnimationFrame;
       const cancel = window.cancelAnimationFrame;
-      const pending = new Set();
+      const pending = new Map();
       window.__carouselFrameProbe = { pending, cancelled: 0, restore() {
         window.requestAnimationFrame = request;
         window.cancelAnimationFrame = cancel;
-        for (const id of pending) cancel.call(window, id);
+        // A slide update may schedule a fresh frame after cancelling the
+        // original. Resume only callbacks that never received cancellation.
+        for (const [id, callback] of pending) {
+          cancel.call(window, id);
+          callback(performance.now());
+        }
         delete window.__carouselFrameProbe;
       } };
-      window.requestAnimationFrame = () => {
+      window.requestAnimationFrame = callback => {
         const id = request.call(window, () => {});
-        pending.add(id);
+        pending.set(id, callback);
         return id;
       };
       window.cancelAnimationFrame = id => {

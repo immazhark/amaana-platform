@@ -58,9 +58,9 @@ function fixture(slideCount = 1) {
     start(pointerId = 1) {
       props.onPointerDown({ pointerType: "mouse", pointerId, button: 0, target: null, clientX: 100, currentTarget: surface });
     },
-    move(pointerId = 1) {
+    move(pointerId = 1, buttons = 1) {
       const preventDefault = vi.fn();
-      props.onPointerMove({ pointerId, buttons: 1, clientX: 70, currentTarget: surface, preventDefault });
+      props.onPointerMove({ pointerId, buttons, clientX: 70, currentTarget: surface, preventDefault });
       return preventDefault;
     },
     end(type: "up" | "cancel" | "lost", pointerId = 1) {
@@ -184,6 +184,42 @@ describe("carousel drag and activation boundaries", () => {
     // permanently suppress future scroll updates.
     carousel.scroll();
     expect(request).toHaveBeenCalledTimes(2);
+  });
+
+  it("restores snap and accepts a fresh drag after the owner reports its released button", () => {
+    const carousel = fixture();
+    carousel.start(7);
+    carousel.move(7);
+    expect(carousel.surface.scrollLeft).toBe(30);
+    expect(carousel.move(7, 0)).not.toHaveBeenCalled();
+    expect(carousel.surface.style.removeProperty).toHaveBeenCalledWith("scroll-snap-type");
+    expect(carousel.click(1).preventDefault).toHaveBeenCalledOnce();
+    carousel.start(7);
+    carousel.move(7);
+    expect(carousel.surface.scrollLeft).toBe(60);
+    expect(carousel.surface.setPointerCapture).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not end an owned drag when a different pointer reports no buttons", () => {
+    const carousel = fixture();
+    carousel.start(7);
+    carousel.move(7);
+    expect(carousel.move(8, 0)).not.toHaveBeenCalled();
+    expect(carousel.surface.style.removeProperty).not.toHaveBeenCalled();
+    carousel.move(7);
+    expect(carousel.surface.setPointerCapture).toHaveBeenCalledOnce();
+    carousel.end("up", 7);
+    expect(carousel.click(1).preventDefault).toHaveBeenCalledOnce();
+  });
+
+  it("clears a released press before the drag threshold without suppressing a click", () => {
+    const carousel = fixture();
+    carousel.start(7);
+    carousel.move(7, 0);
+    expect(carousel.click(1).preventDefault).not.toHaveBeenCalled();
+    carousel.start(8);
+    expect(carousel.move(8)).toHaveBeenCalledOnce();
+    expect(carousel.surface.setPointerCapture).toHaveBeenCalledWith(8);
   });
 
   it("requests pointer capture exactly once while a dragged card continues moving", () => {
