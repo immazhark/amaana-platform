@@ -153,6 +153,47 @@ describe("public structured data", () => {
     } as unknown as Parameters<typeof buildPublicStructuredData>[0], "https://amaanafoundation.org")).toBeNull();
   });
 
+  it("does not publish invented dates when an ISO calendar day does not exist", () => {
+    for (const invalidDate of ["2026-02-29", "2026-02-30", "2026-04-31", "2026-02-30T10:00:00+05:30", "2026-02-30Z", "2026-02-30t10:00:00z"]) {
+      const data = buildPublicStructuredData({
+        type: "Article",
+        title: "Reviewed evidence",
+        description: "A public-safe record",
+        path: "/stories/reviewed-evidence",
+        publishedAt: invalidDate,
+        modifiedAt: invalidDate,
+      }, "https://amaanafoundation.org");
+      expect(data, invalidDate).not.toHaveProperty("datePublished");
+      expect(data, invalidDate).not.toHaveProperty("dateModified");
+    }
+
+    const leapDay = buildPublicStructuredData({
+      type: "Article", title: "Leap-year programme",
+      description: "A verified public account", path: "/stories/leap-year",
+      publishedAt: "2024-02-29",
+    }, "https://amaanafoundation.org");
+    expect(leapDay).toHaveProperty("datePublished", "2024-02-29T00:00:00.000Z");
+  });
+
+  it("does not claim an Article modification occurred before it was published", () => {
+    const data = buildPublicStructuredData({
+      type: "Article", title: "Documented programme",
+      description: "A verified public account", path: "/stories/documented",
+      publishedAt: "2026-09-20T10:00:00+05:30",
+      modifiedAt: "2026-09-20T04:00:00.000Z",
+    }, "https://amaanafoundation.org");
+    expect(data).toHaveProperty("datePublished", "2026-09-20T04:30:00.000Z");
+    expect(data).not.toHaveProperty("dateModified");
+
+    const chronological = buildPublicStructuredData({
+      type: "Article", title: "Documented programme",
+      description: "A verified public account", path: "/stories/documented",
+      publishedAt: "2026-09-20T10:00:00+05:30",
+      modifiedAt: "2026-09-20T05:00:00.000Z",
+    }, "https://amaanafoundation.org");
+    expect(chronological).toHaveProperty("dateModified", "2026-09-20T05:00:00.000Z");
+  });
+
   it("escapes script-sensitive characters in serialized JSON-LD", () => {
     const serialized = serializeStructuredData({ value: "</script><script>alert('x')</script>&\u2028\u2029" });
     expect(serialized).not.toContain("</script>");

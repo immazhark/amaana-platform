@@ -20,8 +20,12 @@ function fixture() {
     contains() { return false; }
   }
   class Pointer extends Event {
-    readonly pointerType = "mouse";
-    constructor(type: string, readonly button: number) { super(type); }
+    constructor(
+      type: string,
+      readonly button: number,
+      readonly pointerType = "mouse",
+      readonly pointerId = 1,
+    ) { super(type); }
   }
   class Keyboard extends Event {
     readonly repeat = false;
@@ -54,9 +58,9 @@ function fixture() {
       listeners.get(type)!(event);
     },
     blur() { windowEvents.dispatchEvent(new Event("blur")); },
-    send(type: string, button: number) {
-      const event = new Pointer(type, button);
-      Object.defineProperty(event, "target", { value: control });
+    send(type: string, button: number, pointerType = "mouse", inside = true, pointerId = 1) {
+      const event = new Pointer(type, button, pointerType, pointerId);
+      Object.defineProperty(event, "target", { value: inside ? control : new EventTarget() });
       listeners.get(type)!(event);
     },
     key(type: string, key: string) {
@@ -107,6 +111,49 @@ describe("site motion press recovery", () => {
     motion.control.disabled = true;
     motion.send("pointerup", 0);
     expect(motion.control.animate).toHaveBeenCalledTimes(2);
+    motion.cleanup?.();
+  });
+
+  it.each(["pointerup", "pointercancel"] as const)(
+    "releases a touch action when %s arrives outside the pressed control",
+    type => {
+      const motion = fixture();
+      motion.send("pointerdown", 0, "touch");
+      expect(motion.control.animate).toHaveBeenCalledTimes(1);
+      // Touch pointerout is deliberately ignored: a drag is not a hover exit.
+      motion.send("pointerout", -1, "touch");
+      expect(motion.control.animate).toHaveBeenCalledTimes(1);
+      motion.send(type, -1, "touch", false);
+      expect(motion.control.animate).toHaveBeenCalledTimes(2);
+      expect(motion.control.animate.mock.calls.at(-1)?.[0])
+        .toEqual(expect.arrayContaining([expect.objectContaining({ scale: "1" })]));
+      motion.cleanup?.();
+    },
+  );
+
+  it("does not release an active touch because a different pointer ended", () => {
+    const motion = fixture();
+    motion.send("pointerdown", 0, "touch", true, 7);
+    motion.send("pointerup", -1, "touch", false, 8);
+    expect(motion.control.animate).toHaveBeenCalledTimes(1);
+    motion.send("pointerup", -1, "touch", false, 7);
+    expect(motion.control.animate).toHaveBeenCalledTimes(2);
+    motion.cleanup?.();
+  });
+
+  it("keeps a control pressed until its last owning touch pointer ends", () => {
+    const motion = fixture();
+    motion.send("pointerdown", 0, "touch", true, 11);
+    motion.send("pointerdown", 0, "touch", true, 12);
+    expect(motion.control.animate).toHaveBeenCalledTimes(2);
+
+    motion.send("pointerup", -1, "touch", false, 11);
+    expect(motion.control.animate).toHaveBeenCalledTimes(2);
+
+    motion.send("pointercancel", -1, "touch", false, 12);
+    expect(motion.control.animate).toHaveBeenCalledTimes(3);
+    expect(motion.control.animate.mock.calls.at(-1)?.[0])
+      .toEqual(expect.arrayContaining([expect.objectContaining({ scale: "1" })]));
     motion.cleanup?.();
   });
 
