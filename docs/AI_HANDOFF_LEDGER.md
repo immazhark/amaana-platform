@@ -1,3 +1,13 @@
+## 2026-10-23 — PR #408 browser locator correction
+
+Hosted run `39901420201` passed fast, production/budgets, database and draft readiness. Browser result: two failures, both TASK_INTRODUCED test locator ambiguity before the new focus assertions. The home link exists in header and footer; the test used a page-global accessible name. Scope the background target to the existing Primary navigation landmark. No runtime changes are needed for this failure; application behavior remains unverified by these browser cases until fresh acceptance. Preserve all assertions; do not skip tests or weaken strictness. Node syntax and diff checks pass. Existing runtime verification remains 1,947 unit tests, TypeScript/scoped ESLint. Fresh hosted checks are required for the corrected head before merge. #407 remains independently verified deployed at `00dce4d`.
+
+## 2026-10-23 — PR #407 deployed and readiness verified
+
+Railway deployment `fb415208-d19a-4770-b10c-830fe1bc562c` reports SUCCESS for main `00dce4d85e980fc0e49e201b3e80b750c8215001`. Independent fresh public endpoint reads confirm `/api/health/version` returns the same production/main commit with paymentMode live and `/api/health/ready` returns status ready. This is version/readiness evidence, not exhaustive live journey or live payment acceptance. Earlier BUILDING notes are superseded.
+
+Next active source: PR #408, branch `fix/mobile-menu-focus-recovery-20261023`, published head `9719f7418786dece9c9e50637c2d1823d3af6bc6`, exact locally tested tree `305904e131d7bacaed79897a917ea5fc7b6a57fd`. 1,947 unit tests plus TypeScript/scoped ESLint pass. Hosted acceptance pending; do not claim #408 merged or deployed. This local evidence checkpoint changes documentation only and need not restart source acceptance.
+
 ## 2026-10-23 — Mobile navigation focus recovery validation
 
 Owner: CODEX_ACTIVE, branch `fix/mobile-menu-focus-recovery-20261023`, base main `00dce4d`. Two fail-first handler tests reproduced Tab/Shift+Tab escape when focus is outside the open mobile menu. Four handler tests now pass, preserving initial link focus, native traversal and boundary wrapping. The handler recovers focus to the toggle forward or last menu link backward. Two durable browser cases cover externally moved focus, Escape restoration and removal of the body lock. Full suite: 1,947 passed / 15 skipped; TypeScript, scoped ESLint, browser spec syntax and diff checks pass. Hosted browser/production acceptance and merge remain pending. No layout, payment, permissions, schema, media or provider changes. Rollback: revert scoped PR. #407 is merged at `00dce4d`; Railway deployment `fb415208-d19a-4770-b10c-830fe1bc562c` remains BUILDING. Last independently confirmed live version: `75cd3e1`.

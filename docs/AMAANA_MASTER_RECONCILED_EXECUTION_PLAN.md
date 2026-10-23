@@ -10,9 +10,9 @@
 
 This section supersedes earlier pending-release statements without changing the historical 149-entry totals. PR #405 is MERGED and DEPLOYED at `75cd3e1`; Railway SUCCESS and a fresh public `/api/health/version` read independently confirmed that exact commit. Includes #404 and original #406 ancestry, archive query optimization, carousel CTA compatibility/deduplication/schedules, and Next.js 16.4.2 remediation. This is deployed-version evidence, not full payment/security/performance acceptance.
 
-PR #407 is MERGED at `00dce4d` after exact-head fast/browser/production/database/verify plus ready-transition promotion readiness/verify passed. AF-R042 interaction progress: keyboard activation after dragging, native editing control exclusions, gallery external-focus recovery. Three new browser regressions passed hosted acceptance. Railway deployment `fb415208-d19a-4770-b10c-830fe1bc562c` is BUILDING; deployment/live verification of this merge remains pending.
+PR #407 is MERGED at `00dce4d` after exact-head fast/browser/production/database/verify plus ready-transition promotion readiness/verify passed. AF-R042 interaction progress: keyboard activation after dragging, native editing control exclusions, gallery external-focus recovery. Three new browser regressions passed hosted acceptance. Railway deployment `fb415208-d19a-4770-b10c-830fe1bc562c` reports SUCCESS. Fresh public version and readiness endpoints confirm `00dce4d` in production and status ready. This verifies release identity/readiness, not every live journey.
 
-Next AF-R042 source batch: mobile-menu external-focus recovery, four passing handler regressions and two durable browser cases. Full unit suite 1,947 passed / 15 skipped, TypeScript/scoped ESLint pass. Not merged/deployed; hosted acceptance required. No complete AF-R042, screen-reader or real-device closure claim.
+Next AF-R042 source batch, PR #408 at `9719f74`: mobile-menu external-focus recovery, four passing handler regressions and two durable browser cases. Full unit suite 1,947 passed / 15 skipped, TypeScript/scoped ESLint pass. Not merged/deployed; hosted acceptance required. No complete AF-R042, screen-reader or real-device closure claim.
 
 ## Current source delta — 22 October 2026
 

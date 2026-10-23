@@ -231,7 +231,8 @@ for (const backwards of [false, true]) {
     const openToggle = page.getByRole('button', { name: 'Close navigation menu', exact: true });
     const menu = page.getByRole('navigation', { name: 'Mobile navigation' });
     await expect(menu).toBeVisible();
-    const outside = page.getByRole('link', { name: 'Amaana Foundation home', exact: true });
+    const outside = page.getByRole('navigation', { name: 'Primary navigation', exact: true })
+      .getByRole('link', { name: 'Amaana Foundation home', exact: true });
     await outside.focus();
     await expect(outside).toBeFocused();
     await page.keyboard.press(backwards ? 'Shift+Tab' : 'Tab');
