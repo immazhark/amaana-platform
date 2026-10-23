@@ -1,3 +1,7 @@
+## 2026-10-23 — Hidden-tab Companion lifecycle added to cache candidate
+
+PR #418 `perf/companion-daily-calendar-cache-20261023`: same-day estimated lunar cache plus skip hidden-document 30s state updates, with immediate visibility refresh. Node and React regressions written; source-equivalent red/green does not certify actual hosted suite. User authorizes commits/merges subject to protected exact-head checks. Keep #417 independent; no data/provider changes, no historical item closure.
+
 ## 2026-10-23 — Daily-calendar calculation optimization prepared
 
 CHATGPT_ACTIVE sole writer. Separate task `perf/companion-daily-calendar-cache-20261023` on live `main` `463bbeec`; PR #417 exact reconciled head `69447d7` browser suite still active at handoff. Perf source change caches same-day fallback Islamic-civil calendar estimate only; confirmed moon/date boundary remain authoritative. Direct source-equivalent before/after Node check 6 → 3 date conversions on repeated same-day reads; repository integration not certified until protected acceptance. No payment, consent/media or content edits. Merge on main only after separately approved gates. Historical 149-count register unchanged.
