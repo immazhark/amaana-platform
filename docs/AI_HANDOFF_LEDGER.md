@@ -1,3 +1,9 @@
+## 2026-10-23 — Work → ChatGPT implementation transfer; #414 released
+
+User explicitly transferred sole implementation ownership to ChatGPT and granted standing commit/PR/merge approval subject to protected checks. Incoming writer verified the #414 head `95b6e3e`, full run `39976079427` (all required jobs success), ready-state `39980712345` (verify success; expected metadata-only app skips), and no unresolved reviews. Merged #414 with expected head to main `3478208bcd8a96cdd504e40b8026c38f547578da`, then independently checked Railway SUCCESS deployment `419cb48d-5b7b-4da0-b6e4-f9d1935dcb15` and public version/ready endpoints at that exact SHA. One 1920px assistance step visibility check was flaky on retry and remains classified unproven; full browser job passed. JS/CSS 817,759/325,561 aggregate uncompressed bytes remain within unchanged budgets. No payment or manual-device certification inferred; historical 149 counts unchanged.
+
+New sole writer: CHATGPT_ACTIVE on `fix/jsonld-calendar-integrity-20261023`, base `3478208`. Next task is a bounded fail-first validation fix for actually reproduced JavaScript date rollover and incoherent JSON-LD modification chronology, requiring fresh hosted acceptance before merge. The outgoing local `fc964ad` was metadata-only and unpushed; application source exists on GitHub. No concurrent implementation writers permitted. Leave #374 draft pending translations; leave #264 Railway staged worker unapplied.
+
 ## 2026-10-23 — Combined input ownership and interrupted motion prepared
 
 CODEX_ACTIVE continues existing checkpoint branch from remote `8fa64cc`, main/live `4e8db34`; remote inventory shows only blocked locales #374 open. Add related interrupted-motion recovery to the saved zoom/composition guards for one new candidate, no extra branch.
