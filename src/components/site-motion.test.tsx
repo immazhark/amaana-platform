@@ -141,6 +141,22 @@ describe("site motion press recovery", () => {
     motion.cleanup?.();
   });
 
+  it("keeps a control pressed until its last owning touch pointer ends", () => {
+    const motion = fixture();
+    motion.send("pointerdown", 0, "touch", true, 11);
+    motion.send("pointerdown", 0, "touch", true, 12);
+    expect(motion.control.animate).toHaveBeenCalledTimes(2);
+
+    motion.send("pointerup", -1, "touch", false, 11);
+    expect(motion.control.animate).toHaveBeenCalledTimes(2);
+
+    motion.send("pointercancel", -1, "touch", false, 12);
+    expect(motion.control.animate).toHaveBeenCalledTimes(3);
+    expect(motion.control.animate.mock.calls.at(-1)?.[0])
+      .toEqual(expect.arrayContaining([expect.objectContaining({ scale: "1" })]));
+    motion.cleanup?.();
+  });
+
   it("does not start a press from secondary buttons or disabled controls", () => {
     const motion = fixture();
     motion.send("pointerdown", 2);
