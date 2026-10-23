@@ -68,6 +68,28 @@ test("next salah skips sunrise and uses tomorrow's actual Fajr", () => {
   assert.equal(nextSalah(today, null, at(today.date, "21:00")), null);
   assert.equal(nextSalah(today, tomorrow, at("2026-09-14", "00:01")), null);
 });
+test("precomputed Hyderabad clock retains reading and Salah decisions without extra formatting", () => {
+  const now = at("2026-09-13", "05:30");
+  const clock = hyderabadClock(now);
+  const original = Intl.DateTimeFormat.prototype.formatToParts;
+  let gregorianFormats = 0;
+  Intl.DateTimeFormat.prototype.formatToParts = function (...args) {
+    if (this.resolvedOptions().calendar === "gregory") gregorianFormats++;
+    return original.apply(this, args);
+  };
+  try {
+    const precomputedReading = dailyReading(now, clock);
+    const upcoming = nextSalah(today, tomorrow, now, clock);
+    const reminder = remindersFor(now, null, clock);
+    assert.equal(gregorianFormats, 0, "all three readers reuse the same civil clock");
+    assert.deepEqual(precomputedReading, dailyReading(now));
+    assert.deepEqual(upcoming, nextSalah(today, tomorrow, now));
+    assert.deepEqual(reminder, remindersFor(now));
+  } finally {
+    Intl.DateTimeFormat.prototype.formatToParts = original;
+  }
+});
+
 test("prayer time parser rejects incomplete and impossible values", () => {
   for (const value of [null, undefined, "24:00", "12:60", "5:00", "05:00foo"]) assert.equal(timeMinutes(value), null);
   assert.equal(timeMinutes("00:00"), 0);
