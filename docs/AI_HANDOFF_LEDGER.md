@@ -1,3 +1,7 @@
+## 2026-10-23 — Retired Faith hero styles removed
+
+Owner: CODEX_ACTIVE, independent main-based branch `perf/remove-unused-faith-hero-css-20261023`. Source/spec inventory confirms no v2-faith-detail-hero/back consumers; current detail uses PageHero. Removed 13 retired selector occurrences, including only the retired side of a shared media rule. Stylesheet 3,683 → 2,059 source bytes (1,624 removed). Parsed baseline/current comparison proves all 21 retained selector/declaration/media-context records identical; CSS parsing, global CSS architecture audit and diff checks pass. No unit suite rerun for deletion-only styling. Hosted affected browser/build checks remain required. Keep #410 frozen at `9f02a1c`; production remains verified at `ff3324a`. No data, provider, image-publication, permissions or content changes; no historical closure count increase.
+
 ## 2026-10-23 — Audit clear-action navigation repaired
 
 Added source-proven Clear action filter correction to the combined PR #409 batch. Two rendered-link tests reproduced action preservation in the supposed clear link. Replacement link removes action/page and retains entity; 24 focused admin tests, TypeScript/scoped ESLint and full suite pass. Fresh hosted acceptance required after publication. No additional branch or separate micro-release.
