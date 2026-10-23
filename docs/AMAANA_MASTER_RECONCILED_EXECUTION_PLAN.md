@@ -12,7 +12,9 @@ PR #409 is MERGED at main `ff3324a88a49bdf7faaac3577e3a8e783493d1cb` after all a
 
 Railway deployment `39ab20b5-3619-4f9a-9d38-a1e2e69533a2` reports SUCCESS for `ff3324a`. Fresh public version independently confirms that exact commit/main/production and readiness returns ready. This verifies release identity and readiness, not every live journey. This section supersedes older pending merge/parent sequencing statements below.
 
-Next AF-R024/AF-R025 sub-scope: isolated global-error typography uses valid font-variable fallbacks when the root layout is absent, a .75rem label, 1.1 heading line-height and text wrapping. Typography contract and type/lint/spec syntax checks pass; added 320px/200%-text browser assertions are awaiting hosted acceptance. Not merged/deployed; no complete typography or device acceptance claim.
+AF-R024/AF-R025 recovery sub-scope is MERGED and DEPLOYED through #410 at `abacce7`: full application/browser acceptance `39919526610` and ready-state promotion/verify `39923017520` passed; Railway `1609a8ee-688c-4e14-9e8b-1d6e58676770` SUCCESS and fresh public version/readiness match exact main/production SHA and ready. No site-wide typography or physical-device closure inferred.
+
+AF-R042 motion press recovery: two fail-first actual-handler tests reproduced ignored cancellation/non-primary button code and release after disabling a control. Five handler tests and full suite (1,974 passed / 15 skipped), TypeScript/scoped ESLint and spec syntax pass after bounded release-filter correction. Two actual-page synthetic-event browser cases await hosted acceptance. IMPLEMENTED_SOURCE / locally TESTED only; not merged/deployed. CSS #411 at `9e06cef` independently awaits browser acceptance. No historical totals changed.
 
 ## Current source delta — 23 October 2026
 

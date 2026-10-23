@@ -71,6 +71,35 @@ test('Motion feedback restores styles and responds to live preference changes', 
   await expect(action).toBeFocused();
 });
 
+for (const scenario of [
+  { name: 'pointer cancellation without a primary button code', event: 'pointercancel', button: -1, disabled: false },
+  { name: 'release after the action becomes disabled', event: 'pointerup', button: 0, disabled: true },
+]) {
+  test(`motion press recovers from ${scenario.name}`, async ({ page }) => {
+    await open(page);
+    const action = page.locator('.nav-donate');
+    // Confirm the delegated effect is installed before dispatching the edge case.
+    await action.hover();
+    await expect.poll(() => action.evaluate(n => getComputedStyle(n).translate)).toBe('0px -1px');
+    await action.evaluate(n => n.dispatchEvent(new PointerEvent('pointerdown', {
+      bubbles: true, pointerType: 'mouse', button: 0, buttons: 1,
+    })));
+    await expect.poll(() => action.evaluate(n => getComputedStyle(n).scale)).toBe('0.98');
+    await action.evaluate((n, input) => {
+      if (input.disabled) n.setAttribute('aria-disabled', 'true');
+      n.dispatchEvent(new PointerEvent(input.event, {
+        bubbles: true, pointerType: 'mouse', button: input.button, buttons: 0,
+      }));
+    }, scenario);
+    await expect.poll(() => action.evaluate(n => ['none', '1'].includes(getComputedStyle(n).scale))).toBe(true);
+    if (scenario.disabled) {
+      await expect.poll(() => action.evaluate(n => n.getAnimations().length)).toBe(0);
+      await action.evaluate(n => n.removeAttribute('aria-disabled'));
+    }
+    await expect(page).toHaveURL(/\/about$/);
+  });
+}
+
 test('route navigation destroys old scrolling and leaves the new page readable', async ({ page }) => {
   await open(page);
   await page.mouse.move(700, 500);
