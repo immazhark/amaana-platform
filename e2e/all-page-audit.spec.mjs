@@ -107,7 +107,7 @@ for(const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]])fo
  expect(prohibitedAria,`aria-prohibited-attr: ${route}`).toEqual([]);
 });
 
-for (const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]]) {
+for (const [device,width,height] of [['compact-mobile',320,844],['mobile',390,844],['desktop',1440,1000]]) {
   test(`source-rendered root interruption ${device}`, async ({page}) => {
     await page.setViewportSize({width,height});
     const html = '<!doctype html>'+renderErrorSource('src/app/global-error.tsx');
@@ -120,6 +120,23 @@ for (const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]]) 
     expect(geometry.overflow).toBe(false);
     await expect(page.getByRole('button',{name:'Try again →',exact:true})).toBeVisible();
     expect(audit.violations.filter(v=>['serious','critical'].includes(v.impact))).toEqual([]);
+    await page.addStyleTag({content:'html { font-size: 200% !important; }'});
+    const resized=await page.evaluate(()=>{
+      const heading=document.querySelector('h1');
+      const style=getComputedStyle(heading);
+      return {
+        overflow:Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)>innerWidth+1,
+        bodyFont:getComputedStyle(document.body).fontFamily,
+        headingFont:style.fontFamily,
+        lineHeight:parseFloat(style.lineHeight),fontSize:parseFloat(style.fontSize),
+      };
+    });
+    expect(resized.overflow,'200% text resizing on isolated global error').toBe(false);
+    expect(resized.bodyFont).toContain('Arial');
+    expect(resized.headingFont).toContain('Georgia');
+    expect(resized.lineHeight).toBeGreaterThanOrEqual(resized.fontSize);
+    await page.getByRole('button',{name:'Try again →',exact:true}).scrollIntoViewIfNeeded();
+    await expect(page.getByRole('button',{name:'Try again →',exact:true})).toBeInViewport();
   });
 }
 

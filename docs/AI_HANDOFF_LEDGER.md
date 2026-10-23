@@ -1,3 +1,13 @@
+## 2026-10-23 — Recovery typography and deployed source verification
+
+Railway #409 deployment `39ab20b5-3619-4f9a-9d38-a1e2e69533a2` is SUCCESS; fresh public version/readiness independently confirm `ff3324a` in production and ready. No live payment was performed.
+
+Next bounded branch `fix/root-error-typography-20261023` repairs self-contained root-error font fallbacks, .72rem label and .85 heading line-height, with text wrapping. Existing isolated browser audit now covers 320px plus 200% text sizing, computed system-font fallback, horizontal overflow and retry reachability. Typography contract, TypeScript/scoped ESLint and spec syntax pass; hosted visual/browser acceptance remains pending. Existing recovery reset handler and public copy remain unchanged. No whole-site typography closure is claimed.
+
+## 2026-10-23 — Combined release #409 accepted and merged
+
+Main `ff3324a88a49bdf7faaac3577e3a8e783493d1cb` integrates accepted #409 head `e3a0fe1` and #408 through normal ancestry. Full hosted run `39910315425` passed actual fast/browser/database/production/readiness/verify jobs; local suite 1,969 passed / 15 skipped. GitHub confirms #408 merged/closed. Railway deployment `39ab20b5-3619-4f9a-9d38-a1e2e69533a2` is BUILDING for the merge. Live verification remains pending; prior known-good production is `00dce4d`. Keep paused worker untouched. No master totals changed.
+
 ## 2026-10-23 — Audit clear-action navigation repaired
 
 Added source-proven Clear action filter correction to the combined PR #409 batch. Two rendered-link tests reproduced action preservation in the supposed clear link. Replacement link removes action/page and retains entity; 24 focused admin tests, TypeScript/scoped ESLint and full suite pass. Fresh hosted acceptance required after publication. No additional branch or separate micro-release.
