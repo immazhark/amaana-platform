@@ -53,3 +53,16 @@ test("feedback review permits bounded attribution but never includes its token i
   expect(message.searchParams.get("body")).not.toContain("LINK_TOKEN_493");
   await expect(page.locator("main")).not.toContainText("LINK_TOKEN_493");
 });
+
+test("campaign-only entry remains passive and malformed reviewed fields never leak into feedback", async ({ page }) => {
+  await page.goto("/contact/feedback?utm_source=LINK_TOKEN_493");
+  await expect(page.locator('main [role="alert"]')).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Open prepared feedback email" })).toHaveCount(0);
+  await expect(page.locator("main")).not.toContainText("LINK_TOKEN_493");
+
+  await page.goto("/contact/feedback?intent=review&kind=concern&topic=privacy&utm_source=LINK_TOKEN_493&email=PRIVATE_CONTACT");
+  await expect(page.locator('main [role="alert"]')).toContainText("could not be read");
+  await expect(page.getByRole("link", { name: "Open prepared feedback email" })).toHaveCount(0);
+  await expect(page.locator("main")).not.toContainText("PRIVATE_CONTACT");
+  await expect(page.locator("main")).not.toContainText("LINK_TOKEN_493");
+});
