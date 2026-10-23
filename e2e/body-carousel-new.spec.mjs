@@ -153,6 +153,10 @@ test('releasing outside before pointer capture does not permanently pause carous
 
   const carousel = page.getByRole('region', { name: 'Body carousel acceptance' });
   const viewport = carousel.locator('[id^="carousel-"]');
+  // The blank mouse target does not consistently receive focus. Establish
+  // the reading pause explicitly before isolating drag cleanup and restart.
+  await viewport.focus();
+  await expect(carousel.getByRole('button', { name: 'Resume automatic slides' })).toBeVisible();
   const box = await viewport.boundingBox();
   await page.mouse.move(box.x + 5, box.y + box.height - 5);
   await page.mouse.down();
@@ -160,8 +164,7 @@ test('releasing outside before pointer capture does not permanently pause carous
   // pointer capture has not started, so pointerup is delivered elsewhere.
   await page.mouse.move(0, 0, { steps: 1 });
   await page.mouse.up();
-  // Pointer focus now pauses persistently too. Explicitly restart to isolate
-  // drag cleanup from the independent keyboard/reading pause.
+  // Explicitly restart to isolate drag cleanup from the reading pause.
   await carousel.getByRole('button', { name: 'Resume automatic slides' }).evaluate(button => button.click());
   await viewport.evaluate(node => node.blur());
   await expect(carousel.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '2', { timeout: 5500 });

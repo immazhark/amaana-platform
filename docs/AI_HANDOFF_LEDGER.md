@@ -1,3 +1,9 @@
+## 2026-10-23 — #413 browser failure localized; combined candidate prepared
+
+CODEX_ACTIVE reuses #413 after original run `39962079564` completed: fast/production/database success; browser 1,319 passed, one failed, one flaky. Failed outside-pointer-release case waits for Resume although its blank mouse press did not establish focus. Explicitly focus viewport and verify Resume before the gesture, preserving original drag cleanup/restart assertions. Hosted failure reproduced on both attempts; local browser infrastructure still unavailable. Home/Lenis compact-menu check passed on retry; retain flake without speculative source changes.
+
+Prepared keyboard/toolchain checkpoint remote `90b3028` exactly matches local source tree `da9d76f96557c73bd6ab1f9aefa3d7e6258824ec`. Consolidate it and the fixture correction into existing #413 through normal fast-forward ancestry, no extra PR. Earlier freeze-until-result instructions are superseded now that the result is known. Fresh full hosted acceptance and ready-state promotion/verify remain required before authorized merge; verify exact Railway/public identity/readiness after release. Production remains verified `03bb739`; no complete accessibility or historical total increase.
+
 ## 2026-10-23 — Browser shortcut and composition preservation
 
 Nine additional mobile-menu regressions failed before narrow key guards: preserve modified Tab and composing/handled/modified Escape, retain native menu traversal/wrapping and ordinary close. Source `26989f9`, fifth prepared browser case. Full pre-upgrade baseline 2,021 tests / 15 skipped.
