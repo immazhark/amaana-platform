@@ -116,7 +116,10 @@ export function ScrollCarousel({
     return () => {
       observer.disconnect();
       viewport.removeEventListener("scrollend", onScrollEnd);
-      if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+      if (frameRef.current !== null) {
+        cancelAnimationFrame(frameRef.current);
+        frameRef.current = null;
+      }
       visibility?.disconnect();
       inView.current = false;
     };
@@ -133,7 +136,10 @@ export function ScrollCarousel({
     navigation.current = null;
     drag.current = null;
     suppressClick.current = false;
-    if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+    if (frameRef.current !== null) {
+        cancelAnimationFrame(frameRef.current);
+        frameRef.current = null;
+      }
     setActiveIndex(index);
     const viewport = viewportRef.current;
     if (viewport) {
