@@ -81,6 +81,53 @@ for(const width of [375,600,768,1024,1440,1920])test(`left alignment and control
  await expect.poll(async()=>Math.abs(v.x-(await carousel.getByRole('group',{name:'7 of 7',exact:true}).boundingBox()).x)).toBeLessThan(2);
 });
 
+for (const update of ['Reverse programme order', 'Show two records']) {
+  test(`scroll selection resumes after ${update} cancels a pending frame`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const { carousel, viewport, progress } = await openPausedCarousel(page);
+    // Hold the browser frame callback across a real React consumer update.
+    // No cancelled callback is manually invoked to rescue stale bookkeeping.
+    await viewport.evaluate(node => {
+      const request = window.requestAnimationFrame;
+      const cancel = window.cancelAnimationFrame;
+      const pending = new Set();
+      window.__carouselFrameProbe = { pending, cancelled: 0, restore() {
+        window.requestAnimationFrame = request;
+        window.cancelAnimationFrame = cancel;
+        for (const id of pending) cancel.call(window, id);
+        delete window.__carouselFrameProbe;
+      } };
+      window.requestAnimationFrame = () => {
+        const id = request.call(window, () => {});
+        pending.add(id);
+        return id;
+      };
+      window.cancelAnimationFrame = id => {
+        if (pending.delete(id)) window.__carouselFrameProbe.cancelled++;
+        cancel.call(window, id);
+      };
+      node.dispatchEvent(new Event('scroll'));
+    });
+    try {
+      await expect.poll(() => page.evaluate(() => window.__carouselFrameProbe.pending.size)).toBeGreaterThan(0);
+      // DOM click avoids Playwright's animation-frame actionability polling
+      // while the frame callback is deliberately held.
+      await page.getByRole('button', { name: update, exact: true }).evaluate(button => button.click());
+      await expect(progress).toHaveAttribute('aria-valuemax', update === 'Show two records' ? '2' : '7');
+      await expect.poll(() => page.evaluate(() => window.__carouselFrameProbe.cancelled)).toBeGreaterThan(0);
+    } finally {
+      await page.evaluate(() => window.__carouselFrameProbe?.restore());
+    }
+    await viewport.evaluate(node => {
+      const slide = node.querySelectorAll('[aria-roledescription="slide"]')[1];
+      node.scrollTo({ left: slide.offsetLeft, behavior: 'instant' });
+      node.dispatchEvent(new Event('scroll'));
+      node.dispatchEvent(new Event('scrollend'));
+    });
+    await expect(progress).toHaveAttribute('aria-valuenow', '2');
+  });
+}
+
 test('reordering slides preserves their keyed interactive state', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/browser-acceptance/body-carousel');
