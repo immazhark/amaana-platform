@@ -224,6 +224,34 @@ test('background visibility releases a pressed action even without a window blur
   await expect(page).toHaveURL(/\/about$/);
 });
 
+test('delegated keyboard press ignores IME completion and releases owned modified keyups', async ({ page }) => {
+  await open(page);
+  const action = page.locator('.nav-donate');
+  await action.hover();
+  await expect.poll(() => action.evaluate(n => getComputedStyle(n).translate)).toBe('0px -1px');
+  await page.mouse.move(500, 400);
+  await expect.poll(() => action.evaluate(n => n.getAnimations().length)).toBe(0);
+
+  // Synthetic events test handler semantics, not a physical IME.
+  await action.evaluate(n => {
+    n.dispatchEvent(new KeyboardEvent('keydown', {
+      bubbles: true, key: 'Enter', isComposing: true,
+    }));
+    n.dispatchEvent(new KeyboardEvent('keyup', { bubbles: true, key: 'Enter' }));
+  });
+  await expect.poll(() => action.evaluate(n => n.getAnimations().length)).toBe(0);
+
+  await action.evaluate(n => n.dispatchEvent(new KeyboardEvent('keydown', {
+    bubbles: true, key: 'Enter',
+  })));
+  await expect.poll(() => action.evaluate(n => getComputedStyle(n).scale)).toBe('0.98');
+  await action.evaluate(n => n.dispatchEvent(new KeyboardEvent('keyup', {
+    bubbles: true, key: 'Enter', ctrlKey: true,
+  })));
+  await expect.poll(() => action.evaluate(n => ['none', '1'].includes(getComputedStyle(n).scale))).toBe(true);
+  await expect(page).toHaveURL(/\/about$/);
+});
+
 test('route navigation destroys old scrolling and leaves the new page readable', async ({ page }) => {
   await open(page);
   await page.mouse.move(700, 500);
