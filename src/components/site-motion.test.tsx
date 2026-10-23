@@ -232,6 +232,20 @@ describe("site motion press recovery", () => {
     motion.cleanup?.();
   });
 
+  it("keeps a shared action pressed until both keyboard and touch owners release", () => {
+    const motion = fixture();
+    motion.key("keydown", "Enter");
+    motion.send("pointerdown", 0, "touch", true, 21);
+    expect(motion.control.animate).toHaveBeenCalledTimes(2);
+    motion.key("keyup", "Enter");
+    expect(motion.control.animate).toHaveBeenCalledTimes(2);
+    motion.send("pointerup", -1, "touch", false, 21);
+    expect(motion.control.animate).toHaveBeenCalledTimes(3);
+    expect(motion.control.animate.mock.calls.at(-1)?.[0])
+      .toEqual(expect.arrayContaining([expect.objectContaining({ scale: "1" })]));
+    motion.cleanup?.();
+  });
+
   it("does not animate a keyup with no owned press after IME composition ends", () => {
     const motion = fixture();
     motion.key("keydown", "Enter", { composing: true });
