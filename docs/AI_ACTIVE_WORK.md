@@ -1,4 +1,12 @@
+## 2026-10-23 — Unused motion dependency checkpoint
+
+Owner: CODEX_ACTIVE, sole writer on `chore/remove-unused-motion-runtime-20261023`, based on locally tested combined #412 source plus its coordination checkpoint. Import inventory across src/scripts/e2e/config finds no framer-motion consumer: site motion uses native animations and scroll enhancement imports Lenis on demand. Removed framer-motion from manifest/lock with an offline package-lock-only npm operation; its orphan motion-dom and motion-utils entries also disappear. All 503 remaining lockfile package entries compare identically to the parent. Manifest/lock direct dependencies match; npm validates the production dependency graph. TypeScript and diff checks pass. No unit tests added/rerun for an unused-dependency removal; fresh npm ci/build/runtime/browser acceptance remains required before release. Existing installed node_modules and deployed runtime are not claimed pruned by this lockfile-only operation.
+
+Keep #412 head `1cf68f7` stable while full run `39946900452` completes (fast/production/database passed; browser running). Save this source checkpoint without a new PR or separate deployment; add it to the next substantive release after source reconciliation. Production last independently verified at `9c48065`. No application behavior, content, public assets, data, permissions, payment or provider changes. Rollback: restore the manifest and lock from the parent. No historical closure counts changed.
+
 ## 2026-10-23 — Accepted CSS release and follow-up reconciliation
+
+Published combined #412: remote head `1cf68f76e80a0cc4ca6d8bb9bf7384230a94ec01`, exact tree `e2f9e12d401870ec676199e26cad5b000a834502` equals local validated source checkpoint `b6e7c2f`. Fresh full run `39946900452` is running. Keep this source stable until results. PR targets current main `9c48065` through normal ancestry, no extra PR. This local coordination-only checkpoint need not restart acceptance. Next: inspect actual selected jobs; repair any task-introduced failure, otherwise pass ready-state promotion/verify before owner-authorized merge and exact-sha deployment verification.
 
 Deployment verification: Railway `ab26d603-1cb5-43e0-a2e9-2e901623f4df` reports SUCCESS. Independent fresh public `/api/health/version` returns exact `9c48065020d37a82a24597d92081bf2c6a6ad350`, main, production; readiness returns ready. #411 is DEPLOYED with identity/readiness verified. No live payment or complete real-device acceptance is inferred. Earlier BUILDING statements below are superseded.
 

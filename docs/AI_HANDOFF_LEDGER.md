@@ -1,4 +1,12 @@
+## 2026-10-23 — Unused motion runtime removed from dependency graph
+
+CODEX_ACTIVE on `chore/remove-unused-motion-runtime-20261023`, continuing from combined #412 plus coordination checkpoint. Full source/script/spec/config inventory finds no framer-motion imports after native SiteMotion replacement. Offline lockfile-only removal drops exactly framer-motion, motion-dom and motion-utils; all 503 remaining locked package entries are byte-equivalent as parsed records, with no dependency upgrades. Manifest/lock parity, npm production-graph validation, TypeScript and diff checks pass. No application behavior changes or new unit tests; no fresh-install or production-prune claim. Require fresh hosted npm ci/build/runtime/browser acceptance when included in a substantive release. #412 published head `1cf68f7` stays unchanged; no new PR or deployment for this checkpoint. Production last live-verified at `9c48065`.
+
+Completed combined #412 production build `120392182757`: aggregate uncompressed JS 816,454 bytes; CSS 325,561 bytes; 55 assets / 61 pages. Both unchanged budgets passed. Relative to #411: +437 JS / +217 CSS bytes for the combined motion/pause control. Per-route attribution, measured transfer and CWV remain unavailable; browser acceptance is still required. This measurement precedes the unused-dependency checkpoint.
+
 ## 2026-10-23 — CSS accepted and merged; follow-up reconciled
+
+Combined #412 published at `1cf68f76e80a0cc4ca6d8bb9bf7384230a94ec01`, tree `e2f9e12d401870ec676199e26cad5b000a834502` identical to local `b6e7c2f`. Fresh full run `39946900452` started. Shared checkpoint branch `fix/live-rail-pause-20261023` points to the same published commit. Main `9c48065` remains independently live verified. No additional PR or deployment for pending source. Keep new source stable; complete actual application/browser/build/budget/database gates then ready-state promotion/verify before merge, and verify exact Railway/public release afterward.
 
 Live verification supersedes earlier BUILDING notes: Railway `ab26d603-1cb5-43e0-a2e9-2e901623f4df` SUCCESS; fresh public version/readiness independently confirm `9c48065020d37a82a24597d92081bf2c6a6ad350` / main / production and ready. #411 deployed identity/readiness verified; no live payment acceptance claimed.
 
