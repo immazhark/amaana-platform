@@ -42,3 +42,14 @@ test("feedback contact links fit 320px and have native keyboard focus", async ({
   await first.focus();
   await expect(first).toBeFocused();
 });
+
+
+test("feedback review permits bounded attribution but never includes its token in the prepared email", async ({ page }) => {
+  await page.goto("/contact/feedback?intent=review&kind=concern&topic=privacy&utm_source=LINK_TOKEN_493");
+  await expect(page.locator('main [role="alert"]')).toHaveCount(0);
+  const href = await page.getByRole("link", { name: "Open prepared feedback email" }).getAttribute("href");
+  const message = new URL(href);
+  expect(message.searchParams.get("body")).toContain("Privacy or public content");
+  expect(message.searchParams.get("body")).not.toContain("LINK_TOKEN_493");
+  await expect(page.locator("main")).not.toContainText("LINK_TOKEN_493");
+});

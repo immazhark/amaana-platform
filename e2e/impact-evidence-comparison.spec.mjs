@@ -61,3 +61,18 @@ for (const width of [320, 720, 1440]) {
     await expect(page.getByRole("combobox", { name: "First initiative" })).toBeFocused();
   });
 }
+
+
+test("comparison handles marketing-only visits and reviewed pair links without echoing tracking", async ({ page }) => {
+  await page.goto("/impact/compare?utm_source=LINK_TOKEN_493");
+  await expect(page.locator('main [role="alert"]')).toHaveCount(0);
+  await expect(page.getByRole("region", { name: "Side-by-side published outcomes" })).toHaveCount(0);
+  const first = page.getByRole("combobox", { name: "First initiative" });
+  const options = await first.locator("option[value]:not([value=''])").evaluateAll(nodes => nodes.map(node => node.value));
+  expect(options.length).toBeGreaterThanOrEqual(2);
+  const query = new URLSearchParams({ left: options[0], right: options[1], utm_medium: "LINK_TOKEN_493" });
+  await page.goto(`/impact/compare?${query.toString()}`);
+  await expect(page.locator('main [role="alert"]')).toHaveCount(0);
+  await expect(page.getByRole("region", { name: "Side-by-side published outcomes" }).locator("article")).toHaveCount(2);
+  await expect(page.locator("main")).not.toContainText("LINK_TOKEN_493");
+});

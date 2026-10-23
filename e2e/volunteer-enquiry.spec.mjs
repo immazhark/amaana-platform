@@ -66,3 +66,15 @@ test("malformed preference URLs never generate an email or reflect private data"
   await expect(page.getByRole("link", { name: "Open prepared email" })).toHaveCount(0);
   await expect(page.locator("main")).not.toContainText("PRIVATE_CONTACT");
 });
+
+
+test("volunteer campaign links show no false error and preserve visitor-controlled email reviews", async ({ page }) => {
+  await page.goto("/get-involved/volunteer?utm_source=LINK_TOKEN_493");
+  await expect(page.locator('main [role="alert"]')).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Open prepared email" })).toHaveCount(0);
+  await page.goto("/get-involved/volunteer?intent=review&skill=Event+logistics&availability=Weekends&utm_source=LINK_TOKEN_493");
+  await expect(page.locator('main [role="alert"]')).toHaveCount(0);
+  const href = await page.getByRole("link", { name: "Open prepared email" }).getAttribute("href");
+  expect(new URL(href).searchParams.get("body")).toContain("Event logistics");
+  await expect(page.locator("main")).not.toContainText("LINK_TOKEN_493");
+});
