@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createElement, type ReactElement } from "react";
 
 const references = vi.hoisted(() => [] as Array<{ current: unknown }>);
+const effects = vi.hoisted(() => [] as Array<() => void | (() => void)>);
 
 vi.mock("react", async original => ({
   ...await original<typeof import("react")>(),
@@ -12,7 +13,7 @@ vi.mock("react", async original => ({
     return ref;
   },
   useCallback: (callback: unknown) => callback,
-  useEffect: vi.fn(),
+  useEffect: (effect: () => void | (() => void)) => { effects.push(effect); },
   useId: () => "interaction-test",
 }));
 import { ScrollCarousel } from "./scroll-carousel";
@@ -22,6 +23,7 @@ afterEach(() => vi.unstubAllGlobals());
 
 function fixture(slideCount = 1) {
   references.length = 0;
+  effects.length = 0;
   const root = ScrollCarousel({ label: "Programmes", children: Array.from({ length: slideCount }, (_, index) =>
     createElement("a", { key: index, href: "/about" }, "Explore")) });
   if (!root) throw new Error("Expected carousel");
@@ -31,6 +33,7 @@ function fixture(slideCount = 1) {
     scrollLeft: 0,
     style: { removeProperty: vi.fn(), set scrollSnapType(value: string) { snapWrites(value); } },
     setPointerCapture: vi.fn(),
+    scrollTo: vi.fn(),
   };
   if (!viewport) throw new Error("Expected carousel viewport");
   if (references[0]) references[0].current = surface;
@@ -72,6 +75,7 @@ function fixture(slideCount = 1) {
     surface,
     snapWrites,
     scroll() { props.onScroll(); },
+    changeSlides() { effects[2]?.(); },
     key(key: string, modifiers: object = {}) {
       const event = { key, nativeEvent: { isComposing: false }, currentTarget: surface, target: surface, preventDefault: vi.fn(), ...modifiers };
       props.onKeyDown(event);
@@ -133,6 +137,26 @@ describe("carousel drag and activation boundaries", () => {
     carousel.scroll();
     expect(request).toHaveBeenCalledTimes(2);
     expect(cancel).not.toHaveBeenCalled();
+  });
+
+  it("rearms frame scheduling when slides change while a scroll frame is pending", () => {
+    const callbacks: FrameRequestCallback[] = [];
+    const request = vi.fn((callback: FrameRequestCallback) => {
+      callbacks.push(callback);
+      return callbacks.length;
+    });
+    const cancel = vi.fn();
+    vi.stubGlobal("requestAnimationFrame", request);
+    vi.stubGlobal("cancelAnimationFrame", cancel);
+    const carousel = fixture(2);
+    carousel.scroll();
+    expect(request).toHaveBeenCalledTimes(1);
+    carousel.changeSlides();
+    expect(cancel).toHaveBeenCalledWith(1);
+    // The browser never invokes a cancelled callback: stale IDs must not
+    // permanently suppress future scroll updates.
+    carousel.scroll();
+    expect(request).toHaveBeenCalledTimes(2);
   });
 
   it("requests pointer capture exactly once while a dragged card continues moving", () => {
