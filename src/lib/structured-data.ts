@@ -78,6 +78,21 @@ export function normalizeStructuredDataImage(imageUrl: string | null | undefined
 
 function isoDate(value: Date | string | null | undefined) {
   if (!value) return null;
+
+  if (typeof value === "string") {
+    // Date.parse silently rolls impossible ISO days into the next month.
+    // Do not publish a date that was never supplied by the source.
+    const calendarDate = /^(\d{4})-(\d{2})-(\d{2})(?=$|[Tt\s])/.exec(value);
+    if (calendarDate) {
+      const year = Number(calendarDate[1]);
+      const month = Number(calendarDate[2]);
+      const day = Number(calendarDate[3]);
+      const leapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+      const daysInMonth = [31, leapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+      if (month < 1 || month > 12 || day < 1 || day > daysInMonth[month - 1]) return null;
+    }
+  }
+
   const date = value instanceof Date ? value : new Date(value);
   return Number.isNaN(date.getTime()) ? null : date.toISOString();
 }
@@ -120,7 +135,7 @@ export function buildPublicStructuredData(input: PublicStructuredDataInput, conf
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
     ...(image ? { image } : {}),
     ...(published ? { datePublished: published } : {}),
-    ...(modified ? { dateModified: modified } : {}),
+    ...(modified && (!published || modified >= published) ? { dateModified: modified } : {}),
     ...(safeInput.type === "Article" && section ? { articleSection: section } : {}),
     ...(keywords?.length ? { keywords } : {}),
   };
