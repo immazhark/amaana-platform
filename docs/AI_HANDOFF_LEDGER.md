@@ -1,10 +1,6 @@
-## 2026-10-24 — Carousel scrolling coalescing added to prepared optimization
+## 2026-10-24 — #419 merged; #420 combined-head acceptance required
 
-CHATGPT_ACTIVE sole writer. Prepared `perf/carousel-capture-once-20261024` carries test-first scroll event RAF coalescing in addition to single pointer capture and snap-style write per drag. Three burst events use one pending request; the completed callback clears the frame guard to permit next update. No hosted source acceptance or deployment yet. #419 combined head `5b9daf3` under full acceptance. Release order: #419 protected merge/live verified, then reconcile and fully test this branch before next normal protected merge. No alteration to public mission content, historical register counts, payments or CI gates.
-
-## 2026-10-24 — Prepared carousel per-drag DOM-write optimization
-
-CHATGPT_ACTIVE sole writer. Following verified production #418 `acba777e3eb4c9cf47941fbc36ad679012a80c36`, PR #419 `5b9daf3` full browser acceptance in progress. Follow-up branch `perf/carousel-capture-once-20261024` descends from #419; original body-carousel move path repeatedly requests pointer capture and writes scrollSnapType every animation frame after crossing 6px. Regression first; source now performs both DOM mutations only on first threshold crossing and retains drag scrolling, release and click-suppression semantics. Not CI-certified, not merged, not deployed. No protected branch overwrite or CI budget increases. Require normal ancestry reconciliation after #419 production release, fresh full protected gates. Historical 149 entries unchanged.
+Owner CHATGPT_ACTIVE sole writer. #419 full `40008820718` and ready-state `40014760496` SUCCESS; normal merge to main `9c70cfd302f6c2b4e5e25c4519c359fe709bb3fb`; Railway BUILDING at handoff, public version not yet verified. #420 original `9f766cc` fast 2,055 units, DB, production 819,026 JS / 325,561 CSS green, browser pending. Carousel hot path fixes are isolated to scroll-carousel source/test. Reconcile #420 to new main without force and require full exact-combined-head CI and ready-state; no source/deploy acceptance inferred from original head or unrelated PR. Historic 149 register unchanged. Do not alter hard JS/CSS budgets, payment/beneficiary/consent/legal/config, #374 draft translation or #264 staged worker.
 
 ## 2026-10-24 — PR #418 verified merged; #419 normal-main reconciliation
 
