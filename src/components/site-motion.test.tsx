@@ -40,11 +40,13 @@ function fixture() {
   vi.stubGlobal("getComputedStyle", () => ({ translate: "none", scale: "none" }));
   const windowEvents = Object.assign(new EventTarget(), { matchMedia: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }) });
   vi.stubGlobal("window", windowEvents);
-  vi.stubGlobal("document", {
+  const documentEvents = {
+    hidden: false,
     getElementById: () => null,
     addEventListener: (name: string, handler: EventListener) => listeners.set(name, handler),
     removeEventListener: (name: string) => listeners.delete(name),
-  });
+  };
+  vi.stubGlobal("document", documentEvents);
   SiteMotion();
   const effect = effects[0];
   if (!effect) throw new Error("Expected site motion effect");
@@ -58,6 +60,10 @@ function fixture() {
       listeners.get(type)!(event);
     },
     blur() { windowEvents.dispatchEvent(new Event("blur")); },
+    visibility(hidden: boolean) {
+      documentEvents.hidden = hidden;
+      listeners.get("visibilitychange")?.(new Event("visibilitychange"));
+    },
     send(type: string, button: number, pointerType = "mouse", inside = true, pointerId = 1) {
       const event = new Pointer(type, button, pointerType, pointerId);
       Object.defineProperty(event, "target", { value: inside ? control : new EventTarget() });
@@ -92,6 +98,27 @@ describe("site motion press recovery", () => {
     motion.send("pointerdown", 0);
     expect(motion.control.animate).toHaveBeenCalledTimes(2);
     expect(first.cancel).toHaveBeenCalledOnce();
+    motion.cleanup?.();
+  });
+
+  it("cancels an active touch when the page becomes hidden without a blur event", () => {
+    const motion = fixture();
+    motion.send("pointerdown", 0, "touch", true, 17);
+    const active = motion.control.animate.mock.results[0]?.value;
+    motion.visibility(true);
+    expect(active.cancel).toHaveBeenCalledOnce();
+    expect(motion.control.style.scale).toBe("");
+    motion.send("pointerdown", 0, "touch", true, 18);
+    expect(motion.control.animate).toHaveBeenCalledTimes(2);
+    motion.cleanup?.();
+  });
+
+  it("preserves active pointer feedback for a visibility event while the page is still visible", () => {
+    const motion = fixture();
+    motion.send("pointerdown", 0, "touch", true, 17);
+    const active = motion.control.animate.mock.results[0]?.value;
+    motion.visibility(false);
+    expect(active.cancel).not.toHaveBeenCalled();
     motion.cleanup?.();
   });
 
