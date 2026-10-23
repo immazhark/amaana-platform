@@ -12,7 +12,9 @@ PR #409 is MERGED at main `ff3324a88a49bdf7faaac3577e3a8e783493d1cb` after all a
 
 Railway deployment `39ab20b5-3619-4f9a-9d38-a1e2e69533a2` reports SUCCESS for `ff3324a`. Fresh public version independently confirms that exact commit/main/production and readiness returns ready. This verifies release identity and readiness, not every live journey. This section supersedes older pending merge/parent sequencing statements below.
 
-Next AF-R024/AF-R025 sub-scope: isolated global-error typography uses valid font-variable fallbacks when the root layout is absent, a .75rem label, 1.1 heading line-height and text wrapping. Typography contract and type/lint/spec syntax checks pass; added 320px/200%-text browser assertions are awaiting hosted acceptance. Not merged/deployed; no complete typography or device acceptance claim.
+AF-R024/AF-R025 recovery sub-scope is MERGED and DEPLOYED through PR #410 at `abacce7bc4afbc4b5463fa94e93d1b60c9e321ce`: self-contained font fallbacks, .75rem label, 1.1 heading line-height, wrapping and mobile viewport. Full application/browser/database/production/budget run `39919526610` and ready-state promotion/verify `39923017520` passed. Railway deployment `1609a8ee-688c-4e14-9e8b-1d6e58676770` is SUCCESS; independent fresh public version/readiness reads match this exact main/production SHA and ready. No complete site-wide typography, screen-reader or real-device closure is inferred.
+
+AF-R057 CSS sub-scope, consolidated PR #411: remove retired hero selectors without source/spec consumers from five imported Faith/Story/trust/initiative stylesheets. IMPLEMENTED_SOURCE: 5,507 source bytes removed; all 357 retained selector/declaration/at-rule-context records compare unchanged. CSS architecture/diff checks pass; expanded source requires fresh hosted build/browser acceptance. Not merged/deployed; actual compiled payload savings unmeasured. Historical 149-entry totals unchanged.
 
 ## Current source delta — 23 October 2026
 
