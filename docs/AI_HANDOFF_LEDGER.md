@@ -1,3 +1,7 @@
+## 2026-10-23 — Daily-calendar calculation optimization prepared
+
+CHATGPT_ACTIVE sole writer. Separate task `perf/companion-daily-calendar-cache-20261023` on live `main` `463bbeec`; PR #417 exact reconciled head `69447d7` browser suite still active at handoff. Perf source change caches same-day fallback Islamic-civil calendar estimate only; confirmed moon/date boundary remain authoritative. Direct source-equivalent before/after Node check 6 → 3 date conversions on repeated same-day reads; repository integration not certified until protected acceptance. No payment, consent/media or content edits. Merge on main only after separately approved gates. Historical 149-count register unchanged.
+
 ## 2026-10-23 — #415 verified and merged; next motion candidate prepared
 
 CHATGPT_ACTIVE sole writer. Full #415 run `39987524639` PASS (2,032 unit, 1,332 Chromium, 24 Firefox/WebKit and all required jobs), promotion `39992210391` PASS, exact head `a7240c3` merged to `main` at `4006b9b8e12e3b0887de9450fa597ab3f0755f9d`. Railway was still building deployment `359fc666-be04-4f41-80f2-21ac945abcce` at read, so public/live SHA not yet verified. Separate source candidate on `fix/touch-press-ownership-20261023` is unaccepted; it adds keyboard/IME/reduced-input/hidden-tab recovery with tests and must receive its own protected full run before merge. Keep merge-on-main deployment policy, original 149 register, #374 locale draft and #264 staged worker.
