@@ -16,6 +16,8 @@ AF-R024/AF-R025 recovery sub-scope is MERGED and DEPLOYED through #410 at `abacc
 
 AF-R042 motion press recovery: two fail-first actual-handler tests reproduced ignored cancellation/non-primary button code and release after disabling a control. Five handler tests and full suite (1,974 passed / 15 skipped), TypeScript/scoped ESLint and spec syntax pass after bounded release-filter correction. Two actual-page synthetic-event browser cases await hosted acceptance. IMPLEMENTED_SOURCE / locally TESTED only; not merged/deployed. CSS #411 at `9e06cef` independently awaits browser acceptance. No historical totals changed.
 
+Repository hygiene checkpoint: home-wow.css, campaign-home.css and governance.css have no source/spec/script/config import consumers. Their deletion removes 10,257 repository bytes while preserving all 17 imported root layers and 131,280 root CSS source bytes. IMPLEMENTED_SOURCE only; CSS architecture/diff checks pass. No served-payload reduction or visual/unit acceptance claim; no new PR/deployment and no historical total change. Keep #411/#412 source heads stable while hosted browser acceptance runs.
+
 ## Current source delta — 23 October 2026
 
 This section supersedes earlier pending-release statements without changing the historical 149-entry totals. PR #405 is MERGED and DEPLOYED at `75cd3e1`; Railway SUCCESS and a fresh public `/api/health/version` read independently confirmed that exact commit. Includes #404 and original #406 ancestry, archive query optimization, carousel CTA compatibility/deduplication/schedules, and Next.js 16.4.2 remediation. This is deployed-version evidence, not full payment/security/performance acceptance.
