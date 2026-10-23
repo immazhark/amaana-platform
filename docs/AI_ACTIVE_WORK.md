@@ -1,3 +1,11 @@
+## 2026-10-23 — Accessibility release merged; cleanup reconciled
+
+Railway `797cd5bc-b2b6-4338-942d-32bd8d6c9731` is SUCCESS. Fresh public verification now returns exact main `03bb73910ed531c92621d920ff84109b42d27c53`, production, and readiness ready. This supersedes pending deployment/public verification below. Identity/readiness only; no live transaction or complete device acceptance inferred.
+
+Owner: CODEX_ACTIVE. PR #412 passed full hosted acceptance `39946900452` and ready-state promotion/verify `39959384678`, then merged under standing owner authorization at `03bb73910ed531c92621d920ff84109b42d27c53`. Railway deployment `797cd5bc-b2b6-4338-942d-32bd8d6c9731` is DEPLOYING; exact public identity/readiness is pending. Last independently verified production remains `9c48065`. Earlier pending #412 notes below are historical and superseded.
+
+Normally reconcile accepted main into `chore/remove-unused-motion-runtime-20261023`, preserving both histories. The unused dependency and neutral fallback checkpoint remains unreleased and needs fresh hosted install/build/runtime/browser acceptance when included in the next substantive release. No new PR/deployment for this checkpoint; no historical closure totals change.
+
 ## 2026-10-23 — Truthful live fallback and install validation
 
 Owner: CODEX_ACTIVE, same checkpoint branch `chore/remove-unused-motion-runtime-20261023`. Corrected the live strip fallback from an assertion that no appeal is open to a neutral invitation to explore public work. The fallback is rendered before the first fetch and after the public endpoint's error-to-empty response, so it cannot establish appeal absence. This is a one-line copy correction; links, eligibility, data access and rotation logic are unchanged. Scoped ESLint/diff checks pass. No extra unit tests for this reversible copy change.

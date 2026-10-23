@@ -1,3 +1,9 @@
+## 2026-10-23 — #412 merged after protected acceptance
+
+Railway `797cd5bc-b2b6-4338-942d-32bd8d6c9731` is SUCCESS. Fresh public version/readiness independently confirm exact main `03bb73910ed531c92621d920ff84109b42d27c53`, production and ready. Pending deployment/public-verification notes below are superseded. No live transaction or exhaustive device acceptance claim.
+
+Full hosted run `39946900452` passed all application, production/budget, database and browser gates; ready-state run `39959384678` passed promotion/verify. Owner-authorized #412 merged at `03bb73910ed531c92621d920ff84109b42d27c53`. Railway `797cd5bc-b2b6-4338-942d-32bd8d6c9731` is DEPLOYING, public identity/readiness still pending; last independently verified production `9c48065`. Normal main merge into the cleanup checkpoint preserves accepted source and both histories. Dependency/copy changes remain unreleased for the next substantive batch, requiring fresh hosted install/build/runtime/browser acceptance. Earlier pending #412 notes are superseded; no historical totals change.
+
 ## 2026-10-23 — Live-strip fallback truthfulness and offline-install limit
 
 Same checkpoint branch `chore/remove-unused-motion-runtime-20261023`: replaced the fallback's no-open-appeal assertion with neutral public-work copy. Source evidence: liveItems starts empty before deferred fetch, and the public endpoint catches service failure into an empty list. Neither case certifies appeal absence. One JSX text change only; scoped lint/diff checks pass, no extra copy-only tests. Keep #412 running source unchanged; include this correction with the next substantive release.

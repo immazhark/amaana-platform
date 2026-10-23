@@ -8,6 +8,10 @@
 
 ## Release checkpoint — 23 October 2026
 
+Railway `797cd5bc-b2b6-4338-942d-32bd8d6c9731` SUCCESS and fresh public version/readiness confirm production/main `03bb73910ed531c92621d920ff84109b42d27c53` and ready. This supersedes pending deployment/public identity/readiness below; no live-payment or exhaustive device acceptance is inferred.
+
+Latest accepted release: #412 merged at `03bb73910ed531c92621d920ff84109b42d27c53` after full hosted run `39946900452` and ready-state promotion/verify `39959384678` passed. Railway `797cd5bc-b2b6-4338-942d-32bd8d6c9731` is DEPLOYING; public exact-SHA/readiness verification remains pending, last verified live `9c48065`. This supersedes earlier #412-pending statements. Cleanup checkpoint is normally reconciled with accepted main and remains unreleased. No historical totals or complete accessibility/performance closure inferred.
+
 Prepared live-strip fallback correction uses neutral public-work copy instead of asserting no open appeal during initial loading or error-to-empty fallback. Scoped lint/diff checks pass; not merged/deployed. Dependency-checkpoint isolated offline install is INFRASTRUCTURE-limited by uncached unchanged zod@4.1.5; do not claim fresh-install success. Keep #412 current hosted acceptance source unchanged and require a fresh hosted installation/build when the checkpoint joins a substantive release. No historical totals changed.
 
 Dependency hygiene source checkpoint removes unused framer-motion plus orphan motion-dom/motion-utils from manifest/lock after full import inventory found no consumers. All 503 retained lock entries unchanged, production graph/manifest parity/type/diff checks pass. IMPLEMENTED_SOURCE only; no installed/deployed-prune or transfer improvement claim. Hold for the next substantive release, require fresh install/build/runtime/browser acceptance, keep #412 current acceptance source stable. No historical total change.
