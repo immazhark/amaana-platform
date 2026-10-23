@@ -37,6 +37,6 @@ describe("canonical Amaana typography", () => {
 
     expect(globals).toContain("--af-font-display: var(--font-amaana-display), serif;");
     expect(globalError).not.toContain('from "./fonts"');
-    expect(globalError).toContain('fontFamily: "var(--font-amaana-display), serif"');
+    expect(globalError).toContain('fontFamily: "var(--font-amaana-display, Georgia), serif"');
   });
 });
