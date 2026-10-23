@@ -21,6 +21,12 @@ export function SiteMotion() {
     const running = new Map<HTMLElement, Animation>();
     const owned = new Set<HTMLElement>();
     const activePointers = new Map<number, HTMLElement>();
+    const activeKeys = new Map<string, HTMLElement>();
+    const isHeld = (element: HTMLElement) => {
+      for (const owner of activePointers.values()) if (owner === element) return true;
+      for (const owner of activeKeys.values()) if (owner === element) return true;
+      return false;
+    };
     let disposed = false;
 
     const clear = (element: HTMLElement) => {
@@ -31,6 +37,7 @@ export function SiteMotion() {
     };
     const clearAll = () => {
       activePointers.clear();
+      activeKeys.clear();
       for (const element of owned) clear(element);
     };
 
@@ -69,6 +76,9 @@ export function SiteMotion() {
       if (related instanceof Node && element.contains(related)) return;
       if (event instanceof PointerEvent && event.type === "pointerout" &&
           activePointers.get(event.pointerId) === element) activePointers.delete(event.pointerId);
+      // Preserve an active touch across ordinary focus/hover changes, but
+      // always release visual feedback when the action became disabled.
+      if (isHeld(element) && !element.matches(":disabled, [aria-disabled='true']")) return;
       feedback(element);
     };
     const press = (event: Event) => {
@@ -86,15 +96,32 @@ export function SiteMotion() {
           const owner = activePointers.get(event.pointerId);
           activePointers.delete(event.pointerId);
           const element = owner ?? direct;
-          if (!element || [...activePointers.values()].includes(element)) return;
+          if (!element || isHeld(element)) return;
           if (!element.isConnected) clear(element);
           else feedback(element);
         }
         return;
       }
-      if (event instanceof KeyboardEvent && (event.repeat || !["Enter", " "].includes(event.key))) return;
-      const element = target(event, !pressed);
-      if (element) feedback(element, pressed);
+      if (!(event instanceof KeyboardEvent) || !["Enter", " "].includes(event.key)) return;
+      if (pressed) {
+        if (event.repeat || event.isComposing || event.defaultPrevented ||
+            event.altKey || event.ctrlKey || event.metaKey) return;
+        const element = target(event);
+        if (!element) return;
+        const previous = activeKeys.get(event.key);
+        activeKeys.set(event.key, element);
+        if (previous && previous !== element && !isHeld(previous)) feedback(previous);
+        feedback(element, true);
+        return;
+      }
+      // A keyup is cleanup only when this effect owns the corresponding press.
+      // Modifiers, IME state and prior handling may change before keyup.
+      const element = activeKeys.get(event.key);
+      activeKeys.delete(event.key);
+      if (element && !isHeld(element)) {
+        if (element.isConnected) feedback(element);
+        else clear(element);
+      }
     };
     const observer = new IntersectionObserver(entries => {
       for (const entry of entries) {
@@ -122,6 +149,8 @@ export function SiteMotion() {
       }
     }
     const reset = () => { if (preference.matches) clearAll(); };
+    const background = () => { if (document.hidden) clearAll(); };
+    document.addEventListener("visibilitychange", background);
     for (const event of hoverEvents) document.addEventListener(event, hover);
     for (const event of pressEvents) document.addEventListener(event, press);
     preference.addEventListener("change", reset);
@@ -130,6 +159,7 @@ export function SiteMotion() {
       disposed = true;
       observer.disconnect();
       preference.removeEventListener("change", reset);
+      document.removeEventListener("visibilitychange", background);
       window.removeEventListener("blur", clearAll);
       for (const event of hoverEvents) document.removeEventListener(event, hover);
       for (const event of pressEvents) document.removeEventListener(event, press);

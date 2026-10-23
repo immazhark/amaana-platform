@@ -27,9 +27,21 @@ function fixture() {
       readonly pointerId = 1,
     ) { super(type); }
   }
+  type KeyOptions = { composing?: boolean; ctrl?: boolean; alt?: boolean; meta?: boolean; handled?: boolean };
   class Keyboard extends Event {
     readonly repeat = false;
-    constructor(type: string, readonly key: string) { super(type); }
+    readonly isComposing: boolean;
+    readonly ctrlKey: boolean;
+    readonly altKey: boolean;
+    readonly metaKey: boolean;
+    constructor(type: string, readonly key: string, options: KeyOptions = {}) {
+      super(type, { cancelable: true });
+      this.isComposing = options.composing ?? false;
+      this.ctrlKey = options.ctrl ?? false;
+      this.altKey = options.alt ?? false;
+      this.metaKey = options.meta ?? false;
+      if (options.handled) this.preventDefault();
+    }
   }
   vi.stubGlobal("Element", Control);
   vi.stubGlobal("HTMLElement", Control);
@@ -40,11 +52,13 @@ function fixture() {
   vi.stubGlobal("getComputedStyle", () => ({ translate: "none", scale: "none" }));
   const windowEvents = Object.assign(new EventTarget(), { matchMedia: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }) });
   vi.stubGlobal("window", windowEvents);
-  vi.stubGlobal("document", {
+  const documentEvents = {
+    hidden: false,
     getElementById: () => null,
     addEventListener: (name: string, handler: EventListener) => listeners.set(name, handler),
     removeEventListener: (name: string) => listeners.delete(name),
-  });
+  };
+  vi.stubGlobal("document", documentEvents);
   SiteMotion();
   const effect = effects[0];
   if (!effect) throw new Error("Expected site motion effect");
@@ -58,13 +72,17 @@ function fixture() {
       listeners.get(type)!(event);
     },
     blur() { windowEvents.dispatchEvent(new Event("blur")); },
+    visibility(hidden: boolean) {
+      documentEvents.hidden = hidden;
+      listeners.get("visibilitychange")?.(new Event("visibilitychange"));
+    },
     send(type: string, button: number, pointerType = "mouse", inside = true, pointerId = 1) {
       const event = new Pointer(type, button, pointerType, pointerId);
       Object.defineProperty(event, "target", { value: inside ? control : new EventTarget() });
       listeners.get(type)!(event);
     },
-    key(type: string, key: string) {
-      const event = new Keyboard(type, key);
+    key(type: string, key: string, options: KeyOptions = {}) {
+      const event = new Keyboard(type, key, options);
       Object.defineProperty(event, "target", { value: control });
       listeners.get(type)!(event);
     },
@@ -92,6 +110,27 @@ describe("site motion press recovery", () => {
     motion.send("pointerdown", 0);
     expect(motion.control.animate).toHaveBeenCalledTimes(2);
     expect(first.cancel).toHaveBeenCalledOnce();
+    motion.cleanup?.();
+  });
+
+  it("cancels an active touch when the page becomes hidden without a blur event", () => {
+    const motion = fixture();
+    motion.send("pointerdown", 0, "touch", true, 17);
+    const active = motion.control.animate.mock.results[0]?.value;
+    motion.visibility(true);
+    expect(active.cancel).toHaveBeenCalledOnce();
+    expect(motion.control.style.scale).toBe("");
+    motion.send("pointerdown", 0, "touch", true, 18);
+    expect(motion.control.animate).toHaveBeenCalledTimes(2);
+    motion.cleanup?.();
+  });
+
+  it("preserves active pointer feedback for a visibility event while the page is still visible", () => {
+    const motion = fixture();
+    motion.send("pointerdown", 0, "touch", true, 17);
+    const active = motion.control.animate.mock.results[0]?.value;
+    motion.visibility(false);
+    expect(active.cancel).not.toHaveBeenCalled();
     motion.cleanup?.();
   });
 
@@ -141,6 +180,19 @@ describe("site motion press recovery", () => {
     motion.cleanup?.();
   });
 
+  it.each(["focusout", "pointerout"] as const)(
+    "does not override a held touch press on unrelated %s",
+    type => {
+      const motion = fixture();
+      motion.send("pointerdown", 0, "touch", true, 7);
+      motion.leave(type);
+      expect(motion.control.animate).toHaveBeenCalledTimes(1);
+      motion.send("pointercancel", -1, "touch", false, 7);
+      expect(motion.control.animate).toHaveBeenCalledTimes(2);
+      motion.cleanup?.();
+    },
+  );
+
   it("keeps a control pressed until its last owning touch pointer ends", () => {
     const motion = fixture();
     motion.send("pointerdown", 0, "touch", true, 11);
@@ -162,6 +214,63 @@ describe("site motion press recovery", () => {
     motion.send("pointerdown", 2);
     motion.control.disabled = true;
     motion.send("pointerdown", 0);
+    expect(motion.control.animate).not.toHaveBeenCalled();
+    motion.cleanup?.();
+  });
+
+  it.each([
+    { key: "Enter", options: { composing: true }, description: "IME composition" },
+    { key: "Enter", options: { ctrl: true }, description: "Ctrl+Enter" },
+    { key: "Enter", options: { alt: true }, description: "Alt+Enter" },
+    { key: " ", options: { meta: true }, description: "Meta+Space" },
+    { key: "Enter", options: { handled: true }, description: "previously handled Enter" },
+  ])("does not animate modified/native-owned $description input", ({ key, options }) => {
+    const motion = fixture();
+    motion.key("keydown", key, options);
+    motion.key("keyup", key, options);
+    expect(motion.control.animate).not.toHaveBeenCalled();
+    motion.cleanup?.();
+  });
+
+  it("keeps a shared action pressed until both keyboard and touch owners release", () => {
+    const motion = fixture();
+    motion.key("keydown", "Enter");
+    motion.send("pointerdown", 0, "touch", true, 21);
+    expect(motion.control.animate).toHaveBeenCalledTimes(2);
+    motion.key("keyup", "Enter");
+    expect(motion.control.animate).toHaveBeenCalledTimes(2);
+    motion.send("pointerup", -1, "touch", false, 21);
+    expect(motion.control.animate).toHaveBeenCalledTimes(3);
+    expect(motion.control.animate.mock.calls.at(-1)?.[0])
+      .toEqual(expect.arrayContaining([expect.objectContaining({ scale: "1" })]));
+    motion.cleanup?.();
+  });
+
+  it("does not animate a keyup with no owned press after IME composition ends", () => {
+    const motion = fixture();
+    motion.key("keydown", "Enter", { composing: true });
+    motion.key("keyup", "Enter");
+    expect(motion.control.animate).not.toHaveBeenCalled();
+    motion.cleanup?.();
+  });
+
+  it.each([{ ctrl: true }, { handled: true }, { composing: true }])(
+    "releases an owned keyboard press even when the keyup becomes modified or handled: %o",
+    options => {
+      const motion = fixture();
+      motion.key("keydown", "Enter");
+      expect(motion.control.animate).toHaveBeenCalledTimes(1);
+      motion.key("keyup", "Enter", options);
+      expect(motion.control.animate).toHaveBeenCalledTimes(2);
+      expect(motion.control.animate.mock.calls.at(-1)?.[0])
+        .toEqual(expect.arrayContaining([expect.objectContaining({ scale: "1" })]));
+      motion.cleanup?.();
+    },
+  );
+
+  it("does not animate a stray Enter keyup with no preceding keydown", () => {
+    const motion = fixture();
+    motion.key("keyup", "Enter");
     expect(motion.control.animate).not.toHaveBeenCalled();
     motion.cleanup?.();
   });
