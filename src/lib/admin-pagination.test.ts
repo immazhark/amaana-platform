@@ -11,6 +11,15 @@ describe("admin pagination", () => {
     expect(parseAdminPage("not-a-page")).toBe(1);
   });
 
+  it.each(["3junk", "3.5", "3e2", " 3", "3 ", "+3", "03", "Infinity", "9007199254740992"])("rejects ambiguous page %s", value => {
+    expect(parseAdminPage(value)).toBe(1);
+    expect(getAdminPagination(151, parseAdminPage(value))).toMatchObject({ page: 1, skip: 0 });
+  });
+
+  it.each([NaN, Infinity, -Infinity, 2.5, 0, -2])("normalizes invalid numeric page %s before calculating offsets", page => {
+    expect(getAdminPagination(151, page)).toMatchObject({ page: 1, skip: 0, hasPrevious: false });
+  });
+
   it("bounds requested pages and calculates offsets", () => {
     expect(getAdminPagination(0, 9)).toEqual({
       page: 1,
