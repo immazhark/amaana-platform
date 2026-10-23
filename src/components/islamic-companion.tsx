@@ -180,7 +180,7 @@ export function IslamicCompanion() {
             ) : (
               <div className="amaana-live-content">
                 <span className="amaana-reminder-eyebrow">Foundation updates</span>
-                <strong>No public appeal is open right now.</strong>
+                <strong>Explore Amaana&apos;s public work.</strong>
                 <span className="amaana-live-actions">
                   <Link className="amaana-live-cta" href="/our-work">Explore our work<span aria-hidden="true"> →</span></Link>
                 </span>

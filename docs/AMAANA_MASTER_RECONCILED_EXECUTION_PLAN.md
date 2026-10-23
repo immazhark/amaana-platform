@@ -8,6 +8,8 @@
 
 ## Release checkpoint — 23 October 2026
 
+Prepared live-strip fallback correction uses neutral public-work copy instead of asserting no open appeal during initial loading or error-to-empty fallback. Scoped lint/diff checks pass; not merged/deployed. Dependency-checkpoint isolated offline install is INFRASTRUCTURE-limited by uncached unchanged zod@4.1.5; do not claim fresh-install success. Keep #412 current hosted acceptance source unchanged and require a fresh hosted installation/build when the checkpoint joins a substantive release. No historical totals changed.
+
 Dependency hygiene source checkpoint removes unused framer-motion plus orphan motion-dom/motion-utils from manifest/lock after full import inventory found no consumers. All 503 retained lock entries unchanged, production graph/manifest parity/type/diff checks pass. IMPLEMENTED_SOURCE only; no installed/deployed-prune or transfer improvement claim. Hold for the next substantive release, require fresh install/build/runtime/browser acceptance, keep #412 current acceptance source stable. No historical total change.
 
 Latest live release: #411 at main `9c48065020d37a82a24597d92081bf2c6a6ad350`. Railway `ab26d603-1cb5-43e0-a2e9-2e901623f4df` SUCCESS and independent fresh public version/readiness reads match production/main SHA and ready. This supersedes earlier pending deployment notes, verifies identity/readiness, and does not close full performance/accessibility or live-payment acceptance. Historical totals unchanged.
