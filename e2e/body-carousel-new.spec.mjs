@@ -148,7 +148,7 @@ for(const width of [375,600,768,1024,1440,1920])test(`left alignment and control
 for (const update of ['Reverse programme order', 'Show two records']) {
   test(`scroll selection resumes after ${update} cancels a pending frame`, async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    const { carousel, viewport, progress } = await openPausedCarousel(page);
+    const { viewport, progress } = await openPausedCarousel(page);
     // Hold the browser frame callback across a real React consumer update.
     // No cancelled callback is manually invoked to rescue stale bookkeeping.
     await viewport.evaluate(node => {
