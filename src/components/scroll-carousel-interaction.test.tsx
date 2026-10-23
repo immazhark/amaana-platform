@@ -97,6 +97,18 @@ describe("carousel drag and activation boundaries", () => {
     expect(carousel.click(1).preventDefault).toHaveBeenCalledOnce();
   });
 
+  it("requests pointer capture exactly once while a dragged card continues moving", () => {
+    const carousel = fixture();
+    carousel.start(7);
+    expect(carousel.move(7)).toHaveBeenCalledOnce();
+    expect(carousel.move(7)).toHaveBeenCalledOnce();
+    expect(carousel.move(7)).toHaveBeenCalledOnce();
+    expect(carousel.surface.setPointerCapture).toHaveBeenCalledTimes(1);
+    expect(carousel.surface.setPointerCapture).toHaveBeenCalledWith(7);
+    carousel.end("up", 7);
+    expect(carousel.click(1).preventDefault).toHaveBeenCalledOnce();
+  });
+
   it("does not lose suppression when a foreign pointerup arrives after dragging", () => {
     const carousel = fixture();
     carousel.start(7);
