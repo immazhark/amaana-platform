@@ -69,6 +69,8 @@ export function SiteMotion() {
       if (related instanceof Node && element.contains(related)) return;
       if (event instanceof PointerEvent && event.type === "pointerout" &&
           activePointers.get(event.pointerId) === element) activePointers.delete(event.pointerId);
+      // A focus or unrelated hover change must not cancel a held touch.
+      if ([...activePointers.values()].includes(element)) return;
       feedback(element);
     };
     const press = (event: Event) => {
