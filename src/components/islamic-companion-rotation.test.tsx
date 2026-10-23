@@ -31,7 +31,7 @@ const items = ["first", "second"].map(id => ({
 
 afterEach(() => { vi.unstubAllGlobals(); });
 
-function fixture({ paused = false, reduced = false, count = 2, rerender = false } = {}) {
+function fixture({ paused = false, reduced = false, count = 2, rerender = false, now = null as Date | null } = {}) {
   harness.index = 0;
   harness.refIndex = 0;
   if (!rerender) harness.refs = [];
@@ -39,7 +39,7 @@ function fixture({ paused = false, reduced = false, count = 2, rerender = false 
   harness.setters.length = 0;
   // Preserve component hook order: panel, clock, moon, motion, hover, focus,
   // live items, rail index, explicit visitor pause.
-  harness.values = [null, null, null, reduced, false, false, items.slice(0, count), 0, paused];
+  harness.values = [null, now, null, reduced, false, false, items.slice(0, count), 0, paused];
   const interval = vi.fn(() => 1);
   const clearInterval = vi.fn();
   const documentEvents = { hidden: false, addEventListener: vi.fn(), removeEventListener: vi.fn() };
@@ -83,6 +83,27 @@ describe("visibility-aware site-wide clock", () => {
     expect(setNow).toHaveBeenCalledTimes(2);
     stopClock?.();
     live.cleanup?.();
+  });
+});
+
+describe("site-wide clock calculation cost", () => {
+  it("formats Hyderabad civil time only once for a reminder render", () => {
+    const original = Intl.DateTimeFormat.prototype.formatToParts;
+    let gregorianFormats = 0;
+    Intl.DateTimeFormat.prototype.formatToParts = function (...args) {
+      if (this.resolvedOptions().calendar === "gregory") gregorianFormats += 1;
+      return original.apply(this, args);
+    };
+    try {
+      // Friday has no fallback voluntary-fast calendar work.
+      const live = fixture({ now: new Date("2026-10-23T07:00:00Z") });
+      expect(gregorianFormats).toBe(1);
+      const reminder = live.elements.find(element => element.props.className === "amaana-reminder-content");
+      expect(reminder).toBeDefined();
+      live.cleanup?.();
+    } finally {
+      Intl.DateTimeFormat.prototype.formatToParts = original;
+    }
   });
 });
 
