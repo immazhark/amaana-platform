@@ -110,9 +110,10 @@ describe("carousel drag and activation boundaries", () => {
     expect(carousel.click(1).preventDefault).not.toHaveBeenCalled();
   });
 
-  it("ignores movement and cancellation from a different pointer during mouse dragging", () => {
+  it("ignores a different pointer's press, movement and cancellation during mouse dragging", () => {
     const carousel = fixture();
     carousel.start(7);
+    carousel.start(8);
     expect(carousel.move(8)).not.toHaveBeenCalled();
     expect(carousel.surface.setPointerCapture).not.toHaveBeenCalled();
     carousel.end("cancel", 8);
@@ -198,6 +199,28 @@ describe("carousel drag and activation boundaries", () => {
     carousel.move(7);
     expect(carousel.surface.scrollLeft).toBe(60);
     expect(carousel.surface.setPointerCapture).toHaveBeenCalledTimes(2);
+  });
+
+  it("accepts a fresh press from the same owner even when no release move arrived", () => {
+    const carousel = fixture();
+    carousel.start(7);
+    carousel.move(7);
+    expect(carousel.surface.scrollLeft).toBe(30);
+    carousel.start(7);
+    carousel.move(7);
+    expect(carousel.surface.scrollLeft).toBe(60);
+    expect(carousel.surface.setPointerCapture).toHaveBeenCalledTimes(2);
+    carousel.end("up", 7);
+    expect(carousel.click(1).preventDefault).toHaveBeenCalledOnce();
+  });
+
+  it("preserves a fresh click from the owner after its previous drag lost pointerup", () => {
+    const carousel = fixture();
+    carousel.start(7);
+    carousel.move(7);
+    carousel.start(7);
+    carousel.end("up", 7);
+    expect(carousel.click(1).preventDefault).not.toHaveBeenCalled();
   });
 
   it("does not end an owned drag when a different pointer reports no buttons", () => {

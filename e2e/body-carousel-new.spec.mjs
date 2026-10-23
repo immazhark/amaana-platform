@@ -69,6 +69,35 @@ test('a released-button move recovers a missing pointerup without blocking the n
   expect(recovered.captured).toEqual([27, 28]);
 });
 
+test('a fresh press from the same pointer recovers a missed release before any hover move', async ({ page }) => {
+  const { viewport } = await openPausedCarousel(page);
+  const recovered = await viewport.evaluate(node => {
+    const originalCapture = node.setPointerCapture;
+    const captured = [];
+    node.setPointerCapture = id => { captured.push(id); };
+    const pointer = (type, clientX) => node.dispatchEvent(new PointerEvent(type, {
+      bubbles: true, cancelable: true, pointerType: 'mouse', pointerId: 27, button: 0, buttons: 1, clientX,
+    }));
+    try {
+      pointer('pointerdown', 200);
+      pointer('pointermove', 170);
+      // A new primary press proves the previous press ended even when
+      // neither pointerup nor a released-button move reached the viewport.
+      pointer('pointerdown', 200);
+      const before = node.scrollLeft;
+      pointer('pointermove', 170);
+      return { distance: node.scrollLeft - before, captured };
+    } finally {
+      node.dispatchEvent(new PointerEvent('pointercancel', {
+        bubbles: true, pointerType: 'mouse', pointerId: 27, buttons: 0,
+      }));
+      node.setPointerCapture = originalCapture;
+    }
+  });
+  expect(recovered.distance).toBeCloseTo(30, 0);
+  expect(recovered.captured).toEqual([27, 27]);
+});
+
 test('carousel leaves modified, composing and handled keys to their owner', async ({ page }) => {
   const { carousel, viewport, progress } = await openPausedCarousel(page);
   await viewport.focus();

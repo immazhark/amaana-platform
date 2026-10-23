@@ -264,7 +264,10 @@ export function ScrollCarousel({
         onPointerDown={event => {
           navigation.current = null;
           if (mode === "hero" || event.pointerType !== "mouse" || event.button !== 0 || (event.target instanceof Element && event.target.closest("button,video,input,textarea,select,[contenteditable]"))) return;
-          if (drag.current) return;
+          if (drag.current) {
+            if (drag.current.pointerId !== event.pointerId) return;
+            releaseDrag(event);
+          }
           drag.current = {pointerId:event.pointerId, x:event.clientX, scroll:event.currentTarget.scrollLeft, moved:false};
           suppressClick.current = false;
         }}
