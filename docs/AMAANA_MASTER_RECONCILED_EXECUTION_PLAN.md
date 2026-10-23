@@ -8,6 +8,8 @@
 
 ## Release checkpoint — 23 October 2026
 
+Next AF-R042 candidate combines saved native zoom/composition ownership with fail-first disabled-action exit and window-blur motion recovery. Three new motion regressions pass after narrow handler/lifecycle changes; full 2,026 passed / 15 skipped, type/full ESLint/spec/diff pass. Five browser cases await hosted execution; no physical IME/pinch/window-switch or complete accessibility certification. Reuse current saved branch from `8fa64cc`, base accepted/live `4e8db34`, one new candidate and no separate tiny deploy. Source/testing only, no merge/release or historical 149-entry closure increase.
+
 Railway `b8264a9c-d551-4e67-b38e-f326ea8de9d2` SUCCESS and fresh public version/readiness confirm production/main `4e8db34ece2acce771565d56e0f8b2ba4a6d5d53` and ready. Supersedes pending deployment/public verification below, without a live-payment or complete accessibility/device/performance acceptance claim.
 
 #413 accepted and MERGED at `4e8db34ece2acce771565d56e0f8b2ba4a6d5d53`, superseding older pending/failure statements below. Full source run `39967751762` passed all selected application gates, including 1,326 Chromium and 24 Firefox/WebKit checks; ready-state `39974364680` promotion/verify passed. Railway `b8264a9c-d551-4e67-b38e-f326ea8de9d2` BUILDING, exact public identity/readiness pending. Normal reconciliation retains separate unreleased zoom/composition checkpoint `2da3f6e`, requiring future hosted acceptance; it is not certified by #413. #413 aggregate uncompressed JS 817,607 / CSS 325,561 bytes, unchanged caps passed. No complete accessibility/performance/device or historical 149-item closure inferred.

@@ -28,6 +28,7 @@ export function SiteMotion() {
       element.style.translate = element.style.scale = element.style.opacity = "";
       owned.delete(element);
     };
+    const clearAll = () => { for (const element of owned) clear(element); };
 
     const feedback = (element: HTMLElement, pressed = false) => {
       if (preference.matches) { clear(element); return; }
@@ -58,7 +59,7 @@ export function SiteMotion() {
     };
     const hover = (event: Event) => {
       if (event instanceof PointerEvent && event.pointerType !== "mouse") return;
-      const element = target(event);
+      const element = target(event, event.type === "pointerout" || event.type === "focusout");
       if (!element) return;
       const related = (event as PointerEvent | FocusEvent).relatedTarget;
       if (related instanceof Node && element.contains(related)) return;
@@ -98,17 +99,19 @@ export function SiteMotion() {
         observer.observe(element);
       }
     }
-    const reset = () => { if (preference.matches) for (const element of owned) clear(element); };
+    const reset = () => { if (preference.matches) clearAll(); };
     for (const event of hoverEvents) document.addEventListener(event, hover);
     for (const event of pressEvents) document.addEventListener(event, press);
     preference.addEventListener("change", reset);
+    window.addEventListener("blur", clearAll);
     return () => {
       disposed = true;
       observer.disconnect();
       preference.removeEventListener("change", reset);
+      window.removeEventListener("blur", clearAll);
       for (const event of hoverEvents) document.removeEventListener(event, hover);
       for (const event of pressEvents) document.removeEventListener(event, press);
-      for (const element of owned) clear(element);
+      clearAll();
     };
   }, [pathname]);
   return null;

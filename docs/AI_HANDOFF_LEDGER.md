@@ -1,3 +1,9 @@
+## 2026-10-23 — Combined input ownership and interrupted motion prepared
+
+CODEX_ACTIVE continues existing checkpoint branch from remote `8fa64cc`, main/live `4e8db34`; remote inventory shows only blocked locales #374 open. Add related interrupted-motion recovery to the saved zoom/composition guards for one new candidate, no extra branch.
+
+Three new actual-handler regressions failed first: disabled-action focusout/pointerout did not settle, and window blur did not cancel owned press feedback. Narrow end-event target inclusion and shared clearAll lifecycle cleanup now pass; a subsequent press still works, starts on disabled/secondary controls remain excluded, listener cleanup remains paired. Saved scroll guards preserve Ctrl+wheel and composition input. Full 2,026 tests passed / 15 skipped, 24 scrolling/motion cases, TypeScript/full ESLint/spec/diff pass. Five browser cases prepared; local Chromium remains infrastructure-unavailable. No physical pinch/IME/OS-switch/device or full accessibility claim. No CSS/content/media/dependency/security-settings/financial/data/provider changes. Require fresh hosted acceptance and protected promotion before authorized merge/release; no historical totals change. Rollback is bounded handler/spec revert, with no settings/data action.
+
 ## 2026-10-23 — #413 merged after full and promotion acceptance
 
 Railway `b8264a9c-d551-4e67-b38e-f326ea8de9d2` SUCCESS and fresh public version/readiness confirm exact production/main `4e8db34ece2acce771565d56e0f8b2ba4a6d5d53` and ready. Pending deployment/public-verification statements below are superseded. No live transaction or exhaustive device certification inferred.
