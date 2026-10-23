@@ -1,3 +1,7 @@
+## 2026-10-23 — Consolidated CSS release acceptance
+
+Existing PR #411 now takes the prepared five-stylesheet cleanup and main `abacce7` through normal ancestry. This deliberately supersedes the running Faith-only browser job rather than release two CSS increments. Earlier fast/production/database successes do not certify expanded source. Total source reduction 5,507 bytes; all 357 retained selector/declaration/context records unchanged. Require fresh complete application/browser/database/production/budget acceptance, then ready-state promotion gates before merge. No third PR, force push or workflow change. Root recovery #410 remains independently live verified at `abacce7`.
+
 ## 2026-10-23 — Recovery release live; CSS checkpoint saved
 
 PR #410 is live at main `abacce7bc4afbc4b5463fa94e93d1b60c9e321ce`. Railway deployment `1609a8ee-688c-4e14-9e8b-1d6e58676770` reports SUCCESS; fresh public version returns this SHA/main/production and readiness returns ready. No live payment test. CSS follow-up branch `perf/retired-detail-hero-css-20261023` saved at `e75fe27`, tree `32f4bc3` matches local and includes normal main merge with coordination notes preserved. #411 browser acceptance still running; keep its source frozen, then consolidate this 5,507-byte cleanup batch into the existing CSS PR and require fresh hosted acceptance. No third PR, deployment or master-wide closure claimed for CSS.
