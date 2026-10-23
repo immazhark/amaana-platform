@@ -122,6 +122,8 @@ export function SiteMotion() {
       }
     }
     const reset = () => { if (preference.matches) clearAll(); };
+    const background = () => { if (document.hidden) clearAll(); };
+    document.addEventListener("visibilitychange", background);
     for (const event of hoverEvents) document.addEventListener(event, hover);
     for (const event of pressEvents) document.addEventListener(event, press);
     preference.addEventListener("change", reset);
@@ -130,6 +132,7 @@ export function SiteMotion() {
       disposed = true;
       observer.disconnect();
       preference.removeEventListener("change", reset);
+      document.removeEventListener("visibilitychange", background);
       window.removeEventListener("blur", clearAll);
       for (const event of hoverEvents) document.removeEventListener(event, hover);
       for (const event of pressEvents) document.removeEventListener(event, press);
