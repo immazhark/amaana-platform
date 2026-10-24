@@ -21,8 +21,25 @@ export function NavigationProgress() {
 
   useEffect(() => {
     if (!visible) return;
+
+    // A cancelled or failed client transition can leave usePathname unchanged.
+    // Never trap keyboard focus or body scrolling behind a stale overlay.
+    const release = () => setPending(null);
+    const dismissOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") release();
+    };
+    const recovery = window.setTimeout(release, 15_000);
+
     document.body.classList.add("af-navigation-lock");
-    return () => document.body.classList.remove("af-navigation-lock");
+    document.addEventListener("keydown", dismissOnEscape);
+    window.addEventListener("pagehide", release);
+
+    return () => {
+      window.clearTimeout(recovery);
+      document.removeEventListener("keydown", dismissOnEscape);
+      window.removeEventListener("pagehide", release);
+      document.body.classList.remove("af-navigation-lock");
+    };
   }, [visible]);
 
   useEffect(() => {
