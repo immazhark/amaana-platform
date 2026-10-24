@@ -15,6 +15,16 @@ function validYear(value: number | null): value is number {
   return value !== null && Number.isInteger(value) && value >= 2000 && value <= 2100;
 }
 
+/** A dated index already shows the period in its separate year badge.
+ * Suppress only an identical leading period followed by punctuation; do not
+ * strip dates elsewhere in the approved editorial title. */
+function readableEditionTitle(title: string, period: string): string {
+  if (!title.startsWith(period)) return title;
+  const remainder = title.slice(period.length);
+  const separated = /^\s*[—–:|-]\s*(.+)$/u.exec(remainder);
+  return separated?.[1]?.trim() || title;
+}
+
 export function approvedEditionTimeline(editions: readonly PublishedEdition[]) {
   const seen = new Set<string>();
   return editions.flatMap(item => {
@@ -25,10 +35,13 @@ export function approvedEditionTimeline(editions: readonly PublishedEdition[]) {
     seen.add(item.slug);
     const metric = item.primaryMetric?.trim() ?? "";
     const metricLabel = item.primaryMetricLabel?.trim() ?? "";
+    const period = from === until ? String(from) : `${from}–${until}`;
+    const title = item.title.trim() || "Published programme edition";
     return [{
       slug: item.slug,
-      title: item.title.trim() || "Published programme edition",
-      period: from === until ? String(from) : `${from}–${until}`,
+      title,
+      displayTitle: readableEditionTitle(title, period),
+      period,
       sortYear: until,
       metric: metric && metricLabel ? metric : null,
       metricLabel: metric && metricLabel ? metricLabel : null,
@@ -48,10 +61,10 @@ export function PublishedEditionIndex({ editions }: { editions: readonly Publish
     </div>
     <ol className={styles.items}>
       {ordered.map(item => <li key={item.slug}>
-        <Link href={`/our-work/${item.slug}`} aria-label={`Read ${item.title}, ${item.period}`}>
+        <Link href={`/our-work/${item.slug}`} aria-label={`Read ${item.displayTitle}, ${item.period}`}>
           <span className={styles.year}>{item.period}</span>
           <span className={styles.detail}>
-            <strong>{item.title}</strong>
+            <strong>{item.displayTitle}</strong>
             {item.metric && <small>{item.metric} · {item.metricLabel}</small>}
           </span>
           <span className={styles.arrow} aria-hidden="true">↗</span>
