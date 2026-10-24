@@ -54,7 +54,7 @@ test("audits only public routes and keeps decoded CSS distinct from transfer and
     calls.push(url);
     const value = responses.get(url);
     if (!value) throw new Error("Unexpected request " + url);
-    return { ok: true, url, text: async () => value, arrayBuffer: async () => new TextEncoder().encode(value).buffer };
+    return { ok: true, url, headers: { get: () => url.endsWith(".css") ? "text/css; charset=UTF-8" : "text/html" }, text: async () => value, arrayBuffer: async () => new TextEncoder().encode(value).buffer };
   };
   const report = await auditPublicRouteCss({ fetchImpl, routes: ["/", "/impact"] });
   assert.equal(report.metric, "rendered-public-route-decoded-css-bytes");
@@ -71,4 +71,13 @@ test("rejects off-origin redirects and malformed route inputs", async () => {
   });
   await assert.rejects(auditPublicRouteCss({ fetchImpl, routes: ["/"] }), /unexpected origin/);
   await assert.rejects(auditPublicRouteCss({ fetchImpl, routes: ["//foreign.invalid"] }), /Invalid public route/);
+});
+
+test("rejects a non-CSS HTTP 200 fallback at a stylesheet URL", async () => {
+  const fetchImpl = async url => ({
+    ok: true, url, headers: { get: () => "text/html" },
+    text: async () => '<link rel="stylesheet" href="/_next/static/fallback.css">',
+    arrayBuffer: async () => new TextEncoder().encode("fallback").buffer,
+  });
+  await assert.rejects(auditPublicRouteCss({ fetchImpl, routes: ["/"] }), /not CSS/);
 });
