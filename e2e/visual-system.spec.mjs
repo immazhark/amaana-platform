@@ -226,7 +226,13 @@ test('impact marquee uses the canonical desktop shell width and remains centered
       const fixture = document.createElement('div');
       fixture.className = 'v2-home v2-impact-page';
       fixture.setAttribute('data-visual-test-fixture', 'impact-page');
-      fixture.innerHTML = '<section class="v2-impact-marquee"><div class="v2-impact-marquee-track" data-visual-test-fixture="impact-marquee"></div></section>';
+      const section = document.createElement('section');
+      section.className = 'v2-impact-marquee';
+      const track = document.createElement('div');
+      track.className = 'v2-impact-marquee-track';
+      track.setAttribute('data-visual-test-fixture', 'impact-marquee');
+      section.appendChild(track);
+      fixture.appendChild(section);
       document.body.appendChild(fixture);
       marquee = fixture.querySelector('.v2-impact-marquee-track');
     }

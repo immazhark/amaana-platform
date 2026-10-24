@@ -1477,6 +1477,10 @@ The official GitHub advisory [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories
 
 The initial #431 browser run finished1348 passed/1 flaky/1 failed. Its failing assertion still expected page on a parent-section link; the corrected test now verifies location+active on the detail route and page on exact Our Work. Companion response corrections, this audit and navigation work are consolidated into the existing #431 candidate by normal ancestry. Fresh combined2145 unit tests pass/15skip and13 native calendar/prayer tests pass; TypeScript/scoped ESLint/spec syntax/diff pass. A new full exact-head hosted run is required; no competing runtime PR or automatic merge of a failed head.
 
+## Prepared AF-R010 / AF-R011 follow-up
+
+The residual findings below are a historical audit snapshot. Subsequent source correction replaces the constant visual-fixture innerHTML with equivalent DOM construction and the hand-transpiled new Function loader with ordinary TypeScript contract tests launched through the pinned existing runner. Full2148 local units pass/15skip; TypeScript/scoped lint/spec parse/diff pass. Standalone verifier succeeds with string code generation disabled in its launcher; intentional invalid umbrella-count and locked-debt-figure mutations still reject and are restored. Full hosted/visual acceptance and merge remain pending; no whole-item closure or production vulnerability incident is claimed. The follow-up is stacked behind frozen4318dc4c0b7.
+
 ## Next iterations and closure rules
 
 1. **Finish current public navigation release (#431).** Preserve exact source head while full hosted acceptance runs. Then run separate ready-state promotion, merge under expected-head guard and verify Railway/public identity plus nested navigation semantics. This closes the source defect, not all AF-R042 assistive-device acceptance.

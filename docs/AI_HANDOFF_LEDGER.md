@@ -1,3 +1,13 @@
+## 2026-10-25 — Prepared audit-harness correction; primary431 frozen
+
+CODEX_ACTIVE sole writer. Branch fix/audit-harness-native-loading-20261025 is stacked on frozen431 candidate8dc4c0b7; primary431 fast/database/production pass under40125762941, browser running. Do not move431 or merge this follow-up ahead of its dependency.
+
+AF-R011: standalone scripts/verify-master-content.cjs failed with EvalError under --disallow-code-generation-from-strings because it evaluated hand-transpiled source with new Function. Canonical invariants now live in ordinary imported TypeScript Vitest tests; existing standalone entry invokes the pinned repository runner without custom source evaluation. Parent/unique-slug/content/debt-privacy/locked-figure/organisation-heading checks preserved. CLI passes with string generation disabled in its launcher; two intentional bad-input mutations (umbrella count and debt amount) still reject. This is not a claim that every dependency process bans all dynamic execution.
+
+AF-R010: visual-system fallback fixture now uses createElement/className/setAttribute/appendChild, retaining the same DOM hierarchy/selectors rather than innerHTML. Existing full visual browser acceptance remains required; no production XSS incident inferred from the former constant test string.
+
+Fresh full2148 unit tests pass/15skip; TypeScript/scoped ESLint/spec syntax/diff checks pass. No runtime app behavior, dependency, migration, provider, payment or factual copy change; temporary invalid JSON test mutations restored before commit. R010/R011 remain historically Implemented with source correction/testing recorded, not fully closed. Report/feature tracker updated; no new runtime release claim. After431 full+promotion/guarded release, retarget/reconcile this focused follow-up normally and run required exact-head gates.
+
 ## 2026-10-25 — Consolidated shared public-shell candidate on existing PR431
 
 Root reconciled the prepared Companion response corrections, complete Mission Control audit and corrected parent-section browser expectation into existing PR431 by normal ancestry. Fresh combined2145 unit tests pass/15skip,13 native calendar/prayer tests pass, TypeScript/scoped ESLint/spec syntax/diff pass. This supersedes the earlier separate-next-PR plan. No competing runtime PR is opened. Reuse fix/public-navigation-current-page-20261025 and run fresh full exact-head CI after publication. Initial431 a420 run40122502771:1348 Chromium passed/1 flaky/1 failed (old test expected page for a parent section); Firefox/WebKit did not run. e2e/public-shell now explicitly checks location+active on detail route and page on exact Our Work route. Both prior continuity prefixes and all history retained. No merge/live claim for consolidated source.

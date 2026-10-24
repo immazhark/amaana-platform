@@ -16,6 +16,10 @@ Checkpoint: 25 October 2026. This is the feature-level view; the 149-row master 
 
 The partial-work audit identifies17 genuine implementation gaps,27 measured source/acceptance gaps and17 external/manual acceptance gaps. Companion response resilience is the next prepared source batch; missing legal/provider/device evidence remains explicit.
 
+## Prepared audit-tool follow-up
+
+AF-R010/R011: remove the visual fixture innerHTML assignment and replace the custom new Function content loader with ordinary imported TypeScript tests through the existing pinned runner. Local2148 units pass/15skip; standalone audit and intentional invalid-fixture rejection pass. Stacked behind431; not merged/closed. No public-runtime feature change.
+
 ## Feature view
 
 | Feature | Delivered capability | Remaining acceptance or implementation | Next iteration |
