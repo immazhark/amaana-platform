@@ -51,11 +51,21 @@ jobs:
             assert.equal(process.getuid(), 1000);
             console.log("Built worker success, failure, credential and non-root checks passed.");
           '
-      - name: Verify container entrypoint fails safely without credentials
+      - name: Verify default entrypoint never delivers with or without credentials
         run: |
+          # The production CMD is deliberately a syntax check. A future Railway
+          # start-command reset must not send queued notifications, even when a
+          # credential has been configured on the worker.
           set +e
           OUTPUT=$(docker run --rm --network none amaana-notification-worker:ci 2>&1)
           STATUS=$?
           set -e
-          test "$STATUS" -eq 1
-          test "$OUTPUT" = "Notification job failed; inspect the application's notification operations."
+          test "$STATUS" -eq 0
+          test -z "$OUTPUT"
+
+          set +e
+          OUTPUT=$(docker run --rm --network none -e CRON_SECRET=synthetic-image-credential amaana-notification-worker:ci 2>&1)
+          STATUS=$?
+          set -e
+          test "$STATUS" -eq 0
+          test -z "$OUTPUT"
