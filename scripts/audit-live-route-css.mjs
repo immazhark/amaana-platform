@@ -70,7 +70,10 @@ export async function auditPublicRouteCss({ fetchImpl = fetch, routes = PUBLIC_R
     entries.push({ route, stylesheets });
     for (const asset of stylesheets) {
       if (sizes.has(asset)) continue;
-      const body = await (await request(asset)).arrayBuffer();
+      const response = await request(asset);
+      const contentType = response.headers?.get("content-type") ?? null;
+      if (!contentType || !/^text\/css(?:\s*;|$)/i.test(contentType)) throw new Error("Stylesheet response is not CSS: " + asset);
+      const body = await response.arrayBuffer();
       sizes.set(asset, body.byteLength);
     }
   }
