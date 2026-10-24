@@ -70,3 +70,39 @@ describe("reviewed annual edition publication boundary", () => {
     expect(html).not.toContain("<button");
   });
 });
+
+
+describe("year-labelled edition title readability", () => {
+  it("does not repeat a reviewed year before an annual edition title", () => {
+    const items = [
+      { ...editions[0]!, slug: "eid-2020", year: 2020, title: "2020 — Where the Eid Gift Kits Journey Began" },
+      { ...editions[0]!, slug: "dates-2023", year: 2023, title: "2023 – The First Documented Dates Distribution" },
+      { ...editions[0]!, slug: "qurbani-2025", year: 2025, title: "2025: Qurbani Meat Distribution" },
+    ];
+    const ordered = approvedEditionTimeline(items);
+    expect(ordered.map(item => item.displayTitle)).toEqual([
+      "Where the Eid Gift Kits Journey Began",
+      "The First Documented Dates Distribution",
+      "Qurbani Meat Distribution",
+    ]);
+    const markup = renderToStaticMarkup(<PublishedEditionIndex editions={items} />);
+    expect(markup).toContain('aria-label="Read Where the Eid Gift Kits Journey Began, 2020"');
+    expect(markup).not.toContain(">2020 — Where the Eid Gift Kits Journey Began");
+    expect(markup).toContain("/our-work/eid-2020");
+    expect(markup).toContain(">2020</span>");
+  });
+
+  it("keeps meaningful dates inside titles and does not strip unmatched years", () => {
+    const ordered = approvedEditionTimeline([
+      { ...editions[0]!, slug: "title-differs", title: "The 2026 Eid Relief Review" },
+      { ...editions[1]!, slug: "prefix-differs", title: "2024 — Review of 2025" },
+      { ...editions[0]!, slug: "no-subtitle", title: "2026 —" },
+      { ...editions[0]!, slug: "period-title", year: null, startYear: 2023, endYear: 2026,
+        title: "2023–2026 — A Recorded Multi-Year Effort" },
+    ]);
+    expect(ordered.find(item => item.slug === "title-differs")?.displayTitle).toBe("The 2026 Eid Relief Review");
+    expect(ordered.find(item => item.slug === "prefix-differs")?.displayTitle).toBe("2024 — Review of 2025");
+    expect(ordered.find(item => item.slug === "no-subtitle")?.displayTitle).toBe("2026 —");
+    expect(ordered.find(item => item.slug === "period-title")?.displayTitle).toBe("A Recorded Multi-Year Effort");
+  });
+});
