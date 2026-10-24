@@ -1,3 +1,10 @@
+## 25 October 2026 — sole-writer release checkpoint after #434
+
+- **Sole active implementation writer:** `CHATGPT_ACTIVE`. Earlier `CODEX_ACTIVE` records below are historical; do not open competing writer branches.
+- **#433:** full hosted CI `40129948886` SUCCESS; ready-state CI `40133153027` promotion + verify SUCCESS; expected-head merge main `b033e99982caaeb295726bf19df64ca1ffa7f7a3`; Railway `a8d650de-9e24-4569-81d8-58d2b81e297b` SUCCESS, exact public version and readiness verified.
+- **#434:** bounded CLI+CI-only performance measurement, full CI `40133473638` SUCCESS, ready-state CI `40136256260` SUCCESS, guarded merge `771cba2e0c0cfe364962bc8db0f43581f8d958e2`. Website deployment `5d749e49-9b1a-4881-be8d-dd1a19f7e5b0` SKIPPED because no files matched Railway website watch patterns. **Live website remains valid on `b033e99982ca`; never claim #434 runtime deployment.**
+- **Next:** document the repeatable CSS data collection, then measure route/state coverage and fix only reproduced waste; AF-R057/R068 remain open. 149 statuses unchanged; no real finance actions, secret changes or unreviewed legal/religious decisions; notifications #264 disabled and localization #374 draft.
+
 ## 2026-10-25 — ChatGPT handoff: #431 live verified, #433 continuation
 
 Owner-provided 25 October handover explicitly transfers sole repository implementation to CHATGPT_ACTIVE; prior CODEX_ACTIVE entries below are historical. Verified GitHub #431 exact tested head `8dc4c0b7da92d240bef5475071b90443a9b39e0f`: full run `40125762941` all seven jobs SUCCESS. Marked ready with no head movement; separate ready_for_review run `40129381980` passed fail-closed Production promotion readiness and verify. Merged with expected-head guard to main `f9e4ec378cca008916c3e10c6abdbb98662e8c2a`. Railway website deployment `97bbab40-ad88-4a45-9d5e-5ee75233c802` SUCCESS. Fresh public `/api/health/version` HTTP200 returned exact merge SHA, branch main, environment production; `/api/health/ready` HTTP200 returned ready. This verifies release identity/readiness, NOT physical-device accessibility, religious policy, payment transactions or complete historic master closure.
