@@ -1,5 +1,12 @@
 # Amaana Master Reconciled Execution Plan — War-Footing Revision
 
+## Verified release checkpoint — 25 October 2026
+
+PR #431, exact source head `8dc4c0b7da92d240bef5475071b90443a9b39e0f`, passed full hosted CI `40125762941` and separate fail-closed ready-state promotion/verify `40129381980`. Under owner's standing permission, it merged to `main` as `f9e4ec378cca008916c3e10c6abdbb98662e8c2a`. Railway website deployment `97bbab40-ad88-4a45-9d5e-5ee75233c802` reports SUCCESS; independent fresh public version/readiness checks returned exact main/production SHA and ready. This advances released navigation semantics, malformed live-update resilience and missing-tomorrow-prayer handling, not full WCAG/device certification.
+
+The next candidate is existing #433 on branch `fix/audit-harness-native-loading-20261025`, retargeted to `main` after #431 release. Its source delivers full Companion-response parsing, ordinary Vitest-import canonical audit checks (AF-R011) and safe DOM test fixture creation (AF-R010). Historical local 2,156 unit tests passed/15 skipped with TypeScript/standalone content/bounded browser evidence, but new reconciled-head full hosted CI, promotion and Railway/public parity are required before merge or closure. The canonical 149-status ledger is unchanged: 1 Completed, 59 Implemented, 61 Partial, 26 Not started, 1 Superseded, 1 Not applicable. Issue #264 delivery remains disabled and draft #374 localization remains unapproved.
+
+
 **Reconciled:** 2026-10-20 IST  
 **Scope:** 149 historical entries reconciled into one current master index; no inferred closure.  
 **Binding directives:** [Owner audit and elite-engineering directive](./AMAANA_ENGINEERING_DIRECTIVES_2026-10-20.md); `AGENTS.md`; `docs/AI_CONTINUITY_PROTOCOL.md`; `docs/CURRENT_SOURCE_RECONCILIATION_2026-09-15.md`.  
