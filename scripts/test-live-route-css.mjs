@@ -81,3 +81,12 @@ test("rejects a non-CSS HTTP 200 fallback at a stylesheet URL", async () => {
   });
   await assert.rejects(auditPublicRouteCss({ fetchImpl, routes: ["/"] }), /not CSS/);
 });
+
+test("rejects a URL backslash normalization before any network request", async () => {
+  let called = false;
+  await assert.rejects(auditPublicRouteCss({
+    routes: ["/\\evil.invalid"],
+    fetchImpl: async () => { called = true; throw new Error("foreign request was made"); },
+  }), /Invalid public route/);
+  assert.equal(called, false);
+});
