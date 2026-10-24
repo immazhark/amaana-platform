@@ -8,6 +8,9 @@ describe("public route loading skeleton", () => {
     ["appeals", "Loading reviewed appeal information"],
     ["impact", "Loading published impact records"],
     ["work", "Loading published programmes"],
+    ["appeal-detail", "Loading reviewed appeal details"],
+    ["programme-detail", "Loading published programme details"],
+    ["story-detail", "Loading approved story details"],
   ] as const)("announces %s without inventing funds or beneficiary details", (variant, text) => {
     const html = renderToStaticMarkup(<RouteLoadingSkeleton variant={variant} />);
     expect(html).toContain(text);
