@@ -1,3 +1,15 @@
+## 2026-10-24 — Navigation capture target guard prepared locally
+
+CODEX_ACTIVE. The document-level navigation click listener assumed every event target was an Element. A document-target click deterministically threw TypeError from closest(). New focused regression failed before the fix and passes after an instanceof Element guard. Non-element events are ignored before anchor lookup. Scoped ESLint and diff checks pass. This is local source proof only; full hosted acceptance and publication remain pending, no new deployment claimed. Includes prior verified #429 containment checkpoint below.
+
+## 2026-10-24 — Verified containment release checkpoint
+
+CODEX_ACTIVE under standing owner commit and qualifying-merge authorization. GitHub PR #429 merged normally at main `fa385c25ab97ea6dabd64b9a124eee33ecadf6fe`. Exact candidate `48f55d79d1a12a0f05f6759d79a7570aa450df42` passed full CI `40091754703`, isolated worker-image run `40091754704`, and ready-state promotion `40097640245`. Fresh local native Node suite: 16 passed, zero failed.
+
+Railway worker deployment `33ad2fc9-23ca-4238-9678-ba586f368d9c` is SUCCESS for this main SHA. Independently inspected live worker configuration: source root `/ops/notification-cron`, Dockerfile builder, `node --check run.mjs`, annual `0 0 1 1 *`, restart NEVER, staged changes null. No delivery invocation or infrastructure mutation performed. This verifies safe containment, not recipient delivery; issue #264 remains open. Preserve #374, all privacy/legal/factual/payment locks and historical 149-item counts.
+
+Earlier instructions to reconcile or release #421/#422 are superseded: both are merged; main subsequently includes #425–#428. Last independently observed public website SHA `5c1a55ae070d156528a9640174337e97a0dbd198`, readiness ready; do not infer a newer website deployment from worker SUCCESS. Continue from current GitHub main and inspect open candidates before source edits.
+
 ## 2026-10-24 — #421 reconciliation with released #422 (ChatGPT chat continuation)
 
 Existing PR #421 reconciled against main d9b77cce (#422 Zod security fix) under standing owner authorization. Carousel source/tests remain independent of #422. Both engineering history logs retain their complete prior records. PR remains DRAFT pending fresh exact-head complete hosted acceptance and protected promotion. Railway confirms amaana-platform deployment c61688d7 SUCCESS for d9b77cce, but public exact SHA/ready response not independently verified. Separate notification-cron has a failed build and earlier crash; do not confuse this with the website. Preserve hard JS/CSS budgets, #374/#264, 149-item history, beneficiary/privacy/payment/legal constraints. No new main release claimed.
