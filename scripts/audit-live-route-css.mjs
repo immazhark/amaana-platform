@@ -61,11 +61,12 @@ export async function auditPublicRouteCss({ fetchImpl = fetch, routes = PUBLIC_R
     return response;
   }
   for (const route of routes) {
-    if (typeof route !== "string" || !/^\/(?!\/)/.test(route) || route.includes("..") || route.includes("?") || route.includes("#")) {
+    if (typeof route !== "string" || !/^\/(?!\/)/.test(route) || route.includes("..") || route.includes("?") || route.includes("#") || route.includes("\\")) {
       throw new Error("Invalid public route: " + route);
     }
-    const pageUrl = new URL(route, site).href;
-    const html = await (await request(pageUrl)).text();
+    const pageUrl = new URL(route, site);
+    if (pageUrl.origin !== site.origin) throw new Error("Invalid public route: " + route);
+    const html = await (await request(pageUrl.href)).text();
     const stylesheets = stylesheetsInHtml(html, site.href);
     entries.push({ route, stylesheets });
     for (const asset of stylesheets) {
