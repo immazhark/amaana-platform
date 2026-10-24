@@ -1,5 +1,10 @@
 # Amaana Master Reconciled Execution Plan — War-Footing Revision
 
+## Verified engineering checkpoint — 25 October 2026 (#433 runtime, #434 tooling)
+
+The current live website is PR #433 merge SHA `b033e99982caaeb295726bf19df64ca1ffa7f7a3`: full CI `40129948886`, ready-state `40133153027`, Railway `a8d650de-9e24-4569-81d8-58d2b81e297b` SUCCESS, public version exact and readiness ready. Latest main commit `771cba2e0c0cfe364962bc8db0f43581f8d958e2` merges PR #434 (read-only route CSS measurement): full CI `40133473638`, ready-state `40136256260` passed. Railway `5d749e49-9b1a-4881-be8d-dd1a19f7e5b0` SKIPPED because only `scripts/**` and `.github/**` changed and neither matches runtime website watch patterns. Do not represent #434 as a runtime release. The authoritative measurement procedure is `docs/PUBLIC_ROUTE_CSS_MEASUREMENT.md`. AF-R057/AF-R068 route/state CSS coverage and AF-R042 physical accessibility evidence remain open; no actual LCP/INP/CLS measured by #434. Historic 149: 1 Completed, 59 Implemented, 61 Partial, 26 Not started, 1 Superseded, 1 Not applicable; unchanged. All historic sections below preserve their original evidence time and must not be mistaken for the latest release.
+
+
 ## Verified release checkpoint — 25 October 2026
 
 PR #431, exact source head `8dc4c0b7da92d240bef5475071b90443a9b39e0f`, passed full hosted CI `40125762941` and separate fail-closed ready-state promotion/verify `40129381980`. Under owner's standing permission, it merged to `main` as `f9e4ec378cca008916c3e10c6abdbb98662e8c2a`. Railway website deployment `97bbab40-ad88-4a45-9d5e-5ee75233c802` reports SUCCESS; independent fresh public version/readiness checks returned exact main/production SHA and ready. This advances released navigation semantics, malformed live-update resilience and missing-tomorrow-prayer handling, not full WCAG/device certification.

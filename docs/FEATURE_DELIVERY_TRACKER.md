@@ -1,4 +1,12 @@
-# Feature delivery tracker
+# Delivery checkpoint — 25 October 2026 (supersedes older historical checkpoint paragraphs below)
+
+- **Live website:** `b033e99982caaeb295726bf19df64ca1ffa7f7a3` from PR #433; full CI `40129948886`, ready-state `40133153027`, Railway deployment `a8d650de-9e24-4569-81d8-58d2b81e297b` SUCCESS; fresh public `/api/health/version` matched the SHA and `/api/health/ready` returned `ready`.
+- **Latest GitHub main:** `771cba2e0c0cfe364962bc8db0f43581f8d958e2`, PR #434 (read-only CSS measurement and CI regressions). Full CI `40133473638` and ready-state `40136256260` all gates passed; merged with expected-head guard. Railway `5d749e49-9b1a-4881-be8d-dd1a19f7e5b0` **SKIPPED intentionally** because the service watch patterns exclude the changed scripts and workflow files. No runtime app change; live version need not equal this tooling-only merge SHA.
+- **Feature delivered:** validated Companion response handling and native audit harness from #433; route CSS decoded-byte audit CLI plus seven new deterministic cases from #434. Full protected browser acceptance passed for both exact candidate heads. This is not real-device accessibility certification, actual donations, or Core Web Vitals/unused-CSS evidence.
+- **Next:** AF-R057/AF-R068 measured per-route CSS baseline and dynamic-state coverage; then smallest verified defect. See `docs/PUBLIC_ROUTE_CSS_MEASUREMENT.md`. AF-R042 real TalkBack/VoiceOver/NVDA/400%-zoom remains partial. AF-R076 Cloudflare email link remains unconfirmed without a reproducible broken URL.
+- **149-row historical register unchanged:** 1 completed, 59 implemented, 61 partial, 26 not started, 1 superseded, 1 not applicable. Keep notification #264 disabled, localization #374 draft, unresolved legal/tax status unasserted.
+
+## Historical feature delivery tracker
 
 Checkpoint: 25 October 2026. This is the feature-level view; the 149-row master execution register remains the detailed acceptance authority. A working public feature is not automatically a closed audit item.
 

@@ -1,5 +1,10 @@
 # Amaana Mission Control — comprehensive status audit
 
+## Verified engineering checkpoint — 25 October 2026 (#433 runtime, #434 tooling)
+
+The current live website is PR #433 merge SHA `b033e99982caaeb295726bf19df64ca1ffa7f7a3`: full CI `40129948886`, ready-state `40133153027`, Railway `a8d650de-9e24-4569-81d8-58d2b81e297b` SUCCESS, public version exact and readiness ready. Latest main commit `771cba2e0c0cfe364962bc8db0f43581f8d958e2` merges PR #434 (read-only route CSS measurement): full CI `40133473638`, ready-state `40136256260` passed. Railway `5d749e49-9b1a-4881-be8d-dd1a19f7e5b0` SKIPPED because only `scripts/**` and `.github/**` changed and neither matches runtime website watch patterns. Do not represent #434 as a runtime release. The authoritative measurement procedure is `docs/PUBLIC_ROUTE_CSS_MEASUREMENT.md`. AF-R057/AF-R068 route/state CSS coverage and AF-R042 physical accessibility evidence remain open; no actual LCP/INP/CLS measured by #434. Historic 149: 1 Completed, 59 Implemented, 61 Partial, 26 Not started, 1 Superseded, 1 Not applicable; unchanged. All historic sections below preserve their original evidence time and must not be mistaken for the latest release.
+
+
 **Checkpoint:** 25 October 2026 IST. **Scope:** all 149 canonical ledger rows, current source inspection, Git first-parent release history, open issue/PR audit, focused executed tests, and read-only production identity checks. This is not a legal opinion, full penetration test, real-device certification, live financial transaction test, or line-by-line audit of all historical code.
 
 ## Release checkpoint — post-audit evidence (25 October 2026)
