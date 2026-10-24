@@ -2,6 +2,10 @@
 
 **Checkpoint:** 25 October 2026 IST. **Scope:** all 149 canonical ledger rows, current source inspection, Git first-parent release history, open issue/PR audit, focused executed tests, and read-only production identity checks. This is not a legal opinion, full penetration test, real-device certification, live financial transaction test, or line-by-line audit of all historical code.
 
+## Release checkpoint — post-audit evidence (25 October 2026)
+
+PR #431 is now MERGED and independently LIVE_VERIFIED for release identity/readiness: full exact-head CI `40125762941` all seven jobs SUCCESS, separate fail-closed ready-state `40129381980` promotion/verify SUCCESS, guarded merge to `f9e4ec378cca008916c3e10c6abdbb98662e8c2a`; Railway website deployment `97bbab40-ad88-4a45-9d5e-5ee75233c802` SUCCESS; fresh public version HTTP200 identified exact main/production commit, and fresh readiness HTTP200 returned ready. The earlier PR #431 draft/browser-failure and runtime #430 rows below are historical pre-release observations. PR #433 remains UNMERGED; it prepares AF-R010/R011 audit-harness improvements and Companion response validation, pending its own hosted/live acceptance. These facts do not imply real-device accessibility, Core Web Vitals, private workflow certification, live payments, or any extra item closure. The 149-row audit classes remain 1 Completed, 59 Implemented, 61 Partial, 26 Not started, 1 Superseded, 1 Not applicable.
+
 ## Executive diagnosis
 
 The frozen labels **26 not started / 59 implemented / 61 partial** are historical classifications, not a deploy queue. The remaining three rows are AF-N10 completed, AF-ZAKAT-LOCK superseded and AF-CRYPTO not applicable. This report accounts for every ID once in those groups; no denominator inflation.
@@ -1476,6 +1480,14 @@ The official GitHub advisory [GHSA-vfj7-8cjw-p6xm](https://github.com/advisories
 ## Consolidated execution checkpoint
 
 The initial #431 browser run finished1348 passed/1 flaky/1 failed. Its failing assertion still expected page on a parent-section link; the corrected test now verifies location+active on the detail route and page on exact Our Work. Companion response corrections, this audit and navigation work are consolidated into the existing #431 candidate by normal ancestry. Fresh combined2145 unit tests pass/15skip and13 native calendar/prayer tests pass; TypeScript/scoped ESLint/spec syntax/diff pass. A new full exact-head hosted run is required; no competing runtime PR or automatic merge of a failed head.
+
+## Prepared AF-R010 / AF-R011 follow-up
+
+The residual findings below are a historical audit snapshot. Subsequent source correction replaces the constant visual-fixture innerHTML with equivalent DOM construction and the hand-transpiled new Function loader with ordinary TypeScript contract tests launched through the pinned existing runner. Full2148 local units pass/15skip; TypeScript/scoped lint/spec parse/diff pass. Standalone verifier succeeds with string code generation disabled in its launcher; intentional invalid umbrella-count and locked-debt-figure mutations still reject and are restored. Full hosted/visual acceptance and merge remain pending; no whole-item closure or production vulnerability incident is claimed. The follow-up is stacked behind frozen4318dc4c0b7.
+
+## Complete prayer-response boundary follow-up
+
+Existing stacked433 also validates required current-day timings and labels before state updates, and treats invalid optional tomorrow/moon data as unavailable. Three request-integration regressions failed before correction; full2156 local unit tests pass/15skip, TypeScript/scoped lint/spec syntax/diff pass. Two isolated Chromium malformed-response cases pass on pinned1.55. Independent review confirms actual API compatibility and valid-current-day preservation. Hosted acceptance/release remains pending; no prayer/religious policy, calculation, public factual copy or provider change.
 
 ## Next iterations and closure rules
 
