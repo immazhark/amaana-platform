@@ -397,6 +397,10 @@ test('navigation marks current primary, support and secondary routes consistentl
   await openPublicPage(page, '/our-work/eid-gift-kits');
 
   const primaryNav = page.getByRole('navigation', { name: 'Primary navigation' });
+  // A programme detail is inside Our Work, but is not the Our Work page.
+  await expect(primaryNav.getByRole('link', { name: 'Our Work' })).toHaveAttribute('aria-current', 'location');
+  await expect(primaryNav.getByRole('link', { name: 'Our Work' })).toHaveClass(/active/);
+  await openPublicPage(page, '/our-work');
   await expect(primaryNav.getByRole('link', { name: 'Our Work' })).toHaveAttribute('aria-current', 'page');
   await expect(primaryNav.getByRole('link', { name: 'Impact' })).not.toHaveAttribute('aria-current', 'page');
 
