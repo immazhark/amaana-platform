@@ -4,6 +4,7 @@ import Link from "next/link";
 import { UIIcon } from "./ui-icon";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { hyderabadClock, remindersFor } from "@/lib/daily-companion";
+import { parseLiveRailItems, type LiveRailItem } from "@/lib/live-rail";
 import type { CompanionPanelKind } from "@/components/islamic-companion-panel";
 
 type Moon = {
@@ -17,18 +18,6 @@ type Moon = {
 type MoonState = {
   date: string;
   moon: Moon | null;
-};
-
-type LiveRailItem = {
-  id: string;
-  kind: "appeal" | "initiative";
-  eyebrow: string;
-  title: string;
-  subtitle: string;
-  detailsHref: string;
-  supportHref: string;
-  detailsCta: string;
-  supportCta: string;
 };
 
 const IslamicCompanionPanel = lazy(() =>
@@ -90,8 +79,8 @@ export function IslamicCompanion() {
     const load = () => {
       fetch("/api/public/live-rail", { cache: "no-store", signal: controller.signal })
         .then(response => response.ok ? response.json() : { items: [] })
-        .then((payload: { items?: LiveRailItem[] }) => {
-          if (!controller.signal.aborted && Array.isArray(payload.items)) setLiveItems(payload.items);
+        .then((payload: unknown) => {
+          if (!controller.signal.aborted) setLiveItems(parseLiveRailItems(payload));
         })
         .catch(() => undefined);
     };

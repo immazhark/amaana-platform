@@ -104,3 +104,18 @@ for (const width of [320, 390, 768, 900, 1024, 1440, 1920]) {
     });
   }
 }
+
+
+test('malformed live update is skipped while a valid update renders', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.route('**/api/public/live-rail', route => route.fulfill({ status: 200, json: { items: [
+    { title: { invalid: true } },
+    { id: 'valid-after-malformed', kind: 'initiative', eyebrow: 'Foundation update', title: 'Reviewed update remains available', detailsHref: '/our-work', supportHref: '/contact', detailsCta: 'Explore', supportCta: 'Contact' },
+  ] } }));
+  await page.goto('/browser-acceptance/home-hero', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('.amaana-live-content strong')).toHaveText('Reviewed update remains available');
+  await page.locator('.amaana-companion-dock button').click();
+  await expect(page.getByRole('tab', { name: 'Ayah & Hadith', exact: true })).toBeVisible();
+  expect(errors).toEqual([]);
+});
