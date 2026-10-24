@@ -4,11 +4,11 @@ Checkpoint: 25 October 2026. This is the feature-level view; the 149-row master 
 
 ## Current release
 
-- Production/main: `91b3631b0323b9b0ac97d8298024f16deadce406` (PR #430).
-- Railway website deployment `a3faf244-9e39-461a-a3e0-ffdae0a4d32a`: SUCCESS.
-- Fresh public version matched the SHA and `/api/health/ready` returned `ready`.
-- Next candidate: existing PR #431, consolidated navigation + Companion response-resilience batch. Fresh combined 2,145 unit tests pass /15 skipped,13 calendar/prayer tests pass, TypeScript and scoped lint pass. Initial browser run failed one stale parent-section aria-current expectation; correction and fresh full acceptance required; not released.
-- Register: **1 completed / 59 historically implemented / 61 partial / 26 not started / 1 superseded / 1 not applicable**. These are audit classifications, not feature completion percentages.
+- Production/main: `f9e4ec378cca008916c3e10c6abdbb98662e8c2a` (PR #431), merged with expected-head guard after full `40125762941` SUCCESS and ready-state `40129381980` SUCCESS.
+- Railway website deployment `97bbab40-ad88-4a45-9d5e-5ee75233c802`: SUCCESS; fresh public `/api/health/version` HTTP200 identified the same SHA / main / production, and `/api/health/ready` HTTP200 returned `ready`.
+- Released #431: exact-destination/parent navigation semantics, malformed live-update handling, and missing-tomorrow-prayer recovery. Complete real-device accessibility remains open; AF-R042 remains Partial.
+- Next candidate: existing stacked PR #433, complete Companion response validation plus AF-R010/R011 audit test corrections. Prior local 2,156 unit tests passed /15 skipped, TypeScript and bounded browser checks passed; fresh hosted exact-head acceptance and separate ready-state promotion remain required. No #433 merge or deployment is claimed.
+- Register: **1 completed / 59 historically implemented / 61 partial / 26 not started / 1 superseded / 1 not applicable**. No row changes from this release checkpoint.
 
 ## Mission Control audit
 
@@ -42,7 +42,7 @@ Existing stacked433 now also completes required prayer-response field validation
 
 ## Next three iterations
 
-1. **Navigation accessibility release.** Finish #431 exact-head full CI, separate ready-state promotion, guarded merge and matching live deployment. Accept only the corrected current-page semantics; AF-R042 remains partial until manual acceptance is complete.
+1. **Companion boundary and audit acceptance.** Reconcile PR #433 on the released main; obtain fresh full exact-head hosted acceptance, ready-state promotion, guarded merge and verified live deployment. Preserve AF-R010/R011 incomplete acceptance until verified.
 2. **Companion reliability, then measured public-page quality.** Publish the tested malformed-live-update and missing-tomorrow-prayer response handling; verify exact-head browser/build/budget acceptance and release it. Capture representative Home, Our Work, Impact and Donate measurements; inspect current FAQ/schema and public links. Select the largest reproducible low-risk accessibility/performance defect. Ship a coherent tested batch, with before/after evidence and unchanged budgets. Real Indian Android evidence remains unverified until actually obtained.
 3. **Private-journey reliability.** Review anonymous/admin API boundaries and assistance/consent acceptance read-only. Present a concrete plan for any auth, donor-data, payment or security change before modification. Legal, provider and device evidence remain explicit external gates.
 
