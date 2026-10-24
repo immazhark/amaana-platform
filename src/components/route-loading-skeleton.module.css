@@ -1,0 +1,107 @@
+/* Streaming loading surfaces use the canonical brand palette only. */
+.root {
+  min-height: 65vh;
+  padding: clamp(1rem, 3vw, 2.5rem) 0 3rem;
+  color: var(--af-color-text);
+  background: var(--af-color-canvas);
+}
+.announcement {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.shell {
+  width: min(calc(100% - (var(--af-public-gutter) * 2)), var(--af-public-shell));
+  margin-inline: auto;
+}
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: clamp(1rem, 3vw, 3rem);
+  min-height: 18rem;
+  padding-block: clamp(1rem, 3vw, 2rem);
+}
+.heroCopy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: .9rem;
+}
+.kicker,.title,.titleShort,.paragraph,.paragraphShort,.action,
+.heading span,.cardImage,.cardTitle,.cardCopy,.cardCopyShort {
+  display: block;
+  border-radius: var(--af-radius-sm);
+  background: linear-gradient(90deg,
+    var(--af-color-surface-muted) 0%,
+    var(--af-color-border) 50%,
+    var(--af-color-surface-muted) 100%);
+  background-size: 200% 100%;
+  animation: amaana-route-loading-shimmer 2.4s ease-in-out infinite;
+}
+.kicker { width: 8rem; height: .9rem; }
+.title { width: 95%; height: clamp(2rem, 4vw, 3.8rem); }
+.titleShort { width: 66%; height: clamp(2rem, 4vw, 3.8rem); }
+.paragraph { width: 100%; height: 1rem; }
+.paragraphShort { width: 75%; height: 1rem; }
+.action { width: 9rem; height: 2.8rem; margin-top: .5rem; border-radius: var(--af-radius-pill); }
+.visual {
+  display: grid;
+  place-items: center;
+  min-height: 16rem;
+  overflow: hidden;
+  border-radius: var(--af-radius-lg);
+  background: linear-gradient(145deg, var(--af-color-navy-800), var(--af-color-navy-950));
+}
+.emblem {
+  display: block;
+  width: min(7rem, 40%);
+  aspect-ratio: 1;
+  opacity: .24;
+  background: url("/brand/amaana-mark.svg") center / contain no-repeat;
+}
+.body { padding-block: 1.75rem; }
+.heading { display: grid; gap: .7rem; margin-bottom: 1.3rem; }
+.heading span:first-child { width: 10rem; height: 1rem; }
+.heading span:last-child { width: min(25rem, 70%); height: 2rem; }
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.card {
+  display: grid;
+  min-width: 0;
+  min-height: 14rem;
+  align-content: start;
+  gap: .8rem;
+  padding: 1rem;
+  border: 1px solid var(--af-color-border);
+  border-radius: var(--af-radius-md);
+  background: var(--af-color-surface);
+}
+.cardImage { height: 6rem; }
+.cardTitle { width: 86%; height: 1.3rem; }
+.cardCopy { height: .85rem; }
+.cardCopyShort { width: 65%; height: .85rem; }
+@keyframes amaana-route-loading-shimmer {
+  0%,100% { background-position: 0 0; }
+  50% { background-position: 100% 0; }
+}
+@media (max-width: 760px) {
+  .hero { grid-template-columns: minmax(0, 1fr); }
+  .visual { min-height: 9rem; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .grid { grid-template-columns: minmax(0, 1fr); }
+  .card { min-height: 9rem; }
+  .cardImage { height: 3rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .kicker,.title,.titleShort,.paragraph,.paragraphShort,.action,
+  .heading span,.cardImage,.cardTitle,.cardCopy,.cardCopyShort {
+    animation: none;
+    background: var(--af-color-surface-muted);
+  }
+}
+@media print { .root { display: none !important; } }
