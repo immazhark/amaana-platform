@@ -1,3 +1,11 @@
+## 2026-10-25 — Complete prayer-response boundary prepared in follow-up433
+
+CODEX_ACTIVE sole writer. Extend existing stacked433 (parent0341da44) with full prayer-response decoder; keep4318dc4c0b7 frozen under40125762941. Required current timetable/date/school/calculation labels are validated before React state. Invalid optional tomorrow and moon/eveningMoon become unavailable independently, retaining valid current timings and existing unconfirmed-date fallback. No prayer calculation/religious text/policy changes.
+
+Three request-integration regressions failed on prior source (object-valued metadata, incomplete tomorrow, malformed confirmed-moon object); fixed decoder passes them and valid-data cases. Fresh full2156 units pass/15skip; TypeScript/scoped lint/spec syntax/diff pass. Independent review confirmed actual API compatibility, current-day preservation and sunset/date logic. Two isolated Chromium cases pass on pinnedPlaywright1.55 (malformed live update + malformed optional moon/tomorrow); tests await accepted sentinel/timetable, not a pre-fetch fallback. Local dev checks used an isolated archive and restored generated AGENTS/next-env/fixture materialization in repo. This is bounded local browser acceptance, not full hosted/physical-device certification.
+
+Follow-up433 now includes audit-tool corrections plus completion of Companion response validation; MEDIUM frontend resilience. Hosted exact-head build/budgets/DB/browser and promotion remain required after parent431 acceptance/release and normal retarget/reconciliation. Historical149 totals remain unchanged; no new deployment claimed. Root report and feature tracker carry this checkpoint.
+
 ## 2026-10-25 — Prepared audit-harness correction; primary431 frozen
 
 CODEX_ACTIVE sole writer. Branch fix/audit-harness-native-loading-20261025 is stacked on frozen431 candidate8dc4c0b7; primary431 fast/database/production pass under40125762941, browser running. Do not move431 or merge this follow-up ahead of its dependency.

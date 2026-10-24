@@ -20,6 +20,10 @@ The partial-work audit identifies17 genuine implementation gaps,27 measured sour
 
 AF-R010/R011: remove the visual fixture innerHTML assignment and replace the custom new Function content loader with ordinary imported TypeScript tests through the existing pinned runner. Local2148 units pass/15skip; standalone audit and intentional invalid-fixture rejection pass. Stacked behind431; not merged/closed. No public-runtime feature change.
 
+## Companion response boundary follow-up
+
+Existing stacked433 now also completes required prayer-response field validation and optional tomorrow/moon handling. Fresh2156 unit tests pass/15skip, TypeScript/scoped lint pass,2 isolated Chromium malformed-response cases pass. Current timetable and unconfirmed-moon fallback are preserved. Await parent431 release and fresh hosted acceptance; not deployed.
+
 ## Feature view
 
 | Feature | Delivered capability | Remaining acceptance or implementation | Next iteration |

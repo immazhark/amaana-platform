@@ -1481,6 +1481,10 @@ The initial #431 browser run finished1348 passed/1 flaky/1 failed. Its failing a
 
 The residual findings below are a historical audit snapshot. Subsequent source correction replaces the constant visual-fixture innerHTML with equivalent DOM construction and the hand-transpiled new Function loader with ordinary TypeScript contract tests launched through the pinned existing runner. Full2148 local units pass/15skip; TypeScript/scoped lint/spec parse/diff pass. Standalone verifier succeeds with string code generation disabled in its launcher; intentional invalid umbrella-count and locked-debt-figure mutations still reject and are restored. Full hosted/visual acceptance and merge remain pending; no whole-item closure or production vulnerability incident is claimed. The follow-up is stacked behind frozen4318dc4c0b7.
 
+## Complete prayer-response boundary follow-up
+
+Existing stacked433 also validates required current-day timings and labels before state updates, and treats invalid optional tomorrow/moon data as unavailable. Three request-integration regressions failed before correction; full2156 local unit tests pass/15skip, TypeScript/scoped lint/spec syntax/diff pass. Two isolated Chromium malformed-response cases pass on pinned1.55. Independent review confirms actual API compatibility and valid-current-day preservation. Hosted acceptance/release remains pending; no prayer/religious policy, calculation, public factual copy or provider change.
+
 ## Next iterations and closure rules
 
 1. **Finish current public navigation release (#431).** Preserve exact source head while full hosted acceptance runs. Then run separate ready-state promotion, merge under expected-head guard and verify Railway/public identity plus nested navigation semantics. This closes the source defect, not all AF-R042 assistive-device acceptance.
