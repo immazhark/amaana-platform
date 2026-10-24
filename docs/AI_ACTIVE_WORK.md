@@ -1,3 +1,11 @@
+## 2026-10-25 — Work session takeover and public navigation semantics
+
+CODEX_ACTIVE sole implementation writer under owner handoff and renewed explicit commit/merge authorization. Branch fix/public-navigation-current-page-20261025 descends from main 91b3631b. PR #430 c61b285d passed full CI40102771696 and promotion40119313861, then merged with expected-head guard as91b3631b. Railway website a3faf244 SUCCESS; fresh public version HTTP200 reports91b3631b0323b9b0ac97d8298024f16deadce406 and readiness ready. Scrapes01a16f3e-6e7d-735b-bbce-e55fcf2c5642 /01a16f3e-6e87-7421-bdd7-814ed2303319 independently certify this release.
+
+Reproduced three public navigation defects with rendered-component fail-first tests: nested sponsorship footer announces two current pages; feedback footer misidentifies its Contact parent as current page; header labels section parent as current page. Footer now marks exact destinations only; header preserves existing active classes but uses aria-current=location for parent sections. Four component tests pass, all2139 unit tests pass/15skip, TypeScript/scoped ESLint/spec parse/diff checks pass. Two browser cases prepared for390/1440px, not executed locally; full hosted exact-head and promotion remain required. No full AF-R042 closure.
+
+AF-R076 investigation: fresh Firecrawl Contact fetch HTTP200 scrape01a16f3b-85cb-76fd-9b9f-49b511c66a1c lists canonical mailto and donation-support href; no broken Cloudflare href reproduced on this route. Record bounded evidence, do not invent a patch or close other unexamined routes. Preserve #374/#264, financial/privacy gates and existing history. Continue production identity verification and this candidate's protected acceptance.
+
 ## 2026-10-24 — Navigation capture target guard prepared locally
 
 CODEX_ACTIVE. The document-level navigation click listener assumed every event target was an Element. A document-target click deterministically threw TypeError from closest(). New focused regression failed before the fix and passes after an instanceof Element guard. Non-element events are ignored before anchor lookup. Scoped ESLint and diff checks pass. This is local source proof only; full hosted acceptance and publication remain pending, no new deployment claimed. Includes prior verified #429 containment checkpoint below.

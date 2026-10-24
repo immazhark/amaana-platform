@@ -326,3 +326,22 @@ for (const backwards of [false, true]) {
     await expect(page.locator('body')).not.toHaveClass(/af-menu-lock/);
   });
 }
+
+for (const width of [390, 1440]) {
+  test(`nested sponsorship route has one exact footer current page at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/get-involved/sponsor-education', { waitUntil: 'domcontentloaded' });
+    const footer = page.locator('.site-footer');
+    await footer.scrollIntoViewIfNeeded();
+    if (width <= 520) await footer.getByRole('button', { name: 'Take part', exact: true }).click();
+    await expect(footer.locator('.footer-links a[aria-current="page"]')).toHaveText('Sponsor Education');
+    await expect(footer.locator('a[href="/get-involved"]')).not.toHaveAttribute('aria-current');
+    if (width <= 1020) {
+      await page.getByRole('button', { name: 'Open navigation menu', exact: true }).click();
+    }
+    const navigation = page.getByRole('navigation', { name: width <= 1020 ? 'Mobile navigation' : 'Primary navigation', exact: true });
+    const parent = navigation.getByRole('link', { name: 'Get Involved', exact: true });
+    await expect(parent).toHaveAttribute('aria-current', 'location');
+    await expect(parent).toHaveClass(/active/);
+  });
+}
