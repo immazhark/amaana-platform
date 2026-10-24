@@ -32,7 +32,7 @@ export function FooterNavGroup({ label, children }: FooterNavGroupProps) {
         {Children.map(children, child => {
           if (!isValidElement<{ href?: string; "aria-current"?: "page" }>(child)) return child;
           const href = child.props.href;
-          const active = typeof href === "string" && (pathname === href || pathname.startsWith(`${href}/`));
+          const active = typeof href === "string" && pathname === href;
           return cloneElement(child, { "aria-current": active ? "page" : undefined });
         })}
       </div>

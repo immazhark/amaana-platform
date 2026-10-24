@@ -40,7 +40,7 @@ export function nextSalah(
       return { prayer, time: today.timings[prayer], tomorrow: false };
     }
   }
-  if (tomorrow?.date === shiftDate(clock.date, 1) && timeMinutes(tomorrow.timings.Fajr) !== null) {
+  if (tomorrow?.date === shiftDate(clock.date, 1) && timeMinutes(tomorrow.timings?.Fajr) !== null) {
     return { prayer: "Fajr" as const, time: tomorrow.timings.Fajr, tomorrow: true };
   }
   return null;

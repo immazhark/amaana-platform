@@ -114,3 +114,16 @@ test("reading collection has unique keys, Arabic and safe primary source links",
   for (const ayah of AYAHS) { assert.match(ayah.arabic, /[\u0600-\u06ff]/); assert.match(ayah.key, /^\d+:\d+$/); }
   for (const hadith of HADITHS) { assert.ok(hadith.url.startsWith("https://sunnah.com/")); assert.ok(hadith.summary.length > 20); }
 });
+
+
+test("unavailable tomorrow timings preserve the post-Isha fallback", () => {
+  const today = { date: "2026-10-25", timings: { Fajr: "05:00", Sunrise: "06:15", Dhuhr: "12:30", Asr: "16:00", Maghrib: "18:00", Isha: "20:00" } };
+  const now = at(today.date, "23:00");
+  for (const tomorrow of [
+    { date: "2026-10-26" },
+    { date: "2026-10-26", timings: null },
+    { date: "2026-10-26", timings: { Fajr: "not a time" } },
+    { date: "2026-10-27", timings: { Fajr: "05:00" } },
+  ]) assert.equal(nextSalah(today, tomorrow, now), null);
+  assert.deepEqual(nextSalah(today, { ...today, date: "2026-10-26" }, now), { prayer: "Fajr", time: "05:00", tomorrow: true });
+});

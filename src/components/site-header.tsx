@@ -103,7 +103,7 @@ export function SiteHeader() {
           className="menu-toggle af-support-cta"
           href="/donate"
           style={{ width: "auto", minWidth: 0, paddingInline: "10px", fontSize: ".875rem" }}
-          aria-current={isActivePath(pathname, "/donate") ? "page" : undefined}
+          aria-current={pathname === "/donate" ? "page" : isActivePath(pathname, "/donate") ? "location" : undefined}
           onClick={closeMenu}
         >Donate</Link>
 
@@ -114,9 +114,9 @@ export function SiteHeader() {
         <div className="nav-links">
           {primaryLinks.map(([label, href]) => {
             const active = isActivePath(pathname, href);
-            return <Link className={active ? "nav-link active" : "nav-link"} href={href} key={href} aria-current={active ? "page" : undefined}>{label}</Link>;
+            return <Link className={active ? "nav-link active" : "nav-link"} href={href} key={href} aria-current={pathname === href ? "page" : active ? "location" : undefined}>{label}</Link>;
           })}
-          <Link className="button nav-donate af-support-cta" href="/donate" aria-current={isActivePath(pathname, "/donate") ? "page" : undefined}>Donate</Link>
+          <Link className="button nav-donate af-support-cta" href="/donate" aria-current={pathname === "/donate" ? "page" : isActivePath(pathname, "/donate") ? "location" : undefined}>Donate</Link>
         </div>
       </nav>
 
@@ -125,16 +125,16 @@ export function SiteHeader() {
           <div className="mobile-menu-primary">
             {primaryLinks.map(([label, href]) => {
               const active = isActivePath(pathname, href);
-              return <Link className={active ? "active" : undefined} href={href} key={href} onClick={closeMenu} aria-current={active ? "page" : undefined}>{label}</Link>;
+              return <Link className={active ? "active" : undefined} href={href} key={href} onClick={closeMenu} aria-current={pathname === href ? "page" : active ? "location" : undefined}>{label}</Link>;
             })}
           </div>
           <div className="mobile-menu-secondary">
             {secondaryLinks.map(([label, href]) => {
               const active = isActivePath(pathname, href);
-              return <Link className={active ? "active" : undefined} href={href} key={href} onClick={closeMenu} aria-current={active ? "page" : undefined}>{label}</Link>;
+              return <Link className={active ? "active" : undefined} href={href} key={href} onClick={closeMenu} aria-current={pathname === href ? "page" : active ? "location" : undefined}>{label}</Link>;
             })}
           </div>
-          <Link className="button af-support-cta" href="/donate" onClick={closeMenu} aria-current={isActivePath(pathname, "/donate") ? "page" : undefined}>Donate</Link>
+          <Link className="button af-support-cta" href="/donate" onClick={closeMenu} aria-current={pathname === "/donate" ? "page" : isActivePath(pathname, "/donate") ? "location" : undefined}>Donate</Link>
         </div>
       </nav>
       </header>

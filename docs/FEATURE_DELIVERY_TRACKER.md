@@ -7,8 +7,14 @@ Checkpoint: 25 October 2026. This is the feature-level view; the 149-row master 
 - Production/main: `91b3631b0323b9b0ac97d8298024f16deadce406` (PR #430).
 - Railway website deployment `a3faf244-9e39-461a-a3e0-ffdae0a4d32a`: SUCCESS.
 - Fresh public version matched the SHA and `/api/health/ready` returned `ready`.
-- Next candidate: PR #431, `a420414321709bcf0fa256a7f3a116405c952f0f`. Local 2,139 tests pass / 15 skipped, TypeScript and scoped lint pass. Full hosted acceptance pending; not released.
+- Next candidate: existing PR #431, consolidated navigation + Companion response-resilience batch. Fresh combined 2,145 unit tests pass /15 skipped,13 calendar/prayer tests pass, TypeScript and scoped lint pass. Initial browser run failed one stale parent-section aria-current expectation; correction and fresh full acceptance required; not released.
 - Register: **1 completed / 59 historically implemented / 61 partial / 26 not started / 1 superseded / 1 not applicable**. These are audit classifications, not feature completion percentages.
+
+## Mission Control audit
+
+[Comprehensive26/59/61 itemized audit](./AMAANA_MISSION_CONTROL_AUDIT_2026-10-25.md) records current source, remaining work, blockers, undocumented stall reasons and completion steps for all146 open historical classifications. The remaining3 rows are separately accounted for.
+
+The partial-work audit identifies17 genuine implementation gaps,27 measured source/acceptance gaps and17 external/manual acceptance gaps. Companion response resilience is the next prepared source batch; missing legal/provider/device evidence remains explicit.
 
 ## Feature view
 
@@ -29,7 +35,7 @@ Checkpoint: 25 October 2026. This is the feature-level view; the 149-row master 
 ## Next three iterations
 
 1. **Navigation accessibility release.** Finish #431 exact-head full CI, separate ready-state promotion, guarded merge and matching live deployment. Accept only the corrected current-page semantics; AF-R042 remains partial until manual acceptance is complete.
-2. **Measured public-page quality.** Capture representative Home, Our Work, Impact and Donate measurements; inspect current FAQ/schema and public links. Select the largest reproducible low-risk accessibility/performance defect. Ship a coherent tested batch, with before/after evidence and unchanged budgets. Real Indian Android evidence remains unverified until actually obtained.
+2. **Companion reliability, then measured public-page quality.** Publish the tested malformed-live-update and missing-tomorrow-prayer response handling; verify exact-head browser/build/budget acceptance and release it. Capture representative Home, Our Work, Impact and Donate measurements; inspect current FAQ/schema and public links. Select the largest reproducible low-risk accessibility/performance defect. Ship a coherent tested batch, with before/after evidence and unchanged budgets. Real Indian Android evidence remains unverified until actually obtained.
 3. **Private-journey reliability.** Review anonymous/admin API boundaries and assistance/consent acceptance read-only. Present a concrete plan for any auth, donor-data, payment or security change before modification. Legal, provider and device evidence remain explicit external gates.
 
 Iteration order may change for a proven higher-severity defect. Estimates do not imply a delivery date or bypass missing owner/CA/provider evidence.

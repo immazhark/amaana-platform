@@ -62,7 +62,7 @@ function fixture({ paused = false, reduced = false, count = 2, rerender = false,
     visit(element.props.children);
   };
   visit(tree);
-  return { interval, clearInterval, buttons, cleanup, elements, documentEvents, clockEffect: harness.effects[0] };
+  return { interval, clearInterval, buttons, cleanup, elements, documentEvents, clockEffect: harness.effects[0], loadEffect: harness.effects[1] };
 }
 
 describe("visibility-aware site-wide clock", () => {
@@ -160,5 +160,33 @@ describe("visitor control of live updates", () => {
     const resume = focused.elements.find(element => element.props["aria-label"] === "AMAANA LIVE: Resume updates");
     (resume?.props.onClick as (event: object) => void)({ detail: 1 });
     expect(harness.setters[8]).toHaveBeenCalledWith(true);
+  });
+});
+
+
+describe("live-update response boundary", () => {
+  async function load(payload: unknown) {
+    const live = fixture({ count: 0 });
+    vi.stubGlobal("window", { requestIdleCallback: (callback: () => void) => { callback(); return 1; }, cancelIdleCallback: vi.fn() });
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => payload }));
+    const cleanup = live.loadEffect?.();
+    await vi.waitFor(() => expect(harness.setters[6]).toHaveBeenCalled());
+    cleanup?.();
+    return harness.setters[6];
+  }
+
+  it("drops malformed entries before React or Next Link render them", async () => {
+    const setter = await load({ items: [{}, null, { ...items[0], title: {} }, { ...items[0], detailsHref: 42 }] });
+    expect(setter).toHaveBeenCalledWith([]);
+  });
+
+  it("keeps reviewed valid entries in mixed responses", async () => {
+    const setter = await load({ items: [null, items[0], { ...items[1], supportHref: "//outside.example" }] });
+    expect(setter).toHaveBeenCalledWith([items[0]]);
+  });
+
+  it("uses the existing empty fallback for non-object response bodies", async () => {
+    const setter = await load(null);
+    expect(setter).toHaveBeenCalledWith([]);
   });
 });
