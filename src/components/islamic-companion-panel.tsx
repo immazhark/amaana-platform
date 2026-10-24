@@ -13,27 +13,9 @@ import {
   nextSalah,
   shiftDate,
   timeMinutes,
-  type PrayerDay,
 } from "@/lib/daily-companion";
 
-type Moon = {
-  day: number;
-  month: number;
-  label: string;
-  authority: string;
-  sourceUrl: string;
-};
-
-type PrayerData = {
-  today: PrayerDay;
-  tomorrow: PrayerDay | null;
-  school: string;
-  method: string;
-  asr: string;
-  moon: Moon | null;
-  eveningMoon: Moon | null;
-  note: string;
-};
+import { parseCompanionPrayerData, type CompanionPrayerData as PrayerData, type CompanionMoon as Moon } from "@/lib/companion-response";
 
 export type CompanionPanelKind = "readings" | "prayers";
 const panelKinds = ["readings", "prayers"] as const;
@@ -66,13 +48,6 @@ const closeIcon = (
       <path d="m6 6 12 12M6 18 18 6" />
     </svg>
 );
-
-function isPrayerData(value: unknown, date: string, school: string): value is PrayerData {
-  if (!value || typeof value !== "object") return false;
-  const candidate = value as Partial<PrayerData>;
-  if (candidate.school !== school || candidate.today?.date !== date) return false;
-  return PRAYERS.every(prayer => timeMinutes(candidate.today?.timings?.[prayer]) !== null);
-}
 
 export function IslamicCompanionPanel({
   panel,
@@ -120,12 +95,13 @@ export function IslamicCompanionPanel({
             : "Prayer times could not be loaded.";
           throw new Error(message);
         }
-        if (!isPrayerData(payload, date, school)) {
+        const parsed = parseCompanionPrayerData(payload, date, school);
+        if (!parsed) {
           throw new Error("The timings are not current. Please try again.");
         }
         if (!controller.signal.aborted) {
-          setData(payload);
-          onMoonChange({ date: payload.today.date, moon: payload.moon });
+          setData(parsed);
+          onMoonChange({ date: parsed.today.date, moon: parsed.moon });
         }
       } catch (failure) {
         if (!controller.signal.aborted) {

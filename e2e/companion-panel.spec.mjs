@@ -119,3 +119,21 @@ test('malformed live update is skipped while a valid update renders', async ({ p
   await expect(page.getByRole('tab', { name: 'Ayah & Hadith', exact: true })).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test('optional malformed moon and tomorrow data retain the current timetable', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.clock.install({ time: new Date('2026-10-25T23:00:00+05:30') });
+  await page.route('**/api/public/islamic-companion?*', route => route.fulfill({ json: {
+    today: { date: '2026-10-25', timings: { Fajr: '05:00', Sunrise: '06:15', Dhuhr: '12:30', Asr: '16:00', Maghrib: '18:00', Isha: '20:00' } },
+    tomorrow: { date: '2026-10-26' }, school: '1', method: 'Reviewed method', asr: 'Hanafi', note: 'Synthetic browser acceptance timetable.',
+    moon: { label: { invalid: true } }, eveningMoon: { label: { invalid: true } },
+  } }));
+  await page.goto('/browser-acceptance/home-hero', { waitUntil: 'domcontentloaded' });
+  await page.locator('.amaana-companion-dock button').click();
+  await page.getByRole('tab', { name: 'Salah & Hijri', exact: true }).click();
+  await expect(page.getByText('Today’s prayers have passed. Tomorrow’s Fajr is not available yet.', { exact: true })).toBeVisible();
+  await expect(page.locator('.amaana-salah-times time')).toHaveText(['05:00', '06:15', '12:30', '16:00', '18:00', '20:00']);
+  await expect(page.getByText('Calculated estimate · Hyderabad moon-sighting not yet confirmed.', { exact: true })).toBeVisible();
+  expect(errors).toEqual([]);
+});
