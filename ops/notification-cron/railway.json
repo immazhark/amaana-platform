@@ -6,8 +6,8 @@
     "watchPatterns": ["ops/notification-cron/**"]
   },
   "deploy": {
-    "startCommand": "node run.mjs",
+    "startCommand": "node --check run.mjs",
     "restartPolicyType": "NEVER",
-    "cronSchedule": "*/5 * * * *"
+    "cronSchedule": "0 0 1 1 *"
   }
 }

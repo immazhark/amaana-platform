@@ -3,4 +3,4 @@ WORKDIR /app
 ENV NODE_ENV=production
 COPY --chown=node:node run.mjs ./run.mjs
 USER node
-CMD ["node", "run.mjs"]
+CMD ["node", "--check", "run.mjs"]
