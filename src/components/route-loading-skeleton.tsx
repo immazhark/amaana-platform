@@ -1,12 +1,16 @@
 import styles from "./route-loading-skeleton.module.css";
 
-type Variant = "donate" | "appeals" | "impact" | "work";
+type Variant = "donate" | "appeals" | "impact" | "work"
+  | "appeal-detail" | "programme-detail" | "story-detail";
 
 const announcements: Record<Variant, string> = {
   donate: "Checking currently approved donation routes…",
   appeals: "Loading reviewed appeal information…",
   impact: "Loading published impact records…",
   work: "Loading published programmes…",
+  "appeal-detail": "Loading reviewed appeal details…",
+  "programme-detail": "Loading published programme details…",
+  "story-detail": "Loading approved story details…",
 };
 
 /**
@@ -15,7 +19,7 @@ const announcements: Record<Variant, string> = {
  * that page's fresh reviewed server projection has resolved.
  */
 export function RouteLoadingSkeleton({ variant }: { variant: Variant }) {
-  const count = variant === "donate" ? 2 : 3;
+  const count = variant === "donate" || variant.endsWith("-detail") ? 2 : 3;
 
   return <section className={styles.root} aria-label={announcements[variant]} data-loading-variant={variant}>
     <p role="status" aria-live="polite" className={styles.announcement}>{announcements[variant]}</p>
