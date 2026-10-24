@@ -3,8 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const source = readFileSync("public/llms.txt", "utf8");
-const urls = [...source.matchAll(/\[[^\]
-]+\]\(([^)]+)\)/g)].map(match => {
+const urls = [...source.matchAll(/\[[^\]]+\]\(([^)]+)\)/g)].map(match => {
   const href = match[1];
   if (!href) throw new Error("Public index contains a malformed link");
   return href;
