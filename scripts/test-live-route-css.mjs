@@ -90,3 +90,22 @@ test("rejects a URL backslash normalization before any network request", async (
   }), /Invalid public route/);
   assert.equal(called, false);
 });
+
+
+test("never follows redirects before validating the response origin", async () => {
+  const visited = [];
+  const fetchImpl = async (url, options) => {
+    visited.push(url);
+    if (options.redirect === "follow") {
+      visited.push("https://external.invalid/unsafe");
+      return { ok: true, status: 200, url: "https://external.invalid/unsafe", text: async () => "" };
+    }
+    assert.equal(options.redirect, "manual");
+    return { ok: false, status: 302, url, headers: { get: () => "https://external.invalid/unsafe" } };
+  };
+  await assert.rejects(
+    auditPublicRouteCss({ fetchImpl, routes: ["/"] }),
+    /HTTP error|Redirect not permitted/,
+  );
+  assert.deepEqual(visited, ["https://amaanafoundation.org/"]);
+});
