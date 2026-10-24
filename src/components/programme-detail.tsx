@@ -1,3 +1,4 @@
+import { PublishedEditionIndex } from "./published-edition-index";
 import { ProgrammeNext } from "./programme-next";
 import bannerStyles from "./initiative-banner.module.css";
 import { ProgrammeArtwork, hasProgrammeArtwork } from "@/components/programme-artwork";
@@ -31,6 +32,23 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
  const childMediaRecords=await getProgrammeChildMedia(children.map(child=>child.slug));
  const publishedChildSlugs=new Set(childMediaRecords.map(item=>item.slug));
  const publishedChildren=children.filter(child=>publishedChildSlugs.has(child.slug));
+
+ // The published-child projection already passed the server publication gate.
+ // Only explicitly dated annual editions receive a secondary, keyboard-native
+ // index; pathways without a reviewed year must not acquire an inferred year.
+ const publishedYearEditions = publishedChildren.flatMap(child => {
+  if (!("year" in child) || typeof child.year !== "number") return [];
+  return [{
+   slug: child.slug,
+   title: child.title,
+   year: child.year,
+   startYear: null,
+   endYear: null,
+   primaryMetric: "primaryMetric" in child && typeof child.primaryMetric === "string" ? child.primaryMetric : null,
+   primaryMetricLabel: "primaryMetricLabel" in child && typeof child.primaryMetricLabel === "string" ? child.primaryMetricLabel : null,
+  }];
+ });
+
  const childMedia=new Map(childMediaRecords.map(item=>[item.slug,selectGalleryPublicImage(item.mediaAssets)]));
  const media=record.mediaAssets.filter(canRenderPublicMedia).filter((asset,index,list)=>list.findIndex(other=>resolvePublicMediaUrl(other)===resolvePublicMediaUrl(asset))===index);
  const umbrella=children.length>0;
@@ -86,7 +104,7 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
   {historicalGrassroots&&<section className="campaign-history-note"><div className="v2-shell"><span>Historical grassroots record</span><p>This work predates Amaana Foundation&apos;s later formal registration and is presented as part of the community effort that preceded the registered trust.</p></div></section>}
 
   {facts&&facts.length>0&&<section className="v2-section paper"><div className="v2-shell"><h2>Programme details</h2><ol className={factsClass}>{facts.map(f=><li key={f}>{f}</li>)}</ol></div></section>}
-  {publishedChildren.length>0&&<section className="v2-section paper" id="programme-pathways"><div className="v2-shell"><BodyCarousel label={slug==='taleem'?'Taleem programme pathways':'Programme years'} variant="timeline-impact" className="campaign-pathway-carousel" heading={<h2>{slug==='taleem'?'One Initiative. Different Pathways to Learning.':'View Year-by-Year Impact'}</h2>}>{publishedChildren.map(child=>{const mediaAsset=childMedia.get(child.slug)??null;return <article className="campaign-pathway-card" key={child.slug}><div className="canonical-pathway-visual">{mediaAsset&&canRenderPublicMedia(mediaAsset)?<PublicMedia asset={mediaAsset}/>:<WorkVisualPlaceholder label={child.title}/>}</div><p className="v2-section-label">{'year' in child?child.year:child.programmeStatus==='EXPANDING'?'Developing pathway':'Continuing sponsorship'}</p><h3><Link href={`/our-work/${child.slug}`}>{child.title}</Link></h3><p>{child.summary}</p>{'primaryMetric' in child&&child.primaryMetric&&<div className="canonical-pathway-metric"><strong>{child.primaryMetric}</strong>{'primaryMetricLabel' in child&&child.primaryMetricLabel&&<span>{child.primaryMetricLabel}</span>}</div>}<Link className="v2-text-link" href={`/our-work/${child.slug}`}>Explore this {child.programmeStatus==='EXPANDING'?'pathway':'programme'} →</Link></article>})}</BodyCarousel></div></section>}
+  {publishedChildren.length>0&&<section className="v2-section paper" id="programme-pathways"><div className="v2-shell"><BodyCarousel label={slug==='taleem'?'Taleem programme pathways':'Programme years'} variant="timeline-impact" className="campaign-pathway-carousel" heading={<h2>{slug==='taleem'?'One Initiative. Different Pathways to Learning.':'View Year-by-Year Impact'}</h2>}>{publishedChildren.map(child=>{const mediaAsset=childMedia.get(child.slug)??null;return <article className="campaign-pathway-card" key={child.slug}><div className="canonical-pathway-visual">{mediaAsset&&canRenderPublicMedia(mediaAsset)?<PublicMedia asset={mediaAsset}/>:<WorkVisualPlaceholder label={child.title}/>}</div><p className="v2-section-label">{'year' in child?child.year:child.programmeStatus==='EXPANDING'?'Developing pathway':'Continuing sponsorship'}</p><h3><Link href={`/our-work/${child.slug}`}>{child.title}</Link></h3><p>{child.summary}</p>{'primaryMetric' in child&&child.primaryMetric&&<div className="canonical-pathway-metric"><strong>{child.primaryMetric}</strong>{'primaryMetricLabel' in child&&child.primaryMetricLabel&&<span>{child.primaryMetricLabel}</span>}</div>}<Link className="v2-text-link" href={`/our-work/${child.slug}`}>Explore this {child.programmeStatus==='EXPANDING'?'pathway':'programme'} →</Link></article>})}</BodyCarousel><PublishedEditionIndex editions={publishedYearEditions}/></div></section>}
   {highlightMedia&&<section className="campaign-data-visual"><div className="v2-shell"><div><span className="v2-section-label">Beneficiary breakdown</span><h2>Who the 2026 Eid Gift Kits reached</h2><p>{highlightMedia.caption}</p></div><PublicMedia asset={highlightMedia}/></div></section>}
   {gallery.length>0&&<section className="campaign-gallery" id="campaign-gallery"><div className="v2-shell"><SectionHeading className="campaign-section-heading" eyebrow="Programme photographs" title="Real Work. Shared Responsibly." subtitle="Original photographs from this programme. Personal documents remain private." /><CampaignMediaGallery items={toPublicGalleryItems(gallery)}/><div className="campaign-gallery-grid">{gallery.filter(asset=>asset.kind!=='IMAGE').map(asset=><PublicMedia asset={asset} key={asset.id}/>)}</div></div></section>}
   {record.mediaAssets.length >= PUBLIC_DETAIL_MEDIA_LIMIT && <div className="v2-shell"><Link className="v2-text-link" prefetch={false} href={`/media-archive/initiative/${encodeURIComponent(record.slug)}`}>Browse the complete approved media archive</Link></div>}

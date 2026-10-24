@@ -161,3 +161,52 @@ for (const reducedMotion of ['reduce', 'no-preference']) {
     expect(await page.evaluate(() => document.querySelector('main#main')?.contains(document.activeElement))).toBe(true);
   });
 }
+
+
+test('Escape dismisses an interrupted client route transition without trapping body scroll', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  let resume;
+  const pendingRoute = new Promise(resolve => { resume = resolve; });
+  await page.route('**/impact*', async route => {
+    await pendingRoute;
+    await route.continue();
+  });
+  await page.goto('/about');
+  try {
+    await page.locator('.nav-links').getByRole('link', { name: 'Impact', exact: true }).click();
+    const indicator = page.locator('.amaana-navigation-loading');
+    await expect(indicator).toBeVisible();
+    await expect(page.locator('body')).toHaveClass(/af-navigation-lock/);
+
+    await page.keyboard.press('Escape');
+    await expect(indicator).toHaveCount(0);
+    await expect(page.locator('body')).not.toHaveClass(/af-navigation-lock/);
+  } finally {
+    resume();
+  }
+  await expect(page).toHaveURL(/\/impact$/);
+  await expect(page.locator('body')).not.toHaveClass(/af-navigation-lock/);
+});
+
+test('pagehide cleans up navigation lock while a route remains pending', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  let resume;
+  const pendingRoute = new Promise(resolve => { resume = resolve; });
+  await page.route('**/impact*', async route => {
+    await pendingRoute;
+    await route.continue();
+  });
+  await page.goto('/about');
+  try {
+    await page.locator('.nav-links').getByRole('link', { name: 'Impact', exact: true }).click();
+    await expect(page.locator('.amaana-navigation-loading')).toBeVisible();
+    await expect(page.locator('body')).toHaveClass(/af-navigation-lock/);
+    await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
+    await expect(page.locator('body')).not.toHaveClass(/af-navigation-lock/);
+    await expect(page.locator('.amaana-navigation-loading')).toHaveCount(0);
+  } finally {
+    resume();
+  }
+  await expect(page).toHaveURL(/\/impact$/);
+});
