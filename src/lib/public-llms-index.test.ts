@@ -3,7 +3,12 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const source = readFileSync("public/llms.txt", "utf8");
-const urls = [...source.matchAll(/\[[^\]\n]+\]\(([^)]+)\)/g)].map(match => match[1]);
+const urls = [...source.matchAll(/\[[^\]
+]+\]\(([^)]+)\)/g)].map(match => {
+  const href = match[1];
+  if (!href) throw new Error("Public index contains a malformed link");
+  return href;
+});
 
 describe("public discovery index contract (AF-R075)", () => {
   it("exposes real, unique public routes under the canonical HTTPS origin only", () => {
