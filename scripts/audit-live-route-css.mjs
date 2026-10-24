@@ -55,7 +55,9 @@ export async function auditPublicRouteCss({ fetchImpl = fetch, routes = PUBLIC_R
   const entries = [];
   const sizes = new Map();
   async function request(url) {
-    const response = await fetchImpl(url, { redirect: "follow", signal: AbortSignal.timeout(15000) });
+    // Never permit an external hop before validating the target origin.
+    const response = await fetchImpl(url, { redirect: "manual", signal: AbortSignal.timeout(15000) });
+    if (response.status >= 300 && response.status < 400) throw new Error("Redirect not permitted in public route CSS audit: " + url);
     if (!response.ok) throw new Error("Public route CSS audit HTTP error at " + url);
     if (!response.url || new URL(response.url).origin !== site.origin) throw new Error("Public route CSS audit unexpected origin at " + url);
     return response;
