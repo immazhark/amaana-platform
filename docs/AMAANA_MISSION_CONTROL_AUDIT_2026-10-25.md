@@ -2,6 +2,10 @@
 
 **Checkpoint:** 25 October 2026 IST. **Scope:** all 149 canonical ledger rows, current source inspection, Git first-parent release history, open issue/PR audit, focused executed tests, and read-only production identity checks. This is not a legal opinion, full penetration test, real-device certification, live financial transaction test, or line-by-line audit of all historical code.
 
+## Release checkpoint — post-audit evidence (25 October 2026)
+
+PR #431 is now MERGED and independently LIVE_VERIFIED for release identity/readiness: full exact-head CI `40125762941` all seven jobs SUCCESS, separate fail-closed ready-state `40129381980` promotion/verify SUCCESS, guarded merge to `f9e4ec378cca008916c3e10c6abdbb98662e8c2a`; Railway website deployment `97bbab40-ad88-4a45-9d5e-5ee75233c802` SUCCESS; fresh public version HTTP200 identified exact main/production commit, and fresh readiness HTTP200 returned ready. The earlier PR #431 draft/browser-failure and runtime #430 rows below are historical pre-release observations. PR #433 remains UNMERGED; it prepares AF-R010/R011 audit-harness improvements and Companion response validation, pending its own hosted/live acceptance. These facts do not imply real-device accessibility, Core Web Vitals, private workflow certification, live payments, or any extra item closure. The 149-row audit classes remain 1 Completed, 59 Implemented, 61 Partial, 26 Not started, 1 Superseded, 1 Not applicable.
+
 ## Executive diagnosis
 
 The frozen labels **26 not started / 59 implemented / 61 partial** are historical classifications, not a deploy queue. The remaining three rows are AF-N10 completed, AF-ZAKAT-LOCK superseded and AF-CRYPTO not applicable. This report accounts for every ID once in those groups; no denominator inflation.
