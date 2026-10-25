@@ -33,5 +33,50 @@
     "regionReplicas": {
       "asia-southeast1-eqsg3a": 1
     }
+  },
+  "operationalProfiles": {
+    "amaana-rebuild-preview": {
+      "repository": "immazhark/amaana-platform",
+      "branch": "phase-public-site-rebuild",
+      "commitSha": "974e925f0c53366e6525bfd7d7763b18d067692c",
+      "builder": "RAILPACK",
+      "watchPatterns": [
+        "src/**",
+        "public/**",
+        "prisma/**",
+        "package.json",
+        "package-lock.json",
+        "next.config.ts",
+        "tsconfig.json",
+        "postcss.config.mjs",
+        "Dockerfile"
+      ],
+      "preDeployCommand": [
+        "node prisma/railway-predeploy.mjs"
+      ],
+      "healthcheckPath": "/api/health/ready",
+      "healthcheckTimeout": 300,
+      "sleepApplication": true,
+      "regionReplicas": {
+        "iad": 1
+      }
+    },
+    "amaana-notification-cron": {
+      "repository": "immazhark/amaana-platform",
+      "branch": "main",
+      "rootDirectory": "/ops/notification-cron",
+      "builder": "DOCKERFILE",
+      "dockerfilePath": "Dockerfile",
+      "watchPatterns": [
+        "/ops/notification-cron/**"
+      ],
+      "buildCommand": "echo 'Notification worker: no Next.js build required'",
+      "startCommand": "node --check run.mjs",
+      "cronSchedule": "0 0 1 1 *",
+      "restartPolicyType": "NEVER",
+      "regionReplicas": {
+        "iad": 1
+      }
+    }
   }
 }
