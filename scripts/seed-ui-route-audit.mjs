@@ -28,6 +28,23 @@ try {
   const donation = await prisma.donation.upsert({where:{referenceNumber:'AFD-UI-AUDIT'},update:donationData,create:{referenceNumber:'AFD-UI-AUDIT',...donationData}});
   const storyData = {title:'Synthetic editorial audit story',summary:'Disposable content for the article layout audit.',body:'This is synthetic editorial content, created only for layout and accessibility testing in a disposable database. No claim about Amaana programmes or beneficiaries is made.',status:'PUBLISHED',publishedAt:now,privacyApprovedAt:now};
   await prisma.story.upsert({where:{slug:'synthetic-ui-audit-story'},update:storyData,create:{slug:'synthetic-ui-audit-story',...storyData}});
+  // Opt-in discovery fixtures share the disposable-CI target guard above.
+  // Other audit runs retain their original records and counts.
+  if (process.env.AMAANA_STORY_DISCOVERY_FIXTURES === 'true') {
+    const publicContext = { title: 'Synthetic discovery programme', summary: 'Disposable story discovery context.', description: 'Synthetic isolated browser fixture. No programme claim.', status: 'PUBLISHED', publishedAt: now };
+    const hiddenContext = { ...publicContext, title: 'Synthetic unpublished discovery programme', status: 'DRAFT', publishedAt: null };
+    const publishedCause = await prisma.cause.upsert({ where: { slug: 'synthetic-story-discovery' }, update: publicContext, create: { slug: 'synthetic-story-discovery', ...publicContext } });
+    const draftCause = await prisma.cause.upsert({ where: { slug: 'synthetic-story-discovery-hidden' }, update: hiddenContext, create: { slug: 'synthetic-story-discovery-hidden', ...hiddenContext } });
+    for (let index = 1; index <= 14; index += 1) {
+      const suffix = String(index).padStart(2, '0');
+      const data = { ...storyData, title: `Synthetic discovery note ${suffix}`, summary: 'Synthetic discovery browser acceptance record. No real beneficiary information.', causeId: publishedCause.id, isFeatured: false };
+      await prisma.story.upsert({ where: { slug: `synthetic-story-discovery-${suffix}` }, update: data, create: { slug: `synthetic-story-discovery-${suffix}`, ...data } });
+    }
+    const hiddenData = { ...storyData, title: 'Synthetic reviewed story with unpublished context', summary: 'Synthetic context privacy boundary fixture.', causeId: draftCause.id, isFeatured: false };
+    await prisma.story.upsert({ where: { slug: 'synthetic-story-hidden-context' }, update: hiddenData, create: { slug: 'synthetic-story-hidden-context', ...hiddenData } });
+    const unpublishedData = { ...hiddenData, title: 'Synthetic unpublished discovery story', status: 'DRAFT', privacyApprovedAt: null };
+    await prisma.story.upsert({ where: { slug: 'synthetic-story-unpublished' }, update: unpublishedData, create: { slug: 'synthetic-story-unpublished', ...unpublishedData } });
+  }
   const faithData = {type:'ARTICLE',title:'Synthetic reading layout audit',excerpt:'Synthetic content for reading layout checks.',body:'This is a layout test containing no religious quotation or guidance. It is available only in the disposable acceptance database.',status:'PUBLISHED',religiousReviewStatus:'VERIFIED',sourceCitation:'Synthetic layout fixture; no religious quotation or guidance.',verifiedAt:now,publishedAt:now};
   await prisma.faithContent.upsert({where:{slug:'synthetic-ui-audit-reading'},update:faithData,create:{slug:'synthetic-ui-audit-reading',...faithData}});
   await prisma.auditEvent.upsert({where:{id:'ui-audit-synthetic-event'},update:{},create:{id:'ui-audit-synthetic-event',actorId:user.id,action:'UI_AUDIT_ONLY',entityType:'SyntheticFixture',entityId:request.id,metadata:{note:'Disposable layout audit only'}}});

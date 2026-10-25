@@ -1,3 +1,7 @@
+## 2026-10-26 — CHATGPT_ACTIVE — Stories discovery batch
+
+Sole writer on feat/stories-discovery-20261026 from main b15b2f1. Public stories title/summary search, published direct-programme filter and bounded12-card rendering with stable source tie-breaker. Publication/privacy predicates retained. Query selection tests failed before helper existed. No financial/schema/provider changes. This bounds rendered results, not database fetch volume. Verification and hosted release pending; no whole149 closure.
+
 ## 2026-10-26 — CHATGPT_ACTIVE — Public initiative text search
 
 Sole writer on feat/public-initiative-search-20261026 from main a2df654. PR453 auth tests remain independently frozen. Add bounded server-rendered title/summary search combined with programme/year filters; no client JS or private-data queries. Regression failed before implementation. Local and hosted verification pending; no whole149 closure claimed.
