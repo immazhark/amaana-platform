@@ -20,6 +20,7 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("atomic admin sess
   let otherUserId: string;
   let roleId: string;
   let permissionId: string;
+  let isolatedTargetAccepted = false;
   const permissionKey = "synthetic.session." + prefix;
 
   beforeAll(async () => {
@@ -27,6 +28,7 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("atomic admin sess
     if (!["localhost", "127.0.0.1", "[::1]"].includes(url.hostname) || url.pathname !== "/amaana") {
       throw new Error("Admin session DB tests require the isolated loopback amaana database");
     }
+    isolatedTargetAccepted = true;
 
     const user = await prisma.user.create({
       data: { name: "Synthetic session tester", email: prefix + "@example.invalid", status: "ACTIVE" },
@@ -50,6 +52,7 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("atomic admin sess
   });
 
   afterAll(async () => {
+    if (!isolatedTargetAccepted) return;
     if (userId) {
       await prisma.auditEvent.deleteMany({ where: { actorId: userId } });
       await prisma.session.deleteMany({ where: { userId } });
