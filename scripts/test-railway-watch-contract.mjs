@@ -5,7 +5,10 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { test } from 'node:test';
 
-const policy = JSON.parse(readFileSync(new URL('../railway.json', import.meta.url), 'utf8'));
+// Review-only candidate. Production Railway watch paths are owned by service settings,
+// not by the deprecated per-deployment railway.json configuration.
+const policy = JSON.parse(readFileSync(new URL('./railway-watch-policy.json', import.meta.url), 'utf8'));
+const legacyConfig = JSON.parse(readFileSync(new URL('../railway.json', import.meta.url), 'utf8'));
 const shouldTrigger = [
   'src/app/page.tsx',
   'src/app/api/donations/order/route.ts',
@@ -32,9 +35,9 @@ const shouldSkip = [
   '.github/workflows/ci.yml',
 ];
 
-test('Railway watch paths exclude isolated source tests without losing runtime changes', () => {
-  const patterns = policy.build.watchPatterns;
-  assert.ok(Array.isArray(patterns) && patterns.length > 0, 'Version-controlled watchPatterns must exist');
+test('candidate watch paths exclude isolated source tests without losing runtime changes', () => {
+  const patterns = policy.watchPatterns;
+  assert.ok(Array.isArray(patterns) && patterns.length > 0, 'Version-controlled proposed watchPatterns must exist');
   const root = mkdtempSync(join(tmpdir(), 'amaana-watch-'));
   try {
     execFileSync('git', ['init', '-q'], { cwd: root });
@@ -59,11 +62,12 @@ test('Railway watch paths exclude isolated source tests without losing runtime c
   }
 });
 
-test('Railway build and health configuration retain existing safety properties', () => {
-  assert.equal(policy.build.builder, 'DOCKERFILE');
-  assert.equal(policy.build.dockerfilePath, 'Dockerfile');
-  assert.equal(policy.deploy.healthcheckPath, '/api/health/ready');
-  assert.equal(policy.deploy.healthcheckTimeout, 300);
-  assert.equal(policy.deploy.restartPolicyType, 'ON_FAILURE');
-  assert.equal(policy.deploy.restartPolicyMaxRetries, 3);
+test('legacy per-deployment config remains unchanged and does not own trigger decisions', () => {
+  assert.equal(legacyConfig.build.watchPatterns, undefined, 'legacy config must not define watch triggers');
+  assert.equal(legacyConfig.build.builder, 'DOCKERFILE');
+  assert.equal(legacyConfig.build.dockerfilePath, 'Dockerfile');
+  assert.equal(legacyConfig.deploy.healthcheckPath, '/api/health/ready');
+  assert.equal(legacyConfig.deploy.healthcheckTimeout, 300);
+  assert.equal(legacyConfig.deploy.restartPolicyType, 'ON_FAILURE');
+  assert.equal(legacyConfig.deploy.restartPolicyMaxRetries, 3);
 });
