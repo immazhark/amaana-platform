@@ -145,6 +145,8 @@ jobs:
         run: node --test scripts/test-donation-error-focus-race.mjs
       - name: Enforce admin eyebrow contrast by surface
         run: node --test scripts/test-admin-eyebrow-contrast.mjs
+      - name: Ensure privileged admin source routes have anonymous coverage
+        run: node --test scripts/test-admin-anonymous-route-inventory.mjs
       - name: Verify archive filters
         run: node --experimental-strip-types --test scripts/test-work-filters.mjs
       - name: Verify daily readings, reminder windows and local calendar boundaries
