@@ -5,15 +5,26 @@ export type MonthlyGivingDay = typeof MONTHLY_GIVING_DAYS[number];
 export const MONTHLY_REMINDER_FILE = "amaana-manual-giving-reminder.ics";
 export const FRIDAY_REMINDER_FILE = "amaana-friday-giving-reminder.ics";
 
+/** Match the dated-reminder domain and keep RFC 5545 fields four digits.
+ * The exclusive end may enter 9999, but a new reminder must start by 9998. */
+function assertSupportedCalendarYear(date: Date, utc = false): void {
+  const year = utc ? date.getUTCFullYear() : date.getFullYear();
+  if (!Number.isFinite(date.getTime()) || year < 2000 || year > 9998) {
+    throw new RangeError("Choose a supported calendar date");
+  }
+}
+
 export function nextMonthlyGivingDate(day: MonthlyGivingDay, today: Date): string {
   if (!MONTHLY_GIVING_DAYS.includes(day) || !Number.isFinite(today.getTime())) {
     throw new RangeError("Invalid monthly reminder day or date");
   }
+  assertSupportedCalendarYear(today);
   let year = today.getFullYear(), month = today.getMonth();
   if (today.getDate() > day) {
     month += 1;
     if (month === 12) { month = 0; year += 1; }
   }
+  if (year > 9998) throw new RangeError("Choose a supported calendar date");
   return [year.toString().padStart(4, "0"), (month + 1).toString().padStart(2, "0"), day.toString().padStart(2, "0")].join("");
 }
 
@@ -21,6 +32,7 @@ export function nextMonthlyGivingDate(day: MonthlyGivingDay, today: Date): strin
  * a fixed 31st that would silently skip shorter months. */
 export function nextLastDayMonthlyGivingDate(today: Date): string {
   if (!Number.isFinite(today.getTime())) throw new RangeError("Invalid monthly reminder date");
+  assertSupportedCalendarYear(today);
   const last = new Date(today.getFullYear(), today.getMonth() + 1, 0);
   return [
     last.getFullYear().toString().padStart(4, "0"),
@@ -57,8 +69,10 @@ function foldLine(line: string): string {
  * or transmit a timezone, IP address or location to the foundation. */
 export function nextFridayGivingDate(today: Date): string {
   if (!Number.isFinite(today.getTime())) throw new RangeError("Invalid weekly reminder date");
+  assertSupportedCalendarYear(today);
   const untilFriday = (5 - today.getDay() + 7) % 7;
   const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() + untilFriday);
+  assertSupportedCalendarYear(date);
   return [
     date.getFullYear().toString().padStart(4, "0"),
     (date.getMonth() + 1).toString().padStart(2, "0"),
@@ -69,6 +83,7 @@ export function nextFridayGivingDate(today: Date): string {
 /** A civil-date reminder never forecasts Hijri dates or authorizes payment. */
 function calendar(start: string, recurrence: string | null, uid: string, stamp: Date): string {
   if (!Number.isFinite(stamp.getTime())) throw new RangeError("Invalid reminder creation date");
+  assertSupportedCalendarYear(stamp, true);
   return [
     "BEGIN:VCALENDAR", "VERSION:2.0",
     "PRODID:-//Amaana Foundation//Manual Giving Reminder//EN",

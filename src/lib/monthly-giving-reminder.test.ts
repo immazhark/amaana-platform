@@ -110,3 +110,41 @@ it("escapes calendar TEXT delimiters in every reminder description", () => {
     expect(description).toContain("reminder only\\; no automatic debit");
   }
 });
+
+const recurringCalendars = [
+  ["monthly", (today: Date, stamp: Date) => buildMonthlyGivingReminder(1, today, stamp)],
+  ["month-end", (today: Date, stamp: Date) => buildLastDayMonthlyGivingReminder(today, stamp)],
+  ["Friday", (today: Date, stamp: Date) => buildFridayGivingReminder(today, stamp)],
+] as const;
+
+describe("supported calendar year domain", () => {
+  for (const [name, build] of recurringCalendars) {
+    it.each(["0099-06-01T12:00:00Z", "1999-06-01T12:00:00Z", "9999-06-01T12:00:00Z", "+010000-06-01T12:00:00Z"])(
+      name + " rejects unsupported civil and creation years: %s", value => {
+        const unsupported = new Date(value);
+        const supported = new Date("2026-06-01T12:00:00Z");
+        expect(() => build(unsupported, supported)).toThrow(RangeError);
+        expect(() => build(supported, unsupported)).toThrow(RangeError);
+      },
+    );
+    it.each([2000, 9998])(name + " preserves four-digit calendar fields at supported year %s", year => {
+      const date = new Date(`${year}-06-01T12:00:00Z`);
+      const text = build(date, date);
+      expect(text).toMatch(/DTSTART;VALUE=DATE:\d{8}\r\n/);
+      expect(text).toMatch(/DTEND;VALUE=DATE:\d{8}\r\n/);
+      expect(text).toMatch(/DTSTAMP:\d{8}T\d{6}Z\r\n/);
+    });
+  }
+  it("rejects a monthly start that would roll beyond the supported final year", () => {
+    expect(() => nextMonthlyGivingDate(1, new Date("9998-12-31T12:00:00Z"))).toThrow(RangeError);
+  });
+});
+
+it("rejects Friday rollover beyond 9998 but permits an exclusive end in 9999", () => {
+  const endOfDomain = new Date("9998-12-31T12:00:00Z");
+  expect(() => nextFridayGivingDate(endOfDomain)).toThrow(RangeError);
+  expect(() => buildFridayGivingReminder(endOfDomain)).toThrow(RangeError);
+  const monthEnd = buildLastDayMonthlyGivingReminder(endOfDomain);
+  expect(monthEnd).toContain("DTSTART;VALUE=DATE:99981231\r\n");
+  expect(monthEnd).toContain("DTEND;VALUE=DATE:99990101\r\n");
+});
