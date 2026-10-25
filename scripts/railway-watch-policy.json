@@ -1,0 +1,20 @@
+{
+  "notice": "CANDIDATE ONLY. Not installed in Railway service settings. Source tests exercise Git-style path semantics; production skip/trigger behavior requires separately reviewed service config and canary checks.",
+  "watchPatterns": [
+    "src/**",
+    "!src/**/",
+    "!src/**/*.test.ts",
+    "!src/**/*.test.tsx",
+    "!src/**/*.spec.ts",
+    "!src/**/*.spec.tsx",
+    "public/**",
+    "prisma/**",
+    "package.json",
+    "package-lock.json",
+    "next.config.ts",
+    "tsconfig.json",
+    "postcss.config.mjs",
+    "Dockerfile",
+    "railway.json"
+  ]
+}
