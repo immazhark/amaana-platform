@@ -1,3 +1,10 @@
+## 2026-10-25 — CHATGPT_ACTIVE — AF-R012 isolated session authorization evidence
+
+Sole Work implementation writer continues under renewed owner commit/merge authorization. Task branch test/admin-session-expiry-boundaries-20261025 from protected main 261be45608ac4070859bf0da625ee9b17d643307; only other open PR is draft #374. Extend the existing isolated auth-session PostgreSQL suite to exercise expiry, revocation, suspended users, cross-user token isolation and live role-permission changes through real auth helpers. No production data, auth policy, payment, provider or infrastructure change. Full exact-head CI/database/build/browser and separate ready-state verification remain required; AF-R012 remains Partial. Local PostgreSQL installation is unavailable due container privilege restrictions; hosted isolated PostgreSQL is the execution authority for DB cases.
+
+Test-first safety correction: a rejected non-local DATABASE_URL still ran the old afterAll loginAttempt.deleteMany. The new actual-suite subprocess regression failed with PrismaClientInitializationError against synthetic blocked.invalid; target-acceptance gating now makes it pass with only the intended refusal and no query attempt. This changes test-harness safety only; the five PostgreSQL authorization cases still need hosted execution.
+
+
 ## 2026-10-25 — CHATGPT_ACTIVE — Work takeover and #448 guarded merge
 
 Owner explicitly hands implementation to this ChatGPT Work session with standing routine commit/PR/protected-merge authorization. This session is the sole repository writer. Protected main is now `454afc326c6e3d1db6a158ff9a8cd9b789c69ecc` after #448, exact head `bee2d9fd236516da9aef1c846551e91d6dc0c5a9`: full CI `40185446643` all seven jobs SUCCESS; separate ready-state CI `40202264976` plan/promotion/verify SUCCESS; no unresolved review threads. Local planning/parity suite 51/51 PASS. Railway website attempt `9a81a812-5845-45a6-b77f-a1b66e2bfb04` SKIPPED (scripts-only). Fresh uncached public version/readiness reads HTTP200: production/main `d262c8f17fa26bf3bf71c2709acce3b12fd046e0`, paymentMode live; ready.
