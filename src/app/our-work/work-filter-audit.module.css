@@ -5,3 +5,4 @@
 .filterSelect:focus-visible{outline:3px solid rgb(224 179 24 / 24%);outline-offset:2px;border-color:var(--v2-gold)}
 .clear{align-self:center;color:var(--v2-blue);font-weight:800}
 @media(max-width:620px){.toolbar>*{width:100%}.filterLabel{min-width:100%}}
+.toolbar .filterLabel input.filterSelect{width:100%;min-width:0;padding-inline:1.05rem;background:#fff}

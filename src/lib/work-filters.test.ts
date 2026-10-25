@@ -113,3 +113,30 @@ it("keeps a published edition discoverable when its umbrella is unpublished", ()
   expect(result.count).toBe(1);
   expect(result.results[0]?.initiatives[0]?.slug).toBe("taleem-2025");
 });
+
+it("searches approved public titles and summaries with year filters", () => {
+  const data = [{ slug: "relief", initiatives: [
+    { title: "Winter Kits", summary: "Warm essentials", year: 2026, startYear: null, endYear: null },
+    { title: "Medical assistance", summary: "Verified support", year: 2025, startYear: null, endYear: null },
+  ] }];
+  expect(filterWork(data, { q: "  WINTER  ", year: "2026" }).count).toBe(1);
+  expect(filterWork(data, { q: "warm essentials" }).count).toBe(1);
+  expect(filterWork(data, { q: "winter", year: "2025" }).count).toBe(0);
+  expect(filterWork(data, { q: ["winter", "medical"] }).invalid).toBe(true);
+  expect(filterWork(data, { q: "x".repeat(81) }).invalid).toBe(true);
+});
+
+it("finds published annual editions by text without requiring a year filter", () => {
+  const data = [{ slug: "seasonal", initiatives: [
+    { slug: "winter", title: "Winter Relief", year: null, startYear: null, endYear: null },
+    { slug: "winter-2025", parentSlug: "winter", title: "Winter Kits 2025", year: 2025, startYear: null, endYear: null },
+  ] }];
+  expect(filterWork(data, {}).count).toBe(1);
+  expect(filterWork(data, { q: "2025" }).results[0]?.initiatives.map(x => x.slug)).toEqual(["winter-2025"]);
+});
+
+it("rejects raw control characters without reflecting the query", () => {
+  const result = filterWork(categories, { q: "winter\nrelief" });
+  expect(result.invalid).toBe(true);
+  expect(result.query).toBe("");
+});
