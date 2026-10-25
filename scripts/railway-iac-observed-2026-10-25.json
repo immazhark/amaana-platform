@@ -1,0 +1,37 @@
+{
+  "capturedAt": "2026-10-25",
+  "environment": "production",
+  "serviceNames": [
+    "amaana-platform",
+    "amaana-rebuild-preview",
+    "amaana-notification-cron"
+  ],
+  "bucketCount": 3,
+  "volumeCount": 0,
+  "website": {
+    "repository": "immazhark/amaana-platform",
+    "branch": "main",
+    "builder": "RAILPACK",
+    "watchPatterns": [
+      "src/**",
+      "public/**",
+      "prisma/**",
+      "package.json",
+      "package-lock.json",
+      "next.config.ts",
+      "tsconfig.json",
+      "postcss.config.mjs",
+      "Dockerfile"
+    ],
+    "healthcheckPath": "/api/health/ready",
+    "healthcheckTimeout": 90,
+    "preDeployCommand": [
+      "node prisma/railway-predeploy.mjs"
+    ],
+    "restartPolicyMaxRetries": 3,
+    "sleepApplication": true,
+    "regionReplicas": {
+      "asia-southeast1-eqsg3a": 1
+    }
+  }
+}
