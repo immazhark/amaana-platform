@@ -125,3 +125,12 @@ it("searches approved public titles and summaries with year filters", () => {
   expect(filterWork(data, { q: ["winter", "medical"] }).invalid).toBe(true);
   expect(filterWork(data, { q: "x".repeat(81) }).invalid).toBe(true);
 });
+
+it("finds published annual editions by text without requiring a year filter", () => {
+  const data = [{ slug: "seasonal", initiatives: [
+    { slug: "winter", title: "Winter Relief", year: null, startYear: null, endYear: null },
+    { slug: "winter-2025", parentSlug: "winter", title: "Winter Kits 2025", year: 2025, startYear: null, endYear: null },
+  ] }];
+  expect(filterWork(data, {}).count).toBe(1);
+  expect(filterWork(data, { q: "2025" }).results[0]?.initiatives.map(x => x.slug)).toEqual(["winter-2025"]);
+});

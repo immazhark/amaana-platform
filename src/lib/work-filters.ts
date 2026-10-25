@@ -29,7 +29,7 @@ export function filterWork<T extends Programme>(programmes: T[], search: WorkSea
       const publishedSlugs = new Set(p.initiatives.map(item => item.slug));
       const matching = p.initiatives.filter(item => year
         ? yearsFor(item).includes(Number(year))
-        : !item.parentSlug || !publishedSlugs.has(item.parentSlug));
+        : Boolean(query) || !item.parentSlug || !publishedSlugs.has(item.parentSlug));
       // An annual edition replaces its umbrella only when that edition is
       // published and matches the selected year. Preserve standalone ranges.
       const representedParents = new Set(year ? matching.map(item => item.parentSlug).filter(Boolean) : []);
