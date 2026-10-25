@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isDeepStrictEqual } from 'node:util';
 
 // Offline comparison only. Does not contact Railway or apply changes.
 const fields = [
@@ -8,16 +9,51 @@ const fields = [
   'healthcheckTimeout', 'preDeployCommand', 'restartPolicyMaxRetries',
   'sleepApplication', 'regionReplicas',
 ];
-const allowedRoot = new Set(['capturedAt', 'environment', 'serviceNames', 'bucketCount', 'volumeCount', 'website']);
+const allowedRoot = new Set(['capturedAt', 'environment', 'serviceNames', 'bucketCount', 'volumeCount', 'website', 'auxiliaryServices']);
 const allowedWebsite = new Set(fields);
 const isRecord = value => value !== null && typeof value === 'object' && !Array.isArray(value);
-const stableEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const stableEqual = isDeepStrictEqual;
 
 function serviceNamesEqual(a, b) {
   if (!Array.isArray(a) || !Array.isArray(b) ||
       a.some(x => typeof x !== 'string') || b.some(x => typeof x !== 'string') ||
       new Set(a).size !== a.length || new Set(b).size !== b.length) return false;
   return stableEqual([...a].sort(), [...b].sort());
+}
+
+// Preserve all live auxiliary service boundaries; never copy or print variable values.
+function compareAuxiliaryServices(reference, candidate, issue) {
+  const expected = reference.auxiliaryServices;
+  const actual = candidate.auxiliaryServices;
+  const valid = items => Array.isArray(items) &&
+    items.every(item => isRecord(item) && typeof item.name === 'string' && item.name.length > 0) &&
+    new Set(items.map(item => item.name)).size === items.length;
+
+  if (!valid(expected) || !valid(actual)) {
+    issue('auxiliary-service-inventory', 'Auxiliary service inventory is absent, malformed, or duplicated');
+    return;
+  }
+  const expectedNames = expected.map(item => item.name).sort();
+  const actualNames = actual.map(item => item.name).sort();
+  if (!stableEqual(expectedNames, actualNames)) {
+    issue('auxiliary-service-inventory', 'Auxiliary services differ from observed live state');
+    return;
+  }
+  const expectedByName = new Map(expected.map(item => [item.name, item]));
+  for (const service of actual) {
+    const baseline = expectedByName.get(service.name);
+    const allowedFields = new Set(Object.keys(baseline));
+    const unexpected = Object.keys(service).filter(key => !allowedFields.has(key));
+    if (unexpected.length) {
+      issue('unexpected-fields', 'Unexpected fields on auxiliary ' + service.name + ': ' + unexpected.join(', '));
+    }
+    for (const field of allowedFields) {
+      if (!Object.hasOwn(service, field) || !stableEqual(service[field], baseline[field])) {
+        issue('auxiliary.' + service.name + '.' + field,
+          'Auxiliary service ' + service.name + ' field ' + field + ' differs from observed live configuration');
+      }
+    }
+  }
 }
 
 export function compareMigrationInventory(reference, candidate) {
@@ -46,6 +82,7 @@ export function compareMigrationInventory(reference, candidate) {
       issue('website.' + field, 'Website ' + field + ' differs from observed live configuration');
     }
   }
+  compareAuxiliaryServices(reference, candidate, issue);
   return issues;
 }
 
