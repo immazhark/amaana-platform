@@ -1,5 +1,32 @@
 # Amaana Foundation Release Status
 
+## Current operational checkpoint — 25 October 2026 (IST)
+
+**Source of truth:** protected GitHub `main`, exact GitHub Actions runs, Railway deployment records, and the live health endpoints. This checkpoint supersedes the **8 October** state below; older values remain historical evidence only. It is not a new deployment authorization, statutory sign-off, payment certification, or substitute for required launch gates.
+
+| Boundary | Verified evidence |
+| --- | --- |
+| Repository `main` | `d262c8f17fa26bf3bf71c2709acce3b12fd046e0` (PR #439 merged); GitHub branch API reports `protected=true` |
+| Production application | Public `/api/health/version` returned HTTP 200 with runtime SHA `b033e99982caaeb295726bf19df64ca1ffa7f7a3`, branch `main`, environment `production`, and `paymentMode=live` |
+| Runtime readiness | Public `/api/health/ready` returned HTTP 200 and `{"status":"ready"}` |
+| Latest GitHub-only merges | #436 public exposure regression `29c382f4ec7c721b549a94519967e0896845eaa0`; #437 CSS audit redirect guard `e1a1ef81d848c54a8a36ccd79f133a0b6bd23349`; #438 evidence checkpoint `95bd57982b8b968f77cd095b2703edbf295dedd2`; #439 public discovery index test `d262c8f17fa26bf3bf71c2709acce3b12fd046e0` (full and ready-state CI success) |
+| Railway release decision | #436–#438 had website deployments marked `SKIPPED` by configured watch patterns; #439 is also test-only and its Railway decision must be checked from the actual deployment record. **No website runtime release is inferred from a newer GitHub `main` SHA** |
+| Pending work | PR #440's redundant test-inventory implementation was closed **without merge** after fail-first hosted evidence confirmed a stronger existing guard. Ready-for-review documentation PRs #441 and #442 require reconciliation, final promotion verification and protected merges. The authoritative status is always current GitHub PR/CI and Railway records, not this dated row |
+
+### Operational controls
+
+- Do not conflate **source SHA** with **deployed runtime SHA**. Verify both independently before declaring a website release.
+- Preserve `main` branch protection and fail-closed CI. A passing documentation workflow is not a substitute for application browser, database or deployment acceptance.
+- The official site is in **Razorpay live mode**; do not test with real donations, refunds, beneficiary records or financial transfers.
+- Do not enable outbound notification deliveries from the historical cron reference. Notification worker activation, provider DNS and privacy gating require separate owner/operator acceptance.
+- Do not treat the archived 8 October preview or PR #104 instructions as the active release procedure. Preview is not a verified current staging sign-off.
+- The canonical 149-row status remains **1 Completed / 59 Implemented / 61 Partial / 26 Not Started / 1 Superseded / 1 Not Applicable**; this status report does not change a row classification.
+
+**Detailed current provenance:** [Mission Control checkpoint](mission-control/2026-10-25-acceleration-checkpoint.md) and [149-item audit](AMAANA_MISSION_CONTROL_AUDIT_2026-10-25.md).
+
+---
+
+
 > **Historical release-status snapshot (8 October 2026).** This file is not an up-to-date operational approval or deploy instruction. The current remediation integration branch is `fix/p0-security-remediation-20261010`; use the latest GitHub commits, PR checks and actual Railway state for release decisions. References below to `phase-public-site-rebuild`, PR #104, historical SHAs and deployments describe the checkpoint when recorded and must not be treated as verified current state. No merge to `main` or production deployment is authorized by this document.
 
 Updated: 8 October 2026
