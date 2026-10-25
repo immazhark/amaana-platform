@@ -1,3 +1,12 @@
+## 2026-10-25 — CHATGPT_ACTIVE — AF-R047 Next 16 CSS attribution
+
+Sole Work writer continues on perf/next16-route-css-attribution-20261025 from main 9948c57c1b0ce11f1cbf07898c25c6f2b304f874. PR450 full CI40203630196 and ready-state40206674780 passed; guarded merge9948c57. Fresh public version/readiness now HTTP200 match exact main/production SHA and ready; Railway b6b3ce7d-71dd-4fc7-85b7-ddf00f58ea7d is settled/sleeping. This supersedes pending rollout/session-test notes below.
+
+Next bounded tooling change: safe JSON-only Next16 client-reference manifest parsing and per-page assigned uncompressed CSS attribution, retaining explicit unattributed JS/transfer/CWV limits. No eval/new Function, runtime app, financial, database, provider or infrastructure changes. Test first; full exact-head and separate ready-state gates before merge. IaC446 remains blocked on authenticated import/plan capability; 149 totals unchanged.
+
+Local verification: four new contract cases failed before implementation; a fifth real-artifact global-error regression failed before its adapter. Final 18 native report/transport tests and full 2,159 Vitest tests pass (20 DB tests skipped locally); TypeScript/scoped ESLint/diff checks pass. Compatibility covers 61 historical-build manifests, not current public bytes. New exact-head hosted build/report/browser/database/ready-state acceptance remains required.
+
+
 ## 2026-10-25 — CHATGPT_ACTIVE — AF-R012 isolated session authorization evidence
 
 Sole Work implementation writer continues under renewed owner commit/merge authorization. Task branch test/admin-session-expiry-boundaries-20261025 from protected main 261be45608ac4070859bf0da625ee9b17d643307; only other open PR is draft #374. Extend the existing isolated auth-session PostgreSQL suite to exercise expiry, revocation, suspended users, cross-user token isolation and live role-permission changes through real auth helpers. No production data, auth policy, payment, provider or infrastructure change. Full exact-head CI/database/build/browser and separate ready-state verification remain required; AF-R012 remains Partial. Local PostgreSQL installation is unavailable due container privilege restrictions; hosted isolated PostgreSQL is the execution authority for DB cases.
