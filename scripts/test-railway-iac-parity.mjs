@@ -51,3 +51,60 @@ test('old railway.json is not used to override effective live builder/health val
   assert.equal(reference.website.builder, 'RAILPACK');
   assert.equal(reference.website.healthcheckTimeout, 90);
 });
+
+const operationalProfiles = {
+  'amaana-rebuild-preview': {
+    repository: 'immazhark/amaana-platform',
+    branch: 'phase-public-site-rebuild',
+    builder: 'RAILPACK',
+    healthcheckTimeout: 300,
+    regionReplicas: { iad: 1 },
+  },
+  'amaana-notification-cron': {
+    repository: 'immazhark/amaana-platform',
+    branch: 'main',
+    rootDirectory: '/ops/notification-cron',
+    builder: 'DOCKERFILE',
+    dockerfilePath: 'Dockerfile',
+    startCommand: 'node --check run.mjs',
+    cronSchedule: '0 0 1 1 *',
+    restartPolicyType: 'NEVER',
+    regionReplicas: { iad: 1 },
+  },
+};
+
+test('requires an exact operational profile for both other live services', () => {
+  const baseline = { ...reference, operationalProfiles };
+  assert.deepEqual(compareMigrationInventory(baseline, structuredClone(baseline)), []);
+  const omitted = structuredClone(baseline);
+  delete omitted.operationalProfiles['amaana-notification-cron'];
+  assert.ok(compareMigrationInventory(baseline, omitted).some(issue => issue.code === 'operational-profiles'));
+});
+
+test('rejects enabling notification delivery or widening worker builds', () => {
+  const baseline = { ...reference, operationalProfiles };
+  for (const [field, alternative] of [
+    ['cronSchedule', '*/5 * * * *'],
+    ['startCommand', 'node run.mjs'],
+    ['rootDirectory', '/'],
+    ['builder', 'RAILPACK'],
+    ['restartPolicyType', 'ON_FAILURE'],
+    ['regionReplicas', { iad: 2 }],
+  ]) {
+    const changed = structuredClone(baseline);
+    changed.operationalProfiles['amaana-notification-cron'][field] = alternative;
+    assert.ok(compareMigrationInventory(baseline, changed).some(issue =>
+      issue.code === 'operational.amaana-notification-cron.' + field), field);
+  }
+});
+
+test('rejects preview environment drift and extra secret-bearing profile keys', () => {
+  const baseline = { ...reference, operationalProfiles };
+  const changed = structuredClone(baseline);
+  changed.operationalProfiles['amaana-rebuild-preview'].branch = 'main';
+  assert.ok(compareMigrationInventory(baseline, changed).some(issue =>
+    issue.code === 'operational.amaana-rebuild-preview.branch'));
+  const secret = structuredClone(baseline);
+  secret.operationalProfiles['amaana-notification-cron'].environmentVariables = { CREDENTIAL: 'fixture' };
+  assert.ok(compareMigrationInventory(baseline, secret).some(issue => issue.code === 'unexpected-fields'));
+});
