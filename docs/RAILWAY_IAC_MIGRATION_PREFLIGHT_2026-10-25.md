@@ -8,7 +8,11 @@ The Railway production environment contains **three live services** (website, re
 
 The repository's legacy `railway.json` instead names **DOCKERFILE** and a **300-second** timeout and does not represent the live pre-deploy command or full project graph. A mechanical translation of that file is **not** an acceptable IaC migration specification.
 
-The sanitized snapshot in [`scripts/railway-iac-observed-2026-10-25.json`](../scripts/railway-iac-observed-2026-10-25.json) records the above fields, the three service names and **counts only** for buckets/volumes. It excludes bucket identities, environment variables, secrets, private tokens, deployment IDs and database contents. It is an **aging observation**, not automatic truth about current production.
+The sanitized snapshot in [`scripts/railway-iac-observed-2026-10-25.json`](../scripts/railway-iac-observed-2026-10-25.json) records the above website settings, **non-secret effective profiles for both other services**, three service names, and **counts only** for buckets/volumes. It excludes bucket identities, environment variables, secrets, private tokens, deployment IDs and database contents. It is an **aging observation**, not automatic truth about current production.
+
+**Do not accidentally activate the notification worker during IaC migration.** The actual worker runs under `/ops/notification-cron`, builds a Dockerfile, watches only `/ops/notification-cron/**`, has `startCommand=node --check run.mjs`, `restartPolicyType=NEVER`, and is parked on `cronSchedule=0 0 1 1 *`. These settings differ from historical issue [#264](https://github.com/immazhark/amaana-platform/issues/264), which describes an earlier failed full-Next.js-build state. Today's safe containment is **not** evidence of functioning five-minute delivery; keep delivery disabled until separate explicit notification/security/provider acceptance. The preview service remains on `phase-public-site-rebuild`, with RAILPACK, its observed source commit, its own 300-second readiness timeout and one `iad` replica.
+
+The parity checker now rejects changes or missing settings for **both** these services in addition to the production website. A passing dated fixture still does **not** establish current live service safety or the full Railway IaC resource graph.
 
 ## Offline safety tests and CLI
 
@@ -17,7 +21,7 @@ node --test scripts/test-railway-iac-parity.mjs
 node scripts/railway-iac-parity.mjs scripts/railway-iac-observed-2026-10-25.json
 ```
 
-The tests reject missing/duplicate services, missing buckets, altered volumes, repository or branch drift, builder/health/pre-deploy/watch-pattern/sleep/replica changes and extra fields that may contain secrets. The second command compares a **manually sanitized proposal** against the dated snapshot; using the snapshot itself is a self-check only.
+The tests reject missing/duplicate services, missing buckets, altered volumes, website and preview repository/branch drift, builder/health/pre-deploy/watch-pattern/sleep/replica changes, notification-cron activation or build-scope widening, missing service profiles and extra fields that may contain secrets. The second command compares a **manually sanitized proposal** against the dated snapshot; using the snapshot itself is a self-check only.
 
 A successful offline comparison **does not verify** a generated `.railway/railway.ts` graph or Railway's current service state. Before any actual migration, recapture the environment inventory and compare with this dated reference. Review **all service settings, cron operation, bucket identities and variable preservation** privately; their complete semantics cannot be proven by this public, deliberately limited snapshot.
 
