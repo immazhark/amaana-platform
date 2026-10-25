@@ -51,3 +51,54 @@ test('old railway.json is not used to override effective live builder/health val
   assert.equal(reference.website.builder, 'RAILPACK');
   assert.equal(reference.website.healthcheckTimeout, 90);
 });
+
+test('rejects missing, duplicate, or substituted auxiliary Railway services', () => {
+  const absent = clone(); delete absent.auxiliaryServices;
+  assert.equal(hasIssue(absent, 'auxiliary-service-inventory'), true);
+  const removed = clone(); removed.auxiliaryServices.pop();
+  assert.equal(hasIssue(removed, 'auxiliary-service-inventory'), true);
+  const duplicated = clone(); duplicated.auxiliaryServices.push(structuredClone(duplicated.auxiliaryServices[0]));
+  assert.equal(hasIssue(duplicated, 'auxiliary-service-inventory'), true);
+  const substituted = clone(); substituted.auxiliaryServices[1].name = 'surprise-service';
+  assert.equal(hasIssue(substituted, 'auxiliary-service-inventory'), true);
+});
+
+test('keeps notification worker dormant, isolated, and incapable of automatic delivery', () => {
+  for (const [field, changed] of [
+    ['startCommand', 'node run.mjs'],
+    ['cronSchedule', '*/5 * * * *'],
+    ['rootDirectory', '/'],
+    ['builder', 'RAILPACK'],
+    ['watchPatterns', ['src/**']],
+    ['restartPolicyType', 'ON_FAILURE'],
+    ['branch', 'unreviewed-notification-branch'],
+    ['regionReplicas', { iad: 2 }],
+  ]) {
+    const candidate = clone();
+    candidate.auxiliaryServices[0][field] = changed;
+    assert.equal(hasIssue(candidate, 'auxiliary.amaana-notification-cron.' + field), true, field);
+  }
+});
+
+test('rejects preview branch, build, health and pinned source drift', () => {
+  for (const [field, changed] of [
+    ['branch', 'main'], ['pinnedCommitSha', 'not-the-reviewed-commit'],
+    ['builder', 'DOCKERFILE'], ['watchPatterns', ['docs/**']],
+    ['preDeployCommand', []], ['healthcheckPath', '/'],
+    ['healthcheckTimeout', 90], ['sleepApplication', false],
+    ['regionReplicas', { iad: 2 }],
+  ]) {
+    const candidate = clone();
+    candidate.auxiliaryServices[1][field] = changed;
+    assert.equal(hasIssue(candidate, 'auxiliary.amaana-rebuild-preview.' + field), true, field);
+  }
+});
+
+test('rejects auxiliary secret-bearing properties but accepts harmless JSON key ordering', () => {
+  const unsafe = clone();
+  unsafe.auxiliaryServices[0].environmentVariables = { CRON_SECRET: 'never-publish' };
+  assert.equal(hasIssue(unsafe, 'unexpected-fields'), true);
+  const reordered = clone();
+  reordered.auxiliaryServices[0] = Object.fromEntries(Object.entries(reordered.auxiliaryServices[0]).reverse());
+  assert.deepEqual(compareMigrationInventory(reference, reordered), []);
+});
