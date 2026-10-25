@@ -1,4 +1,6 @@
 import { expect, test } from "@playwright/test";
+import { readdirSync } from "node:fs";
+import { dirname, join, relative, sep } from "node:path";
 
 const protectedAdminSurfaces = [
   "/admin",
@@ -22,12 +24,53 @@ const mutatingAdminApiRoutes = [
   "/api/admin/media/curated-gallery/publish",
 ];
 
+function discoverSourceRoutes(sourceRoot, filename, prefix) {
+  function visit(directory) {
+    return readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
+      const pathname = join(directory, entry.name);
+      return entry.isDirectory()
+        ? visit(pathname)
+        : entry.isFile() && entry.name === filename ? [pathname] : [];
+    });
+  }
+
+  return visit(sourceRoot).map(pathname => {
+    const segments = relative(sourceRoot, dirname(pathname)).split(sep)
+      .filter(Boolean)
+      .filter(segment => !(segment.startsWith("(") && segment.endsWith(")")))
+      .map(segment => segment.startsWith("[") && segment.endsWith("]")
+        ? "not-a-real-id" : segment);
+    return segments.length ? prefix + "/" + segments.join("/") : prefix;
+  });
+}
+
 function expectPrivateApiHeaders(response) {
   expect(response.headers()["cache-control"] ?? "").toMatch(/no-store/i);
   expect(response.headers()["x-robots-tag"] ?? "").toMatch(/noindex.*nofollow.*noarchive/i);
 }
 
 test.describe("anonymous admin access boundaries", () => {
+  test("every protected admin page in source has an anonymous browser assertion", () => {
+    const discovered = discoverSourceRoutes(
+      join(process.cwd(), "src/app/admin/(protected)"), "page.tsx", "/admin",
+    );
+    const missing = discovered.filter(path => !protectedAdminSurfaces.includes(path));
+    expect(missing, "New protected admin pages need explicit anonymous-denial acceptance").toEqual([]);
+  });
+
+  test("every admin API handler in source has an anonymous-denial assertion", () => {
+    const covered = [
+      "/api/admin/media/curated-gallery/status",
+      ...mutatingAdminApiRoutes,
+    ];
+    const discovered = discoverSourceRoutes(
+      join(process.cwd(), "src/app/api/admin"), "route.ts", "/api/admin",
+    );
+    expect(new Set(covered).size, "Duplicate API boundary assertions").toBe(covered.length);
+    expect(covered.sort(), "New admin API handlers need explicit anonymous-denial acceptance")
+      .toEqual(discovered.sort());
+  });
+
   for (const path of protectedAdminSurfaces) {
     test(`anonymous access to ${path} redirects to admin sign-in`, async ({ request }) => {
       const response = await request.get(path, { maxRedirects: 0 });
