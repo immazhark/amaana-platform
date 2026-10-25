@@ -170,6 +170,30 @@ test("CLI reports assigned CSS separately from unattributed JS and preserves mis
     assert.equal(report.cssMetric, 'client-reference-assigned-uncompressed-css-bytes');
     assert.deepEqual(report.cssRoutes, [{ route: '/', appPath: '/page', cssBytes: 6, stylesheetCount: 1 }]);
     assert.equal(report.aggregate.jsBytes, 7);
+    assert.equal(report.jsRouteAttributionAvailable, false);
+    writeFileSync(join(build, 'build-manifest.json'), JSON.stringify({ rootMainFiles: ['static/chunks/shared.js'] }));
+    const noJsMap = run();
+    assert.equal(noJsMap.status, 0, noJsMap.stderr);
+    assert.equal(JSON.parse(noJsMap.stdout).jsRouteAttributionAvailable, false);
+    const withJs = {};
+    withJs.entryCSSFiles = { '[project]/src/app/layout': [{ path: 'static/css/root.css', inlined: false }] };
+    withJs.entryJSFiles = { '[project]/src/app/layout': ['static/chunks/shared.js'] };
+    writeFileSync(join(build, 'server/app/page_client-reference-manifest.js'),
+      'globalThis.__RSC_MANIFEST = globalThis.__RSC_MANIFEST || {};globalThis.__RSC_MANIFEST["/page"] = ' + JSON.stringify(withJs));
+    const js = run();
+    assert.equal(js.status, 0, js.stderr);
+    const jsReport = JSON.parse(js.stdout);
+    assert.equal(jsReport.routeAttributionAvailable, false);
+    assert.equal(jsReport.jsRouteAttributionAvailable, true);
+    assert.equal(jsReport.jsMetric, 'client-reference-assigned-uncompressed-js-bytes');
+    assert.deepEqual(jsReport.jsRoutes, [{ route: '/', appPath: '/page', jsBytes: 7, scriptCount: 1 }]);
+    withJs.entryJSFiles = null;
+    writeFileSync(join(build, 'server/app/page_client-reference-manifest.js'),
+      'globalThis.__RSC_MANIFEST = globalThis.__RSC_MANIFEST || {};globalThis.__RSC_MANIFEST["/page"] = ' + JSON.stringify(withJs));
+    const malformedJs = run();
+    assert.equal(malformedJs.status, 1);
+    assert.match(malformedJs.stderr, /JavaScript map/);
+    assert.equal(malformedJs.stdout, '');
     writeFileSync(join(build, 'server/app/page_client-reference-manifest.js'), referenceSource('/wrong/page', {}));
     const mismatched = run();
     assert.equal(mismatched.status, 1);
@@ -177,5 +201,49 @@ test("CLI reports assigned CSS separately from unattributed JS and preserves mis
     assert.equal(mismatched.stdout, '');
   } finally {
     rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+const jsReferenceSource = (page, entryJSFiles) => referenceSource(page, {})
+  .replace('"entryCSSFiles":{}', '"entryCSSFiles":{},"entryJSFiles":' + JSON.stringify(entryJSFiles));
+
+test("Next16 JS assignments include shared runtime and deduplicate all manifest segments", () => {
+  assert.equal(typeof reporter.summarizeClientReferenceJs, "function");
+  const sizes = { 'static/chunks/runtime.js': 7, 'static/chunks/shared.js': 11, 'static/chunks/page.js': 13 };
+  const rows = reporter.summarizeClientReferenceJs({ '/donate/page': '/donate', '/page': '/' },
+    page => jsReferenceSource(page, {
+      '[project]/src/app/layout': ['static/chunks/shared.js'],
+      '[project]/src/app/donate/page': page === '/page' ? [] : ['static/chunks/page.js', 'static/chunks/shared.js'],
+    }), ['static/chunks/runtime.js', 'static/chunks/shared.js'], asset => sizes[asset]);
+  assert.deepEqual(rows, [
+    { route: '/donate', appPath: '/donate/page', jsBytes: 31, scriptCount: 3 },
+    { route: '/', appPath: '/page', jsBytes: 18, scriptCount: 2 },
+  ]);
+});
+
+test("Next16 JS assignments reject missing maps, malformed lists and unsafe assets", () => {
+  assert.equal(typeof reporter.summarizeClientReferenceJs, "function");
+  for (const map of [undefined, null, [], { a: null }, { a: ['../outside.js'] },
+    { a: ['static/../outside.js'] }, { a: ['https://external.invalid/a.js'] }, { a: ['static/css/a.css'] }, { a: [42] }]) {
+    assert.throws(() => reporter.summarizeClientReferenceJs({ '/page': '/' },
+      page => jsReferenceSource(page, map), [], () => 1));
+  }
+  for (const roots of [undefined, null, {}, ['static/css/a.css'], ['../outside.js']]) {
+    assert.throws(() => reporter.summarizeClientReferenceJs({ '/page': '/' },
+      page => jsReferenceSource(page, {}), roots, () => 1));
+  }
+});
+
+test("Next16 JS assignments reject wrong identities, traversal and absent sizes", () => {
+  assert.equal(typeof reporter.summarizeClientReferenceJs, "function");
+  assert.throws(() => reporter.summarizeClientReferenceJs({ '/page': '/' },
+    () => jsReferenceSource('/wrong/page', {}), [], () => 1), /identity/);
+  let read = false;
+  assert.throws(() => reporter.summarizeClientReferenceJs({ '/../../page': '/' },
+    () => { read = true; }, [], () => 1), /path/);
+  assert.equal(read, false);
+  for (const size of [undefined, -1, NaN, Infinity, 1.1]) {
+    assert.throws(() => reporter.summarizeClientReferenceJs({ '/page': '/' },
+      page => jsReferenceSource(page, { root: ['static/chunks/shared.js'] }), [], () => size), /size/);
   }
 });
