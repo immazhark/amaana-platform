@@ -1,5 +1,6 @@
 import { publicFaithWhere } from "@/lib/faith-publication";
 import { prisma } from "@/lib/prisma";
+import { STORY_PAGE_SIZE } from "@/lib/story-discovery";
 
 const DISCOVERY_MEDIA_CANDIDATE_LIMIT = 3;
 
@@ -15,31 +16,49 @@ const publicMediaSelect = {
   sortOrder: true,
 } as const;
 
-export async function getStoriesDiscoveryData() {
+const publicStoryWhere = { status: "PUBLISHED", privacyApprovedAt: { not: null } } as const;
+const storyIndexSelect = {
+  id: true,
+  slug: true,
+  title: true,
+  summary: true,
+  publishedAt: true,
+  cause: { select: { title: true, status: true } },
+  initiative: { select: { title: true, status: true, cause: { select: { title: true, status: true } } } },
+} as const;
+const storyMediaCandidates = {
+  where: {
+    kind: "IMAGE",
+    isPublic: true,
+    privacyApprovedAt: { not: null },
+    publicUrl: { not: null },
+    altText: { not: "" },
+  },
+  orderBy: { sortOrder: "asc" },
+  take: DISCOVERY_MEDIA_CANDIDATE_LIMIT,
+  select: publicMediaSelect,
+} as const;
+
+export async function getStoriesDiscoveryIndexData() {
   return prisma.story.findMany({
-    where: { status: "PUBLISHED", privacyApprovedAt: { not: null } },
+    where: publicStoryWhere,
     orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }, { id: "asc" }],
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      summary: true,
-      publishedAt: true,
-      cause: { select: { title: true, status: true } },
-      initiative: { select: { title: true, status: true, cause: { select: { title: true, status: true } } } },
-      mediaAssets: {
-        where: {
-          kind: "IMAGE",
-          isPublic: true,
-          privacyApprovedAt: { not: null },
-          publicUrl: { not: null },
-          altText: { not: "" },
-        },
-        orderBy: { sortOrder: "asc" },
-        take: DISCOVERY_MEDIA_CANDIDATE_LIMIT,
-        select: publicMediaSelect,
-      },
-    },
+    select: storyIndexSelect,
+  });
+}
+
+export async function getVisibleStoryCards(ids: readonly string[]) {
+  if (ids.length > STORY_PAGE_SIZE) throw new Error("Story page size exceeded");
+  if (ids.length === 0) return [];
+
+  const cards = await prisma.story.findMany({
+    where: { ...publicStoryWhere, id: { in: [...ids] } },
+    select: { ...storyIndexSelect, mediaAssets: storyMediaCandidates },
+  });
+  const byId = new Map(cards.map(card => [card.id, card]));
+  return ids.flatMap(id => {
+    const card = byId.get(id);
+    return card ? [card] : [];
   });
 }
 
