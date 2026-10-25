@@ -8,7 +8,7 @@ const fields = [
   'healthcheckTimeout', 'preDeployCommand', 'restartPolicyMaxRetries',
   'sleepApplication', 'regionReplicas',
 ];
-const allowedRoot = new Set(['capturedAt', 'environment', 'serviceNames', 'bucketCount', 'volumeCount', 'website']);
+const allowedRoot = new Set(['capturedAt', 'environment', 'serviceNames', 'bucketCount', 'volumeCount', 'website', 'operationalProfiles']);
 const allowedWebsite = new Set(fields);
 const isRecord = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const stableEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -44,6 +44,42 @@ export function compareMigrationInventory(reference, candidate) {
   for (const field of fields) {
     if (!Object.hasOwn(actual, field) || !stableEqual(actual[field], expected[field])) {
       issue('website.' + field, 'Website ' + field + ' differs from observed live configuration');
+    }
+  }
+  const approvedOtherServices = Array.isArray(reference.serviceNames)
+    ? reference.serviceNames.filter(name => name !== 'amaana-platform') : [];
+  const expectedProfiles = reference.operationalProfiles;
+  const proposedProfiles = candidate.operationalProfiles;
+  if (!isRecord(expectedProfiles) || !isRecord(proposedProfiles)) {
+    issue('operational-profiles', 'Expected a complete map of other service profiles');
+  } else {
+    const originalNames = Object.keys(expectedProfiles).sort();
+    const candidateNames = Object.keys(proposedProfiles).sort();
+    if (!stableEqual(originalNames, [...approvedOtherServices].sort()) ||
+        !stableEqual(candidateNames, originalNames)) {
+      issue('operational-profiles', 'Missing, unexpected or duplicate managed service profiles');
+    }
+    const allowedProfileFields = new Set([
+      'repository', 'branch', 'rootDirectory', 'commitSha', 'builder',
+      'dockerfilePath', 'watchPatterns', 'buildCommand', 'preDeployCommand',
+      'healthcheckPath', 'healthcheckTimeout', 'startCommand',
+      'cronSchedule', 'restartPolicyType', 'sleepApplication', 'regionReplicas',
+    ]);
+    for (const name of originalNames) {
+      const expectedService = expectedProfiles[name];
+      const actualService = proposedProfiles[name];
+      if (!isRecord(expectedService) || !isRecord(actualService)) {
+        issue('operational-profiles', 'Invalid or missing service profile: ' + name);
+        continue;
+      }
+      const unknownFields = Object.keys(actualService).filter(key => !allowedProfileFields.has(key) ||
+        !Object.hasOwn(expectedService, key));
+      if (unknownFields.length) issue('unexpected-fields', name + ' unexpected fields: ' + unknownFields.join(', '));
+      for (const field of Object.keys(expectedService)) {
+        if (!Object.hasOwn(actualService, field) || !stableEqual(actualService[field], expectedService[field])) {
+          issue('operational.' + name + '.' + field, name + ' ' + field + ' differs from observed live settings');
+        }
+      }
     }
   }
   return issues;
