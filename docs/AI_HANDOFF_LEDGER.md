@@ -2,6 +2,10 @@
 
 Sole writer on feat/public-initiative-search-20261026 from main a2df654. PR453 auth tests remain independently frozen. Add bounded server-rendered title/summary search combined with programme/year filters; no client JS or private-data queries. Regression failed before implementation. Local and hosted verification pending; no whole149 closure claimed.
 
+## 2026-10-26 — CHATGPT_ACTIVE — Appeal server-action authorization acceptance
+
+Sole Work writer on test/appeal-action-authorization-20261026 from main a2df654227e7f5760b71c2fde0b3fa60e928d6d0. PR452 merged after full40216434924 and ready40224231254; Railway skipped, public9948c57 ready. Add real-auth-helper denial evidence for six appeal actions using synthetic cookies/users and stopped database boundaries. No auth/publication/financial behavior change. Actual coverage gap, not a reproduced runtime defect. Hosted acceptance and separate ready-state required; AF-R012 remains Partial.
+
 ## 2026-10-25 — CHATGPT_ACTIVE — AF-R047 Next16 JavaScript attribution
 
 Sole Work writer continues from main 4b15cca3c2a5d3d8192cf8aa9661f701b49822d2 on perf/next16-route-js-attribution-20261025. PR451 exact head1d1ff742 passed full40210115115 and separate ready40214309748; guarded merge4b15cca. Railway26e09cdf SKIPPED; public production9948c57 HTTP200/ready. Only open PR374 remains draft. No competing writer observed.
