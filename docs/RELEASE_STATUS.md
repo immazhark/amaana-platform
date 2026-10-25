@@ -6,12 +6,12 @@
 
 | Boundary | Verified evidence |
 | --- | --- |
-| Repository `main` | `95bd57982b8b968f77cd095b2703edbf295dedd2` (PR #438 merged); GitHub branch API reports `protected=true` |
+| Repository `main` | `d262c8f17fa26bf3bf71c2709acce3b12fd046e0` (PR #439 merged); GitHub branch API reports `protected=true` |
 | Production application | Public `/api/health/version` returned HTTP 200 with runtime SHA `b033e99982caaeb295726bf19df64ca1ffa7f7a3`, branch `main`, environment `production`, and `paymentMode=live` |
 | Runtime readiness | Public `/api/health/ready` returned HTTP 200 and `{"status":"ready"}` |
-| Latest GitHub-only merges | #436 public exposure regression `29c382f4ec7c721b549a94519967e0896845eaa0`; #437 CSS audit redirect guard `e1a1ef81d848c54a8a36ccd79f133a0b6bd23349`; #438 evidence checkpoint `95bd57982b8b968f77cd095b2703edbf295dedd2` |
-| Railway release decision | These three source/test/docs-only merges have website deployments marked `SKIPPED` by configured runtime watch patterns. **No new production website build** is implied by the newer GitHub `main` SHA |
-| Pending work | Draft PR #439 indexes public `llms.txt` (test-only) and draft PR #440 guards anonymous admin test coverage (test-only); each requires successful exact-head full CI, ready-state promotion, and a guarded merge. The authoritative status is always the current GitHub PR and CI, not this dated row |
+| Latest GitHub-only merges | #436 public exposure regression `29c382f4ec7c721b549a94519967e0896845eaa0`; #437 CSS audit redirect guard `e1a1ef81d848c54a8a36ccd79f133a0b6bd23349`; #438 evidence checkpoint `95bd57982b8b968f77cd095b2703edbf295dedd2`; #439 public discovery index test `d262c8f17fa26bf3bf71c2709acce3b12fd046e0` (full and ready-state CI success) |
+| Railway release decision | #436–#438 had website deployments marked `SKIPPED` by configured watch patterns; #439 is also test-only and its Railway decision must be checked from the actual deployment record. **No website runtime release is inferred from a newer GitHub `main` SHA** |
+| Pending work | PR #440's redundant test-inventory implementation was closed **without merge** after fail-first hosted evidence confirmed a stronger existing guard. Ready-for-review documentation PRs #441 and #442 require reconciliation, final promotion verification and protected merges. The authoritative status is always current GitHub PR/CI and Railway records, not this dated row |
 
 ### Operational controls
 
