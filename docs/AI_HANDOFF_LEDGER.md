@@ -1,3 +1,11 @@
+## 2026-10-25 — CHATGPT_ACTIVE — Work takeover and #448 guarded merge
+
+Owner explicitly hands implementation to this ChatGPT Work session with standing routine commit/PR/protected-merge authorization. This session is the sole repository writer. Protected main is now `454afc326c6e3d1db6a158ff9a8cd9b789c69ecc` after #448, exact head `bee2d9fd236516da9aef1c846551e91d6dc0c5a9`: full CI `40185446643` all seven jobs SUCCESS; separate ready-state CI `40202264976` plan/promotion/verify SUCCESS; no unresolved review threads. Local planning/parity suite 51/51 PASS. Railway website attempt `9a81a812-5845-45a6-b77f-a1b66e2bfb04` SKIPPED (scripts-only). Fresh uncached public version/readiness reads HTTP200: production/main `d262c8f17fa26bf3bf71c2709acce3b12fd046e0`, paymentMode live; ready.
+
+Continue existing #447 `test/railway-iac-worker-parity-20261025` by normally reconciling #448/main and retaining only the complementary migration runbook plus these coordination records. The #448 auxiliaryServices comparator replaces the overlapping #447 operationalProfiles implementation; do not merge both schemas. Preserve both histories. Require new exact-head CI and separate ready-state promotion before guarded merge. #374 remains draft; #264/#361/#446 remain open; historical 149 totals unchanged.
+
+Railway read-only production inventory: three services, three buckets, zero volumes, no staged work. Website effective RAILPACK/90s readiness/Singapore; worker dedicated Dockerfile/root, annual parked cron, node --check run.mjs, NEVER restart; preview pinned historical source and FAILED deployment, not production website outage. No variables read, sends, payment transactions, database writes or infrastructure apply. Actual #446 IaC import/plan remains BLOCKED: no installed/authenticated Railway CLI here and connected tools expose no config pull/plan. Next operations action: controlled authenticated config pull/migrate preview, preserve() review across all resources, then read-only exact-target config plan; never remove legacy files or apply blindly. Watch-policy rollout is separate.
+
 ## 25 October 2026 — sole-writer release checkpoint after #434
 
 - **Sole active implementation writer:** `CHATGPT_ACTIVE`. Earlier `CODEX_ACTIVE` records below are historical; do not open competing writer branches.

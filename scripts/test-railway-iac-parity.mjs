@@ -52,61 +52,53 @@ test('old railway.json is not used to override effective live builder/health val
   assert.equal(reference.website.healthcheckTimeout, 90);
 });
 
-test('requires an exact operational profile for both other live services', () => {
-  const baseline = clone();
-  assert.deepEqual(compareMigrationInventory(baseline, structuredClone(baseline)), []);
-  const omitted = structuredClone(baseline);
-  delete omitted.operationalProfiles['amaana-notification-cron'];
-  assert.ok(compareMigrationInventory(baseline, omitted).some(issue => issue.code === 'operational-profiles'));
+test('rejects missing, duplicate, or substituted auxiliary Railway services', () => {
+  const absent = clone(); delete absent.auxiliaryServices;
+  assert.equal(hasIssue(absent, 'auxiliary-service-inventory'), true);
+  const removed = clone(); removed.auxiliaryServices.pop();
+  assert.equal(hasIssue(removed, 'auxiliary-service-inventory'), true);
+  const duplicated = clone(); duplicated.auxiliaryServices.push(structuredClone(duplicated.auxiliaryServices[0]));
+  assert.equal(hasIssue(duplicated, 'auxiliary-service-inventory'), true);
+  const substituted = clone(); substituted.auxiliaryServices[1].name = 'surprise-service';
+  assert.equal(hasIssue(substituted, 'auxiliary-service-inventory'), true);
 });
 
-test('rejects enabling notification delivery or widening worker builds', () => {
-  const baseline = clone();
-  for (const [field, alternative] of [
-    ['cronSchedule', '*/5 * * * *'],
+test('keeps notification worker dormant, isolated, and incapable of automatic delivery', () => {
+  for (const [field, changed] of [
     ['startCommand', 'node run.mjs'],
+    ['cronSchedule', '*/5 * * * *'],
     ['rootDirectory', '/'],
     ['builder', 'RAILPACK'],
+    ['watchPatterns', ['src/**']],
     ['restartPolicyType', 'ON_FAILURE'],
+    ['branch', 'unreviewed-notification-branch'],
     ['regionReplicas', { iad: 2 }],
   ]) {
-    const changed = structuredClone(baseline);
-    changed.operationalProfiles['amaana-notification-cron'][field] = alternative;
-    assert.ok(compareMigrationInventory(baseline, changed).some(issue =>
-      issue.code === 'operational.amaana-notification-cron.' + field), field);
+    const candidate = clone();
+    candidate.auxiliaryServices[0][field] = changed;
+    assert.equal(hasIssue(candidate, 'auxiliary.amaana-notification-cron.' + field), true, field);
   }
 });
 
-test('rejects preview environment drift and extra secret-bearing profile keys', () => {
-  const baseline = clone();
-  const changed = structuredClone(baseline);
-  changed.operationalProfiles['amaana-rebuild-preview'].branch = 'main';
-  assert.ok(compareMigrationInventory(baseline, changed).some(issue =>
-    issue.code === 'operational.amaana-rebuild-preview.branch'));
-  const secret = structuredClone(baseline);
-  secret.operationalProfiles['amaana-notification-cron'].environmentVariables = { CREDENTIAL: 'fixture' };
-  assert.ok(compareMigrationInventory(baseline, secret).some(issue => issue.code === 'unexpected-fields'));
+test('rejects preview branch, build, health and pinned source drift', () => {
+  for (const [field, changed] of [
+    ['branch', 'main'], ['pinnedCommitSha', 'not-the-reviewed-commit'],
+    ['builder', 'DOCKERFILE'], ['watchPatterns', ['docs/**']],
+    ['preDeployCommand', []], ['healthcheckPath', '/'],
+    ['healthcheckTimeout', 90], ['sleepApplication', false],
+    ['regionReplicas', { iad: 2 }],
+  ]) {
+    const candidate = clone();
+    candidate.auxiliaryServices[1][field] = changed;
+    assert.equal(hasIssue(candidate, 'auxiliary.amaana-rebuild-preview.' + field), true, field);
+  }
 });
 
-test('dated snapshot preserves both safe operational service boundaries', () => {
-  const worker = reference.operationalProfiles['amaana-notification-cron'];
-  assert.equal(worker.rootDirectory, '/ops/notification-cron');
-  assert.equal(worker.cronSchedule, '0 0 1 1 *');
-  assert.equal(worker.startCommand, 'node --check run.mjs');
-  assert.equal(worker.restartPolicyType, 'NEVER');
-  assert.equal(worker.builder, 'DOCKERFILE');
-  assert.deepEqual(worker.watchPatterns, ['/ops/notification-cron/**']);
-  const preview = reference.operationalProfiles['amaana-rebuild-preview'];
-  assert.equal(preview.branch, 'phase-public-site-rebuild');
-  assert.equal(preview.builder, 'RAILPACK');
-  assert.equal(preview.healthcheckTimeout, 300);
-});
-
-test('rejects missing individual profile settings and unexpected services', () => {
-  const missing = clone();
-  delete missing.operationalProfiles['amaana-notification-cron'].cronSchedule;
-  assert.equal(hasIssue(missing, 'operational.amaana-notification-cron.cronSchedule'), true);
-  const appended = clone();
-  appended.operationalProfiles['unexpected-website'] = { repository: 'fake' };
-  assert.equal(hasIssue(appended, 'operational-profiles'), true);
+test('rejects auxiliary secret-bearing properties but accepts harmless JSON key ordering', () => {
+  const unsafe = clone();
+  unsafe.auxiliaryServices[0].environmentVariables = { CRON_SECRET: 'never-publish' };
+  assert.equal(hasIssue(unsafe, 'unexpected-fields'), true);
+  const reordered = clone();
+  reordered.auxiliaryServices[0] = Object.fromEntries(Object.entries(reordered.auxiliaryServices[0]).reverse());
+  assert.deepEqual(compareMigrationInventory(reference, reordered), []);
 });
