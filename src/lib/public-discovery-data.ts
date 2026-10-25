@@ -18,7 +18,7 @@ const publicMediaSelect = {
 export async function getStoriesDiscoveryData() {
   return prisma.story.findMany({
     where: { status: "PUBLISHED", privacyApprovedAt: { not: null } },
-    orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }],
+    orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }, { id: "asc" }],
     select: {
       id: true,
       slug: true,
@@ -26,7 +26,7 @@ export async function getStoriesDiscoveryData() {
       summary: true,
       publishedAt: true,
       cause: { select: { title: true, status: true } },
-      initiative: { select: { title: true, status: true, cause: { select: { status: true } } } },
+      initiative: { select: { title: true, status: true, cause: { select: { title: true, status: true } } } },
       mediaAssets: {
         where: {
           kind: "IMAGE",

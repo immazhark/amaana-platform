@@ -1,3 +1,7 @@
+## 2026-10-26 — CHATGPT_ACTIVE — Stories discovery batch
+
+Sole writer on feat/stories-discovery-20261026 from main b15b2f1. Public stories title/summary search, published direct-programme filter and bounded12-card rendering with stable source tie-breaker. Publication/privacy predicates retained. Query selection tests failed before helper existed. No financial/schema/provider changes. This bounds rendered results, not database fetch volume. Verification and hosted release pending; no whole149 closure.
+
 ## 2026-10-26 — CHATGPT_ACTIVE — Appeal server-action authorization acceptance
 
 Sole Work writer on test/appeal-action-authorization-20261026 from main a2df654227e7f5760b71c2fde0b3fa60e928d6d0. PR452 merged after full40216434924 and ready40224231254; Railway skipped, public9948c57 ready. Add real-auth-helper denial evidence for six appeal actions using synthetic cookies/users and stopped database boundaries. No auth/publication/financial behavior change. Actual coverage gap, not a reproduced runtime defect. Hosted acceptance and separate ready-state required; AF-R012 remains Partial.
