@@ -1,3 +1,7 @@
+## 2026-10-26 — Staged private-document authorization test, not published
+
+`test/admin-document-authorization-20261026` begins from `c9909952`; one ChatGPT writer stages five AF-R012 GET guard cases for `src/app/admin/(protected)/documents/[id]/route.ts`. Privileged Prisma/document URL/audit mocks fail closed, and `@/lib/auth` stays real. A controlled permission-check bypass failed the expected wrong-role test; restored source passed five focused tests, TypeScript and scoped ESLint. Source route remains unchanged; no private document material or live data is used. PR #457 is separately undergoing required browser acceptance at head `125f1e0`; do not publish this follow-up until its release status and current main are reconciled.
+
 ## 2026-10-26 — CHATGPT_ACTIVE — Stories discovery batch
 
 Sole writer on feat/stories-discovery-20261026 from main b15b2f1. Public stories title/summary search, published direct-programme filter and bounded12-card rendering with stable source tie-breaker. Publication/privacy predicates retained. Query selection tests failed before helper existed. No financial/schema/provider changes. This bounds rendered results, not database fetch volume. Verification and hosted release pending; no whole149 closure.

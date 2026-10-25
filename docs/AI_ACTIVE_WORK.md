@@ -1,3 +1,7 @@
+## 2026-10-26 — CHATGPT_ACTIVE — Private assistance-document denial coverage
+
+Single writer stages a test-only AF-R012 follow-up on `test/admin-document-authorization-20261026` from main `c9909952` while PR #457 remains in hosted browser acceptance. Five cases cover anonymous, malformed, unresolvable/expired and wrong-permission access plus a positive guard checkpoint for the private document GET using real session/permission helpers and stopped document, storage and audit effects. A temporary `requireAuthenticatedUser` bypass made the wrong-role case fail; production source was restored. Five tests, TypeScript and scoped ESLint pass. No production route, secret, beneficiary record or storage change. Keep this local until #457 reaches a release boundary; reconcile main and run exact-head checks before any later publication. The historical 149 classifications do not change.
+
 ## 2026-10-26 — CHATGPT_ACTIVE — Stories discovery batch
 
 Sole writer on feat/stories-discovery-20261026 from main b15b2f1. Public stories title/summary search, published direct-programme filter and bounded12-card rendering with stable source tie-breaker. Publication/privacy predicates retained. Query selection tests failed before helper existed. No financial/schema/provider changes. This bounds rendered results, not database fetch volume. Verification and hosted release pending; no whole149 closure.
