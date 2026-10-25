@@ -49,8 +49,8 @@ export function summarizeAppRouteBundles(pages, byteSize) {
 
 
 /**
- * Without app-build-manifest.json, keep JavaScript unattributed. CSS may have
- * separate client-reference evidence; never infer route bytes from aggregates.
+ * Without app-build-manifest.json, aggregate assets remain unattributed.
+ * Separate client-reference evidence is reported independently for JS and CSS.
  */
 export function summarizeUnattributedAppAssets(appPaths, assets) {
   if (!appPaths || typeof appPaths !== "object" || Array.isArray(appPaths)) {
@@ -132,6 +132,41 @@ export function summarizeClientReferenceCss(appPaths, readManifest, byteSize) {
   }).sort((a, b) => b.cssBytes - a.cssBytes || a.appPath.localeCompare(b.appPath));
 }
 
+/** Next16 manifest-assigned JS, including shared runtime; not network loading. */
+export function summarizeClientReferenceJs(appPaths, readManifest, rootMainFiles, byteSize) {
+  if (!isRecord(appPaths)) throw new Error("App Router path manifest is unavailable");
+  if (!Array.isArray(rootMainFiles)) throw new Error("Invalid shared JavaScript list");
+  const pages = Object.entries(appPaths).filter(([page, route]) => page.endsWith("/page") && typeof route === "string");
+  if (!pages.length) throw new Error("No App Router page entries");
+  const sizes = new Map();
+  const scriptPath = value => {
+    const asset = normalizedStaticAsset(value);
+    if (!asset || !asset.endsWith(".js")) throw new Error("Unsafe JavaScript asset path");
+    return asset;
+  };
+  const shared = rootMainFiles.map(scriptPath);
+  return pages.map(([page, route]) => {
+    if (!validAppPage(page)) throw new Error("Unsafe App Router page path");
+    const manifest = parseClientReferenceManifest(readManifest(page), page);
+    if (!isRecord(manifest.entryJSFiles)) throw new Error("Invalid client-reference JavaScript map");
+    const assets = new Set(shared);
+    for (const scripts of Object.values(manifest.entryJSFiles)) {
+      if (!Array.isArray(scripts)) throw new Error("Invalid client-reference JavaScript entries");
+      for (const script of scripts) assets.add(scriptPath(script));
+    }
+    let jsBytes = 0;
+    for (const asset of assets) {
+      if (!sizes.has(asset)) {
+        const bytes = byteSize(asset);
+        if (!Number.isSafeInteger(bytes) || bytes < 0) throw new Error("Invalid JavaScript asset size");
+        sizes.set(asset, bytes);
+      }
+      jsBytes += sizes.get(asset);
+    }
+    return { route, appPath: page, jsBytes, scriptCount: assets.size };
+  }).sort((a, b) => b.jsBytes - a.jsBytes || a.appPath.localeCompare(b.appPath));
+}
+
 function walkBuildAssets(directory, root = directory) {
   if (!existsSync(directory)) throw new Error("Next.js static asset directory is missing");
   return readdirSync(directory, { withFileTypes: true }).flatMap(item => {
@@ -166,11 +201,22 @@ function run() {
     // Validate before constructing any filesystem path from build metadata.
     if (pages.some(page => !validAppPage(page))) throw new Error("Unsafe App Router page path");
     const clientPath = page => join(buildDir, "server", "app", page.slice(1) + "_client-reference-manifest.js");
+    result.jsRouteAttributionAvailable = false;
     result.cssRouteAttributionAvailable = pages.every(page => existsSync(clientPath(page)));
     if (result.cssRouteAttributionAvailable) {
       result.cssMetric = "client-reference-assigned-uncompressed-css-bytes";
       result.cssRoutes = summarizeClientReferenceCss(appPaths,
         page => readFileSync(clientPath(page), "utf8"), asset => statSync(join(buildDir, asset)).size);
+      const buildManifestPath = join(buildDir, "build-manifest.json");
+      result.jsRouteAttributionAvailable = existsSync(buildManifestPath) && pages.every(page =>
+        Object.hasOwn(parseClientReferenceManifest(readFileSync(clientPath(page), "utf8"), page), "entryJSFiles"));
+      if (result.jsRouteAttributionAvailable) {
+        const buildManifest = JSON.parse(readFileSync(buildManifestPath, "utf8"));
+        result.jsMetric = "client-reference-assigned-uncompressed-js-bytes";
+        result.jsRoutes = summarizeClientReferenceJs(appPaths,
+          page => readFileSync(clientPath(page), "utf8"), buildManifest.rootMainFiles,
+          asset => statSync(join(buildDir, asset)).size);
+      }
     }
   }
   if (process.argv.includes("--json")) {
@@ -183,16 +229,24 @@ function run() {
       process.stdout.write(`${row.route.padEnd(46)} JS ${String(row.jsBytes).padStart(9)}  CSS ${String(row.cssBytes).padStart(9)}  assets ${row.entries}\n`);
     }
   } else {
-    process.stdout.write(`App Router pages: ${result.routeCount}; per-route JavaScript attribution unavailable in this build.\n`);
+    process.stdout.write(`App Router pages: ${result.routeCount}; legacy app-build-manifest attribution unavailable in this build.\n`);
     process.stdout.write(`Aggregate JS: ${result.aggregate.jsBytes} bytes; CSS: ${result.aggregate.cssBytes} bytes; ${result.aggregate.assetCount} files.\n`);
     process.stdout.write("Aggregate assets must not be interpreted as per-route bundle sizes.\n");
     if (result.cssRouteAttributionAvailable) {
-      process.stdout.write(`Client-reference CSS attribution: ${result.cssRoutes.length} page entries (uncompressed assigned bytes; JavaScript remains unattributed).\n`);
+      process.stdout.write(`Client-reference CSS attribution: ${result.cssRoutes.length} page entries (uncompressed assigned bytes).\n`);
       for (const row of result.cssRoutes.slice(0, 20)) {
         process.stdout.write(`${row.route.padEnd(46)} CSS ${String(row.cssBytes).padStart(9)}  stylesheets ${row.stylesheetCount}\n`);
       }
     } else {
       process.stdout.write("Per-route CSS attribution unavailable: client-reference manifests are incomplete.\n");
+    }
+    if (result.jsRouteAttributionAvailable) {
+      process.stdout.write(`Client-reference JavaScript attribution: ${result.jsRoutes.length} page entries (uncompressed assigned bytes; includes shared runtime).\n`);
+      for (const row of result.jsRoutes.slice(0, 20)) {
+        process.stdout.write(`${row.route.padEnd(46)} JS ${String(row.jsBytes).padStart(9)}  scripts ${row.scriptCount}\n`);
+      }
+    } else {
+      process.stdout.write("Per-route JavaScript attribution unavailable: shared build or entryJSFiles evidence is incomplete.\n");
     }
     for (const asset of walkBuildAssets(join(buildDir, "static")).filter(item => item.path.endsWith(".js")).sort((a,b) => b.bytes-a.bytes).slice(0,12)) {
       process.stdout.write(`Static JS contributor ${asset.bytes} bytes: ${asset.path}\n`);

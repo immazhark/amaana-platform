@@ -1,3 +1,11 @@
+## 2026-10-25 — CHATGPT_ACTIVE — AF-R047 Next16 JavaScript attribution
+
+Sole Work writer continues from main 4b15cca3c2a5d3d8192cf8aa9661f701b49822d2 on perf/next16-route-js-attribution-20261025. PR451 exact head1d1ff742 passed full40210115115 and separate ready40214309748; guarded merge4b15cca. Railway26e09cdf SKIPPED; public production9948c57 HTTP200/ready. Only open PR374 remains draft. No competing writer observed.
+
+Bounded tooling task: inspect current isolated Next16 manifests; test-first safe JSON-only per-page entryJSFiles plus rootMainFiles attribution. Assigned uncompressed bytes remain distinct from compression/network/CWV. No runtime, dependency, schema, financial or infrastructure changes. P0 IaC446 remains blocked on authenticated import/plan capability. Full exact-head hosted and separate ready-state gates required; 149 totals unchanged.
+
+Local evidence: three new JavaScript contracts failed before implementation. Final 21 native reporter/transport tests pass. A fresh isolated Next16 build completed; reporter covers61 pages and matches every one of Next diagnostics60 route byte counts (Next omits the generated global-error diagnostic). Donate assigned JS560231 bytes/14scripts; aggregate805994 JS/328563 CSS bytes. These are local uncompressed build assignments, not public transfer/CWV or a budget change. Scoped lint passes; full Vitest 2,159 PASS/20 local DB skips. Hosted exact-head and separate ready-state acceptance remain pending.
+
 ## 2026-10-25 — CHATGPT_ACTIVE — AF-R047 Next 16 CSS attribution
 
 Sole Work writer continues on perf/next16-route-css-attribution-20261025 from main 9948c57c1b0ce11f1cbf07898c25c6f2b304f874. PR450 full CI40203630196 and ready-state40206674780 passed; guarded merge9948c57. Fresh public version/readiness now HTTP200 match exact main/production SHA and ready; Railway b6b3ce7d-71dd-4fc7-85b7-ddf00f58ea7d is settled/sleeping. This supersedes pending rollout/session-test notes below.
