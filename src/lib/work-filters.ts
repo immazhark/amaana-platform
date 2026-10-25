@@ -18,7 +18,7 @@ export function filterWork<T extends Programme>(programmes: T[], search: WorkSea
   const year = typeof search.year === "string" ? search.year : "";
   const years = [...new Set(programmes.flatMap(p => p.initiatives.flatMap(yearsFor)))].sort((a, b) => b - a);
   const invalid = hasUnsupportedPublicQueryFields(search, ["programme", "year", "q"])
-    || Array.isArray(search.q) || query.length > 80 || /[\u0000-\u001f\u007f]/.test(query)
+    || Array.isArray(search.q) || query.length > 80 || /[\u0000-\u001f\u007f]/.test(typeof search.q === "string" ? search.q : "")
     || Array.isArray(search.programme) || Array.isArray(search.year)
     || Boolean(programme && !programmes.some(p => p.slug === programme))
     || Boolean(year && !years.some(value => String(value) === year));

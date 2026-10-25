@@ -134,3 +134,9 @@ it("finds published annual editions by text without requiring a year filter", ()
   expect(filterWork(data, {}).count).toBe(1);
   expect(filterWork(data, { q: "2025" }).results[0]?.initiatives.map(x => x.slug)).toEqual(["winter-2025"]);
 });
+
+it("rejects raw control characters without reflecting the query", () => {
+  const result = filterWork(categories, { q: "winter\nrelief" });
+  expect(result.invalid).toBe(true);
+  expect(result.query).toBe("");
+});
