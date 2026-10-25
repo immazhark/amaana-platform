@@ -660,3 +660,24 @@ test('reduced motion disables smooth document scrolling and keeps navigation usa
   await page.keyboard.press('Enter');
   await expect(page.locator('main#main')).toBeFocused();
 });
+
+test('Our Work text search combines filters, recovers empty results and clears the query', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openPublicPage(page, '/our-work');
+  const form = page.getByRole('form', { name: 'Filter published initiatives' });
+  await form.getByLabel('Search public initiatives').fill('winter');
+  await form.getByRole('button', { name: 'Apply filters' }).click();
+  await expect(page.getByLabel('Search public initiatives')).toHaveValue('winter');
+  await expect(page.locator('.work-results-count')).not.toHaveText(/^0 published/);
+  await expect(page.locator('details[data-work-category][open]')).not.toHaveCount(0);
+  await expect(page.locator('body')).toHaveJSProperty('scrollWidth', await page.evaluate(() => document.body.clientWidth));
+  await page.getByLabel('Search public initiatives').fill('no-initiative-matches-this-query');
+  await page.getByRole('button', { name: 'Apply filters' }).click();
+  await expect(page.getByRole('heading', { name: 'No published initiatives match these filters.' })).toBeVisible();
+  await page.getByRole('link', { name: 'Clear filters', exact: true }).click();
+  await expect(page.getByLabel('Search public initiatives')).toHaveValue('');
+  await expect(page.locator('.work-results-count')).not.toHaveText(/^0 published/);
+  await openPublicPage(page, '/our-work?q=winter&q=medical');
+  await expect(page.getByRole('status')).toContainText('These filters could not be read');
+  await expect(page.getByLabel('Search public initiatives')).toHaveValue('');
+});
