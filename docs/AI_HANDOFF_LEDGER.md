@@ -1,3 +1,7 @@
+## 2026-10-26 — Donation reconciliation test-only branch prepared
+
+`test/donation-reconciliation-authorization-20261026` starts from protected main `0f3bc050`. Existing `donations/actions.test.ts` mocks the authorization helper; new five-case regression now exercises real cookie/session/RBAC denial and fail-closed `reconcileDirectDonation`/cache boundaries. A controlled `requireAuthenticatedUser` bypass fails the wrong-role case, while restored production source passes 18 focused tests, TypeScript, scoped ESLint and 2,208 full local tests (20 isolated-DB skips). No financial mutation is authorized or executed. PRs #458/#459 and Railway release observation proceed independently under one repository writer. Hosted exact-head checks, ready-state and SHA-guarded merge remain mandatory.
+
 ## 2026-10-26 — CHATGPT_ACTIVE — Notification authorization test increment
 
 From main `37632d250ec661ce20154cc05eb73ecf2985d944`, isolated `test/notification-authorization-boundaries-20261026` adds six real-auth-helper denials for anonymous, inactive-session and wrong-role calls before notification queue/requeue effects. The controlled missing-permission mutation failed as intended; 2,200 local tests passed after restoring source, with 20 isolated-DB skips. PR #455 is merged at `c9909952fa5277486ec823748bd65fea49c5fe3d`; this branch preserves that ancestry. Delivery remains dormant; AF-R012 remains Partial. New hosted acceptance is pending.
