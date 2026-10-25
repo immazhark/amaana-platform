@@ -1,6 +1,10 @@
-## 2026-10-26 — Staged private-document authorization test, not published
+## 2026-10-26 — Private-document authorization test, draft PR #458
 
-`test/admin-document-authorization-20261026` begins from `c9909952`; one ChatGPT writer stages five AF-R012 GET guard cases for `src/app/admin/(protected)/documents/[id]/route.ts`. Privileged Prisma/document URL/audit mocks fail closed, and `@/lib/auth` stays real. A controlled permission-check bypass failed the expected wrong-role test; restored source passed five focused tests, TypeScript and scoped ESLint. Source route remains unchanged; no private document material or live data is used. PR #457 is separately undergoing required browser acceptance at head `125f1e0`; do not publish this follow-up until its release status and current main are reconciled.
+`test/admin-document-authorization-20261026` began at `c9909952`, published as draft PR #458 head `2b056327`; one writer tests five AF-R012 GET guard cases for `src/app/admin/(protected)/documents/[id]/route.ts`. Privileged Prisma/document URL/audit mocks fail closed, and `@/lib/auth` stays real. A controlled permission-check bypass failed as expected; restored source passed five focused tests, TypeScript, scoped ESLint and 2,202 local full-suite cases (20 isolated-DB skips). Source route remains unchanged; no private document material or live data is used. PR #457 merged as main `0f3bc050` after full CI `40243585975` and ready-state `40246371157`; this branch reconciles both source histories before a fresh exact-head hosted acceptance.
+
+## 2026-10-26 — CHATGPT_ACTIVE — Notification authorization test increment
+
+From main `37632d250ec661ce20154cc05eb73ecf2985d944`, isolated `test/notification-authorization-boundaries-20261026` adds six real-auth-helper denials for anonymous, inactive-session and wrong-role calls before notification queue/requeue effects. The controlled missing-permission mutation failed as intended; 2,200 local tests passed after restoring source, with 20 isolated-DB skips. PR #455 is merged at `c9909952fa5277486ec823748bd65fea49c5fe3d`; this branch preserves that ancestry. Delivery remains dormant; AF-R012 remains Partial. New hosted acceptance is pending.
 
 ## 2026-10-26 — CHATGPT_ACTIVE — Stories discovery batch
 
