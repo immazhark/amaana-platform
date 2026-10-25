@@ -1,3 +1,7 @@
+## 2026-10-26 — CHATGPT_ACTIVE — Public initiative text search
+
+Sole writer on feat/public-initiative-search-20261026 from main a2df654. PR453 auth tests remain independently frozen. Add bounded server-rendered title/summary search combined with programme/year filters; no client JS or private-data queries. Regression failed before implementation. Local and hosted verification pending; no whole149 closure claimed.
+
 ## 2026-10-25 — CHATGPT_ACTIVE — AF-R047 Next16 JavaScript attribution
 
 Sole Work writer continues from main 4b15cca3c2a5d3d8192cf8aa9661f701b49822d2 on perf/next16-route-js-attribution-20261025. PR451 exact head1d1ff742 passed full40210115115 and separate ready40214309748; guarded merge4b15cca. Railway26e09cdf SKIPPED; public production9948c57 HTTP200/ready. Only open PR374 remains draft. No competing writer observed.
