@@ -1,6 +1,16 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+import { spawnSync } from "node:child_process";
 import { summarizeAppRouteBundles, summarizeUnattributedAppAssets } from "./report-route-bundles.mjs";
+import * as reporter from "./report-route-bundles.mjs";
+
+const referenceSource = (page, entryCSSFiles) =>
+  'globalThis.__RSC_MANIFEST = globalThis.__RSC_MANIFEST || {};\n' +
+  'globalThis.__RSC_MANIFEST[' + JSON.stringify(page) + '] = ' + JSON.stringify({ entryCSSFiles }) + ';\n';
 
 test("counts inherited layouts, unique assets and App Router pages", () => {
   const sizes = {
@@ -59,4 +69,113 @@ test("Next 16 without an app build manifest reports aggregate-only figures", () 
 test("Next 16 fallback rejects missing or empty route inventories", () => {
   assert.throws(() => summarizeUnattributedAppAssets(null, []), /path manifest/);
   assert.throws(() => summarizeUnattributedAppAssets({ "/layout": "/" }, []), /No App Router pages/);
+});
+
+test("parses the Next 16 JSON assignment without executing JavaScript", () => {
+  assert.equal(typeof reporter.parseClientReferenceManifest, "function");
+  const source = referenceSource('/about/page', { '[project]/src/app/layout': [] });
+  assert.deepEqual(reporter.parseClientReferenceManifest(source, '/about/page'), {
+    entryCSSFiles: { '[project]/src/app/layout': [] },
+  });
+  assert.throws(() => reporter.parseClientReferenceManifest(source, '/page'), /identity/);
+  assert.throws(() => reporter.parseClientReferenceManifest(source + 'globalThis.manifestExecuted = true;', '/about/page'));
+  assert.equal(globalThis.manifestExecuted, undefined);
+  assert.throws(() => reporter.parseClientReferenceManifest('globalThis.manifestExecuted = true;', '/page'));
+  assert.throws(() => reporter.parseClientReferenceManifest(referenceSource('/page', []), '/page'), /CSS map/);
+});
+
+test("attributes unique CSS to page and inherited layouts while excluding error-only CSS", () => {
+  assert.equal(typeof reporter.summarizeClientReferenceCss, "function");
+  const calls = [];
+  const styles = {
+    '[project]/src/app/layout': [{ path: 'static/css/root.css', inlined: false }],
+    '[project]/src/app/about/layout': [{ path: 'static/css/root.css', inlined: false }],
+    '[project]/src/app/about/page': [{ path: 'static/css/page.css', inlined: false }],
+    '[project]/src/app/about/error': [{ path: 'static/css/error.css', inlined: false }],
+    '[project]/src/app/other/page': [{ path: 'static/css/other.css', inlined: false }],
+  };
+  const rows = reporter.summarizeClientReferenceCss({ '/about/page': '/about' },
+    page => referenceSource(page, styles), asset => {
+      calls.push(asset);
+      return { 'static/css/root.css': 100, 'static/css/page.css': 25 }[asset];
+    });
+  assert.deepEqual(rows, [{ route: '/about', appPath: '/about/page', cssBytes: 125, stylesheetCount: 2 }]);
+  assert.deepEqual(calls.sort(), ['static/css/page.css', 'static/css/root.css']);
+});
+
+test("supports route groups, missing page-only CSS and explicit zero-style entries", () => {
+  assert.equal(typeof reporter.summarizeClientReferenceCss, "function");
+  const rows = reporter.summarizeClientReferenceCss({ '/admin/(protected)/team/page': '/admin/team', '/page': '/' },
+    page => referenceSource(page, page === '/page' ? { '[project]/src/app/layout': [] } : {
+      '[project]/src/app/layout': [{ path: 'static/css/root.css', inlined: false }],
+      '[project]/src/app/admin/(protected)/layout': [{ path: 'static/css/admin.css', inlined: false }],
+    }), () => 10);
+  assert.deepEqual(rows, [
+    { route: '/admin/team', appPath: '/admin/(protected)/team/page', cssBytes: 20, stylesheetCount: 2 },
+    { route: '/', appPath: '/page', cssBytes: 0, stylesheetCount: 0 },
+  ]);
+});
+
+test("attributes Next's generated global-error and not-found pages to their source entries", () => {
+  for (const [page, entry] of [['/_global-error/page', '/global-error'], ['/_not-found/page', '/not-found']]) {
+    const rows = reporter.summarizeClientReferenceCss({ [page]: page.replace('/page', '') },
+      key => referenceSource(key, { ['[project]/src/app' + entry]: [{ path: 'static/css/error.css', inlined: false }] }), () => 12);
+    assert.equal(rows[0].cssBytes, 12);
+  }
+});
+
+test("rejects traversal, malformed CSS entries and unmeasured sizes instead of reporting zero", () => {
+  assert.equal(typeof reporter.summarizeClientReferenceCss, "function");
+  let read = false;
+  assert.throws(() => reporter.summarizeClientReferenceCss({ '/../../page': '/' }, () => { read = true; }, () => 1), /path/);
+  assert.equal(read, false);
+  for (const value of [null, {}, 'static/css/root.css', [{ path: 'static/../outside.css', inlined: false }],
+    [{ path: 'https://elsewhere.invalid/style.css', inlined: false }], [{ path: 'static/css/root.css', inlined: true }]]) {
+    assert.throws(() => reporter.summarizeClientReferenceCss({ '/page': '/' },
+      page => referenceSource(page, { '[project]/src/app/layout': value }), () => 1));
+  }
+  for (const size of [undefined, NaN, Infinity, -1, 1.5]) {
+    assert.throws(() => reporter.summarizeClientReferenceCss({ '/page': '/' },
+      page => referenceSource(page, { '[project]/src/app/layout': [{ path: 'static/css/root.css', inlined: false }] }), () => size), /size/);
+  }
+  assert.throws(() => reporter.summarizeClientReferenceCss({ '/page': '/' },
+    page => referenceSource(page, { '[project]/unrelated/layout': [] }), () => 1), /entries/);
+});
+
+test("CLI reports assigned CSS separately from unattributed JS and preserves missing-manifest fallback", () => {
+  const directory = mkdtempSync(join(tmpdir(), 'amaana-css-report-'));
+  const build = join(directory, '.next');
+  const cli = fileURLToPath(new URL('./report-route-bundles.mjs', import.meta.url));
+  try {
+    mkdirSync(join(build, 'server/app'), { recursive: true });
+    mkdirSync(join(build, 'static/css'), { recursive: true });
+    mkdirSync(join(build, 'static/chunks'), { recursive: true });
+    writeFileSync(join(build, 'app-path-routes-manifest.json'), JSON.stringify({ '/page': '/' }));
+    writeFileSync(join(build, 'static/css/root.css'), 'body{}');
+    writeFileSync(join(build, 'static/chunks/shared.js'), 'void 0;');
+    const run = () => spawnSync(process.execPath, [cli, '--json'], { cwd: directory, encoding: 'utf8', timeout: 5000 });
+    const absent = run();
+    assert.equal(absent.status, 0, absent.stderr);
+    const fallback = JSON.parse(absent.stdout);
+    assert.equal(fallback.cssRouteAttributionAvailable, false);
+    assert.equal(fallback.cssRoutes, undefined);
+    writeFileSync(join(build, 'server/app/page_client-reference-manifest.js'), referenceSource('/page', {
+      '[project]/src/app/layout': [{ path: 'static/css/root.css', inlined: false }],
+    }));
+    const completed = run();
+    assert.equal(completed.status, 0, completed.stderr);
+    const report = JSON.parse(completed.stdout);
+    assert.equal(report.routeAttributionAvailable, false);
+    assert.equal(report.cssRouteAttributionAvailable, true);
+    assert.equal(report.cssMetric, 'client-reference-assigned-uncompressed-css-bytes');
+    assert.deepEqual(report.cssRoutes, [{ route: '/', appPath: '/page', cssBytes: 6, stylesheetCount: 1 }]);
+    assert.equal(report.aggregate.jsBytes, 7);
+    writeFileSync(join(build, 'server/app/page_client-reference-manifest.js'), referenceSource('/wrong/page', {}));
+    const mismatched = run();
+    assert.equal(mismatched.status, 1);
+    assert.match(mismatched.stderr, /identity/);
+    assert.equal(mismatched.stdout, '');
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });

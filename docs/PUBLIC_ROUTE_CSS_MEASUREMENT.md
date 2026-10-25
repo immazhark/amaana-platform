@@ -1,5 +1,13 @@
 # Public route CSS measurement — AF-R057 / AF-R068
 
+## Next.js 16 build attribution — AF-R047 bounded extension
+
+When Next.js omits `app-build-manifest.json`, `scripts/report-route-bundles.mjs` can now use per-page `page_client-reference-manifest.js` evidence for **assigned, uncompressed on-disk CSS bytes**. The generated wrapper is parsed as JSON data without executing JavaScript. Page identity must match the expected App Router entry; inherited layouts and the page are deduplicated, while sibling/error-only styles are excluded from ordinary routes. Generated global-error/not-found routes use their own source entries.
+
+The fallback keeps `routeAttributionAvailable=false`: JavaScript is still unattributed. Separate fields `cssRouteAttributionAvailable`, `cssMetric`, and `cssRoutes` describe the CSS evidence. Missing client-reference files retain an explicit unavailable result; malformed identity/data/asset paths, inline CSS and invalid or missing asset sizes fail instead of inventing a zero sample. A future manifest-format change needs an explicit tested adapter.
+
+This does not measure compressed transfer, selector use, lazy interaction states or field Web Vitals. The native suite covers wrapper/code rejection, route-group layouts, deduplication, generated error routes, bad paths/shapes/sizes and a disposable CLI build fixture. Compatibility was checked against 61 page manifests in an existing historical build; those bytes are not a current production measurement. Capture the report from the exact current hosted build before recording current-route baselines.
+
 **Checkpoint:** 25 October 2026. This is a reproducible, read-only measurement procedure, not an optimization result or an audit-item closure.
 
 ## Release provenance
