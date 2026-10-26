@@ -94,6 +94,9 @@ export function auditAdminEdgeCoverage({
 function routePathsUnder(directory, relativeSegments) {
   const paths = [];
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    if (entry.isSymbolicLink()) {
+      throw new Error("Symlink in admin route inventory: " + join(directory, entry.name));
+    }
     if (entry.isDirectory()) {
       paths.push(...routePathsUnder(join(directory, entry.name), [...relativeSegments, entry.name]));
     } else if (entry.isFile() && /^(page\.(tsx|ts|jsx|js)|route\.(tsx|ts|jsx|js))$/.test(entry.name)) {

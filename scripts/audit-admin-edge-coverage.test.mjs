@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { mkdtempSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 import {
   auditAdminEdgeCoverage,
@@ -73,4 +76,16 @@ test("repository inventory detects pathless layouts, dynamic routes and API hand
   assert.ok(!inventory.some(path => path.includes("(protected)")));
   const report = auditAdminEdgeCoverage({ discovered: inventory, proposed: proposedAdminRouteCoverage });
   assert.equal(report.status, "PLAN_ONLY_UNVERIFIED");
+});
+
+test("symlinked route handlers fail closed instead of vanishing from the inventory", () => {
+  const root = mkdtempSync(join(tmpdir(), "amaana-edge-routes-"));
+  try {
+    mkdirSync(join(root, "admin"));
+    writeFileSync(join(root, "target.tsx"), "export default function Page() { return null; }\n");
+    symlinkSync(join(root, "target.tsx"), join(root, "admin", "page.tsx"));
+    assert.throws(() => discoverAdminRoutes(root), /Symlink.*admin/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
