@@ -64,11 +64,23 @@ for (const [name, action] of Object.entries(actions)) {
     expect(mocks.user).toHaveBeenCalledWith(expect.objectContaining({
       where: { status: "ACTIVE", sessions: { some: { tokenHash, expiresAt: { gt: expect.any(Date) } } } },
     }));
+    expect(mocks.cookie).toHaveBeenCalledWith("amaana_admin_session");
     expect(mocks.privileged).not.toHaveBeenCalled();
   });
 
   it(name + " denies an active user without content.update", async () => {
     await expect(action(new FormData())).rejects.toThrow("Synthetic redirect: /admin/forbidden");
+    expect(mocks.user).toHaveBeenCalledOnce();
+    expect(mocks.privileged).not.toHaveBeenCalled();
+  });
+
+  it(name + " lets an authenticated content editor reach input validation", async () => {
+    mocks.user.mockResolvedValue({
+      id: "synthetic-content-editor", status: "ACTIVE",
+      roles: [{ role: { permissions: [{ permission: { key: "content.update" } }] } }],
+    });
+    await expect(action(new FormData())).rejects.toThrow(/^Synthetic redirect: \/admin\/team\?error=/);
+    expect(mocks.cookie).toHaveBeenCalledWith("amaana_admin_session");
     expect(mocks.user).toHaveBeenCalledOnce();
     expect(mocks.privileged).not.toHaveBeenCalled();
   });
