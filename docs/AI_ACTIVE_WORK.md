@@ -1,3 +1,9 @@
+Validation: red2/green3 actual-page regressions; full local Vitest2246 pass/20 isolated-DB skips, strict TypeScript, scoped ESLint and diff checks pass. Independent source review PASS. React emits an existing multipart/form-action warning in the synthetic server render; upload markup was not changed. Hosted exact-head build/browser/database and separate ready-state acceptance required. Not merged or deployed; canonical149 unchanged.
+
+## 2026-10-26 IST — Media review form labels
+
+CHATGPT_ACTIVE sole writer on fix/media-review-labels-20261026 from main36d4e6ec. Scope: eleven disconnected sibling labels in repeated media cards. Add asset-specific associations only; preserve actions, permissions, privacy and deletion gates. Synthetic actual-page regression first; rollback by reverting this isolated markup change. PR470/473 browser acceptance pending.
+
 ## 2026-10-26 — CHATGPT_ACTIVE — Team administration real-helper denial coverage
 
 Sole writer stages `test/team-actions-authorization-20261026` from merged main `0f3bc050`, reconciled with merged Stories main `77f69b7b`. Seven team member/group server actions already have behavior tests that stub `requirePermission`; this batch adds 28 synthetic real cookie/session/role denial regressions before Prisma, storage, image transform, audit, transaction or cache side effects. Independent read-only review prompted seven additional real-role authorization-to-validation checkpoints and an exact session-cookie-name assertion; all 42 focused tests, strict TypeScript and scoped ESLint pass. A controlled `createTeamMember` permission-bypass mutation failed its negative case, then the source was restored. Full local Vitest passed again after approved rerun outside a subprocess-EPERM sandbox (20 isolated-database skips). No public person/media edits, policy or live account changes; AF-R012 remains Partial. New exact-head hosted gates remain pending.

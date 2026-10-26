@@ -1,3 +1,9 @@
+Validation: red2/green3 actual-page regressions; full local Vitest2246 pass/20 isolated-DB skips, strict TypeScript, scoped ESLint and diff checks pass. Independent source review PASS. React emits an existing multipart/form-action warning in the synthetic server render; upload markup was not changed. Hosted exact-head build/browser/database and separate ready-state acceptance required. Not merged or deployed; canonical149 unchanged.
+
+## 2026-10-26 IST — Media review form labels
+
+CHATGPT_ACTIVE sole writer on fix/media-review-labels-20261026 from main36d4e6ec. Scope: eleven disconnected sibling labels in repeated media cards. Add asset-specific associations only; preserve actions, permissions, privacy and deletion gates. Synthetic actual-page regression first; rollback by reverting this isolated markup change. PR470/473 browser acceptance pending.
+
 ## 2026-10-26 — Team action real-helper denial batch staged
 
 `test/team-actions-authorization-20261026` starts at `0f3bc050`, then reconciles with merged main `77f69b7b`. It adds 28 AF-R012 synthetic admin cookie/session/RBAC denial tests and seven authorized-user checkpoints for seven team member/group writes. Existing behavior tests stub auth; new fixtures retain real `@/lib/auth`, require the exact `amaana_admin_session` cookie lookup, and stop Prisma, media storage, Sharp transforms, transactions, audit and cache for denial paths. Independent review recommended positive-path checkpoints, now incorporated; all 42 focused tests, strict TypeScript and scoped ESLint passed. A temporary permission-bypass mutation failed and was reverted. No real team or public-media records touched; production action source has no diff. Full local Vitest passed again after approved subprocess-EPERM retry with 20 isolated-database skips. Exact-head hosted acceptance remains pending; older PR #464 head CI is superseded by this new commit.
