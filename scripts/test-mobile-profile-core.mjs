@@ -4,7 +4,10 @@ import {
   MOBILE_PROFILE,
   MOBILE_ROUTES,
   assertLocalProfileTarget,
+  calculateClsSessionWindows,
+  isAllowedProfileRequest,
   profileTraceName,
+  reportBuildIdentity,
   summarizeMobileSamples,
 } from "./mobile-profile-core.mjs";
 
@@ -31,6 +34,45 @@ test("collector refuses remote, credentialed, redirected-base, or wrong-port tar
   ]) assert.throws(() => assertLocalProfileTarget(base), /local profile origin/);
 });
 
+test("cross-origin GET assets, scripts, redirects and posts are blocked before network use", () => {
+  assert.equal(isAllowedProfileRequest("http://127.0.0.1:3000/_next/static/a.js"), true);
+  for (const uri of [
+    "https://cdn.example.invalid/image.jpg", "https://amaanafoundation.org/",
+    "http://127.0.0.1:3001/", "http://evil.invalid/", "file:///etc/passwd",
+  ]) assert.equal(isAllowedProfileRequest(uri), false);
+});
+
+test("CLS uses the largest session window, never an unwindowed sum", () => {
+  const shifts = [
+    { startTime: 100, value: .02 }, { startTime: 500, value: .03 },
+    { startTime: 2_000, value: .08 }, { startTime: 2_200, value: .06 },
+    { startTime: 8_000, value: .01 },
+  ];
+  expectApprox(calculateClsSessionWindows(shifts), .14);
+  expectApprox(calculateClsSessionWindows([]), 0);
+  expectApprox(calculateClsSessionWindows([
+    { startTime: 100, value: .1 }, { startTime: 900, value: .1 },
+    { startTime: 1_700, value: .1 }, { startTime: 2_500, value: .1 },
+    { startTime: 3_300, value: .1 }, { startTime: 4_100, value: .1 },
+    { startTime: 4_900, value: .1 }, { startTime: 5_200, value: .3 },
+  ]), .7);
+  for (const bad of [[{ startTime: -1, value: .1 }], [
+    { startTime: 20, value: .1 }, { startTime: 10, value: .2 },
+  ]]) assert.throws(() => calculateClsSessionWindows(bad));
+});
+
+function expectApprox(actual, expected) {
+  assert.ok(Math.abs(actual - expected) < 1e-10, `Expected ${actual} to equal ${expected}`);
+}
+
+test("source/runtime identity stays distinct and absent runtime SHA is unverified", () => {
+  const sha = "a".repeat(40);
+  assert.deepEqual(reportBuildIdentity(sha, null), { sourceSha: sha, runtimeSha: null, status: "RUNTIME_UNVERIFIED" });
+  assert.deepEqual(reportBuildIdentity(sha, sha), { sourceSha: sha, runtimeSha: sha, status: "EXACT_SHA_MATCH" });
+  assert.throws(() => reportBuildIdentity(sha, "b".repeat(40)), /mismatch/);
+  assert.throws(() => reportBuildIdentity("wrong", null));
+});
+
 test("five-run median is deterministic and carries trace provenance without field-CWV claims", () => {
   const result = summarizeMobileSamples("/impact", [
     sample(3, 3000, .03, 60), sample(1, 2000, .01, 20),
@@ -46,6 +88,8 @@ test("five-run median is deterministic and carries trace provenance without fiel
   assert.equal(result.ttiMs, null);
   assert.equal(result.fieldWebVitals, false);
   assert.equal(result.profileKind, "synthetic-chromium-emulation");
+  assert.deepEqual(result.samples.map(item => item.lcpMs), [2000, 1000, 3000, 4000, 5000]);
+  assert.equal(result.samples.length, MOBILE_PROFILE.runs);
 });
 
 test("missing LCP is reported unmeasured, not transformed to zero", () => {

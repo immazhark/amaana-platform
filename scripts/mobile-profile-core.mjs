@@ -22,6 +22,57 @@ export function assertLocalProfileTarget(value) {
   return localOrigin;
 }
 
+export function isAllowedProfileRequest(rawUrl) {
+  try {
+    const url = new URL(rawUrl);
+    return url.protocol === "http:" && url.origin === localOrigin && !url.username && !url.password;
+  } catch {
+    return false;
+  }
+}
+
+export function reportBuildIdentity(sourceSha, runtimeSha) {
+  if (typeof sourceSha !== "string" || !/^[a-f0-9]{40}$/.test(sourceSha)) {
+    throw new Error("A full source commit SHA is required");
+  }
+  if (runtimeSha === null) {
+    return { sourceSha, runtimeSha: null, status: "RUNTIME_UNVERIFIED" };
+  }
+  if (typeof runtimeSha !== "string" || !/^[a-f0-9]{40}$/.test(runtimeSha) || runtimeSha !== sourceSha) {
+    throw new Error("Local runtime/source SHA mismatch");
+  }
+  return { sourceSha, runtimeSha, status: "EXACT_SHA_MATCH" };
+}
+
+/** Chromium LayoutShift entries excluding recent-input shifts; maximum session-window CLS. */
+export function calculateClsSessionWindows(shifts) {
+  if (!Array.isArray(shifts) || shifts.length > 10_000) throw new Error("Invalid layout-shift entries");
+  let max = 0;
+  let value = 0;
+  let sessionStart = -1;
+  let previousTime = -1;
+  for (const shift of shifts) {
+    if (!shift || typeof shift !== "object" || Array.isArray(shift) ||
+        Object.keys(shift).length !== 2 || !Object.hasOwn(shift, "startTime") ||
+        !Object.hasOwn(shift, "value") ||
+        typeof shift.startTime !== "number" || !Number.isFinite(shift.startTime) ||
+        shift.startTime < 0 || shift.startTime < previousTime ||
+        typeof shift.value !== "number" || !Number.isFinite(shift.value) ||
+        shift.value < 0) {
+      throw new Error("Invalid or unsorted layout-shift entry");
+    }
+    if (sessionStart < 0 || shift.startTime - previousTime >= 1_000 || shift.startTime - sessionStart >= 5_000) {
+      value = shift.value;
+      sessionStart = shift.startTime;
+    } else {
+      value += shift.value;
+    }
+    previousTime = shift.startTime;
+    max = Math.max(max, value);
+  }
+  return max;
+}
+
 function assertRoute(route) {
   if (!MOBILE_ROUTES.includes(route)) throw new Error("An approved public profile route is required");
 }
@@ -83,5 +134,12 @@ export function summarizeMobileSamples(route, samples) {
     median: medians,
     unmeasured: metrics.filter(key => medians[key] === null),
     traces: ordered.map(sample => sample.trace),
+    samples: ordered.map(sample => ({
+      run: sample.run,
+      lcpMs: sample.lcpMs,
+      cls: sample.cls,
+      observedLongTaskBlockingMs: sample.observedLongTaskBlockingMs,
+      trace: sample.trace,
+    })),
   };
 }

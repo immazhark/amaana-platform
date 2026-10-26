@@ -4,28 +4,31 @@
  *   npm run profile:mobile
  * The report is NOT real-device, field p75, INP, TTI or standard TBT evidence.
  */
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import {
   MOBILE_PROFILE, MOBILE_ROUTES, assertLocalProfileTarget,
-  profileTraceName, summarizeMobileSamples,
+  calculateClsSessionWindows, isAllowedProfileRequest,
+  profileTraceName, reportBuildIdentity, summarizeMobileSamples,
 } from "./mobile-profile-core.mjs";
 
 const localOrigin = assertLocalProfileTarget("http://127.0.0.1:3000");
 
 async function profileOne(chromium, route, run, artifactDirectory) {
   const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({
-    viewport: MOBILE_PROFILE.viewport,
-    deviceScaleFactor: MOBILE_PROFILE.deviceScaleFactor,
-    isMobile: true,
-    hasTouch: true,
-    serviceWorkers: "block",
-  });
+  let context;
   let tracingStarted = false;
   const trace = `traces/${profileTraceName(route, run)}`;
   try {
+    context = await browser.newContext({
+      viewport: MOBILE_PROFILE.viewport,
+      deviceScaleFactor: MOBILE_PROFILE.deviceScaleFactor,
+      isMobile: true,
+      hasTouch: true,
+      serviceWorkers: "block",
+    });
     const page = await context.newPage();
     const cdp = await context.newCDPSession(page);
     await cdp.send("Network.enable");
@@ -36,14 +39,12 @@ async function profileOne(chromium, route, run, artifactDirectory) {
       uploadThroughput: MOBILE_PROFILE.network.uploadBytesPerSecond,
     });
     await cdp.send("Emulation.setCPUThrottlingRate", { rate: MOBILE_PROFILE.cpuSlowdown });
+    const blockedOrigins = new Set();
     await page.route("**/*", async intercepted => {
       const request = intercepted.request();
       const url = new URL(request.url());
-      if (request.isNavigationRequest() && url.origin !== localOrigin) {
-        await intercepted.abort("blockedbyclient");
-        return;
-      }
-      if (url.origin !== localOrigin && !["GET", "HEAD"].includes(request.method())) {
+      if (!isAllowedProfileRequest(request.url())) {
+        blockedOrigins.add(url.origin);
         await intercepted.abort("blockedbyclient");
         return;
       }
@@ -54,7 +55,7 @@ async function profileOne(chromium, route, run, artifactDirectory) {
       await intercepted.continue();
     });
     await page.addInitScript(() => {
-      const captured = { lcpMs: null, cls: null, observedLongTaskBlockingMs: null };
+      const captured = { lcpMs: null, layoutShifts: null, observedLongTaskBlockingMs: null };
       Object.defineProperty(window, "__amaanaMobileProfile", { value: captured });
       try {
         new PerformanceObserver(list => {
@@ -63,23 +64,26 @@ async function profileOne(chromium, route, run, artifactDirectory) {
         }).observe({ type: "largest-contentful-paint", buffered: true });
       } catch { /* Unsupported performance entry remains explicitly unmeasured. */ }
       try {
+        captured.layoutShifts = [];
         new PerformanceObserver(list => {
           for (const entry of list.getEntries()) {
-            if (!entry.hadRecentInput) captured.cls += entry.value;
+            if (!entry.hadRecentInput) {
+              captured.layoutShifts.push({ startTime: entry.startTime, value: entry.value });
+            }
           }
         }).observe({ type: "layout-shift", buffered: true });
-        captured.cls = 0;
-      } catch { /* CLS unsupported in this browser profile. */ }
+      } catch { captured.layoutShifts = null; }
       try {
+        captured.observedLongTaskBlockingMs = 0;
         new PerformanceObserver(list => {
           for (const entry of list.getEntries()) {
             captured.observedLongTaskBlockingMs += Math.max(0, entry.duration - 50);
           }
         }).observe({ type: "longtask", buffered: true });
-        captured.observedLongTaskBlockingMs = 0;
-      } catch { /* Browser support is verified from the separate trace. */ }
+      } catch { captured.observedLongTaskBlockingMs = null; }
     });
-    await context.tracing.start({ screenshots: true, snapshots: true });
+    // No screenshots or DOM snapshots: trace references remain private and local.
+    await context.tracing.start({ screenshots: false, snapshots: false });
     tracingStarted = true;
     const response = await page.goto(localOrigin + route, { waitUntil: "load", timeout: 60_000 });
     if (!response?.ok() || new URL(page.url()).origin !== localOrigin ||
@@ -88,22 +92,52 @@ async function profileOne(chromium, route, run, artifactDirectory) {
       throw new Error("Local route navigation failed or left the fixed local origin: " + route);
     }
     await page.waitForTimeout(MOBILE_PROFILE.settleMs);
+    if (blockedOrigins.size > 0) {
+      throw new Error("Local profile refused intercepted cross-origin HTTP resources; use a reviewed isolated media fixture");
+    }
     const metrics = await page.evaluate(() => window.__amaanaMobileProfile);
-    return { run, ...metrics, trace };
+    const cls = metrics.layoutShifts === null ? null : calculateClsSessionWindows(metrics.layoutShifts);
+    return { run, lcpMs: metrics.lcpMs, cls,
+      observedLongTaskBlockingMs: metrics.observedLongTaskBlockingMs, trace };
   } finally {
     try {
       if (tracingStarted) {
         await context.tracing.stop({ path: join(artifactDirectory, trace) });
       }
     } finally {
-      await context.close();
-      await browser.close();
+      try {
+        if (context) await context.close();
+      } finally {
+        await browser.close();
+      }
     }
   }
 }
 
 export async function collectMobileProfile() {
-  const { chromium } = await import("@playwright/test");
+  if (process.env.AMAANA_MOBILE_PROFILE_SYNTHETIC_READY !== "1") {
+    throw new Error("Explicit synthetic-data and reviewed-media readiness is required; see docs/MOBILE_PROFILE_RUNBOOK.md");
+  }
+  const versionResponse = await fetch(localOrigin + "/api/health/version", {
+    redirect: "manual", signal: AbortSignal.timeout(5_000),
+    headers: { accept: "application/json" },
+  });
+  if (versionResponse.status !== 200 || versionResponse.url !== localOrigin + "/api/health/version") {
+    throw new Error("Local runtime identity endpoint did not return the expected response");
+  }
+  const runtime = await versionResponse.json();
+  if (runtime.status !== "ok" || !["staging", "development", "test"].includes(runtime.environment) ||
+      runtime.paymentMode === "live") {
+    throw new Error("Local runtime is not a verified non-production synthetic profile target");
+  }
+  const sourceSha = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8", timeout: 5_000 }).trim();
+  const identity = reportBuildIdentity(sourceSha, runtime.commitSha);
+  let localBuildId = null;
+  try { localBuildId = readFileSync(".next/BUILD_ID", "utf8").trim(); }
+  catch { /* The local build identifier is explicitly unverified. */ }
+  let chromium;
+  try { ({ chromium } = await import("@playwright/test")); }
+  catch { throw new Error("Install pinned optional @playwright/test@1.55.0 and Chromium; see docs/MOBILE_PROFILE_RUNBOOK.md"); }
   const root = resolve("test-results");
   mkdirSync(root, { recursive: true });
   const artifactDirectory = mkdtempSync(join(root, "mobile-profile-"));
@@ -117,8 +151,11 @@ export async function collectMobileProfile() {
     routes.push(summarizeMobileSamples(route, samples));
   }
   const report = {
-    methodology: "Local-only synthetic Chromium mobile emulation; not real Android or field data",
+    methodology: "Isolated synthetic Chromium emulation; intercepts HTTP requests but is not a universal network firewall, CPU flamegraph or real Android/field data",
     localOrigin,
+    identity,
+    localBuildId,
+    privacyCondition: "Operator attests isolated synthetic DB and reviewed/redacted public media; not machine-verified",
     profile: MOBILE_PROFILE,
     generatedAt: new Date().toISOString(),
     noTTIorStandardTBT: true,
