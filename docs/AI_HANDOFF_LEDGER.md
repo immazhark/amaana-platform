@@ -1,3 +1,13 @@
+## 2026-10-26 IST — PR #476 current-main reconciliation
+
+CHATGPT_ACTIVE sole implementation writer. The admin correction PR #473 passed all exact-head jobs (`40343512354`), separate promotion (`40353374428`) and SHA-guarded merge to main `61edcd87e6d90188ccf89f219c6ec5917e65fc97`. Railway website deployment `da077b82-3424-4dbd-8ab2-c02ddae34d59` was BUILDING when observed; independent public version/readiness were blocked by HTTP 403. Existing portfolio PR #476 is reconciling normally; only coordination-document conflicts arose and both histories are retained. Its new head needs fresh hosted full and separate ready-state acceptance before merge. Canonical 149 totals unchanged.
+
+Validation: new helper/page regressions red2 before correction;31 focused green, full local2249 pass/20 isolated-DB skips; strict TypeScript, scoped ESLint and diff checks pass. Independent source review PASS. Hosted exact-head build/browser/database and separate ready-state acceptance still required. Source correction only, no live deployment or complete149-item acceptance claim.
+
+## 2026-10-26 IST — Public portfolio combined-filter correction
+
+CHATGPT_ACTIVE sole writer on fix/work-combined-family-filter-20261026, source base matches released main655a1c23 tree. Reviewer reproduced umbrella match disappearing under year+text when its annual child matches year but fails text. Scope: text-match candidates before family suppression; preserve programme/year intersection and ordering. Regression first. No DB/auth/payment/public-media or factual changes. Rollback: revert isolated selector correction. Existing PR473 remains frozen for hosted acceptance.
+
 Latest synthetic acceptance update: full local2253 pass/20 isolated-DB skips; strict TypeScript, ESLint, spec syntax/diff and independent read-only review pass. No local Playwright package/browser execution available; complete Shift+Tab/Enter/Tab path remains hosted-pending. Existing production source unchanged in this follow-up.
 
 ## 2026-10-26 IST — Complete synthetic admin bypass keyboard path

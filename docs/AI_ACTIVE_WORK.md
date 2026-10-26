@@ -1,3 +1,13 @@
+## 2026-10-26 IST — Reconcile public portfolio PR #476 after admin release
+
+CHATGPT_ACTIVE sole implementation writer. PR #473 full exact-head CI `40343512354` passed, including hosted keyboard acceptance; separate ready-state `40353374428` passed and guarded merge produced protected main `61edcd87e6d90188ccf89f219c6ec5917e65fc97`. Railway deployment `da077b82-3424-4dbd-8ab2-c02ddae34d59` was BUILDING at the latest check; public version/readiness remain independently blocked by HTTP 403. Reconcile existing PR #476 with this main, preserving the already-reviewed year-plus-text portfolio correction and both coordination histories. Production source paths do not overlap. New exact-head full CI and separate ready-state are required; no live acceptance or historical 149-item promotion inferred.
+
+Validation: new helper/page regressions red2 before correction;31 focused green, full local2249 pass/20 isolated-DB skips; strict TypeScript, scoped ESLint and diff checks pass. Independent source review PASS. Hosted exact-head build/browser/database and separate ready-state acceptance still required. Source correction only, no live deployment or complete149-item acceptance claim.
+
+## 2026-10-26 IST — Public portfolio combined-filter correction
+
+CHATGPT_ACTIVE sole writer on fix/work-combined-family-filter-20261026, source base matches released main655a1c23 tree. Reviewer reproduced umbrella match disappearing under year+text when its annual child matches year but fails text. Scope: text-match candidates before family suppression; preserve programme/year intersection and ordering. Regression first. No DB/auth/payment/public-media or factual changes. Rollback: revert isolated selector correction. Existing PR473 remains frozen for hosted acceptance.
+
 Latest synthetic acceptance update: full local2253 pass/20 isolated-DB skips; strict TypeScript, ESLint, spec syntax/diff and independent read-only review pass. No local Playwright package/browser execution available; complete Shift+Tab/Enter/Tab path remains hosted-pending. Existing production source unchanged in this follow-up.
 
 ## 2026-10-26 IST — Complete synthetic admin bypass keyboard path
