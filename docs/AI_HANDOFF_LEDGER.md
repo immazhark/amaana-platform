@@ -1,3 +1,17 @@
+## 2026-10-26 IST — Prepared mobile-menu wheel fix current-main integration
+
+CHATGPT_ACTIVE single implementation writer. The mobile menu wheel branch already had red1/green19 focused, production build/client security checks, full 2261 Vitest pass/20 isolated-DB skips and real synthetic Chromium pass at 375x480. It now integrates released main `12f1ab3bc0713cccc0331aa04fe97c62c272e7a8` without touching its production feature paths; merged-tree 2270 Vitest pass/20 isolated-DB skips. Railway source-matched deployment `94d392bb-68b6-45da-8adb-bdffa73e3f28` SUCCESS but public identity/readiness HTTP403 from this environment. Preserve the existing scroll-lock precedence and pending full acceptance/ready-state gates; no deployed fix or 149-item closure inferred.
+
+## 2026-10-26 IST — PR #477 current-main reconciliation
+
+CHATGPT_ACTIVE sole writer. PR #476 full exact-head CI `40355359483` and separate ready-state `40360825447` passed; protected expected-head merge produced main `7d940b7b2c8a07c6789ee9a80a395a56534e60aa`. Railway `eca04431-3068-4d69-9234-44edf7eda448` was BUILDING; independent public version/readiness GETs returned HTTP 403 access blocks. Existing public appeals discovery PR #477 reconciles normally with this main; only coordination-document conflicts arose and both histories remain. Fresh full hosted CI and separate ready-state are required for the new head, with no unresolved reviews. Rollback: revert the bounded public appeal-search feature if necessary. Canonical 149 unchanged.
+
+Validation: selector/page tests first failed on missing feature, then9 focused pass; full local2253 pass/20 isolated-DB skips; strict TypeScript, scoped ESLint and diff checks pass. Independent source/security review PASS. Added browser GET/clear/repeated-query acceptance, syntax/lint checked only; hosted execution pending. Railway470 SUCCESS exact655a1c23; independent version/readiness both blocked HTTP403 so live identity/readiness remain UNVERIFIED. No full149 status promotion.
+
+## 2026-10-26 IST — Public active-appeal discovery
+
+CHATGPT_ACTIVE sole writer starts feat/public-appeal-search-20261026 from released main655a1c23-equivalent source tree. Add server-rendered title/summary search after unchanged public appeal eligibility and staging exclusions. Strict80-character scalar query, no personal fields/reflection, accessible GET form, filtered-empty recovery. Preserve all fundraising/payment/privacy/database behavior. Independent read-only scoped plan accepted under standing development authorization. Regression first; rollback revert isolated discovery feature. PR473 and476 remain frozen for acceptance.
+
 ## 2026-10-26 IST — PR #476 current-main reconciliation
 
 CHATGPT_ACTIVE sole implementation writer. The admin correction PR #473 passed all exact-head jobs (`40343512354`), separate promotion (`40353374428`) and SHA-guarded merge to main `61edcd87e6d90188ccf89f219c6ec5917e65fc97`. Railway website deployment `da077b82-3424-4dbd-8ab2-c02ddae34d59` was BUILDING when observed; independent public version/readiness were blocked by HTTP 403. Existing portfolio PR #476 is reconciling normally; only coordination-document conflicts arose and both histories are retained. Its new head needs fresh hosted full and separate ready-state acceptance before merge. Canonical 149 totals unchanged.
