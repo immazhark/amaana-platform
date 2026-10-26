@@ -1,3 +1,9 @@
+Latest synthetic acceptance update: full local2253 pass/20 isolated-DB skips; strict TypeScript, ESLint, spec syntax/diff and independent read-only review pass. No local Playwright package/browser execution available; complete Shift+Tab/Enter/Tab path remains hosted-pending. Existing production source unchanged in this follow-up.
+
+## 2026-10-26 IST — Complete synthetic admin bypass keyboard path
+
+CHATGPT_ACTIVE sole writer continues existing PR473. Strengthen hosted keyboard acceptance from programmatic bypass focus to Shift+Tab from sidebar brand, Enter target focus and next Tab to inert synthetic task button. Fixture only; no live action/data/provider. Previous combined candidate cc4025d3 checks cannot certify new test head; preserve full acceptance gates. No new runtime defect or149 classification change claimed.
+
 Combined validation:2253 local Vitest pass/20 isolated-DB skips; TypeScript, scoped ESLint, browser-spec syntax and diff checks pass. Independent interaction review PASS. Railway470 deployment df2f56dc-be2a-4037-9ebb-10c94bc8f23c BUILDING; independent public version request blocked HTTP403, runtime UNVERIFIED. Separate prior PR checks do not certify combined candidate; new full hosted exact-head required.
 
 ## 2026-10-26 IST — Consolidated admin usability release candidate

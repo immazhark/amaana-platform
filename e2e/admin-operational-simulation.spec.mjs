@@ -22,11 +22,15 @@ test.describe('admin operational simulation without shared records', () => {
   test('keyboard bypass skips the admin sidebar and focuses task content', async ({ page }) => {
     await openProfile(page, 'case');
     const bypass = page.getByRole('link', { name: 'Skip to admin content', exact: true });
-    await bypass.focus();
+    await adminBrand(page).focus();
+    await page.keyboard.press('Shift+Tab');
+    await expect(bypass).toBeFocused();
     await expect(bypass).toBeVisible();
     await page.keyboard.press('Enter');
     const content = page.locator('#admin-content');
     await expect(content).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('button', { name: 'Synthetic task control', exact: true })).toBeFocused();
     await expect(page.getByRole('heading', { name: 'Synthetic operations console' })).toBeVisible();
   });
 
