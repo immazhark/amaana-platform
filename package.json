@@ -46,6 +46,8 @@
     "browser-fixtures:materialize": "node scripts/materialize-browser-acceptance.mjs",
     "audit:prod": "npm audit --omit=dev --audit-level=high",
     "audit:route-bundles": "node scripts/report-route-bundles.mjs",
+    "profile:mobile": "node scripts/profile-public-mobile.mjs",
+    "profile:mobile:test": "node scripts/test-mobile-profile-core.mjs",
     "audit:admin-edge": "node scripts/audit-admin-edge-coverage.test.mjs && node scripts/audit-admin-edge-coverage.mjs",
     "security:client-bundle": "node scripts/check-client-secret-boundary.mjs",
     "stylelint:governed": "npx --yes stylelint@17.16.0 src/app/donate/donate-audit.module.css"
