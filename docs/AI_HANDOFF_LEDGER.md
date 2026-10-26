@@ -2,6 +2,10 @@
 
 `test/admin-document-authorization-20261026` began at `c9909952`, published as draft PR #458; one writer tests five AF-R012 GET guard cases for `src/app/admin/(protected)/documents/[id]/route.ts`. Privileged Prisma/document URL/audit mocks fail closed, and `@/lib/auth` stays real. A controlled permission-check bypass failed as expected; restored source passed five focused tests, TypeScript, scoped ESLint and 2,202 local full-suite cases (20 isolated-DB skips). Source route unchanged; no private document material/live data. #457 merged as `0f3bc050`, #459 as `77f69b7b`; old-head CI `40246652514` passed all seven, and branch has reconciled main histories. Require fresh exact-head CI on new branch SHA before ready/guarded merge.
 
+## 2026-10-26 — Team action real-helper denial batch staged
+
+`test/team-actions-authorization-20261026` starts at `0f3bc050`, then reconciles with merged main `77f69b7b`. It adds 28 AF-R012 synthetic admin cookie/session/RBAC denial tests and seven authorized-user checkpoints for seven team member/group writes. Existing behavior tests stub auth; new fixtures retain real `@/lib/auth`, require the exact `amaana_admin_session` cookie lookup, and stop Prisma, media storage, Sharp transforms, transactions, audit and cache for denial paths. Independent review recommended positive-path checkpoints, now incorporated; all 42 focused tests, strict TypeScript and scoped ESLint passed. A temporary permission-bypass mutation failed and was reverted. No real team or public-media records touched; production action source has no diff. Full local Vitest passed again after approved subprocess-EPERM retry with 20 isolated-database skips. Exact-head hosted acceptance remains pending; older PR #464 head CI is superseded by this new commit.
+
 ## 2026-10-26 — AF-R048 local mobile trace collector staged
 
 Protected main has advanced to `46e10147` with #463's read-only admin-edge audit after its guarded merge. The mobile task branch merged that commit without dropping build-route coverage; its next GitHub head must run exact-head CI anew. No mobile trace run yet.
