@@ -56,7 +56,9 @@ describe("AF-R019 public appeal-card muted text contrast", () => {
     expect(html).toContain("Verified appeal");
   });
 
-  it.each(selectors)("%s has at least 4.5:1 contrast against the actual cream card", selector => {
+  // This checks declared fallback tokens only. The Playwright contract checks
+  // effective contrast after the shared cascade and translucent/gradient layers.
+  it.each(selectors)("%s has at least 4.5:1 contrast against its cream fallback", selector => {
     const background = cssProperty(".v2-appeal-card", "background");
     expect(background).toBe("#fffdf8");
     const foreground = cssProperty(selector, "color");
