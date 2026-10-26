@@ -19,6 +19,17 @@ function adminBrand(page) {
 }
 
 test.describe('admin operational simulation without shared records', () => {
+  test('keyboard bypass skips the admin sidebar and focuses task content', async ({ page }) => {
+    await openProfile(page, 'case');
+    const bypass = page.getByRole('link', { name: 'Skip to admin content', exact: true });
+    await bypass.focus();
+    await expect(bypass).toBeVisible();
+    await page.keyboard.press('Enter');
+    const content = page.locator('#admin-content');
+    await expect(content).toBeFocused();
+    await expect(page.getByRole('heading', { name: 'Synthetic operations console' })).toBeVisible();
+  });
+
   test('admin sign-in surface preserves secure credential semantics', async ({ page }) => {
     const response = await page.goto('/admin/login', { waitUntil: 'domcontentloaded' });
     expect(response?.ok()).toBeTruthy();
