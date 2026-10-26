@@ -1,6 +1,55 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { stylesheetsInHtml, summarizeRouteCssBytes, auditPublicRouteCss } from "./audit-live-route-css.mjs";
+import { mergeCssRanges, summarizeCssRuleUsage } from "../e2e/css-rule-coverage-core.mjs";
+
+test("merges overlapping and adjacent CSS usage ranges without double counting", () => {
+  assert.deepEqual(mergeCssRanges([{ start: 0, end: 3 }, { start: 2, end: 5 }, { start: 5, end: 7 }, { start: 9, end: 10 }], 10), [
+    { start: 0, end: 7 }, { start: 9, end: 10 },
+  ]);
+  for (const ranges of [[{ start: -1, end: 2 }], [{ start: 1, end: 99 }], [{ start: 4, end: 2 }], [{ start: 1.5, end: 2 }]]) {
+    assert.throws(() => mergeCssRanges(ranges, 10), /range/i);
+  }
+});
+
+test("summarizes shared build CSS once per URL and accounts for UTF-8 decoded bytes", () => {
+  const url = "http://127.0.0.1:3000/_next/static/chunks/public.css";
+  const report = summarizeCssRuleUsage([
+    { url, text: "aébcdef", ranges: [{ start: 0, end: 2 }] },
+    { url, text: "aébcdef", ranges: [{ start: 1, end: 4 }] },
+  ], "http://127.0.0.1:3000");
+  assert.equal(report.metric, "sampled-chromium-css-usage-decoded-bytes");
+  assert.deepEqual(report.stylesheets, [{ url, totalDecodedBytes: 8, usedDecodedBytes: 5 }]);
+  assert.equal(report.excluded.inline, 0);
+  assert.match(report.disclaimer, /Not network transfer|not network transfer/i);
+});
+
+test("marks missing browser stylesheet text as unmeasured, never zero", () => {
+  const url = "http://127.0.0.1:3000/_next/static/chunks/missing.css";
+  const report = summarizeCssRuleUsage([{ url, ranges: [{ start: 0, end: 2 }] }], "http://127.0.0.1:3000");
+  assert.deepEqual(report.stylesheets, [{ url, totalDecodedBytes: null, usedDecodedBytes: null }]);
+  assert.equal(report.unmeasuredStylesheets, 1);
+  assert.equal(report.measuredTotalDecodedBytes, 0);
+});
+
+test("excludes inline, cross-origin and non-build styles without exposing their text", () => {
+  const report = summarizeCssRuleUsage([
+    { url: "", text: "x{}", ranges: [] },
+    { url: "https://foreign.invalid/_next/static/chunks/x.css", text: "x{}", ranges: [] },
+    { url: "http://127.0.0.1:3000/private.css", text: "x{}", ranges: [] },
+  ], "http://127.0.0.1:3000");
+  assert.deepEqual(report.stylesheets, []);
+  assert.deepEqual(report.excluded, { inline: 1, crossOrigin: 1, nonBuild: 1 });
+});
+
+test("rejects malformed URL, conflicting CSS text and out-of-bounds usage ranges", () => {
+  const url = "http://127.0.0.1:3000/_next/static/chunks/site.css";
+  assert.throws(() => summarizeCssRuleUsage([{ url: "http://[", text: "x{}", ranges: [] }], "http://127.0.0.1:3000"), /URL/i);
+  assert.throws(() => summarizeCssRuleUsage([
+    { url, text: "a{}", ranges: [] }, { url, text: "b{}", ranges: [] },
+  ], "http://127.0.0.1:3000"), /conflict|mismatch/i);
+  assert.throws(() => summarizeCssRuleUsage([{ url, text: "x{}", ranges: [{ start: 0, end: 5 }] }], "http://127.0.0.1:3000"), /range/i);
+});
 
 test("counts same-origin built CSS links, independent of attribute order", () => {
   const html = [
