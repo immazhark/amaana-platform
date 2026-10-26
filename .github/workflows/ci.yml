@@ -147,6 +147,8 @@ jobs:
         run: node --test scripts/test-admin-eyebrow-contrast.mjs
       - name: Verify archive filters
         run: node --experimental-strip-types --test scripts/test-work-filters.mjs
+      - name: Validate local-only mobile profiling contracts
+        run: npm run profile:mobile:test
       - name: Verify daily readings, reminder windows and local calendar boundaries
         run: node --experimental-strip-types --test scripts/test-daily-companion.mjs scripts/test-daily-companion-api.mjs
 

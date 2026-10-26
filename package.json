@@ -37,7 +37,7 @@
     "launch:env:production:indexing-enabled": "PRODUCTION_INDEXING_DECISION=enable NEXT_PUBLIC_ALLOW_INDEXING=true node scripts/check-production-environment.mjs",
     "launch:env:production:indexing-disabled": "PRODUCTION_INDEXING_DECISION=keep_disabled NEXT_PUBLIC_ALLOW_INDEXING=false node scripts/check-production-environment.mjs",
     "artwork:refine": "node scripts/refine-programme-artwork.mjs",
-    "prebuild": "npm run contracts:check && npm run artwork:refine && npm run icons:generate && npm run browser-fixtures:materialize",
+    "prebuild": "npm run contracts:check && npm run audit:admin-edge && npm run artwork:refine && npm run icons:generate && npm run browser-fixtures:materialize",
     "predev": "npm run contracts:generate && npm run artwork:refine && npm run icons:generate && npm run browser-fixtures:materialize",
     "icons:generate": "node scripts/generate-brand-icons.mjs",
     "icons:verify": "npm run icons:generate && node scripts/verify-brand-icons.mjs",
@@ -46,6 +46,9 @@
     "browser-fixtures:materialize": "node scripts/materialize-browser-acceptance.mjs",
     "audit:prod": "npm audit --omit=dev --audit-level=high",
     "audit:route-bundles": "node scripts/report-route-bundles.mjs",
+    "profile:mobile": "node scripts/profile-public-mobile.mjs",
+    "profile:mobile:test": "node scripts/test-mobile-profile-core.mjs",
+    "audit:admin-edge": "node scripts/audit-admin-edge-coverage.test.mjs && node scripts/audit-admin-edge-coverage.mjs",
     "security:client-bundle": "node scripts/check-client-secret-boundary.mjs",
     "stylelint:governed": "npx --yes stylelint@17.16.0 src/app/donate/donate-audit.module.css"
   },
