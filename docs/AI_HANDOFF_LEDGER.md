@@ -1971,3 +1971,7 @@ On current protected main `f8694f71`, the 30-second Companion timer wrote a new 
 
 Current main `f8694f71` retained four disconnected labels in retention-review forms. Two synthetic document records prove eight unique `for`/`id` associations for decision, review date, deletion confirmation and reason. Red-before/green-after, TypeScript, lint, independent review and full 2,208 local Vitest pass (20 isolated-DB skips). Markup-only; no auth/RBAC, deletion semantics, documents, media, payments or approved retention schedule. Keep one writer; exact-head CI and separate protected release remain.
 
+## 2026-10-26 IST — Mobile navigation wheel fix local checkpoint
+
+CHATGPT_ACTIVE single writer prepared `fix/mobile-menu-wheel-20261026` from main `7d940b7b`. Only `src/components/site-scroll.tsx`, its regression, and the relevant `e2e/site-motion-scroll.spec.mjs` behavior test change, plus these two coordination records. Red1/green19 targeted Vitest, full 2261 passing/20 isolated DB skipped, TypeScript, scoped lint, production build/postbuild and local synthetic Chromium real-wheel acceptance 1/1 pass at 375x480. An independent read-only review confirmed lock precedence and requested actual scrollTop acceptance, now completed. Keep the branch unreleased until existing #477/#478 coordination reconciliation and fresh exact-head hosted acceptance. No donor data, provider changes, deploy or 149-item acceptance claim. Rollback: revert this isolated wheel-handler exception and companion tests.
+
