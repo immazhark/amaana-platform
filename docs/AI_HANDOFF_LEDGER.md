@@ -1,8 +1,61 @@
+## 2026-10-26 IST — PR #478 normal current-main reconciliation
+
+CHATGPT_ACTIVE single implementation writer. PR #477 completed hosted seven-job run `40361636703`, ready-state `40369750411` and exact-head guarded merge to protected main `12f1ab3bc0713cccc0331aa04fe97c62c272e7a8`. Railway website source-matched deployment `94d392bb-68b6-45da-8adb-bdffa73e3f28` was BUILDING; public runtime/readiness are not independently verified. Reconcile existing `feat/reviewed-faith-search-20261026` without changing publication/review eligibility, religious wording or full-library hero behavior. Only coordination histories overlap; preserve both. Require fresh exact-head CI, promotion/verify and guarded merge. No change to canonical 149 totals.
+
 Validation: feature module/page tests failed before implementation;10 focused tests and full local2254 pass/20 isolated-DB skips; strict TypeScript, scoped ESLint, spec syntax/diff checks pass. Independent source/security review PASS. Added hosted GET/format/clear/repeated-query browser test, not locally executed. Full-library hero stability source-reviewed, not independently media-tested. No reviewed content/criteria changes, religious acceptance or whole149 closure claim. Hosted exact-head and separate ready-state gates required.
 
 ## 2026-10-26 IST — Reviewed Faith discovery
 
 CHATGPT_ACTIVE sole writer starts feat/reviewed-faith-search-20261026 from main655a1c23-equivalent source. Add title/excerpt GET search and closed ARTICLE/REMINDER/VIDEO filter after unchanged reviewed/public query. Keep full-library counts/topics/hero stable; explicit no-match recovery. No religious copy, review criteria, citations/calculations/DB changes. Regression first; source feature is not religious acceptance or whole149 closure. Existing473/476/477 remain frozen for hosted checks.
+
+
+## 2026-10-26 IST — PR #477 current-main reconciliation
+
+CHATGPT_ACTIVE sole writer. PR #476 full exact-head CI `40355359483` and separate ready-state `40360825447` passed; protected expected-head merge produced main `7d940b7b2c8a07c6789ee9a80a395a56534e60aa`. Railway `eca04431-3068-4d69-9234-44edf7eda448` was BUILDING; independent public version/readiness GETs returned HTTP 403 access blocks. Existing public appeals discovery PR #477 reconciles normally with this main; only coordination-document conflicts arose and both histories remain. Fresh full hosted CI and separate ready-state are required for the new head, with no unresolved reviews. Rollback: revert the bounded public appeal-search feature if necessary. Canonical 149 unchanged.
+
+Validation: selector/page tests first failed on missing feature, then9 focused pass; full local2253 pass/20 isolated-DB skips; strict TypeScript, scoped ESLint and diff checks pass. Independent source/security review PASS. Added browser GET/clear/repeated-query acceptance, syntax/lint checked only; hosted execution pending. Railway470 SUCCESS exact655a1c23; independent version/readiness both blocked HTTP403 so live identity/readiness remain UNVERIFIED. No full149 status promotion.
+
+## 2026-10-26 IST — Public active-appeal discovery
+
+CHATGPT_ACTIVE sole writer starts feat/public-appeal-search-20261026 from released main655a1c23-equivalent source tree. Add server-rendered title/summary search after unchanged public appeal eligibility and staging exclusions. Strict80-character scalar query, no personal fields/reflection, accessible GET form, filtered-empty recovery. Preserve all fundraising/payment/privacy/database behavior. Independent read-only scoped plan accepted under standing development authorization. Regression first; rollback revert isolated discovery feature. PR473 and476 remain frozen for acceptance.
+
+## 2026-10-26 IST — PR #476 current-main reconciliation
+
+CHATGPT_ACTIVE sole implementation writer. The admin correction PR #473 passed all exact-head jobs (`40343512354`), separate promotion (`40353374428`) and SHA-guarded merge to main `61edcd87e6d90188ccf89f219c6ec5917e65fc97`. Railway website deployment `da077b82-3424-4dbd-8ab2-c02ddae34d59` was BUILDING when observed; independent public version/readiness were blocked by HTTP 403. Existing portfolio PR #476 is reconciling normally; only coordination-document conflicts arose and both histories are retained. Its new head needs fresh hosted full and separate ready-state acceptance before merge. Canonical 149 totals unchanged.
+
+Validation: new helper/page regressions red2 before correction;31 focused green, full local2249 pass/20 isolated-DB skips; strict TypeScript, scoped ESLint and diff checks pass. Independent source review PASS. Hosted exact-head build/browser/database and separate ready-state acceptance still required. Source correction only, no live deployment or complete149-item acceptance claim.
+
+## 2026-10-26 IST — Public portfolio combined-filter correction
+
+CHATGPT_ACTIVE sole writer on fix/work-combined-family-filter-20261026, source base matches released main655a1c23 tree. Reviewer reproduced umbrella match disappearing under year+text when its annual child matches year but fails text. Scope: text-match candidates before family suppression; preserve programme/year intersection and ordering. Regression first. No DB/auth/payment/public-media or factual changes. Rollback: revert isolated selector correction. Existing PR473 remains frozen for hosted acceptance.
+
+Latest synthetic acceptance update: full local2253 pass/20 isolated-DB skips; strict TypeScript, ESLint, spec syntax/diff and independent read-only review pass. No local Playwright package/browser execution available; complete Shift+Tab/Enter/Tab path remains hosted-pending. Existing production source unchanged in this follow-up.
+
+## 2026-10-26 IST — Complete synthetic admin bypass keyboard path
+
+CHATGPT_ACTIVE sole writer continues existing PR473. Strengthen hosted keyboard acceptance from programmatic bypass focus to Shift+Tab from sidebar brand, Enter target focus and next Tab to inert synthetic task button. Fixture only; no live action/data/provider. Previous combined candidate cc4025d3 checks cannot certify new test head; preserve full acceptance gates. No new runtime defect or149 classification change claimed.
+
+Combined validation:2253 local Vitest pass/20 isolated-DB skips; TypeScript, scoped ESLint, browser-spec syntax and diff checks pass. Independent interaction review PASS. Railway470 deployment df2f56dc-be2a-4037-9ebb-10c94bc8f23c BUILDING; independent public version request blocked HTTP403, runtime UNVERIFIED. Separate prior PR checks do not certify combined candidate; new full hosted exact-head required.
+
+## 2026-10-26 IST — Consolidated admin usability release candidate
+
+CHATGPT_ACTIVE sole writer. PR470 full40335870810 and separate ready40342333758 passed; guarded merge655a1c239c9781d33b1e999e0da430cb06692ce2. Reconcile released Companion source with PR473 retention query, PR474 media label associations and PR475 admin-content bypass in one bounded PR473 candidate, preserving all source histories. Prior separate-head acceptance does not certify combined head. Full local and new hosted exact-head acceptance required before ready/merge; no deployment/public identity inferred. All149 classifications unchanged.
+
+## 2026-10-26 IST — Retention selected-state query correction
+
+CHATGPT_ACTIVE sole implementation writer on fix/retention-filter-query-20261026 from main 36d4e6ec. Read-only reviewer reproduced count/list predicate mismatch: selected workflow-state count is filtered but document findMany is not. Scope: reuse the existing predicate in the bounded list query; synthetic regression first. No authorization, eligibility definition, hold/deletion action, private record access or infrastructure change. PR470 reconciled candidate c9d5fe18 is published, exact-head CI40335870810 pending; local 2244 pass/20 isolated-DB skips and strict TypeScript pass. Rollback: revert this isolated query correction. Canonical149 classes unchanged.
+
+Validation: red3/green6 focused cases; strict TypeScript, scoped ESLint, diff checks and full local Vitest2248 pass/20 isolated-DB skips. Independent read-only source review PASS. Exact-head hosted application/build/browser/database and separate ready-state acceptance remain required; no merge, deployment or live verification claimed.
+Validation: red2/green3 actual-page regressions; full local Vitest2246 pass/20 isolated-DB skips, strict TypeScript, scoped ESLint and diff checks pass. Independent source review PASS. React emits an existing multipart/form-action warning in the synthetic server render; upload markup was not changed. Hosted exact-head build/browser/database and separate ready-state acceptance required. Not merged or deployed; canonical149 unchanged.
+
+## 2026-10-26 IST — Media review form labels
+
+CHATGPT_ACTIVE sole writer on fix/media-review-labels-20261026 from main36d4e6ec. Scope: eleven disconnected sibling labels in repeated media cards. Add asset-specific associations only; preserve actions, permissions, privacy and deletion gates. Synthetic actual-page regression first; rollback by reverting this isolated markup change. PR470/473 browser acceptance pending.
+Validation: regression red1 then green1; clean candidate full Vitest2244 pass/20 isolated-DB skips; TypeScript, scoped ESLint, browser-spec syntax and diff checks pass. Independent source review PASS. Initial full run included a residual untracked prior-media-branch test and failed2; that file was preserved under /tmp and excluded from this candidate, clean rerun passed. Hosted keyboard test pending; it verifies activation/target focus, not complete physical keyboard or screen-reader acceptance. PR470/473/474 browser/final checks remain pending; no merge or deployment claimed.
+
+## 2026-10-26 IST — Admin content keyboard bypass
+
+CHATGPT_ACTIVE sole writer on fix/admin-content-bypass-20261026 from main36d4e6ec. Source inspection: global #main target wraps admin sidebar; no direct task-content bypass exists. Add existing styled skip link and focusable unique target on existing content div. No auth, navigation permissions or actions change. Regression first; browser keyboard acceptance required. Rollback: revert scoped shell markup. PR470/473/474 remain browser-pending, no gate bypass.
 
 ## 2026-10-26 IST — Coordinated continuation of PR #470
 
