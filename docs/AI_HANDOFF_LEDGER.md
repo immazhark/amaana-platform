@@ -1,3 +1,58 @@
+## 2026-10-26 IST — PR #471 current-main CSS cascade reconciliation
+
+CHATGPT_ACTIVE sole implementation writer. Existing PageHero fallback `height:auto!important` removal is held behind prior draft PR #471, not duplicated. Released main `12f1ab3bc0713cccc0331aa04fe97c62c272e7a8` has exact website deployment `94d392bb-68b6-45da-8adb-bdffa73e3f28` SUCCESS, but public version/readiness checks receive HTTP 403. Normal merge preserves PageHero source and both coordination histories, with only documentation conflicts. Require merged-tree tests, hosted browser geometry parity, separate ready-state and expected-head SHA guard. No deployment/acceptance inferred from old PR CI; 149 totals unchanged.
+
+## 2026-10-26 IST — PR #477 current-main reconciliation
+
+CHATGPT_ACTIVE sole writer. PR #476 full exact-head CI `40355359483` and separate ready-state `40360825447` passed; protected expected-head merge produced main `7d940b7b2c8a07c6789ee9a80a395a56534e60aa`. Railway `eca04431-3068-4d69-9234-44edf7eda448` was BUILDING; independent public version/readiness GETs returned HTTP 403 access blocks. Existing public appeals discovery PR #477 reconciles normally with this main; only coordination-document conflicts arose and both histories remain. Fresh full hosted CI and separate ready-state are required for the new head, with no unresolved reviews. Rollback: revert the bounded public appeal-search feature if necessary. Canonical 149 unchanged.
+
+Validation: selector/page tests first failed on missing feature, then9 focused pass; full local2253 pass/20 isolated-DB skips; strict TypeScript, scoped ESLint and diff checks pass. Independent source/security review PASS. Added browser GET/clear/repeated-query acceptance, syntax/lint checked only; hosted execution pending. Railway470 SUCCESS exact655a1c23; independent version/readiness both blocked HTTP403 so live identity/readiness remain UNVERIFIED. No full149 status promotion.
+
+## 2026-10-26 IST — Public active-appeal discovery
+
+CHATGPT_ACTIVE sole writer starts feat/public-appeal-search-20261026 from released main655a1c23-equivalent source tree. Add server-rendered title/summary search after unchanged public appeal eligibility and staging exclusions. Strict80-character scalar query, no personal fields/reflection, accessible GET form, filtered-empty recovery. Preserve all fundraising/payment/privacy/database behavior. Independent read-only scoped plan accepted under standing development authorization. Regression first; rollback revert isolated discovery feature. PR473 and476 remain frozen for acceptance.
+
+## 2026-10-26 IST — PR #476 current-main reconciliation
+
+CHATGPT_ACTIVE sole implementation writer. The admin correction PR #473 passed all exact-head jobs (`40343512354`), separate promotion (`40353374428`) and SHA-guarded merge to main `61edcd87e6d90188ccf89f219c6ec5917e65fc97`. Railway website deployment `da077b82-3424-4dbd-8ab2-c02ddae34d59` was BUILDING when observed; independent public version/readiness were blocked by HTTP 403. Existing portfolio PR #476 is reconciling normally; only coordination-document conflicts arose and both histories are retained. Its new head needs fresh hosted full and separate ready-state acceptance before merge. Canonical 149 totals unchanged.
+
+Validation: new helper/page regressions red2 before correction;31 focused green, full local2249 pass/20 isolated-DB skips; strict TypeScript, scoped ESLint and diff checks pass. Independent source review PASS. Hosted exact-head build/browser/database and separate ready-state acceptance still required. Source correction only, no live deployment or complete149-item acceptance claim.
+
+## 2026-10-26 IST — Public portfolio combined-filter correction
+
+CHATGPT_ACTIVE sole writer on fix/work-combined-family-filter-20261026, source base matches released main655a1c23 tree. Reviewer reproduced umbrella match disappearing under year+text when its annual child matches year but fails text. Scope: text-match candidates before family suppression; preserve programme/year intersection and ordering. Regression first. No DB/auth/payment/public-media or factual changes. Rollback: revert isolated selector correction. Existing PR473 remains frozen for hosted acceptance.
+
+Latest synthetic acceptance update: full local2253 pass/20 isolated-DB skips; strict TypeScript, ESLint, spec syntax/diff and independent read-only review pass. No local Playwright package/browser execution available; complete Shift+Tab/Enter/Tab path remains hosted-pending. Existing production source unchanged in this follow-up.
+
+## 2026-10-26 IST — Complete synthetic admin bypass keyboard path
+
+CHATGPT_ACTIVE sole writer continues existing PR473. Strengthen hosted keyboard acceptance from programmatic bypass focus to Shift+Tab from sidebar brand, Enter target focus and next Tab to inert synthetic task button. Fixture only; no live action/data/provider. Previous combined candidate cc4025d3 checks cannot certify new test head; preserve full acceptance gates. No new runtime defect or149 classification change claimed.
+
+Combined validation:2253 local Vitest pass/20 isolated-DB skips; TypeScript, scoped ESLint, browser-spec syntax and diff checks pass. Independent interaction review PASS. Railway470 deployment df2f56dc-be2a-4037-9ebb-10c94bc8f23c BUILDING; independent public version request blocked HTTP403, runtime UNVERIFIED. Separate prior PR checks do not certify combined candidate; new full hosted exact-head required.
+
+## 2026-10-26 IST — Consolidated admin usability release candidate
+
+CHATGPT_ACTIVE sole writer. PR470 full40335870810 and separate ready40342333758 passed; guarded merge655a1c239c9781d33b1e999e0da430cb06692ce2. Reconcile released Companion source with PR473 retention query, PR474 media label associations and PR475 admin-content bypass in one bounded PR473 candidate, preserving all source histories. Prior separate-head acceptance does not certify combined head. Full local and new hosted exact-head acceptance required before ready/merge; no deployment/public identity inferred. All149 classifications unchanged.
+
+## 2026-10-26 IST — Retention selected-state query correction
+
+CHATGPT_ACTIVE sole implementation writer on fix/retention-filter-query-20261026 from main 36d4e6ec. Read-only reviewer reproduced count/list predicate mismatch: selected workflow-state count is filtered but document findMany is not. Scope: reuse the existing predicate in the bounded list query; synthetic regression first. No authorization, eligibility definition, hold/deletion action, private record access or infrastructure change. PR470 reconciled candidate c9d5fe18 is published, exact-head CI40335870810 pending; local 2244 pass/20 isolated-DB skips and strict TypeScript pass. Rollback: revert this isolated query correction. Canonical149 classes unchanged.
+
+Validation: red3/green6 focused cases; strict TypeScript, scoped ESLint, diff checks and full local Vitest2248 pass/20 isolated-DB skips. Independent read-only source review PASS. Exact-head hosted application/build/browser/database and separate ready-state acceptance remain required; no merge, deployment or live verification claimed.
+Validation: red2/green3 actual-page regressions; full local Vitest2246 pass/20 isolated-DB skips, strict TypeScript, scoped ESLint and diff checks pass. Independent source review PASS. React emits an existing multipart/form-action warning in the synthetic server render; upload markup was not changed. Hosted exact-head build/browser/database and separate ready-state acceptance required. Not merged or deployed; canonical149 unchanged.
+
+## 2026-10-26 IST — Media review form labels
+
+CHATGPT_ACTIVE sole writer on fix/media-review-labels-20261026 from main36d4e6ec. Scope: eleven disconnected sibling labels in repeated media cards. Add asset-specific associations only; preserve actions, permissions, privacy and deletion gates. Synthetic actual-page regression first; rollback by reverting this isolated markup change. PR470/473 browser acceptance pending.
+Validation: regression red1 then green1; clean candidate full Vitest2244 pass/20 isolated-DB skips; TypeScript, scoped ESLint, browser-spec syntax and diff checks pass. Independent source review PASS. Initial full run included a residual untracked prior-media-branch test and failed2; that file was preserved under /tmp and excluded from this candidate, clean rerun passed. Hosted keyboard test pending; it verifies activation/target focus, not complete physical keyboard or screen-reader acceptance. PR470/473/474 browser/final checks remain pending; no merge or deployment claimed.
+
+## 2026-10-26 IST — Admin content keyboard bypass
+
+CHATGPT_ACTIVE sole writer on fix/admin-content-bypass-20261026 from main36d4e6ec. Source inspection: global #main target wraps admin sidebar; no direct task-content bypass exists. Add existing styled skip link and focusable unique target on existing content div. No auth, navigation permissions or actions change. Regression first; browser keyboard acceptance required. Rollback: revert scoped shell markup. PR470/473/474 remain browser-pending, no gate bypass.
+## 2026-10-26 IST — Coordinated continuation of PR #470
+
+CHATGPT_ACTIVE sole implementation writer under renewed owner authorization; review agents are read-only. Reconciled current main 36d4e6ec068c88f697528bbdbf7887890303868d into existing perf/companion-minute-update-20261026, preserving both minute-update and retention-label histories. Prior head 820028eef1f7623e401fc6c6fcd9c2c5df3a6ed6 passed all seven jobs in 40326831879; independent source review found no blocker. This reconciliation requires fresh exact-head CI and separate ready-state before guarded merge. Railway website 1aa5eac3-2dc6-4125-8627-d02e50a50bb7 is SLEEPING at main 36d4e6e; public health request returned HTTP403 from this workspace, so runtime remains independently unverified. Historical 149 classifications unchanged.
+
 ## 2026-10-26 — Team action real-helper denial batch staged
 
 `test/team-actions-authorization-20261026` starts at `0f3bc050`, then reconciles with merged main `77f69b7b`. It adds 28 AF-R012 synthetic admin cookie/session/RBAC denial tests and seven authorized-user checkpoints for seven team member/group writes. Existing behavior tests stub auth; new fixtures retain real `@/lib/auth`, require the exact `amaana_admin_session` cookie lookup, and stop Prisma, media storage, Sharp transforms, transactions, audit and cache for denial paths. Independent review recommended positive-path checkpoints, now incorporated; all 42 focused tests, strict TypeScript and scoped ESLint passed. A temporary permission-bypass mutation failed and was reverted. No real team or public-media records touched; production action source has no diff. Full local Vitest passed again after approved subprocess-EPERM retry with 20 isolated-database skips. Exact-head hosted acceptance remains pending; older PR #464 head CI is superseded by this new commit.
@@ -1922,6 +1977,15 @@ CODEX_ACTIVE sole implementation writer. Owner explicitly assigned repository ow
 ## 2026-10-26 — AF-R013 route scope inventory and fail-closed build check
 
 At main `77f69b7b395850438753df1901eeb16449b9d89c`, stage read-only `scripts/audit-admin-edge-coverage.mjs` plus native tests and `prebuild` enforcement. It enumerates 19 current `/admin/**` and `/api/admin/**` routes; proposed coverage is 17 privileged and two guest paths. Unknown privileged handlers, accidental guest expansion, stale/duplicate entries, symlinks and invalid patterns fail closed. A temporary omission of `/api/admin/media/curated-gallery/upload` reproduced a failing audit; source restored. Independent review exposed missing CI native-negative coverage; `audit:admin-edge` now executes seven native cases before inventory and runs from `prebuild`; synthetic symlink fixture failed red then passed. TypeScript and scoped lint green; full local Vitest 2,207 passed with 20 isolated-database skips after approved subprocess-EPERM retry. No Cloudflare infrastructure mutations, access rollout, bypass assumption or live donor/team data. External policy, zone, origin and recovery verification are explicit remaining gates; no backlog status inflation.
+
 ## 2026-10-26 — AF-R062 isolated hero fallback important removal staged
 
 At protected main `0677747`, fallback visual directly descends from PageHero visual box, but generic `div` height specificity would override normal fallback `height:auto`. Red-first selector test reproduced important-declaration issue, normal scoped `.page-hero__visual>.page-hero__visual-fallback{height:auto}` passed while preserving image/figure rules, content, hierarchy and responsive treatment. Full isolated Vitest 2,244 passed (20 skipped isolated-db cases), strict TypeScript, scoped lint and syntax check green, after sandbox EPERM required approved full-suite execution. An independent read-only review found no blocking CSS issue. Browser spec tests visual geometry parity against previous inline important declaration on `/partner`, `/contact`, `/recognition` at 1440/390 px and normal/reduced motion; browser run still pending. Complete AF-R062 requires other component families; AF-R059 remains Not started. No deployment claimed.
+
+
+## 2026-10-26 — AF-R049 redundant Companion clock state update fix scoped
+
+On current protected main `f8694f71`, the 30-second Companion timer wrote a new Date object regardless of whether the minute changed. A synthetic effect-harness test failed before the change; the functional updater now retains same-minute Date identity and updates at minute and Asia/Kolkata midnight boundaries. Existing hidden-tab/visibility test remains green. Twelve focused and full 2,208 local Vitest pass (20 isolated-database skips); focused rerun after local-midnight refinement, TypeScript and scoped lint pass. Independent source review PASS. Do not alter actual prayer schedules, religious text, reminders, API or timers. Source optimization only, no LCP/INP or field acceptance inference.
+## 2026-10-26 — Retention administration accessible labels scoped
+
+Current main `f8694f71` retained four disconnected labels in retention-review forms. Two synthetic document records prove eight unique `for`/`id` associations for decision, review date, deletion confirmation and reason. Red-before/green-after, TypeScript, lint, independent review and full 2,208 local Vitest pass (20 isolated-DB skips). Markup-only; no auth/RBAC, deletion semantics, documents, media, payments or approved retention schedule. Keep one writer; exact-head CI and separate protected release remain.

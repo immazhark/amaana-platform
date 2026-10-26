@@ -71,6 +71,7 @@ export default async function AdminBrowserAcceptanceFixture({ searchParams }: Pr
           <div>
             <p className="eyebrow">Browser acceptance fixture</p>
             <h1 id="admin-acceptance-heading">Synthetic operations console</h1>
+            <button type="button">Synthetic task control</button>
           </div>
         </div>
         <div className="card">
