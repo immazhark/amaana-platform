@@ -1,3 +1,7 @@
+## 2026-10-26 — Private-document authorization test, draft PR #458
+
+`test/admin-document-authorization-20261026` began at `c9909952`, published as draft PR #458; one writer tests five AF-R012 GET guard cases for `src/app/admin/(protected)/documents/[id]/route.ts`. Privileged Prisma/document URL/audit mocks fail closed, and `@/lib/auth` stays real. A controlled permission-check bypass failed as expected; restored source passed five focused tests, TypeScript, scoped ESLint and 2,202 local full-suite cases (20 isolated-DB skips). Source route unchanged; no private document material/live data. #457 merged as `0f3bc050`, #459 as `77f69b7b`; old-head CI `40246652514` passed all seven, and branch has reconciled main histories. Require fresh exact-head CI on new branch SHA before ready/guarded merge.
+
 ## 2026-10-26 — Team action real-helper denial batch staged
 
 `test/team-actions-authorization-20261026` starts at `0f3bc050`, then reconciles with merged main `77f69b7b`. It adds 28 AF-R012 synthetic admin cookie/session/RBAC denial tests and seven authorized-user checkpoints for seven team member/group writes. Existing behavior tests stub auth; new fixtures retain real `@/lib/auth`, require the exact `amaana_admin_session` cookie lookup, and stop Prisma, media storage, Sharp transforms, transactions, audit and cache for denial paths. Independent review recommended positive-path checkpoints, now incorporated; all 42 focused tests, strict TypeScript and scoped ESLint passed. A temporary permission-bypass mutation failed and was reverted. No real team or public-media records touched; production action source has no diff. Full local Vitest passed again after approved subprocess-EPERM retry with 20 isolated-database skips. Exact-head hosted acceptance remains pending; older PR #464 head CI is superseded by this new commit.
@@ -1926,4 +1930,3 @@ At main `77f69b7b395850438753df1901eeb16449b9d89c`, stage read-only `scripts/aud
 ## 2026-10-26 — Retention administration accessible labels scoped
 
 Current main `f8694f71` retained four disconnected labels in retention-review forms. Two synthetic document records prove eight unique `for`/`id` associations for decision, review date, deletion confirmation and reason. Red-before/green-after, TypeScript, lint, independent review and full 2,208 local Vitest pass (20 isolated-DB skips). Markup-only; no auth/RBAC, deletion semantics, documents, media, payments or approved retention schedule. Keep one writer; exact-head CI and separate protected release remain.
-
