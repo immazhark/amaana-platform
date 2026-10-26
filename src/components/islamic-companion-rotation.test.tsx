@@ -84,6 +84,46 @@ describe("visibility-aware site-wide clock", () => {
     stopClock?.();
     live.cleanup?.();
   });
+
+  it("keeps Date state identity within a minute and refreshes across minute and midnight boundaries", () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      vi.setSystemTime(new Date("2026-10-26T10:00:05Z"));
+      const live = fixture();
+      const cleanup = live.clockEffect?.();
+      const setNow = harness.setters[1];
+      type Updater = (previous: Date | null) => Date;
+      const initial = setNow?.mock.calls[0]?.[0] as Updater | undefined;
+      expect(initial).toBeTypeOf("function");
+      const first = initial?.(null);
+      expect(first?.toISOString()).toBe("2026-10-26T10:00:05.000Z");
+      const tick = (live.interval.mock.calls as unknown as [() => void, number][])
+        .find(([, delay]) => delay === 30_000)?.[0];
+      vi.setSystemTime(new Date("2026-10-26T10:00:35Z"));
+      tick?.();
+      const sameMinute = setNow?.mock.calls[1]?.[0] as Updater | undefined;
+      expect(sameMinute?.(first ?? null)).toBe(first);
+      vi.setSystemTime(new Date("2026-10-26T10:01:05Z"));
+      tick?.();
+      const nextMinute = setNow?.mock.calls[2]?.[0] as Updater | undefined;
+      const changed = nextMinute?.(first ?? null);
+      expect(changed).not.toBe(first);
+      expect(changed?.toISOString()).toBe("2026-10-26T10:01:05.000Z");
+      // Asia/Kolkata midnight is 18:30 UTC; this exercises the visible date rollover.
+      vi.setSystemTime(new Date("2026-10-26T18:29:55Z"));
+      tick?.();
+      const beforeMidnight = (setNow?.mock.calls[3]?.[0] as Updater)(changed ?? null);
+      vi.setSystemTime(new Date("2026-10-26T18:30:05Z"));
+      tick?.();
+      const afterMidnight = (setNow?.mock.calls[4]?.[0] as Updater)(beforeMidnight);
+      expect(afterMidnight).not.toBe(beforeMidnight);
+      expect(afterMidnight.toISOString()).toBe("2026-10-26T18:30:05.000Z");
+      cleanup?.();
+      live.cleanup?.();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
 
 describe("site-wide clock calculation cost", () => {
