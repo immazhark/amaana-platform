@@ -1,3 +1,7 @@
+## 2026-10-26 — Stories bounded media query — prepared source PR
+
+Prepared `perf/stories-media-page-bound-20261026` from main `c9909952` after finding `getStoriesDiscoveryData()` loads up to three identity media candidates for every published story before JS search/pagination. A light index now preserves existing filter semantics; selected IDs pass through a fresh privacy/status guarded detail query for no more than 12 media-bearing cards. Four new query tests failed on absent API, then seven focused cases, TypeScript, scoped ESLint and full 2,201 local cases passed (20 isolated-DB skips). Controlled removal of detail publication predicates failed its privacy assertion; restored source passes. Independent of PR #458; one writer. #457 merged to main `0f3bc050` and this branch reconciled normally; exact-head CI/browser/database + separate ready-state are required before release.
+
 ## 2026-10-26 — CHATGPT_ACTIVE — Notification authorization test increment
 
 From main `37632d250ec661ce20154cc05eb73ecf2985d944`, isolated `test/notification-authorization-boundaries-20261026` adds six real-auth-helper denials for anonymous, inactive-session and wrong-role calls before notification queue/requeue effects. The controlled missing-permission mutation failed as intended; 2,200 local tests passed after restoring source, with 20 isolated-DB skips. PR #455 is merged at `c9909952fa5277486ec823748bd65fea49c5fe3d`; this branch preserves that ancestry. Delivery remains dormant; AF-R012 remains Partial. New hosted acceptance is pending.
