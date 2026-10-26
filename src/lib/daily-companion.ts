@@ -107,7 +107,7 @@ export function dailyReading(now: Date, clock = hyderabadClock(now)) {
 }
 
 export type Reminder = { id: string; title: string; text: string; reference: string; source: string; readUrl?: string };
-// The site-wide clock re-renders every 30 seconds. Calendar estimates are
+// The site-wide clock polls every 30 seconds and updates on minute changes. Calendar estimates are
 // day-level, never visitor-specific: reuse the same three-day safety window.
 let fastingFormatter: Intl.DateTimeFormat | undefined;
 let fastingEstimate: { date: string; excluded: boolean } | undefined;
