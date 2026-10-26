@@ -1,3 +1,9 @@
+## 2026-10-26 IST — Prepared Story publication-date correction (local only)
+
+CHATGPT_ACTIVE remains the sole repository implementation writer; parallel agents provided read-only investigation/review. PR #473 merged at protected main `61edcd87e6d90188ccf89f219c6ec5917e65fc97`; Railway website deployment `da077b82-3424-4dbd-8ab2-c02ddae34d59` reports SUCCESS, while independent public version/readiness remains HTTP 403 blocked. PR #476 was reconciled at remote head `b44a3e1525d1be446d107724877a394b428af808`; full CI `40355359483` remains pending before separate ready-state and merge. Do not merge this independent prepared Story task ahead of that queue.
+
+Local `fix/stories-ist-date-20261026` from main `61edcd87` corrects a timezone-dependent public Story hero date using one `Intl.DateTimeFormat` option, with synthetic actual-page UTC boundary regression red1/green1. Full local Vitest 2,254 pass/20 isolated-DB skips, strict TypeScript, scoped ESLint, production build/postbuild, and independent source review pass. Initial sandbox build failed solely on blocked Google Fonts fetch; controlled external-network rerun passed. No public content, metadata timestamp, religious copy, privacy/media, database, auth, payment or infrastructure change. Keep local/unpublished until the earlier release queue is stable; then normally reconcile, fresh exact-head full hosted CI and separate readiness, SHA-guarded merge. Rollback: revert this one-line formatter change and regression. Canonical 149 totals unchanged.
+
 Latest synthetic acceptance update: full local2253 pass/20 isolated-DB skips; strict TypeScript, ESLint, spec syntax/diff and independent read-only review pass. No local Playwright package/browser execution available; complete Shift+Tab/Enter/Tab path remains hosted-pending. Existing production source unchanged in this follow-up.
 
 ## 2026-10-26 IST — Complete synthetic admin bypass keyboard path

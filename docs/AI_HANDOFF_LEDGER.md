@@ -1,3 +1,9 @@
+## 2026-10-26 IST — Story date preparation held behind release queue
+
+CHATGPT_ACTIVE sole repository writer prepared `fix/stories-ist-date-20261026` locally from main `61edcd87`; PR #473 already merged and Railway deployed exact SHA successfully, independent public health remained HTTP 403 blocked. Existing PR #476 was separately reconciled to `b44a3e` and requires full exact-head CI `40355359483` plus promotion before merger. Next Story action after the queue: reconcile the local branch normally, preserve coordination histories, publish one bounded draft PR and require seven-job CI, separate ready-state, reviews and expected-head merge. No parallel implementation writer or infrastructure mutations.
+
+Story DateTime boundary `2026-10-26T20:00:00Z` rendered the prior UTC date in the hero; a synthetic actual-page regression failed before `timeZone: "Asia/Kolkata"`, passed afterward. Full local Vitest 2,254 pass/20 isolated-DB skips, TypeScript, scoped lint, full production build/postbuild and independent source review pass. One source-line correction plus test; no content/media/publication/privacy/finance/schema change. Rollback by reverting the bounded patch. No deployment, live timezone assertion, full backlog acceptance or 149-status change inferred.
+
 Latest synthetic acceptance update: full local2253 pass/20 isolated-DB skips; strict TypeScript, ESLint, spec syntax/diff and independent read-only review pass. No local Playwright package/browser execution available; complete Shift+Tab/Enter/Tab path remains hosted-pending. Existing production source unchanged in this follow-up.
 
 ## 2026-10-26 IST — Complete synthetic admin bypass keyboard path
