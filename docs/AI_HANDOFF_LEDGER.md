@@ -1,3 +1,14 @@
+## 2026-10-26 IST — PR #478 normal current-main reconciliation
+
+CHATGPT_ACTIVE single implementation writer. PR #477 completed hosted seven-job run `40361636703`, ready-state `40369750411` and exact-head guarded merge to protected main `12f1ab3bc0713cccc0331aa04fe97c62c272e7a8`. Railway website source-matched deployment `94d392bb-68b6-45da-8adb-bdffa73e3f28` was BUILDING; public runtime/readiness are not independently verified. Reconcile existing `feat/reviewed-faith-search-20261026` without changing publication/review eligibility, religious wording or full-library hero behavior. Only coordination histories overlap; preserve both. Require fresh exact-head CI, promotion/verify and guarded merge. No change to canonical 149 totals.
+
+Validation: feature module/page tests failed before implementation;10 focused tests and full local2254 pass/20 isolated-DB skips; strict TypeScript, scoped ESLint, spec syntax/diff checks pass. Independent source/security review PASS. Added hosted GET/format/clear/repeated-query browser test, not locally executed. Full-library hero stability source-reviewed, not independently media-tested. No reviewed content/criteria changes, religious acceptance or whole149 closure claim. Hosted exact-head and separate ready-state gates required.
+
+## 2026-10-26 IST — Reviewed Faith discovery
+
+CHATGPT_ACTIVE sole writer starts feat/reviewed-faith-search-20261026 from main655a1c23-equivalent source. Add title/excerpt GET search and closed ARTICLE/REMINDER/VIDEO filter after unchanged reviewed/public query. Keep full-library counts/topics/hero stable; explicit no-match recovery. No religious copy, review criteria, citations/calculations/DB changes. Regression first; source feature is not religious acceptance or whole149 closure. Existing473/476/477 remain frozen for hosted checks.
+
+
 ## 2026-10-26 IST — PR #477 current-main reconciliation
 
 CHATGPT_ACTIVE sole writer. PR #476 full exact-head CI `40355359483` and separate ready-state `40360825447` passed; protected expected-head merge produced main `7d940b7b2c8a07c6789ee9a80a395a56534e60aa`. Railway `eca04431-3068-4d69-9234-44edf7eda448` was BUILDING; independent public version/readiness GETs returned HTTP 403 access blocks. Existing public appeals discovery PR #477 reconciles normally with this main; only coordination-document conflicts arose and both histories remain. Fresh full hosted CI and separate ready-state are required for the new head, with no unresolved reviews. Rollback: revert the bounded public appeal-search feature if necessary. Canonical 149 unchanged.
@@ -45,6 +56,7 @@ Validation: regression red1 then green1; clean candidate full Vitest2244 pass/20
 ## 2026-10-26 IST — Admin content keyboard bypass
 
 CHATGPT_ACTIVE sole writer on fix/admin-content-bypass-20261026 from main36d4e6ec. Source inspection: global #main target wraps admin sidebar; no direct task-content bypass exists. Add existing styled skip link and focusable unique target on existing content div. No auth, navigation permissions or actions change. Regression first; browser keyboard acceptance required. Rollback: revert scoped shell markup. PR470/473/474 remain browser-pending, no gate bypass.
+
 ## 2026-10-26 IST — Coordinated continuation of PR #470
 
 CHATGPT_ACTIVE sole implementation writer under renewed owner authorization; review agents are read-only. Reconciled current main 36d4e6ec068c88f697528bbdbf7887890303868d into existing perf/companion-minute-update-20261026, preserving both minute-update and retention-label histories. Prior head 820028eef1f7623e401fc6c6fcd9c2c5df3a6ed6 passed all seven jobs in 40326831879; independent source review found no blocker. This reconciliation requires fresh exact-head CI and separate ready-state before guarded merge. Railway website 1aa5eac3-2dc6-4125-8627-d02e50a50bb7 is SLEEPING at main 36d4e6e; public health request returned HTTP403 from this workspace, so runtime remains independently unverified. Historical 149 classifications unchanged.

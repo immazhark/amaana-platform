@@ -1,3 +1,14 @@
+## 2026-10-26 IST — Reconcile Faith discovery PR #478 with the released Appeals search
+
+CHATGPT_ACTIVE sole writer. Existing public Appeals PR #477 passed full exact-head CI `40361636703` and separate ready-state promotion/verify `40369750411`; SHA-guarded merge advanced main to `12f1ab3bc0713cccc0331aa04fe97c62c272e7a8`. Railway website deployment `94d392bb-68b6-45da-8adb-bdffa73e3f28` was BUILDING on initial inspection; independently verified public runtime identity/readiness remain blocked by Cloudflare HTTP 403. Merge that main normally into existing Faith discovery PR #478, retain both coordination histories, and leave the reviewed Faith feature source unchanged. Full exact-head CI and separate ready-state are required anew after reconciliation. No religious-text changes, financial/privacy actions, provider mutation or full 149-item acceptance assertion.
+
+Validation: feature module/page tests failed before implementation;10 focused tests and full local2254 pass/20 isolated-DB skips; strict TypeScript, scoped ESLint, spec syntax/diff checks pass. Independent source/security review PASS. Added hosted GET/format/clear/repeated-query browser test, not locally executed. Full-library hero stability source-reviewed, not independently media-tested. No reviewed content/criteria changes, religious acceptance or whole149 closure claim. Hosted exact-head and separate ready-state gates required.
+
+## 2026-10-26 IST — Reviewed Faith discovery
+
+CHATGPT_ACTIVE sole writer starts feat/reviewed-faith-search-20261026 from main655a1c23-equivalent source. Add title/excerpt GET search and closed ARTICLE/REMINDER/VIDEO filter after unchanged reviewed/public query. Keep full-library counts/topics/hero stable; explicit no-match recovery. No religious copy, review criteria, citations/calculations/DB changes. Regression first; source feature is not religious acceptance or whole149 closure. Existing473/476/477 remain frozen for hosted checks.
+
+
 ## 2026-10-26 IST — Reconcile public appeal-search PR #477 after portfolio release
 
 CHATGPT_ACTIVE sole repository writer. PR #476 full exact-head CI `40355359483` passed all seven jobs; separate ready-state `40360825447` passed promotion and final verify. Protected SHA-guarded merge advanced main to `7d940b7b2c8a07c6789ee9a80a395a56534e60aa`. Railway website deployment `eca04431-3068-4d69-9234-44edf7eda448` was BUILDING at the latest check; independent public version/readiness remain HTTP 403 blocked. Reconcile reviewed PR #477 with this main and preserve both coordination histories; its appeals search source does not overlap the portfolio/admin source. New exact-head full CI and separate ready-state remain required. No donation eligibility, payment, private-data, notification or infrastructure behavior change. Canonical 149 totals unchanged.
@@ -45,6 +56,7 @@ Validation: regression red1 then green1; clean candidate full Vitest2244 pass/20
 ## 2026-10-26 IST — Admin content keyboard bypass
 
 CHATGPT_ACTIVE sole writer on fix/admin-content-bypass-20261026 from main36d4e6ec. Source inspection: global #main target wraps admin sidebar; no direct task-content bypass exists. Add existing styled skip link and focusable unique target on existing content div. No auth, navigation permissions or actions change. Regression first; browser keyboard acceptance required. Rollback: revert scoped shell markup. PR470/473/474 remain browser-pending, no gate bypass.
+
 ## 2026-10-26 IST — Coordinated continuation of PR #470
 
 CHATGPT_ACTIVE sole implementation writer under renewed owner authorization; review agents are read-only. Reconciled current main 36d4e6ec068c88f697528bbdbf7887890303868d into existing perf/companion-minute-update-20261026, preserving both minute-update and retention-label histories. Prior head 820028eef1f7623e401fc6c6fcd9c2c5df3a6ed6 passed all seven jobs in 40326831879; independent source review found no blocker. This reconciliation requires fresh exact-head CI and separate ready-state before guarded merge. Railway website 1aa5eac3-2dc6-4125-8627-d02e50a50bb7 is SLEEPING at main 36d4e6e; public health request returned HTTP403 from this workspace, so runtime remains independently unverified. Historical 149 classifications unchanged.
