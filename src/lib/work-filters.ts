@@ -29,11 +29,12 @@ export function filterWork<T extends Programme>(programmes: T[], search: WorkSea
       const publishedSlugs = new Set(p.initiatives.map(item => item.slug));
       const matching = p.initiatives.filter(item => year
         ? yearsFor(item).includes(Number(year))
-        : Boolean(query) || !item.parentSlug || !publishedSlugs.has(item.parentSlug));
+        : Boolean(query) || !item.parentSlug || !publishedSlugs.has(item.parentSlug))
+        .filter(item => !query || `${item.title ?? ""} ${item.summary ?? ""}`.toLocaleLowerCase("en").includes(query.toLocaleLowerCase("en")));
       // An annual edition replaces its umbrella only when that edition is
-      // published and matches the selected year. Preserve standalone ranges.
+      // published and matches all active filters. Preserve standalone ranges.
       const representedParents = new Set(year ? matching.map(item => item.parentSlug).filter(Boolean) : []);
-      return { ...p, initiatives: matching.filter(item => (!item.slug || !representedParents.has(item.slug)) && (!query || `${item.title ?? ""} ${item.summary ?? ""}`.toLocaleLowerCase("en").includes(query.toLocaleLowerCase("en")))) } as T;
+      return { ...p, initiatives: matching.filter(item => !item.slug || !representedParents.has(item.slug)) } as T;
     })
     .filter(p => p.initiatives.length > 0);
   // A rejected query must not be serialized back into public select values.
