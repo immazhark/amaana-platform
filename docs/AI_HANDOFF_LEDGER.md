@@ -1927,3 +1927,7 @@ At main `77f69b7b395850438753df1901eeb16449b9d89c`, stage read-only `scripts/aud
 
 Current main `f8694f71` retained four disconnected labels in retention-review forms. Two synthetic document records prove eight unique `for`/`id` associations for decision, review date, deletion confirmation and reason. Red-before/green-after, TypeScript, lint, independent review and full 2,208 local Vitest pass (20 isolated-DB skips). Markup-only; no auth/RBAC, deletion semantics, documents, media, payments or approved retention schedule. Keep one writer; exact-head CI and separate protected release remain.
 
+## 2026-10-26 — AF-R019 low-contrast appeal metadata targeted
+
+Main `36d4e6ec` renders synthetic `AppealCard` against live `.v2-appeal-card{background:#fffdf8}`. Three visible text selectors (.v2-appeal-card-head small, .v2-appeal-progress-meta span, .v2-appeal-progress-foot) failed red at 3.7802/3.5415/3.5415:1 before the bounded three-declaration change. New `#66717d` yields 4.8915:1, 4/4 focused test green, full 2,247 local Vitest green (20 isolated-DB skips), strict TypeScript and scoped ESLint PASS; independent review no blockers. Hosted browser synthetic computed-style contrast awaits exact-head CI; no real appeal/field/user acceptance or fundraising/checkout changes claimed. AF-R019 wider site audit remains Partial.
+
