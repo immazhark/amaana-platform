@@ -61,3 +61,40 @@ describe("private retention form accessible names", () => {
     expect(mocks.permission).toHaveBeenCalledWith("assistance.approve");
   });
 });
+
+
+describe("retention selected-state query", () => {
+  it.each(["eligible", "active"])("applies the %s count predicate to the bounded document list", async state => {
+    mocks.documents.mockResolvedValue([]);
+    await RetentionReviewPage({ searchParams: Promise.resolve({ state }) });
+    const countQuery = mocks.count.mock.calls[0]?.[0];
+    const terminal = { OR: [
+      { assistanceRequest: { status: { in: ["CLOSED", "REJECTED"] } } },
+      { assistanceRequest: { appeal: { status: "CLOSED" } } },
+    ] };
+    expect(countQuery?.where).toEqual(state === "eligible" ? terminal : { NOT: terminal });
+    expect(mocks.documents).toHaveBeenCalledWith(expect.objectContaining({
+      where: countQuery.where,
+      skip: 0,
+      take: 50,
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    }));
+    expect(mocks.events).not.toHaveBeenCalled();
+  });
+
+  it("preserves the selected predicate on a later bounded page", async () => {
+    mocks.count.mockResolvedValue(51);
+    mocks.documents.mockResolvedValue([]);
+    await RetentionReviewPage({ searchParams: Promise.resolve({ state: "eligible", page: "2" }) });
+    expect(mocks.documents).toHaveBeenCalledWith(expect.objectContaining({
+      where: mocks.count.mock.calls[0]?.[0]?.where, skip: 50, take: 50,
+    }));
+  });
+
+  it.each([undefined, "invalid"])("keeps the unfiltered view for state %s", async state => {
+    mocks.documents.mockResolvedValue([]);
+    await RetentionReviewPage({ searchParams: Promise.resolve({ state }) });
+    expect(mocks.count.mock.calls[0]?.[0]?.where).toBeUndefined();
+    expect(mocks.documents.mock.calls[0]?.[0]?.where).toBeUndefined();
+  });
+});
