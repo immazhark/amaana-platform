@@ -5,7 +5,7 @@ import Link from "next/link";
 import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
-import { getStoriesDiscoveryData } from "@/lib/public-discovery-data";
+import { getStoriesDiscoveryIndexData, getVisibleStoryCards } from "@/lib/public-discovery-data";
 import { selectIdentityPublicImage } from "@/lib/public-media";
 import styles from "./stories-audit.module.css";
 import { selectStoryDiscovery, type StorySearch } from "@/lib/story-discovery";
@@ -21,9 +21,10 @@ export const metadata: Metadata = {
 };
 
 export default async function StoriesPage({ searchParams }: { searchParams: Promise<StorySearch> }) {
-  const [stories, search] = await Promise.all([getStoriesDiscoveryData(), searchParams]);
+  const [stories, search] = await Promise.all([getStoriesDiscoveryIndexData(), searchParams]);
   const selection = selectStoryDiscovery(stories, search);
-  const leadStory = selection.page === 1 ? selection.results[0] : undefined;
+  const visibleStories = await getVisibleStoryCards(selection.results.map(story => story.id));
+  const leadStory = selection.page === 1 ? visibleStories[0] : undefined;
   const pageHref = (page: number) => { const params = new URLSearchParams(); if (selection.q) params.set("q", selection.q); if (selection.programme) params.set("programme", selection.programme); params.set("page", String(page)); return `/stories?${params}#story-results`; };
   const leadStoryMedia = leadStory ? selectIdentityPublicImage(leadStory.mediaAssets) : null;
   const leadStoryContext = leadStory?.initiative?.status === "PUBLISHED" && leadStory.initiative.cause.status === "PUBLISHED"
@@ -31,7 +32,7 @@ export default async function StoriesPage({ searchParams }: { searchParams: Prom
     : leadStory?.cause?.status === "PUBLISHED"
       ? leadStory.cause.title
       : "Story of Amanah";
-  const remainingStories = leadStory ? selection.results.slice(1) : selection.results;
+  const remainingStories = leadStory ? visibleStories.slice(1) : visibleStories;
 
   return (
     <div className="v2-home v2-stories-page">
