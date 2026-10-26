@@ -104,6 +104,7 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
         const latestReview = history.find(event => event.action === "assistance.document_retention_reviewed");
         const reviewMeta = (latestReview?.metadata ?? {}) as EventMetadata;
         const terminal = ["CLOSED", "REJECTED"].includes(document.assistanceRequest.status) || document.assistanceRequest.appeal?.status === "CLOSED";
+        const fieldPrefix = `retention-${document.id}`;
 
         return <article className="admin-media-item" key={document.id}>
           <div className="admin-media-summary">
@@ -120,10 +121,10 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
             <input type="hidden" name="documentId" value={document.id}/>
             <input type="hidden" name="expectedHoldAction" value={latestHoldEvent?.action ?? ""}/>
             <input type="hidden" name="expectedHoldCreatedAt" value={latestHoldEvent?.createdAt.toISOString() ?? ""}/>
-            <div className="field"><label>Decision</label><select name="decision" required defaultValue="RETAIN"><option value="RETAIN">Retain and review later</option>{held ? <option value="RELEASE_HOLD">Release legal/audit/safeguarding hold</option> : <option value="PLACE_HOLD">Place legal/audit/safeguarding hold</option>}<option value="DELETE">Permanently delete raw evidence</option></select></div>
-            <div className="field"><label>Review again after <span className="muted">optional</span></label><input type="date" name="reviewAfter"/></div>
-            <div className="field full"><label>Permanent deletion confirmation <span className="muted">only when deleting</span></label><input name="deleteConfirmation" autoComplete="off" placeholder="Type DELETE to confirm permanent deletion"/><small>For RETAIN or hold decisions, leave this blank. Permanent deletion fails closed unless the exact word DELETE is entered.</small></div>
-            <div className="field full"><label>Reason</label><textarea name="reason" required maxLength={2000} placeholder="Why the file is still needed, why a hold applies, why a hold can be released, or why deletion is now appropriate."/></div>
+            <div className="field"><label htmlFor={`${fieldPrefix}-decision`}>Decision</label><select id={`${fieldPrefix}-decision`} name="decision" required defaultValue="RETAIN"><option value="RETAIN">Retain and review later</option>{held ? <option value="RELEASE_HOLD">Release legal/audit/safeguarding hold</option> : <option value="PLACE_HOLD">Place legal/audit/safeguarding hold</option>}<option value="DELETE">Permanently delete raw evidence</option></select></div>
+            <div className="field"><label htmlFor={`${fieldPrefix}-reviewAfter`}>Review again after <span className="muted">optional</span></label><input id={`${fieldPrefix}-reviewAfter`} type="date" name="reviewAfter"/></div>
+            <div className="field full"><label htmlFor={`${fieldPrefix}-deleteConfirmation`}>Permanent deletion confirmation <span className="muted">only when deleting</span></label><input id={`${fieldPrefix}-deleteConfirmation`} name="deleteConfirmation" autoComplete="off" placeholder="Type DELETE to confirm permanent deletion"/><small>For RETAIN or hold decisions, leave this blank. Permanent deletion fails closed unless the exact word DELETE is entered.</small></div>
+            <div className="field full"><label htmlFor={`${fieldPrefix}-reason`}>Reason</label><textarea id={`${fieldPrefix}-reason`} name="reason" required maxLength={2000} placeholder="Why the file is still needed, why a hold applies, why a hold can be released, or why deletion is now appropriate."/></div>
             <div className="field full"><button className="button secondary" type="submit">Record retention decision</button><small>{terminal ? "Deletion is technically eligible if no hold applies, but the reviewer remains responsible for confirming audit/accounting/safeguarding needs first." : "Deletion is blocked while the case/linked appeal is still active; retain or place a hold instead."}</small></div>
           </form>
         </article>;
