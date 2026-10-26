@@ -1,0 +1,13 @@
+# AF-R048 — opt-in local mobile profiling
+
+This tool collects **synthetic Chromium emulation**, not Android-device, Indian 4G field, INP, TTI or standard Total Blocking Time results. Its observed long-task blocking value is a limited diagnostic proxy. Playwright action/network archives are not CPU flamegraphs.
+
+1. Use a disposable local PostgreSQL database with synthetic data only. Keep real donor and beneficiary records out. Confirm all public identity media are privacy-reviewed, face-redacted and metadata-stripped; exclude unreviewed assets.
+2. Configure a local non-production environment (`APP_ENVIRONMENT=staging` or `development`/`test`), without any live payment keys or notification activation. Build and start the local Next.js server at exactly `http://127.0.0.1:3000`.
+3. In this isolated development checkout, install the **optional pinned browser test tool**: `npm install --no-save --package-lock=false @playwright/test@1.55.0`, then `npx playwright install chromium`. The normal runtime/package lock does not include Playwright. Do not run this tool on a production host.
+4. After confirming the isolated data and reviewed media, run `AMAANA_MOBILE_PROFILE_SYNTHETIC_READY=1 npm run profile:mobile`. There are no remote-host arguments. Intercepted cross-origin HTTP(S) requests, including third-party images, are blocked; fix the local fixture instead of weakening that boundary. Playwright page routing is **not** a universal firewall for WebSocket or worker traffic. Use an externally isolated network/container to guarantee no outbound access.
+5. Review `test-results/mobile-profile-*/report.json` and the referenced local private `traces/*.zip` archives. Reports include the git source SHA, observed `/api/health/version` SHA (possibly unavailable), local build ID (possibly unavailable), all five run values, medians, method and unmeasured fields. A missing runtime SHA remains **unverified**, even if local source SHA is known.
+
+Each route receives five fresh Chromium browser contexts with 390×844 viewport, 2× DPR, 4× CPU emulation, 150 ms latency, and fixed upload/download rates. LCP, max-session-window CLS and observed long-task blocking are reported separately. No budget or performance improvement is inferred.
+
+Keep trace archives local and private; they may contain request metadata even though screenshot and DOM snapshot capture are disabled. Do not upload them to public issues, repositories, or donor communications. Dispose of synthetic artifacts under an approved retention decision. Do not use the measurements as a release gate until a reviewed representative device/network baseline exists.
