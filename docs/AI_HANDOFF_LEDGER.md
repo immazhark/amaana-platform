@@ -1,3 +1,30 @@
+Latest synthetic acceptance update: full local2253 pass/20 isolated-DB skips; strict TypeScript, ESLint, spec syntax/diff and independent read-only review pass. No local Playwright package/browser execution available; complete Shift+Tab/Enter/Tab path remains hosted-pending. Existing production source unchanged in this follow-up.
+
+## 2026-10-26 IST — Complete synthetic admin bypass keyboard path
+
+CHATGPT_ACTIVE sole writer continues existing PR473. Strengthen hosted keyboard acceptance from programmatic bypass focus to Shift+Tab from sidebar brand, Enter target focus and next Tab to inert synthetic task button. Fixture only; no live action/data/provider. Previous combined candidate cc4025d3 checks cannot certify new test head; preserve full acceptance gates. No new runtime defect or149 classification change claimed.
+
+Combined validation:2253 local Vitest pass/20 isolated-DB skips; TypeScript, scoped ESLint, browser-spec syntax and diff checks pass. Independent interaction review PASS. Railway470 deployment df2f56dc-be2a-4037-9ebb-10c94bc8f23c BUILDING; independent public version request blocked HTTP403, runtime UNVERIFIED. Separate prior PR checks do not certify combined candidate; new full hosted exact-head required.
+
+## 2026-10-26 IST — Consolidated admin usability release candidate
+
+CHATGPT_ACTIVE sole writer. PR470 full40335870810 and separate ready40342333758 passed; guarded merge655a1c239c9781d33b1e999e0da430cb06692ce2. Reconcile released Companion source with PR473 retention query, PR474 media label associations and PR475 admin-content bypass in one bounded PR473 candidate, preserving all source histories. Prior separate-head acceptance does not certify combined head. Full local and new hosted exact-head acceptance required before ready/merge; no deployment/public identity inferred. All149 classifications unchanged.
+
+## 2026-10-26 IST — Retention selected-state query correction
+
+CHATGPT_ACTIVE sole implementation writer on fix/retention-filter-query-20261026 from main 36d4e6ec. Read-only reviewer reproduced count/list predicate mismatch: selected workflow-state count is filtered but document findMany is not. Scope: reuse the existing predicate in the bounded list query; synthetic regression first. No authorization, eligibility definition, hold/deletion action, private record access or infrastructure change. PR470 reconciled candidate c9d5fe18 is published, exact-head CI40335870810 pending; local 2244 pass/20 isolated-DB skips and strict TypeScript pass. Rollback: revert this isolated query correction. Canonical149 classes unchanged.
+
+Validation: red3/green6 focused cases; strict TypeScript, scoped ESLint, diff checks and full local Vitest2248 pass/20 isolated-DB skips. Independent read-only source review PASS. Exact-head hosted application/build/browser/database and separate ready-state acceptance remain required; no merge, deployment or live verification claimed.
+Validation: red2/green3 actual-page regressions; full local Vitest2246 pass/20 isolated-DB skips, strict TypeScript, scoped ESLint and diff checks pass. Independent source review PASS. React emits an existing multipart/form-action warning in the synthetic server render; upload markup was not changed. Hosted exact-head build/browser/database and separate ready-state acceptance required. Not merged or deployed; canonical149 unchanged.
+
+## 2026-10-26 IST — Media review form labels
+
+CHATGPT_ACTIVE sole writer on fix/media-review-labels-20261026 from main36d4e6ec. Scope: eleven disconnected sibling labels in repeated media cards. Add asset-specific associations only; preserve actions, permissions, privacy and deletion gates. Synthetic actual-page regression first; rollback by reverting this isolated markup change. PR470/473 browser acceptance pending.
+Validation: regression red1 then green1; clean candidate full Vitest2244 pass/20 isolated-DB skips; TypeScript, scoped ESLint, browser-spec syntax and diff checks pass. Independent source review PASS. Initial full run included a residual untracked prior-media-branch test and failed2; that file was preserved under /tmp and excluded from this candidate, clean rerun passed. Hosted keyboard test pending; it verifies activation/target focus, not complete physical keyboard or screen-reader acceptance. PR470/473/474 browser/final checks remain pending; no merge or deployment claimed.
+
+## 2026-10-26 IST — Admin content keyboard bypass
+
+CHATGPT_ACTIVE sole writer on fix/admin-content-bypass-20261026 from main36d4e6ec. Source inspection: global #main target wraps admin sidebar; no direct task-content bypass exists. Add existing styled skip link and focusable unique target on existing content div. No auth, navigation permissions or actions change. Regression first; browser keyboard acceptance required. Rollback: revert scoped shell markup. PR470/473/474 remain browser-pending, no gate bypass.
 ## 2026-10-26 IST — Coordinated continuation of PR #470
 
 CHATGPT_ACTIVE sole implementation writer under renewed owner authorization; review agents are read-only. Reconciled current main 36d4e6ec068c88f697528bbdbf7887890303868d into existing perf/companion-minute-update-20261026, preserving both minute-update and retention-label histories. Prior head 820028eef1f7623e401fc6c6fcd9c2c5df3a6ed6 passed all seven jobs in 40326831879; independent source review found no blocker. This reconciliation requires fresh exact-head CI and separate ready-state before guarded merge. Railway website 1aa5eac3-2dc6-4125-8627-d02e50a50bb7 is SLEEPING at main 36d4e6e; public health request returned HTTP403 from this workspace, so runtime remains independently unverified. Historical 149 classifications unchanged.
