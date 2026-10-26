@@ -1,8 +1,35 @@
+## 2026-10-26 IST — Integrate prepared Story IST publication-date correction
+
+CHATGPT_ACTIVE sole writer resumes held `fix/stories-ist-date-20261026` after public Appeals PR #477 merged to protected main `12f1ab3bc0713cccc0331aa04fe97c62c272e7a8` (full `40361636703`, ready `40369750411`, Railway exact deployment `94d392bb-68b6-45da-8adb-bdffa73e3f28` SUCCESS). Independent public version/readiness still hit Cloudflare HTTP 403. Reconcile the one-line Story hero date correction and its synthetic UTC/IST boundary test with that main, preserve both coordination histories, and then require new full hosted exact-head CI plus separate ready-state before guarded merge. No source conflict with public Appeals, no content/privacy/religious/financial/provider change. Canonical 149 totals unchanged.
+
+Merged-tree validation: 2,268 Vitest pass/20 isolated-DB skipped, strict TypeScript, scoped ESLint, diff check, production build and postbuild client-bundle secret check all pass. Original actual-page timezone regression failed before the one-line correction and passed afterward. Prior remote checkpoint `95ee517b6e3af5af86990ef9cf6bfd6b523bb3b0` is preserved; this reconciliation will advance it without force. Hosted seven-job/browser and separate ready-state acceptance are still required, with no field/local-timezone device claim.
+
 ## 2026-10-26 IST — Prepared Story publication-date correction (local only)
 
 CHATGPT_ACTIVE remains the sole repository implementation writer; parallel agents provided read-only investigation/review. PR #473 merged at protected main `61edcd87e6d90188ccf89f219c6ec5917e65fc97`; Railway website deployment `da077b82-3424-4dbd-8ab2-c02ddae34d59` reports SUCCESS, while independent public version/readiness remains HTTP 403 blocked. PR #476 was reconciled at remote head `b44a3e1525d1be446d107724877a394b428af808`; full CI `40355359483` remains pending before separate ready-state and merge. Do not merge this independent prepared Story task ahead of that queue.
 
 Local `fix/stories-ist-date-20261026` from main `61edcd87` corrects a timezone-dependent public Story hero date using one `Intl.DateTimeFormat` option, with synthetic actual-page UTC boundary regression red1/green1. Full local Vitest 2,254 pass/20 isolated-DB skips, strict TypeScript, scoped ESLint, production build/postbuild, and independent source review pass. Initial sandbox build failed solely on blocked Google Fonts fetch; controlled external-network rerun passed. No public content, metadata timestamp, religious copy, privacy/media, database, auth, payment or infrastructure change. Keep local/unpublished until the earlier release queue is stable; then normally reconcile, fresh exact-head full hosted CI and separate readiness, SHA-guarded merge. Rollback: revert this one-line formatter change and regression. Canonical 149 totals unchanged.
+
+## 2026-10-26 IST — Reconcile public appeal-search PR #477 after portfolio release
+
+CHATGPT_ACTIVE sole repository writer. PR #476 full exact-head CI `40355359483` passed all seven jobs; separate ready-state `40360825447` passed promotion and final verify. Protected SHA-guarded merge advanced main to `7d940b7b2c8a07c6789ee9a80a395a56534e60aa`. Railway website deployment `eca04431-3068-4d69-9234-44edf7eda448` was BUILDING at the latest check; independent public version/readiness remain HTTP 403 blocked. Reconcile reviewed PR #477 with this main and preserve both coordination histories; its appeals search source does not overlap the portfolio/admin source. New exact-head full CI and separate ready-state remain required. No donation eligibility, payment, private-data, notification or infrastructure behavior change. Canonical 149 totals unchanged.
+
+Validation: selector/page tests first failed on missing feature, then9 focused pass; full local2253 pass/20 isolated-DB skips; strict TypeScript, scoped ESLint and diff checks pass. Independent source/security review PASS. Added browser GET/clear/repeated-query acceptance, syntax/lint checked only; hosted execution pending. Railway470 SUCCESS exact655a1c23; independent version/readiness both blocked HTTP403 so live identity/readiness remain UNVERIFIED. No full149 status promotion.
+
+## 2026-10-26 IST — Public active-appeal discovery
+
+CHATGPT_ACTIVE sole writer starts feat/public-appeal-search-20261026 from released main655a1c23-equivalent source tree. Add server-rendered title/summary search after unchanged public appeal eligibility and staging exclusions. Strict80-character scalar query, no personal fields/reflection, accessible GET form, filtered-empty recovery. Preserve all fundraising/payment/privacy/database behavior. Independent read-only scoped plan accepted under standing development authorization. Regression first; rollback revert isolated discovery feature. PR473 and476 remain frozen for acceptance.
+
+## 2026-10-26 IST — Reconcile public portfolio PR #476 after admin release
+
+CHATGPT_ACTIVE sole implementation writer. PR #473 full exact-head CI `40343512354` passed, including hosted keyboard acceptance; separate ready-state `40353374428` passed and guarded merge produced protected main `61edcd87e6d90188ccf89f219c6ec5917e65fc97`. Railway deployment `da077b82-3424-4dbd-8ab2-c02ddae34d59` was BUILDING at the latest check; public version/readiness remain independently blocked by HTTP 403. Reconcile existing PR #476 with this main, preserving the already-reviewed year-plus-text portfolio correction and both coordination histories. Production source paths do not overlap. New exact-head full CI and separate ready-state are required; no live acceptance or historical 149-item promotion inferred.
+
+Validation: new helper/page regressions red2 before correction;31 focused green, full local2249 pass/20 isolated-DB skips; strict TypeScript, scoped ESLint and diff checks pass. Independent source review PASS. Hosted exact-head build/browser/database and separate ready-state acceptance still required. Source correction only, no live deployment or complete149-item acceptance claim.
+
+## 2026-10-26 IST — Public portfolio combined-filter correction
+
+CHATGPT_ACTIVE sole writer on fix/work-combined-family-filter-20261026, source base matches released main655a1c23 tree. Reviewer reproduced umbrella match disappearing under year+text when its annual child matches year but fails text. Scope: text-match candidates before family suppression; preserve programme/year intersection and ordering. Regression first. No DB/auth/payment/public-media or factual changes. Rollback: revert isolated selector correction. Existing PR473 remains frozen for hosted acceptance.
+
 
 Latest synthetic acceptance update: full local2253 pass/20 isolated-DB skips; strict TypeScript, ESLint, spec syntax/diff and independent read-only review pass. No local Playwright package/browser execution available; complete Shift+Tab/Enter/Tab path remains hosted-pending. Existing production source unchanged in this follow-up.
 

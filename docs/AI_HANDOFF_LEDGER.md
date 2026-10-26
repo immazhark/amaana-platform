@@ -1,8 +1,35 @@
+## 2026-10-26 IST — Story hero IST date current-main integration
+
+CHATGPT_ACTIVE single writer. Previously reviewed `fix/stories-ist-date-20261026` contained only `timeZone: "Asia/Kolkata"` for StoryPage's displayed publication date and one synthetic page-render regression (red1/green1). It now reconciles with released main `12f1ab3bc0713cccc0331aa04fe97c62c272e7a8`; Railway exact-SHA deployment `94d392bb-68b6-45da-8adb-bdffa73e3f28` SUCCESS but public version/readiness HTTP403 independently. Preserve both coordination histories. New merged-tree tests, exact-head hosted browser/build/database/security and separate promotion are mandatory. No content/publication/structured-data change or 149-item closure claim.
+
+Merged-tree local validation completed: 2,268 Vitest passed/20 isolated-DB skipped; strict TypeScript, scoped lint, production build/postbuild security and diff checks passed. Await a new exact-head hosted full seven-job CI and separate promotion before merge; no public deployment or runtime validation for this Story change.
+
 ## 2026-10-26 IST — Story date preparation held behind release queue
 
 CHATGPT_ACTIVE sole repository writer prepared `fix/stories-ist-date-20261026` locally from main `61edcd87`; PR #473 already merged and Railway deployed exact SHA successfully, independent public health remained HTTP 403 blocked. Existing PR #476 was separately reconciled to `b44a3e` and requires full exact-head CI `40355359483` plus promotion before merger. Next Story action after the queue: reconcile the local branch normally, preserve coordination histories, publish one bounded draft PR and require seven-job CI, separate ready-state, reviews and expected-head merge. No parallel implementation writer or infrastructure mutations.
 
 Story DateTime boundary `2026-10-26T20:00:00Z` rendered the prior UTC date in the hero; a synthetic actual-page regression failed before `timeZone: "Asia/Kolkata"`, passed afterward. Full local Vitest 2,254 pass/20 isolated-DB skips, TypeScript, scoped lint, full production build/postbuild and independent source review pass. One source-line correction plus test; no content/media/publication/privacy/finance/schema change. Rollback by reverting the bounded patch. No deployment, live timezone assertion, full backlog acceptance or 149-status change inferred.
+
+## 2026-10-26 IST — PR #477 current-main reconciliation
+
+CHATGPT_ACTIVE sole writer. PR #476 full exact-head CI `40355359483` and separate ready-state `40360825447` passed; protected expected-head merge produced main `7d940b7b2c8a07c6789ee9a80a395a56534e60aa`. Railway `eca04431-3068-4d69-9234-44edf7eda448` was BUILDING; independent public version/readiness GETs returned HTTP 403 access blocks. Existing public appeals discovery PR #477 reconciles normally with this main; only coordination-document conflicts arose and both histories remain. Fresh full hosted CI and separate ready-state are required for the new head, with no unresolved reviews. Rollback: revert the bounded public appeal-search feature if necessary. Canonical 149 unchanged.
+
+Validation: selector/page tests first failed on missing feature, then9 focused pass; full local2253 pass/20 isolated-DB skips; strict TypeScript, scoped ESLint and diff checks pass. Independent source/security review PASS. Added browser GET/clear/repeated-query acceptance, syntax/lint checked only; hosted execution pending. Railway470 SUCCESS exact655a1c23; independent version/readiness both blocked HTTP403 so live identity/readiness remain UNVERIFIED. No full149 status promotion.
+
+## 2026-10-26 IST — Public active-appeal discovery
+
+CHATGPT_ACTIVE sole writer starts feat/public-appeal-search-20261026 from released main655a1c23-equivalent source tree. Add server-rendered title/summary search after unchanged public appeal eligibility and staging exclusions. Strict80-character scalar query, no personal fields/reflection, accessible GET form, filtered-empty recovery. Preserve all fundraising/payment/privacy/database behavior. Independent read-only scoped plan accepted under standing development authorization. Regression first; rollback revert isolated discovery feature. PR473 and476 remain frozen for acceptance.
+
+## 2026-10-26 IST — PR #476 current-main reconciliation
+
+CHATGPT_ACTIVE sole implementation writer. The admin correction PR #473 passed all exact-head jobs (`40343512354`), separate promotion (`40353374428`) and SHA-guarded merge to main `61edcd87e6d90188ccf89f219c6ec5917e65fc97`. Railway website deployment `da077b82-3424-4dbd-8ab2-c02ddae34d59` was BUILDING when observed; independent public version/readiness were blocked by HTTP 403. Existing portfolio PR #476 is reconciling normally; only coordination-document conflicts arose and both histories are retained. Its new head needs fresh hosted full and separate ready-state acceptance before merge. Canonical 149 totals unchanged.
+
+Validation: new helper/page regressions red2 before correction;31 focused green, full local2249 pass/20 isolated-DB skips; strict TypeScript, scoped ESLint and diff checks pass. Independent source review PASS. Hosted exact-head build/browser/database and separate ready-state acceptance still required. Source correction only, no live deployment or complete149-item acceptance claim.
+
+## 2026-10-26 IST — Public portfolio combined-filter correction
+
+CHATGPT_ACTIVE sole writer on fix/work-combined-family-filter-20261026, source base matches released main655a1c23 tree. Reviewer reproduced umbrella match disappearing under year+text when its annual child matches year but fails text. Scope: text-match candidates before family suppression; preserve programme/year intersection and ordering. Regression first. No DB/auth/payment/public-media or factual changes. Rollback: revert isolated selector correction. Existing PR473 remains frozen for hosted acceptance.
+
 
 Latest synthetic acceptance update: full local2253 pass/20 isolated-DB skips; strict TypeScript, ESLint, spec syntax/diff and independent read-only review pass. No local Playwright package/browser execution available; complete Shift+Tab/Enter/Tab path remains hosted-pending. Existing production source unchanged in this follow-up.
 
