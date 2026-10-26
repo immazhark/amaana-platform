@@ -1,3 +1,7 @@
+## 2026-10-26 — Private evidence-retention real-helper denial batch
+
+`test/document-retention-authorization-20261026` starts at main `0f3bc050`. Existing retention tests mock permission authorization; nine new cases invoke real cookie/session/role checks for DELETE and PLACE_HOLD via `reviewDocumentRetention`, with stopped Prisma, audit, transaction, cache and storage deletion. A controlled permission bypass failed the expected wrong-role case and restored production source passes 17 focused tests, TypeScript, scoped ESLint and 2,212 full local cases (20 isolated-DB skips). No documents are retrieved or deleted; no live workflows run. Independent draft PRs #458–#461 continue hosted acceptance under the sole ChatGPT implementation writer.
+
 ## 2026-10-26 — CHATGPT_ACTIVE — Notification authorization test increment
 
 From main `37632d250ec661ce20154cc05eb73ecf2985d944`, isolated `test/notification-authorization-boundaries-20261026` adds six real-auth-helper denials for anonymous, inactive-session and wrong-role calls before notification queue/requeue effects. The controlled missing-permission mutation failed as intended; 2,200 local tests passed after restoring source, with 20 isolated-DB skips. PR #455 is merged at `c9909952fa5277486ec823748bd65fea49c5fe3d`; this branch preserves that ancestry. Delivery remains dormant; AF-R012 remains Partial. New hosted acceptance is pending.
