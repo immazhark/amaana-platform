@@ -18,6 +18,7 @@ export function AdminShell({ children, userName, roleNames, permissions, logoutA
 
   return (
     <div className="admin-shell">
+      <a className="v2-skip-link" href="#admin-content">Skip to admin content</a>
       <aside className="admin-sidebar">
         <Link className="brand" href={homePath}>
           <span className="brand-mark">A</span>
@@ -32,7 +33,7 @@ export function AdminShell({ children, userName, roleNames, permissions, logoutA
           ) : fixtureLabel ? <small>{fixtureLabel}</small> : null}
         </div>
       </aside>
-      <div className="admin-content">{children}</div>
+      <div id="admin-content" className="admin-content" tabIndex={-1}>{children}</div>
     </div>
   );
 }
