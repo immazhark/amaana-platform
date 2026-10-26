@@ -7,6 +7,7 @@ import { PublicMedia } from "@/components/public-media";
 import { getFaithDiscoveryData } from "@/lib/public-discovery-data";
 import { selectIdentityPublicImage } from "@/lib/public-media";
 import styles from "./faith-audit.module.css";
+import { selectFaithDiscovery, type FaithSearch } from "@/lib/faith-discovery";
 
 export const dynamic = "force-dynamic";
 
@@ -27,15 +28,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function FaithAndReflectionsPage() {
+export default async function FaithAndReflectionsPage({ searchParams }: { searchParams: Promise<FaithSearch> }) {
   const content = await getFaithDiscoveryData();
+  const selection = selectFaithDiscovery(content, await searchParams);
   const topics = Array.from(new Map(content.flatMap(item => item.topics.map(link => [link.topic.slug, link.topic.name] as const))).entries());
   const articles = content.filter(item => item.type === "ARTICLE");
   const reminders = content.filter(item => item.type === "REMINDER");
   const videos = content.filter(item => item.type === "VIDEO");
-  const lead = content[0];
+  const lead = selection.results[0];
+  const heroMedia = content[0] ? selectIdentityPublicImage(content[0].mediaAssets) : null;
   const leadMedia = lead ? selectIdentityPublicImage(lead.mediaAssets) : null;
-  const rest = content.slice(1);
+  const rest = selection.results.slice(1);
 
   return (
     <div className="v2-home v2-faith-page">
@@ -48,7 +51,7 @@ export default async function FaithAndReflectionsPage() {
           { label: "Explore the library", href: "#library" },
           { label: "See faith in action", href: "/our-work", secondary: true },
         ]}
-        visual={leadMedia ? <PublicMedia asset={leadMedia} priority /> : undefined}
+        visual={heroMedia ? <PublicMedia asset={heroMedia} priority /> : undefined}
         visualKicker="Reflect · Serve"
         visualTitle="أمانة"
         visualNote="Reviewed religious content only. Sources, attribution and verification remain part of the public record."
@@ -61,6 +64,17 @@ export default async function FaithAndReflectionsPage() {
       <section className="v2-section paper" id="library" aria-labelledby="faith-library-title">
         <div className="v2-shell">
           <SectionHeading eyebrow={<>The library</>} title={<>Read. Reflect. Watch.</>} subtitle={<>{content.length > 0 ? `${content.length} verified item${content.length === 1 ? "" : "s"} are currently published.` : "No religious content is currently published. Drafts and unverified material remain private until review is complete."}</>} id="faith-library-title" />
+          <form key={`${selection.q}:${selection.format}`} className="form-grid" method="get" action="/faith-and-reflections#library" aria-label="Filter reviewed reflections">
+            <label className="field" htmlFor="faith-search">Search reviewed reflections<input id="faith-search" name="q" type="search" maxLength={80} defaultValue={selection.q} aria-invalid={selection.invalid || undefined} aria-describedby={selection.invalid ? "faith-search-help faith-search-error" : "faith-search-help"} /></label>
+            <label className="field" htmlFor="faith-format">Format<select id="faith-format" name="format" defaultValue={selection.format} aria-invalid={selection.invalid || undefined} aria-describedby={selection.invalid ? "faith-search-error" : undefined}><option value="">All formats</option><option value="ARTICLE">Articles</option><option value="REMINDER">Reminders</option><option value="VIDEO">Videos</option></select></label>
+            <button className="v2-button" type="submit">Find reflections</button>
+            {selection.active && <Link className="v2-text-link" href="/faith-and-reflections#library">Clear reflection filters</Link>}
+          </form>
+          <p id="faith-search-help">Search reviewed titles and excerpts. Do not enter personal or case details.</p>
+          {selection.invalid && <p id="faith-search-error" role="status">These filters could not be read. Clear them or use up to 80 characters and a listed format.</p>}
+          {selection.active && <p>{selection.count} reviewed {selection.count === 1 ? "item" : "items"} match these filters.</p>}
+          {content.length > 0 && selection.active && selection.count === 0 && <div className="v2-reminder"><h3>No reviewed items match these filters</h3><p>Change the search or clear the filters to explore the reviewed library.</p></div>}
+
           {content.length > 0 ? <div className="v2-faith-format-grid"><article><span>01</span><strong>{articles.length}</strong><h3>Articles</h3><p>Long-form reflection with source and review context.</p></article><article><span>02</span><strong>{reminders.length}</strong><h3>Reminders</h3><p>Concise, purposeful reflection without engagement bait.</p></article><article><span>03</span><strong>{videos.length}</strong><h3>Videos</h3><p>Reviewed visual content with attribution and context.</p></article></div> : <div className={styles.emptyState}><div className={styles.emptyIcon} aria-hidden="true">✦</div><span className={styles.emptyKicker}>Editorial library under curation</span><h3>Reviewed faith content will appear here when it is ready.</h3><p>Sources, translations, citations and scholarly attributions are checked before publication. Drafts remain private until that review is complete.</p><div className={styles.emptyActions}><Link className="v2-button" href="/our-work">See faith in action</Link><Link className="v2-text-link" href="/about">Why Amaana handles content carefully →</Link></div></div>}
         </div>
       </section>

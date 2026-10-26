@@ -1,3 +1,9 @@
+Validation: feature module/page tests failed before implementation;10 focused tests and full local2254 pass/20 isolated-DB skips; strict TypeScript, scoped ESLint, spec syntax/diff checks pass. Independent source/security review PASS. Added hosted GET/format/clear/repeated-query browser test, not locally executed. Full-library hero stability source-reviewed, not independently media-tested. No reviewed content/criteria changes, religious acceptance or whole149 closure claim. Hosted exact-head and separate ready-state gates required.
+
+## 2026-10-26 IST — Reviewed Faith discovery
+
+CHATGPT_ACTIVE sole writer starts feat/reviewed-faith-search-20261026 from main655a1c23-equivalent source. Add title/excerpt GET search and closed ARTICLE/REMINDER/VIDEO filter after unchanged reviewed/public query. Keep full-library counts/topics/hero stable; explicit no-match recovery. No religious copy, review criteria, citations/calculations/DB changes. Regression first; source feature is not religious acceptance or whole149 closure. Existing473/476/477 remain frozen for hosted checks.
+
 ## 2026-10-26 IST — Coordinated continuation of PR #470
 
 CHATGPT_ACTIVE sole implementation writer under renewed owner authorization; review agents are read-only. Reconciled current main 36d4e6ec068c88f697528bbdbf7887890303868d into existing perf/companion-minute-update-20261026, preserving both minute-update and retention-label histories. Prior head 820028eef1f7623e401fc6c6fcd9c2c5df3a6ed6 passed all seven jobs in 40326831879; independent source review found no blocker. This reconciliation requires fresh exact-head CI and separate ready-state before guarded merge. Railway website 1aa5eac3-2dc6-4125-8627-d02e50a50bb7 is SLEEPING at main 36d4e6e; public health request returned HTTP403 from this workspace, so runtime remains independently unverified. Historical 149 classifications unchanged.
