@@ -2,6 +2,10 @@
 
 `test/document-retention-authorization-20261026` starts at main `0f3bc050` and reconciles with `77f69b7b`. Existing retention tests mock permission authorization; nine new cases invoke real cookie/session/role checks for DELETE and PLACE_HOLD via `reviewDocumentRetention`, with stopped Prisma, audit, transaction, cache and storage deletion. A controlled permission bypass failed the expected wrong-role case and restored production source passes 17 focused tests, TypeScript, scoped ESLint and 2,212 full local cases (20 isolated-DB skips). Original head run `40248347378` full seven green, but new head must repeat exact-head acceptance and ready-state before merge. No documents retrieved/deleted; no live workflows run.
 
+## 2026-10-26 — Team action real-helper denial batch staged
+
+`test/team-actions-authorization-20261026` starts at `0f3bc050`, then reconciles with merged main `77f69b7b`. It adds 28 AF-R012 synthetic admin cookie/session/RBAC denial tests and seven authorized-user checkpoints for seven team member/group writes. Existing behavior tests stub auth; new fixtures retain real `@/lib/auth`, require the exact `amaana_admin_session` cookie lookup, and stop Prisma, media storage, Sharp transforms, transactions, audit and cache for denial paths. Independent review recommended positive-path checkpoints, now incorporated; all 42 focused tests, strict TypeScript and scoped ESLint passed. A temporary permission-bypass mutation failed and was reverted. No real team or public-media records touched; production action source has no diff. Full local Vitest passed again after approved subprocess-EPERM retry with 20 isolated-database skips. Exact-head hosted acceptance remains pending; older PR #464 head CI is superseded by this new commit.
+
 ## 2026-10-26 — AF-R048 local mobile trace collector staged
 
 Protected main has advanced to `46e10147` with #463's read-only admin-edge audit after its guarded merge. The mobile task branch merged that commit without dropping build-route coverage; its next GitHub head must run exact-head CI anew. No mobile trace run yet.
