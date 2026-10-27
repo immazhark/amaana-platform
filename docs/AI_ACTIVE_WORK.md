@@ -1,3 +1,9 @@
+## 2026-10-27 IST — Gallery original-opener focus recovery
+
+CHATGPT_ACTIVE sole writer on `fix/gallery-original-opener-focus-20261027`, base `83044f775166be0a3533d807a7ec3e268795530f`. Read-only review identifies navigation-dependent modal return-focus mismatch. Scope: test actual thumbnail opener then image navigation/close; retain opener across active-image changes, connected fallback and reopen protection. No media/privacy publication or database changes. Existing #479–#482 frozen for acceptance/Neon conservation. Rollback isolated interaction patch/tests. Hosted acceptance required; no production rollout under compute hold.
+
+Validation: synthetic actual-component opener/navigation/close regression RED1 on prior source, GREEN20 focused gallery tests after stable opener ref. Full local Vitest 2,283 passed / 20 isolated DB skipped; strict TypeScript, scoped ESLint, e2e syntax, diff check, production Next build and client-secret boundary passed. Browser keyboard and non-first-opener Next-button acceptance added but not locally executed; hosted exact-head full CI and separate ready-state required. Original media identity/privacy rules unchanged. No live DB or provider call. Keep draft under Neon compute hold, no merge/deploy claimed. Next source lead: request detail status selector omits current APPROVED/REJECTED for non-approvers, risking accidental status changes on note-only save; investigate with synthetic actual-page red regression. Historical149 counts unchanged.
+
 ## 2026-10-27 IST — Current implementation lane: PR #472
 
 CHATGPT_ACTIVE sole writer. Restored draft #472 after workspace reset; route-level progress label regression reproduced red at 3.5415:1 and passed green 5/5 after a single CSS override. Merge of current main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd` is in progress. Exact-head full CI, separate ready-state and protected guarded merge remain pending. Detailed evidence is preserved below.
