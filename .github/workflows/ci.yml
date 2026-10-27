@@ -129,6 +129,8 @@ jobs:
         run: node --test scripts/test-client-secret-boundary.mjs
       - name: Enforce audited muted text contrast
         run: node --test scripts/test-audited-muted-contrast.mjs
+      - name: Enforce light/dark Media source-label contrast
+        run: node --test scripts/test-public-contrast-boundaries.mjs
       - name: Guard Companion text scaling under 200% root font size
         run: node --test scripts/test-companion-text-scaling.mjs
       - name: Enforce accessible public-media link names
