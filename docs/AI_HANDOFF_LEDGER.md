@@ -1,3 +1,7 @@
+## 2026-10-27 — AF-R042 Our Work focus indicator contrast — active
+
+Sole writer CHATGPT_ACTIVE on `fix/work-filter-focus-contrast-20261027` at main `83044f7`. The Our Work `#work-search` input receives a translucent bright-gold Module focus ring (~1.17:1); programme/year selects already receive a stronger blue outline from a higher-specificity route CSS rule. Native source regression RED1/GREEN6 and new keyboard-computed-style browser check cover all three controls. Fix only the Module outline to established `--af-color-focus` (~3.73:1 against cream). Final local full Vitest2,282 PASS/20 isolated DB skips, TypeScript, full ESLint/governed Stylelint, production build and client-secret scan PASS. Independent review PASS. Hosted/browser and physical-device checks remain separate. No runtime data, privacy, payment, legal, religious or infrastructure effect. Do not inflate 149 item count.
+
 ## 2026-10-27 IST — Current #472 release gate
 
 CHATGPT_ACTIVE sole writer. Recovered route contrast correction is red/green locally and still draft; new full hosted seven-job CI plus separate promotion/verify required after reconciling with main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd`. No deployment or 149-item promotion claimed. Details appear in the 2026-10-27 recovery entry below.
