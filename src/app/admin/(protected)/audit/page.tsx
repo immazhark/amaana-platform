@@ -77,7 +77,7 @@ export default async function AuditHistoryPage({ searchParams }: Props) {
           <td><small>{formatMetadata(event.metadata)}</small></td>
         </tr>)}</tbody>
       </table>
-      {events.length === 0 && <p className="empty-state">No audit events have been recorded yet.</p>}
+      {events.length === 0 && <p className="empty-state">{action || entityType ? <>No audit events match these filters. <Link href="/admin/audit">View all audit events</Link></> : "No audit events have been recorded yet."}</p>}
     </div>
     <nav className="filter-row" aria-label="Audit history pagination">
       {pagination.hasPrevious && <Link href={pageHref(pagination.page - 1)}>Previous</Link>}
