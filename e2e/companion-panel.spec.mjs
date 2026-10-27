@@ -137,3 +137,34 @@ test('optional malformed moon and tomorrow data retain the current timetable', a
   await expect(page.getByText('Calculated estimate · Hyderabad moon-sighting not yet confirmed.', { exact: true })).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+for (const latestSucceeds of [true, false]) {
+  test(`Companion copy feedback belongs to the latest attempt, success=${latestSucceeds}`, async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__companionCopies = [];
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
+        writeText: () => new Promise((resolve, reject) => window.__companionCopies.push({ resolve, reject })),
+      } });
+    });
+    await page.goto('/browser-acceptance/home-hero');
+    await page.locator('.amaana-companion-dock button').click();
+    const panel = page.locator('.amaana-companion-panel');
+    const copy = panel.getByRole('button', { name: 'Copy reading & references', exact: true });
+    await copy.click();
+    await copy.click();
+    expect(await page.evaluate(() => window.__companionCopies.length)).toBe(2);
+    await page.evaluate(success => {
+      const latest = window.__companionCopies[1];
+      if (success) latest.resolve(); else latest.reject(new Error('Synthetic latest denial'));
+    }, latestSucceeds);
+    const status = panel.getByRole('status');
+    const expected = latestSucceeds ? 'Reading and references copied.' : 'Copy is unavailable. You can select the text or open its source link.';
+    await expect(status).toHaveText(expected);
+    await page.evaluate(async success => {
+      const older = window.__companionCopies[0];
+      if (success) older.reject(new Error('Synthetic older denial')); else older.resolve();
+      await new Promise(resolve => requestAnimationFrame(() => resolve()));
+    }, latestSucceeds);
+    await expect(status).toHaveText(expected);
+  });
+}
