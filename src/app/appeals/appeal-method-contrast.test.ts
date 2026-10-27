@@ -61,8 +61,12 @@ describe("public Appeals verification method-card ink", () => {
   });
 
   it("keeps the premium hover sheen from covering these readable paragraphs", () => {
-    expect(globalInteractions).toMatch(/\.v2-appeal-method-grid article[^}]*\)::after\{[^}]*z-index:5/);
-    expect(moduleCss).toMatch(/\.method :global\(\.v2-appeal-method-grid\) article::after\s*\{\s*content:\s*none;?\s*\}/);
+    const sharedSheen = globalInteractions.match(/:is\(([^)]*)\)::after\{[^}]*z-index:5/);
+    expect(sharedSheen?.[1]).toContain("#partnership-areas ul>li");
+    expect(sharedSheen?.[1]).toContain(".v2-appeal-method-grid article");
+    // The shared :is selector carries ID-level specificity from another card
+    // family. A normal scoped rule loses the actual browser cascade.
+    expect(moduleCss).toMatch(/\.method :global\(\.v2-appeal-method-grid\) article::after\s*\{\s*content:\s*none\s*!important;?\s*\}/);
     expect(motionCss).toMatch(/\.v2-appeal-method-grid article:hover::before\{right:0\}/);
   });
 });
