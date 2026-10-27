@@ -1,6 +1,26 @@
+## 2026-10-27 IST — #479 queued after guarded contrast rollout
+
+Single implementation writer CHATGPT_ACTIVE. Protected main `83044f775166be0a3533d807a7ec3e268795530f` includes #472 contrast, full `40451338333` and ready `40455797840` checks passed, Railway website source-match SUCCESS. Owner specifically authorized that single Neon-aware rollout. Approximate October Neon usage 94.6/100 CU-hours and reset 1 November 05:30 IST; do not trigger another live deploy. Existing #479 wheel-scroll draft source now merges this main, preserving prior tests and both coordination histories; fresh exact-head CI and release decision still required. No live DB query, financial change or whole 149 completion claim.
+
 ## 2026-10-26 IST — Prepared mobile-menu wheel fix current-main integration
 
 CHATGPT_ACTIVE single implementation writer. The mobile menu wheel branch already had red1/green19 focused, production build/client security checks, full 2261 Vitest pass/20 isolated-DB skips and real synthetic Chromium pass at 375x480. It now integrates released main `12f1ab3bc0713cccc0331aa04fe97c62c272e7a8` without touching its production feature paths; merged-tree 2270 Vitest pass/20 isolated-DB skips. Railway source-matched deployment `94d392bb-68b6-45da-8adb-bdffa73e3f28` SUCCESS but public identity/readiness HTTP403 from this environment. Preserve the existing scroll-lock precedence and pending full acceptance/ready-state gates; no deployed fix or 149-item closure inferred.
+
+## 2026-10-27 IST — Current #472 release gate
+
+CHATGPT_ACTIVE sole writer. Recovered route contrast correction is red/green locally and still draft; new full hosted seven-job CI plus separate promotion/verify required after reconciling with main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd`. No deployment or 149-item promotion claimed. Details appear in the 2026-10-27 recovery entry below.
+
+## 2026-10-26 IST — PR #478 normal current-main reconciliation
+
+CHATGPT_ACTIVE single implementation writer. PR #477 completed hosted seven-job run `40361636703`, ready-state `40369750411` and exact-head guarded merge to protected main `12f1ab3bc0713cccc0331aa04fe97c62c272e7a8`. Railway website source-matched deployment `94d392bb-68b6-45da-8adb-bdffa73e3f28` was BUILDING; public runtime/readiness are not independently verified. Reconcile existing `feat/reviewed-faith-search-20261026` without changing publication/review eligibility, religious wording or full-library hero behavior. Only coordination histories overlap; preserve both. Require fresh exact-head CI, promotion/verify and guarded merge. No change to canonical 149 totals.
+
+Validation: feature module/page tests failed before implementation;10 focused tests and full local2254 pass/20 isolated-DB skips; strict TypeScript, scoped ESLint, spec syntax/diff checks pass. Independent source/security review PASS. Added hosted GET/format/clear/repeated-query browser test, not locally executed. Full-library hero stability source-reviewed, not independently media-tested. No reviewed content/criteria changes, religious acceptance or whole149 closure claim. Hosted exact-head and separate ready-state gates required.
+
+## 2026-10-26 IST — Reviewed Faith discovery
+
+CHATGPT_ACTIVE sole writer starts feat/reviewed-faith-search-20261026 from main655a1c23-equivalent source. Add title/excerpt GET search and closed ARTICLE/REMINDER/VIDEO filter after unchanged reviewed/public query. Keep full-library counts/topics/hero stable; explicit no-match recovery. No religious copy, review criteria, citations/calculations/DB changes. Regression first; source feature is not religious acceptance or whole149 closure. Existing473/476/477 remain frozen for hosted checks.
+
+
 
 ## 2026-10-26 IST — PR #477 current-main reconciliation
 
@@ -49,6 +69,7 @@ Validation: regression red1 then green1; clean candidate full Vitest2244 pass/20
 ## 2026-10-26 IST — Admin content keyboard bypass
 
 CHATGPT_ACTIVE sole writer on fix/admin-content-bypass-20261026 from main36d4e6ec. Source inspection: global #main target wraps admin sidebar; no direct task-content bypass exists. Add existing styled skip link and focusable unique target on existing content div. No auth, navigation permissions or actions change. Regression first; browser keyboard acceptance required. Rollback: revert scoped shell markup. PR470/473/474 remain browser-pending, no gate bypass.
+
 ## 2026-10-26 IST — Coordinated continuation of PR #470
 
 CHATGPT_ACTIVE sole implementation writer under renewed owner authorization; review agents are read-only. Reconciled current main 36d4e6ec068c88f697528bbdbf7887890303868d into existing perf/companion-minute-update-20261026, preserving both minute-update and retention-label histories. Prior head 820028eef1f7623e401fc6c6fcd9c2c5df3a6ed6 passed all seven jobs in 40326831879; independent source review found no blocker. This reconciliation requires fresh exact-head CI and separate ready-state before guarded merge. Railway website 1aa5eac3-2dc6-4125-8627-d02e50a50bb7 is SLEEPING at main 36d4e6e; public health request returned HTTP403 from this workspace, so runtime remains independently unverified. Historical 149 classifications unchanged.
@@ -1988,4 +2009,16 @@ Current main `f8694f71` retained four disconnected labels in retention-review fo
 ## 2026-10-26 IST — Mobile navigation wheel fix local checkpoint
 
 CHATGPT_ACTIVE single writer prepared `fix/mobile-menu-wheel-20261026` from main `7d940b7b`. Only `src/components/site-scroll.tsx`, its regression, and the relevant `e2e/site-motion-scroll.spec.mjs` behavior test change, plus these two coordination records. Red1/green19 targeted Vitest, full 2261 passing/20 isolated DB skipped, TypeScript, scoped lint, production build/postbuild and local synthetic Chromium real-wheel acceptance 1/1 pass at 375x480. An independent read-only review confirmed lock precedence and requested actual scrollTop acceptance, now completed. Keep the branch unreleased until existing #477/#478 coordination reconciliation and fresh exact-head hosted acceptance. No donor data, provider changes, deploy or 149-item acceptance claim. Rollback: revert this isolated wheel-handler exception and companion tests.
+
+## 2026-10-26 — AF-R019 low-contrast appeal metadata targeted
+
+Main `36d4e6ec` renders synthetic `AppealCard` against live `.v2-appeal-card{background:#fffdf8}`. Three visible text selectors (.v2-appeal-card-head small, .v2-appeal-progress-meta span, .v2-appeal-progress-foot) failed red at 3.7802/3.5415/3.5415:1 before the bounded three-declaration change. New `#66717d` yields 4.8915:1, 4/4 focused test green, full 2,247 local Vitest green (20 isolated-DB skips), strict TypeScript and scoped ESLint PASS; independent review no blockers. Hosted browser synthetic computed-style contrast awaits exact-head CI; no real appeal/field/user acceptance or fundraising/checkout changes claimed. AF-R019 wider site audit remains Partial.
+
+## 2026-10-26 IST — PR #472 held test repair checkpoint
+
+CHATGPT_ACTIVE corrected only the existing contrast browser assertion/math and narrowed the companion static test wording. CI `40331678571` failed when a computed translucent card background was equated with an opaque declaration; the revised test uses effective sRGB composition over the actual body and known canonical light underlays, with strict 4.5:1 checks including gradient endpoints. No production CSS changes. Full local 2247/20 skipped, targeted 4/4, TypeScript, scoped lint and spec syntax green; earlier concurrent timeout run is superseded by clean sequential pass, not silently counted as success. Existing PR #472 remains draft/red until normal latest-main reconciliation, new full exact-head hosted CI, separate ready-state verification and SHA-guarded merge. No deployment or user-data actions.
+
+## 2026-10-27 IST — #472 recovery and route-cascade accessibility defect
+
+Single writer CHATGPT_ACTIVE. The earlier unpublished corrected branch was lost when scratch was reset; GitHub retains old draft PR #472 head `88bfd7814a8152148ae159a4ae293092cd2b57e9` and failed browser CI `40369616477`. Recovered from remote, reproduced red exact 3.5415397988993007:1 with synthetic route-declaration regression, and corrected only the later Appeals CSS override; focused five tests and scoped lint/syntax pass. Local source fix `daa8e21d` is merging current main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd`. Require new full tests/build and hosted browser before ready/merge. Rollback revert this route color/token and the isolated regression if needed. No changes to eligibility, donation, personal data, tax, religious content, provider or deployment settings. 149-item count unchanged.
 
