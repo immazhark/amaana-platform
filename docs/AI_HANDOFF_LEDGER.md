@@ -1,3 +1,7 @@
+## 2026-10-27 IST — AF-R012 assistance-action real-session guard evidence
+
+CHATGPT_ACTIVE, branch `test/assistance-action-authorization-20261027` at base protected main `83044f7`, adds 17 synthetic real-cookie/session/role denials and authorized-to-validation checkpoints for four assistance-admin mutators. Existing action behavior/concurrency tests remain unchanged; test fixtures halt before assistance read, transaction, audit, cache or notification work. Controlled `assignRequest` permission-bypass mutation made four new cases fail, then source restored, with no production diff. Local 2,299 Vitest passed/20 opt-in database skips, strict TypeScript, full lint, production build and client-secret boundary passed; static JS 806,472/819,200 and CSS 328,687/348,160 bytes. No sensitive case data, donation/provider, RBAC/schema, notifications or runtime changes. Source-only AF-R012 coverage; full admin record-scope/manual acceptance remains Partial. Publish draft only under Neon compute-budget release hold, no merge/deploy; rollback by reverting this test-only commit. The 149 historical classes are unchanged.
+
 ## 2026-10-27 IST — Current #472 release gate
 
 CHATGPT_ACTIVE sole writer. Recovered route contrast correction is red/green locally and still draft; new full hosted seven-job CI plus separate promotion/verify required after reconciling with main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd`. No deployment or 149-item promotion claimed. Details appear in the 2026-10-27 recovery entry below.
