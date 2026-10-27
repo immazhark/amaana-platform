@@ -21,17 +21,17 @@ export default async function RequestDetailPage({ params }: Props) {
     prisma.assistanceRequest.findUnique({
       where: { id },
       include: {
-        assignedTo: true,
         documents: true,
         appeal: true,
-        verification: { include: { reviewedBy: true } },
+        verification: { include: { reviewedBy: { select: { name: true } } } },
       },
     }),
     prisma.user.findMany({
       where: { status: "ACTIVE", roles: { some: { role: { permissions: { some: { permission: { key: "assistance.view" } } } } } } },
       orderBy: { name: "asc" },
+      select: { id: true, name: true },
     }),
-    prisma.auditEvent.findMany({ where: { entityType: "AssistanceRequest", entityId: id }, include: { actor: true }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] }),
+    prisma.auditEvent.findMany({ where: { entityType: "AssistanceRequest", entityId: id }, select: { id: true, action: true, createdAt: true, actor: { select: { name: true } } }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] }),
   ]);
   if (!request) notFound();
 
