@@ -26,3 +26,6 @@
 .v2-appeal-story{line-height:1.72}
 .v2-appeal-context-strip small{color:var(--af-color-navy-700);line-height:1.5}
 .v2-appeal-giving-note .v2-text-link:focus-visible,.v2-appeal-donation-panel a:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:3px}
+
+/* Keep the shared card's audited label legible after the route stylesheet. */
+.v2-appeal-progress-meta span{color:#66717d}

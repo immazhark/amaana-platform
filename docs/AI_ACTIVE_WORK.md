@@ -1,6 +1,26 @@
+## 2026-10-27 IST — Current-main reconciliation of PageHero fallback PR #471
+
+CHATGPT_ACTIVE is sole implementation writer. Existing draft PR #471 removes a CSS fallback specificity override and keeps its related regression, without redesign. Protected main `83044f775166be0a3533d807a7ec3e268795530f` includes guarded #472 contrast release and Railway exact-SHA SUCCESS; public identity/readiness remains independently unverified. Reconcile PR #471 normally with this main and preserve both documentation histories. Verify merged tree and run fresh full hosted CI; no prior CI result is reusable as exact-head acceptance. Neon project free-plan estimate ~94.6/100 CU-hours through 1 November 05:30 IST: do not merge/deploy #471 without a new release-specific decision. No DB probes, migrations or infrastructure changes. No 149-item status inflation.
+
 ## 2026-10-26 IST — Reconcile PageHero specificity PR #471 with released main
 
 CHATGPT_ACTIVE sole writer updates existing draft `refactor/page-hero-fallback-cascade-20261026`. PR #477 passed full `40361636703`, ready `40369750411`, guarded merged to main `12f1ab3bc0713cccc0331aa04fe97c62c272e7a8`, and exact-SHA Railway website deploy `94d392bb-68b6-45da-8adb-bdffa73e3f28` reached SUCCESS. Public version/readiness remain independently blocked by Cloudflare HTTP 403. Reconcile existing scoped PageHero CSS/test source without redesign, retain both coordination histories, and rerun full exact-head CI plus separate ready-state before any guarded merge. PR #478 Faith discovery remains independently pending. No user data, payment, auth, factual or provider changes. Canonical 149 totals unchanged.
+
+## 2026-10-27 IST — Current implementation lane: PR #472
+
+CHATGPT_ACTIVE sole writer. Restored draft #472 after workspace reset; route-level progress label regression reproduced red at 3.5415:1 and passed green 5/5 after a single CSS override. Merge of current main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd` is in progress. Exact-head full CI, separate ready-state and protected guarded merge remain pending. Detailed evidence is preserved below.
+
+## 2026-10-26 IST — Reconcile Faith discovery PR #478 with the released Appeals search
+
+CHATGPT_ACTIVE sole writer. Existing public Appeals PR #477 passed full exact-head CI `40361636703` and separate ready-state promotion/verify `40369750411`; SHA-guarded merge advanced main to `12f1ab3bc0713cccc0331aa04fe97c62c272e7a8`. Railway website deployment `94d392bb-68b6-45da-8adb-bdffa73e3f28` was BUILDING on initial inspection; independently verified public runtime identity/readiness remain blocked by Cloudflare HTTP 403. Merge that main normally into existing Faith discovery PR #478, retain both coordination histories, and leave the reviewed Faith feature source unchanged. Full exact-head CI and separate ready-state are required anew after reconciliation. No religious-text changes, financial/privacy actions, provider mutation or full 149-item acceptance assertion.
+
+Validation: feature module/page tests failed before implementation;10 focused tests and full local2254 pass/20 isolated-DB skips; strict TypeScript, scoped ESLint, spec syntax/diff checks pass. Independent source/security review PASS. Added hosted GET/format/clear/repeated-query browser test, not locally executed. Full-library hero stability source-reviewed, not independently media-tested. No reviewed content/criteria changes, religious acceptance or whole149 closure claim. Hosted exact-head and separate ready-state gates required.
+
+## 2026-10-26 IST — Reviewed Faith discovery
+
+CHATGPT_ACTIVE sole writer starts feat/reviewed-faith-search-20261026 from main655a1c23-equivalent source. Add title/excerpt GET search and closed ARTICLE/REMINDER/VIDEO filter after unchanged reviewed/public query. Keep full-library counts/topics/hero stable; explicit no-match recovery. No religious copy, review criteria, citations/calculations/DB changes. Regression first; source feature is not religious acceptance or whole149 closure. Existing473/476/477 remain frozen for hosted checks.
+
+
 
 ## 2026-10-26 IST — Reconcile public appeal-search PR #477 after portfolio release
 
@@ -49,6 +69,7 @@ Validation: regression red1 then green1; clean candidate full Vitest2244 pass/20
 ## 2026-10-26 IST — Admin content keyboard bypass
 
 CHATGPT_ACTIVE sole writer on fix/admin-content-bypass-20261026 from main36d4e6ec. Source inspection: global #main target wraps admin sidebar; no direct task-content bypass exists. Add existing styled skip link and focusable unique target on existing content div. No auth, navigation permissions or actions change. Regression first; browser keyboard acceptance required. Rollback: revert scoped shell markup. PR470/473/474 remain browser-pending, no gate bypass.
+
 ## 2026-10-26 IST — Coordinated continuation of PR #470
 
 CHATGPT_ACTIVE sole implementation writer under renewed owner authorization; review agents are read-only. Reconciled current main 36d4e6ec068c88f697528bbdbf7887890303868d into existing perf/companion-minute-update-20261026, preserving both minute-update and retention-label histories. Prior head 820028eef1f7623e401fc6c6fcd9c2c5df3a6ed6 passed all seven jobs in 40326831879; independent source review found no blocker. This reconciliation requires fresh exact-head CI and separate ready-state before guarded merge. Railway website 1aa5eac3-2dc6-4125-8627-d02e50a50bb7 is SLEEPING at main 36d4e6e; public health request returned HTTP403 from this workspace, so runtime remains independently unverified. Historical 149 classifications unchanged.
@@ -2205,3 +2226,18 @@ One repository source writer starts `perf/companion-minute-update-20261026` from
 ## 2026-10-26 — CHATGPT_ACTIVE — Admin retention form label associations
 
 Single implementation writer on `fix/admin-retention-label-associations-20261026` from current protected main `f8694f713edbbbf72fdeed49d457d9588faf3a82`. Read-only admin specialist identified four visible sibling labels in `src/app/admin/(protected)/retention/page.tsx` with no `htmlFor`/input `id`, so form controls lacked programmatic names. Test-first synthetic server render with two separate records failed on missing first control `id`; adding stable per-document `id`/`htmlFor` for four fields yields eight distinct associations and a green regression. Strict TypeScript, scoped lint, independent source re-review PASS; full local Vitest 2,208 pass/20 isolated-database skips after approved subprocess run. Form names, defaults, action, authorization, retention policy, storage and deletion safeguards unchanged. No live records or destructive action; exact-head hosted acceptance required. AF-R042 site-wide accessibility remains Partial.
+
+
+## 2026-10-26 — CHATGPT_ACTIVE — AF-R019 appeal card contrast sub-scope
+
+Single implementation writer starts `fix/appeal-card-text-contrast-20261026` from protected main `36d4e6ec068c88f697528bbdbf7887890303868d` after #469 guarded merge. Read-only independent UI audit found three ordinary small/meta text rules in the live appeal-card stylesheet with 3.54–3.78:1 contrast on actual cream card #fffdf8, short of WCAG AA 4.5:1. Synthetic-card red-first tests failed for all three selectors, then passed after changing only three colors to muted `#66717d` (4.8915:1); typography, layout, brand and meaning preserved. Four focused regressions, full isolated Vitest 2,247 pass/20 isolated-db skipped, strict TypeScript, scoped ESLint, browser spec syntax and independent review PASS. Hosted Playwright computed-color acceptance on synthetic fixtures at 390/1440 px and reduced-motion states still pending; no real appeal/field claims. No fundraising/payment behaviors, beneficiaries or production records touched. AF-R019 stays Partial pending wider text audits and browser acceptance.
+
+## 2026-10-26 IST — PR #472 effective appeal-card contrast test correction
+
+CHATGPT_ACTIVE sole writer repairs an existing held draft `fix/appeal-card-text-contrast-20261026` after hosted CI `40331678571` failed a Playwright equality assumption: the final shared card cascade yields `rgba(255,253,248,0.88)`, not opaque `rgb(255,253,248)`. Keep the existing foreground improvement and WCAG AA normal-text threshold 4.5:1. Browser test now composites background over opaque body and canonical canvas/muted/radial-tinted underlays and audits recognized two-stop opaque gradient endpoints; unsupported colors, translucent text/canvas and unrecognized image layers fail closed. Companion static regression explicitly describes its declaration-only fallback scope. No production source, donor, RBAC, payment, schema or compliance changes.
+
+Focused Vitest 4/4 pass; complete isolated Vitest 2247 pass/20 isolated-DB skips on a clean sequential rerun after an earlier concurrent run timed out two unrelated tests. TypeScript, scoped ESLint and browser spec syntax pass. New exact-head hosted browser acceptance is required; do not promote or merge prior red CI. Reconcile with the latest main after public PR #477/#478 release sequence while preserving both coordination histories. Canonical 149 totals unchanged.
+
+## 2026-10-27 IST — Active PR #472 appeal-card contrast recovery
+
+CHATGPT_ACTIVE remains the sole implementation writer. Scratch workspace reset after a previous unpublished local reconciliation; restored remote draft PR #472 head `88bfd7814a8152148ae159a4ae293092cd2b57e9` and repeated the effective route-style defect. Hosted CI `40369616477` passed 1,366 browser cases and failed exactly one progress label at 3.5415398:1 (threshold 4.5:1). A new route-cascade regression reproduced the same failure locally red1, then passed green5 after a bounded final `appeals.css` color rule `#66717d`; strict scoped lint and browser test syntax pass. The correction was committed as `daa8e21d` and is now normally reconciling with released main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd` (#478). Full local suites, exact-head hosted seven-job CI, separate ready-state promotion and SHA-guarded merge are still required. No claim of live contrast acceptance, financial/provider/media change or canonical 149-item completion.
