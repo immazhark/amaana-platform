@@ -1,5 +1,12 @@
 const trackablePublicPath = /^\/(?:$|about$|contact$|get-involved$|governance$|how-we-verify$|impact$|transparency$|compliance$|privacy$|terms$|donation-policy$|refund-policy$|appeals(?:\/[a-z0-9-]+)?$|our-work(?:\/[a-z0-9-]+)?$|programmes(?:\/[a-z0-9-]+)?$|stories(?:\/[a-z0-9-]+)?$|faith-and-reflections(?:\/[a-z0-9-]+)?$)/;
 
+// Public sitemap membership alone is not consent to track a route. Keep
+// feedback, assistance and payment paths outside this explicit allowlist.
+const additionalTrackableStaticPaths = new Set([
+  "/team", "/recognition", "/partner", "/impact/compare",
+  "/get-involved/volunteer", "/get-involved/monthly-giving", "/get-involved/sponsor-education",
+]);
+
 const hyderabadDateFormatter = new Intl.DateTimeFormat("en-GB", {
   timeZone: "Asia/Kolkata",
   year: "numeric",
@@ -8,7 +15,7 @@ const hyderabadDateFormatter = new Intl.DateTimeFormat("en-GB", {
 });
 
 export function isTrackablePublicPath(pathname: string) {
-  return pathname.length <= 200 && trackablePublicPath.test(pathname);
+  return pathname.length <= 200 && (trackablePublicPath.test(pathname) || additionalTrackableStaticPaths.has(pathname));
 }
 
 /** One canonical privacy boundary shared by page views and Web Vitals.
