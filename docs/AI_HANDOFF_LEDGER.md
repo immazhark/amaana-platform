@@ -1,8 +1,17 @@
+## 2026-10-27 IST — #481 after #472 protected release
+
+Sole writer CHATGPT_ACTIVE. #472 full seven-job CI `40451338333`, separate ready-state `40455797840`, no unresolved reviews and owner-scoped Neon-aware release permission yielded protected merge `83044f775166be0a3533d807a7ec3e268795530f`. Railway website deployment `a9e6fbfb-c618-483b-85c8-2746e4974f95` was BUILDING, no forced restart; separate public readiness remains unverified. Existing draft #481 is normally reconciling that main with its synthetic Faith detail IST date regression; full new CI and promotion/verify required. Neon management metadata: approximately 94.6/100 CU-hours for the current October period; no direct Postgres or production-data operations by this agent. No further deployment authorization inferred from #472's one-off scope; historical 149 statuses unchanged.
+
 ## 2026-10-27 IST — Isolated Faith detail date regression queued
 
 CHATGPT_ACTIVE sole writer stages `fix/faith-detail-ist-dates-20261027` from main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd`. PR #472 corrected remote `68cdf1d5ee1c549abea6ace647eb1fc02cad83c1` remains frozen in exact-head hosted CI `40451338333`. Read-only review found two Faith detail date formatters without IST, reproduced on actual rendered page with synthetic UTC 2026-10-26T19:00:00Z: RED 1 at 26 October and GREEN 1 at correct 27 October after one shared explicit IST formatter. Scoped UTC fallback mock keeps the regression host-independent and restores itself in `finally`; independent source review found no production blocker. Full local 2,278 Vitest pass/20 isolated-DB skips, strict TypeScript and lint pass; production clean-cache rerun/hosted acceptance pending. No religious acceptance, media, provider or full 149-item promotion is claimed. Release only after fresh local/hosted gates and normal current-main reconciliation.
 
 Validation update: the clean-cache production build and postbuild client-bundle secret check passed. Initial ENOTEMPTY in an untracked stale `.next` tree was resolved by preserving that cache as a sibling directory, without deleting tracked source. Fresh hosted CI and current-main reconciliation remain pending.
+
+## 2026-10-27 IST — Current #472 release gate
+
+CHATGPT_ACTIVE sole writer. Recovered route contrast correction is red/green locally and still draft; new full hosted seven-job CI plus separate promotion/verify required after reconciling with main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd`. No deployment or 149-item promotion claimed. Details appear in the 2026-10-27 recovery entry below.
+
 
 ## 2026-10-26 IST — PR #478 normal current-main reconciliation
 
@@ -1998,4 +2007,16 @@ On current protected main `f8694f71`, the 30-second Companion timer wrote a new 
 ## 2026-10-26 — Retention administration accessible labels scoped
 
 Current main `f8694f71` retained four disconnected labels in retention-review forms. Two synthetic document records prove eight unique `for`/`id` associations for decision, review date, deletion confirmation and reason. Red-before/green-after, TypeScript, lint, independent review and full 2,208 local Vitest pass (20 isolated-DB skips). Markup-only; no auth/RBAC, deletion semantics, documents, media, payments or approved retention schedule. Keep one writer; exact-head CI and separate protected release remain.
+
+## 2026-10-26 — AF-R019 low-contrast appeal metadata targeted
+
+Main `36d4e6ec` renders synthetic `AppealCard` against live `.v2-appeal-card{background:#fffdf8}`. Three visible text selectors (.v2-appeal-card-head small, .v2-appeal-progress-meta span, .v2-appeal-progress-foot) failed red at 3.7802/3.5415/3.5415:1 before the bounded three-declaration change. New `#66717d` yields 4.8915:1, 4/4 focused test green, full 2,247 local Vitest green (20 isolated-DB skips), strict TypeScript and scoped ESLint PASS; independent review no blockers. Hosted browser synthetic computed-style contrast awaits exact-head CI; no real appeal/field/user acceptance or fundraising/checkout changes claimed. AF-R019 wider site audit remains Partial.
+
+## 2026-10-26 IST — PR #472 held test repair checkpoint
+
+CHATGPT_ACTIVE corrected only the existing contrast browser assertion/math and narrowed the companion static test wording. CI `40331678571` failed when a computed translucent card background was equated with an opaque declaration; the revised test uses effective sRGB composition over the actual body and known canonical light underlays, with strict 4.5:1 checks including gradient endpoints. No production CSS changes. Full local 2247/20 skipped, targeted 4/4, TypeScript, scoped lint and spec syntax green; earlier concurrent timeout run is superseded by clean sequential pass, not silently counted as success. Existing PR #472 remains draft/red until normal latest-main reconciliation, new full exact-head hosted CI, separate ready-state verification and SHA-guarded merge. No deployment or user-data actions.
+
+## 2026-10-27 IST — #472 recovery and route-cascade accessibility defect
+
+Single writer CHATGPT_ACTIVE. The earlier unpublished corrected branch was lost when scratch was reset; GitHub retains old draft PR #472 head `88bfd7814a8152148ae159a4ae293092cd2b57e9` and failed browser CI `40369616477`. Recovered from remote, reproduced red exact 3.5415397988993007:1 with synthetic route-declaration regression, and corrected only the later Appeals CSS override; focused five tests and scoped lint/syntax pass. Local source fix `daa8e21d` is merging current main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd`. Require new full tests/build and hosted browser before ready/merge. Rollback revert this route color/token and the isolated regression if needed. No changes to eligibility, donation, personal data, tax, religious content, provider or deployment settings. 149-item count unchanged.
 
