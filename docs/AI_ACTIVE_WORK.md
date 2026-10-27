@@ -1,3 +1,9 @@
+## 2026-10-27 IST — AF-R012 assistance actions real-session denial coverage
+
+CHATGPT_ACTIVE sole implementation writer under owner continuation. Branch `test/assistance-action-authorization-20261027` begins at protected main `83044f775166be0a3533d807a7ec3e268795530f`, separate from held draft PR #510. Scope is synthetic real-auth-helper authorization tests for `saveVerification`, `updateRequest`, `assignRequest`, and `convertToAppeal`; no production RBAC, assistance state, privacy, notification, payment, schema or infrastructure changes. Prove anonymous, expired/unresolved-session and wrong-role denials before request lookup/transaction/audit/notification; prove authorized calls reach safe validation. A controlled guard mutation will test sensitivity. Existing Neon compute-budget hold: draft only, no merge/deployment. AF-R012 and the 149 ledger remain Partial/historical respectively.
+
+Local acceptance: 17 new negative/positive cases and three existing concurrency cases passed. Controlled assignment guard bypass failed four tests, restored source retested green with zero runtime file changes. Full Vitest 2,299 passed / 20 isolated-DB skipped; TypeScript, lint, production build and client-secret guard passed. Static JS 806,472/819,200 and CSS 328,687/348,160 bytes (uncompressed build bytes, not transfer/CWV). No hosted exact-head or independent database run yet. Rollback: revert this test-only commit. Release remains held.
+
 ## 2026-10-27 IST — Current implementation lane: PR #472
 
 CHATGPT_ACTIVE sole writer. Restored draft #472 after workspace reset; route-level progress label regression reproduced red at 3.5415:1 and passed green 5/5 after a single CSS override. Merge of current main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd` is in progress. Exact-head full CI, separate ready-state and protected guarded merge remain pending. Detailed evidence is preserved below.
