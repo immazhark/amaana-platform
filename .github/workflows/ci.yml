@@ -145,6 +145,8 @@ jobs:
         run: node --test scripts/test-donation-error-focus-race.mjs
       - name: Enforce admin eyebrow contrast by surface
         run: node --test scripts/test-admin-eyebrow-contrast.mjs
+      - name: Enforce Appeals update text contrast on dark surfaces
+        run: node --test scripts/test-appeal-update-contrast.mjs
       - name: Verify archive filters
         run: node --experimental-strip-types --test scripts/test-work-filters.mjs
       - name: Validate local-only mobile profiling contracts
