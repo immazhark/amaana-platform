@@ -41,7 +41,7 @@ export default async function RequestDetailPage({ params }: Props) {
     ? ["CONVERTED_TO_APPEAL"]
     : hasPermission(user, "assistance.approve")
       ? manualStatuses
-      : manualStatuses.filter(status => !["APPROVED", "REJECTED"].includes(status));
+      : manualStatuses.filter(status => status === request.status || !["APPROVED", "REJECTED"].includes(status));
   const verification = request.verification;
   const publicAppealIssues = getPublicAppealVerificationIssues(verification);
   const publicAppealReady = publicAppealIssues.length === 0;
