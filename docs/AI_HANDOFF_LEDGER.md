@@ -1,3 +1,7 @@
+## 2026-10-27 IST — Feedback note Unicode display-control gap
+
+Single implementation writer CHATGPT_ACTIVE hardens the client-only feedback note preparation helper on current protected main `83044f775166be0a3533d807a7ec3e268795530f`. Synthetic bidi override/isolate note RED1, GREEN18 focused after narrow control removal; full 2,283 local Vitest passed/20 DB skipped, strict TypeScript, full lint, clean Next16 production build, 81-file postbuild client-secret boundary and diff check PASS; independent read-only review PASS. Existing Arabic/Urdu letters, newlines, fixed recipient/subject, privacy footer and note length remain. The current UI **does not collect a free-text note** and calls the helper without one; this hardens a reusable boundary, not a demonstrated current UI attack. Isolate removal has a possible mixed-RTL layout tradeoff, but no text deletion. No mail sent or permission, API, storage, payment, content claim or production config change. Hosted CI/release remain separate and Neon-aware; 149 unchanged.
+
 ## 2026-10-27 IST — Current #472 release gate
 
 CHATGPT_ACTIVE sole writer. Recovered route contrast correction is red/green locally and still draft; new full hosted seven-job CI plus separate promotion/verify required after reconciling with main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd`. No deployment or 149-item promotion claimed. Details appear in the 2026-10-27 recovery entry below.

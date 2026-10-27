@@ -37,6 +37,22 @@ describe("voluntary feedback and complaint contact", () => {
     expect(sanitizeFeedbackNote({ note: "unsafe" })).toBe("");
   });
 
+  it("removes visual-order spoof controls from a private note but keeps multilingual text", () => {
+    const controls = "\u202A\u202B\u202C\u202D\u202E\u2066\u2067\u2068\u2069";
+    const note = `Reference AFR-\u202E321\u202C\nالسلام عليكم — شکریہ ${controls}`;
+    const cleaned = sanitizeFeedbackNote(note);
+    expect(cleaned).toBe("Reference AFR-321\nالسلام عليكم — شکریہ");
+    expect(cleaned).not.toMatch(/[\u202A-\u202E\u2066-\u2069]/u);
+
+    const href = new URL(buildFeedbackEnquiryHref("concern", "privacy", note));
+    expect(href.pathname).toBe(FEEDBACK_CONTACT_EMAIL);
+    expect(href.searchParams.get("subject")).toBe("Amaana Foundation - Concern or complaint");
+    const body = href.searchParams.get("body") ?? "";
+    expect(body).toContain(cleaned);
+    expect(body).not.toMatch(/[\u202A-\u202E\u2066-\u2069]/u);
+    expect(body).toContain("This email is not consent to publish");
+  });
+
   it("exposes a fixed set of distinct topics and kinds", () => {
     expect(new Set(FEEDBACK_KINDS.map(item => item.id)).size).toBe(FEEDBACK_KINDS.length);
     expect(new Set(FEEDBACK_TOPICS.map(item => item.id)).size).toBe(FEEDBACK_TOPICS.length);
