@@ -1,3 +1,7 @@
+## 2026-10-27 IST — AF-R019 Compliance panel contrast batch
+
+CHATGPT_ACTIVE sole writer on `fix/compliance-hold-contrast-20261027` from protected main `83044f7`. Earlier independent #494/#495 branches were committed/published DRAFT for hosted exact-head acceptance; no protected main merge or deployment. Scope is existing public Compliance hold paragraph ink only, test-first with rendered real page and native conservative contrast; preserve all tax/FCRA/80G wording and locks. Read-only parallel review only. Source/runtime acceptance separate; Neon hold unchanged. Final source: native RED1/GREEN1 62%→80% off-white with panel/lattice-aware AA proof 5.06:1 min at conservative bound. Two independent reviewers PASS; local 2,282 Vitest pass/20 DB skips, strict TypeScript/lint/build/client secret pass, actual-page hosted browser test prepared but not locally run. Repository/PR release and Neon hold remain separate.
+
 ## 2026-10-27 IST — Current #472 release gate
 
 CHATGPT_ACTIVE sole writer. Recovered route contrast correction is red/green locally and still draft; new full hosted seven-job CI plus separate promotion/verify required after reconciling with main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd`. No deployment or 149-item promotion claimed. Details appear in the 2026-10-27 recovery entry below.

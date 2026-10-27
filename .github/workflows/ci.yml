@@ -77,6 +77,8 @@ jobs:
 
       - name: Audit global CSS architecture
         run: node scripts/audit-global-css.mjs
+      - name: Enforce public Compliance hold text contrast
+        run: node --test scripts/test-compliance-hold-contrast.mjs
       - name: Validate App Router bundle reporting
         run: node --test scripts/test-route-bundle-report.mjs scripts/test-live-route-css.mjs
       - name: Guard responsive hero/artwork image weight
