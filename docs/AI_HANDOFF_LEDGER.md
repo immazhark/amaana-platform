@@ -1,3 +1,9 @@
+## 2026-10-28 IST — Footer copyright follows Hyderabad calendar year
+
+CHATGPT_ACTIVE sole implementation writer. Task `fix/footer-kolkata-copyright-year-20261028` originates from protected main `83044f775166be0a3533d807a7ec3e268795530f`; drafts #515–#517 remain distinct and held. `SiteFooter` uses host-local `getFullYear()` for a Hyderabad public copyright notice. Reproduce with a synthetic instant between 00:00 Asia/Kolkata and UTC midnight; fix with exact Asia/Kolkata year calculation and test both sides of midnight. Keep footer content/style/children and live environment untouched; no browser/CWV/payment inference. Publish a draft PR only after full local validation; Neon release and hosted exact-head checks stay required. Historic 149 total not changed. Evidence/head follows.
+
+Acceptance at local branch head before commit: initial synthetic `2026-12-31T18:30:00.000Z` RED on host-local year, then 3/3 boundary tests GREEN. Whole suite 2,285 PASS / 20 isolated-DB SKIP. `npm run typecheck`, `npm run lint`, clean `npm run build`, client secret-boundary guard, image-weight check, and `git diff --check` all PASS. Static asset sums: JS 806,077 B under 819,200 B; CSS 328,687 B under 348,160 B. Independent read-only reviewer PASS, no overlap with drafts #515–#517. Server render uses the correct Kolkata calendar year; previously cached static HTML does not automatically update at year change. Draft-only; no merge, production activation, 149-total change, Railway SHA equivalence or live verification claimed.
+
 ## 2026-10-27 IST — Current #472 release gate
 
 CHATGPT_ACTIVE sole writer. Recovered route contrast correction is red/green locally and still draft; new full hosted seven-job CI plus separate promotion/verify required after reconciling with main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd`. No deployment or 149-item promotion claimed. Details appear in the 2026-10-27 recovery entry below.
