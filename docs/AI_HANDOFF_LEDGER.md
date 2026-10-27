@@ -1,3 +1,7 @@
+## 2026-10-27 IST — Media viewer option-query local acceptance
+
+CHATGPT_ACTIVE sole writer on `perf/media-viewer-option-queries-20261027`, base main83044f775166be0a3533d807a7ec3e268795530f. Four complete attachment-option reads now run only when existing canEdit is true. Existing page permission, list/count/review queries, editor forms/options and approver-only controls preserved. Actual-page regressions failed2 before correction; final4 query-bound plus3 existing label cases PASS, full2286 Vitest PASS/20 isolated-DB skips, full lint/Next production build including strict TypeScript/client-secret guard and independent read-only review PASS. Initial test assumed pageSize25; corrected to imported actual ADMIN_PAGE_SIZE50 without changing production pagination. No live/private data, permission policy, action, public media, storage, schema or provider change. Hosted exact-head acceptance required; no merge/deployment under Neon hold and no149 classification change. Rollback revert four query conditions. Next scope: independent admin audit/media display dates in IST, no event/data mutation.
+
 ## 2026-10-27 IST — Current #472 release gate
 
 CHATGPT_ACTIVE sole writer. Recovered route contrast correction is red/green locally and still draft; new full hosted seven-job CI plus separate promotion/verify required after reconciling with main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd`. No deployment or 149-item promotion claimed. Details appear in the 2026-10-27 recovery entry below.

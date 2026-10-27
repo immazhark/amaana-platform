@@ -1,3 +1,11 @@
+## 2026-10-27 IST — Media viewer option-query local acceptance
+
+CHATGPT_ACTIVE sole writer on `perf/media-viewer-option-queries-20261027`, base main83044f775166be0a3533d807a7ec3e268795530f. Four complete attachment-option reads now run only when existing canEdit is true. Existing page permission, list/count/review queries, editor forms/options and approver-only controls preserved. Actual-page regressions failed2 before correction; final4 query-bound plus3 existing label cases PASS, full2286 Vitest PASS/20 isolated-DB skips, full lint/Next production build including strict TypeScript/client-secret guard and independent read-only review PASS. Initial test assumed pageSize25; corrected to imported actual ADMIN_PAGE_SIZE50 without changing production pagination. No live/private data, permission policy, action, public media, storage, schema or provider change. Hosted exact-head acceptance required; no merge/deployment under Neon hold and no149 classification change. Rollback revert four query conditions. Next scope: independent admin audit/media display dates in IST, no event/data mutation.
+
+## 2026-10-27 IST — Media viewer attachment-option query bound
+
+CHATGPT_ACTIVE sole writer on `perf/media-viewer-option-queries-20261027`, base verified protected main83044f775166be0a3533d807a7ec3e268795530f. Parallel agents read-only. Viewer-only Media Review requests load four complete attachment-option lists unused by their rendered UI. Condition only those option queries on the existing canEdit value; preserve content.view requirement, list/count/review reads, editor options and approver controls. Actual-page query regressions first, synthetic data only. No permission policy/action/storage/public media/schema changes. Existing PR500-503 remain separate drafts; no merge observed. Neon hold retained, no merge/deployment;149 classifications unchanged. Rollback revert conditional queries.
+
 ## 2026-10-27 IST — Current implementation lane: PR #472
 
 CHATGPT_ACTIVE sole writer. Restored draft #472 after workspace reset; route-level progress label regression reproduced red at 3.5415:1 and passed green 5/5 after a single CSS override. Merge of current main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd` is in progress. Exact-head full CI, separate ready-state and protected guarded merge remain pending. Detailed evidence is preserved below.
