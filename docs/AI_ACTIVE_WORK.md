@@ -1,3 +1,9 @@
+## 2026-10-27 IST — Layered mobile menu Escape
+
+CHATGPT_ACTIVE sole writer on `fix/companion-mobile-menu-escape-20261027`, base protected main `83044f775166be0a3533d807a7ec3e268795530f`. Scope: Companion document Escape listener must defer while open visible mobile navigation owns keyboard interaction. Current ordering closes both layers. Synthetic actual-handler regression first; preserve dialog/browser/composition handling and ordinary panel Escape. No content/calculation, API, database or provider change. Rollback isolated selector/tests. Existing PRs held under Neon conservation; hosted full acceptance required before release.
+
+Validation: actual Companion document-handler regression RED1 (underlying onClose fired with open menu), GREEN17 after visible-menu precedence selector. Full local Vitest2,283 passed /20 isolated DB skipped; strict TypeScript, scoped ESLint, browser-spec syntax, diff check, production Next build and client-secret boundary passed. Independent read-only review PASS. Added real-page390px menu/Companion two-Escape focus sequence; not locally browser-executed, hosted full/ready-state checks required. Existing dialogs, hidden-menu behavior, modified/composing/handled keys preserved. No faith copy, prayer calculation, API, database/provider behavior changed. No production rollout; Neon hold and149 classifications unchanged. Next: finish queued hosted candidate acceptance and group any approved rollout to avoid repeated Neon startup; do not count source-only drafts as shipped.
+
 ## 2026-10-27 IST — Current implementation lane: PR #472
 
 CHATGPT_ACTIVE sole writer. Restored draft #472 after workspace reset; route-level progress label regression reproduced red at 3.5415:1 and passed green 5/5 after a single CSS override. Merge of current main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd` is in progress. Exact-head full CI, separate ready-state and protected guarded merge remain pending. Detailed evidence is preserved below.
