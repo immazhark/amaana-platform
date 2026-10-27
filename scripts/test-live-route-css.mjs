@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { stylesheetsInHtml, summarizeRouteCssBytes, auditPublicRouteCss, summarizeLinkedCssResourceTiming } from "./audit-live-route-css.mjs";
+import { stylesheetsInHtml, summarizeRouteCssBytes, auditPublicRouteCss } from "./audit-live-route-css.mjs";
+import { summarizeLinkedCssResourceTiming } from "../e2e/css-resource-timing.mjs";
 
 test("browser timing separates decoded CSS, encoded CSS and navigation transfer", () => {
   const css = ["https://amaanafoundation.org/_next/static/a.css", "https://amaanafoundation.org/_next/static/b.css"];

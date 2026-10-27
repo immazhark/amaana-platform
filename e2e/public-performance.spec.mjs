@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { summarizeLinkedCssResourceTiming } from '../scripts/audit-live-route-css.mjs';
+import { summarizeLinkedCssResourceTiming } from './css-resource-timing.mjs';
 
 async function cssPayload(page, path) {
   const response = await page.goto(path, { waitUntil: 'load' });
