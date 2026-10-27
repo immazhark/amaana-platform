@@ -30,7 +30,8 @@ export default async function FaithDetailPage({ params }: Props) {
   const { slug } = await params;
   const item = await getFaithPageData(slug);
   if (!item) notFound();
-  const publishedDate = item.publishedAt ? new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "long", year: "numeric" }).format(item.publishedAt) : null;
+  const faithDateFormatter = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Kolkata" });
+  const publishedDate = item.publishedAt ? faithDateFormatter.format(item.publishedAt) : null;
   const topics = item.topics.map(link => link.topic.name);
   const publicMedia = item.mediaAssets.filter(canRenderPublicMedia);
   const leadMedia = selectIdentityPublicImage(publicMedia);
@@ -52,7 +53,7 @@ export default async function FaithDetailPage({ params }: Props) {
     <BreadcrumbStructuredData items={[{ name: "Home", path: "/" }, { name: "Faith & Reflections", path: "/faith-and-reflections" }, { name: item.title, path: `/faith-and-reflections/${item.slug}` }]} />
     <PageHero variant="level2" eyebrow={`${item.type.toLowerCase()}${publishedDate ? ` · ${publishedDate}` : ""}`} title={item.title} description={<><p>{item.excerpt}</p>{topics.length > 0 && <div className="v2-faith-detail-topics">{topics.map(topic => <span key={topic}>{topic}</span>)}</div>}</>} actions={[{label:"Back to Faith & Reflections",href:"/faith-and-reflections",secondary:true}]} visual={leadMedia ? <PublicMedia asset={leadMedia} priority /> : undefined} visualKicker="Editorial trust" visualTitle="Reviewed Before Publication" visualNote="Amaana shares reviewed beneficial material without presenting itself as a scholarly authority." />
 
-    <section className="v2-section paper"><div className="v2-shell v2-faith-detail-body-grid"><aside><p className="v2-section-label">Review context</p>{item.sourceCitation ? <div className="v2-faith-detail-source"><span>Source citation</span><p>{item.sourceCitation}</p></div> : <p className="v2-faith-detail-muted">No separate source citation is displayed for this item.</p>}{item.verifiedAt && <p className="v2-faith-detail-muted">Religious review verified {new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "long", year: "numeric" }).format(item.verifiedAt)}.</p>}</aside><article><p className="v2-section-label">Reflection</p>{item.body ? <div className="v2-faith-detail-body">{item.body}</div> : <p className="v2-faith-detail-body">{item.excerpt}</p>}</article></div></section>
+    <section className="v2-section paper"><div className="v2-shell v2-faith-detail-body-grid"><aside><p className="v2-section-label">Review context</p>{item.sourceCitation ? <div className="v2-faith-detail-source"><span>Source citation</span><p>{item.sourceCitation}</p></div> : <p className="v2-faith-detail-muted">No separate source citation is displayed for this item.</p>}{item.verifiedAt && <p className="v2-faith-detail-muted">Religious review verified {faithDateFormatter.format(item.verifiedAt)}.</p>}</aside><article><p className="v2-section-label">Reflection</p>{item.body ? <div className="v2-faith-detail-body">{item.body}</div> : <p className="v2-faith-detail-body">{item.excerpt}</p>}</article></div></section>
 
     {remainingMedia.length > 0 && <section className="v2-section dark"><div className="v2-shell"><SectionHeading eyebrow={<>Reviewed media</>} title={<>Visual context, separately approved.</>} subtitle={<>Media appears here only when its own public-use and privacy checks are satisfied.</>} /><div className="v2-media-grid">{remainingMedia.map(asset => <PublicMedia asset={asset} key={asset.id} />)}</div></div></section>}
 
