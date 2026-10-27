@@ -35,6 +35,7 @@ export default async function RequestDetailPage({ params }: Props) {
   ]);
   if (!request) notFound();
 
+  const currentAssigneeUnavailable = Boolean(request.assignedToId && !staff.some(member => member.id === request.assignedToId));
   const converted = request.status === "CONVERTED_TO_APPEAL" || Boolean(request.appealId);
   const manualStatuses = [...MANUAL_ASSISTANCE_STATUSES];
   const visibleStatuses = converted
@@ -157,7 +158,8 @@ export default async function RequestDetailPage({ params }: Props) {
             <input type="hidden" name="id" value={id}/>
             <input type="hidden" name="expectedUpdatedAt" value={request.updatedAt.toISOString()}/>
             <label htmlFor="assignedToId">Assigned staff member</label>
-            <select id="assignedToId" name="assignedToId" defaultValue={request.assignedToId ?? ""}><option value="">Unassigned</option>{staff.map(member => <option key={member.id} value={member.id}>{member.name}</option>)}</select>
+            <select id="assignedToId" name="assignedToId" defaultValue={request.assignedToId ?? ""} aria-describedby={currentAssigneeUnavailable ? "assignment-availability" : undefined}><option value="">Unassigned</option>{currentAssigneeUnavailable && <option value={request.assignedToId!}>{`${request.assignedTo?.name ?? "Current staff member"} (currently unavailable)`}</option>}{staff.map(member => <option key={member.id} value={member.id}>{member.name}</option>)}</select>
+            {currentAssigneeUnavailable && <small id="assignment-availability" className="muted">The current assignee is unavailable for assignment. Choose an available staff member or Unassigned before saving a change.</small>}
             <button className="button secondary" disabled={!hasPermission(user, "assistance.assign")}>Save assignment</button>
           </form>
         </section>

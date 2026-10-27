@@ -71,3 +71,45 @@ describe("request review current-status preservation", () => {
     expect(html).toContain('type="hidden" name="status" value="CONVERTED_TO_APPEAL"');
   });
 });
+
+
+async function assignmentOptions(assignedToId: string | null, eligible = false) {
+  mocks.request.mockResolvedValue({ ...request("SUBMITTED"), assignedToId,
+    assignedTo: assignedToId ? { id: assignedToId, name: "Synthetic current staff" } : null,
+  });
+  mocks.staff.mockResolvedValue(eligible ? [{ id: assignedToId, name: "Synthetic current staff" }] : []);
+  const html = renderToStaticMarkup(await RequestDetailPage({ params: Promise.resolve({ id: "synthetic-request" }) }));
+  const select = html.match(/<select\b[^>]*name="assignedToId"[^>]*>([\s\S]*?)<\/select>/);
+  if (!select) throw new Error("Expected request assignment selector");
+  const options = [...select[1]!.matchAll(/<option\b([^>]*)>([^<]*)<\/option>/g)].map(([, attributes, text]) => ({
+    value: attributes!.match(/value="([^"]*)"/)?.[1], selected: /\bselected=""/.test(attributes!),
+    disabled: /\bdisabled/.test(attributes!), text,
+  }));
+  return { html, options };
+}
+
+describe("request current-assignment preservation", () => {
+  it("keeps an unavailable current assignee selected instead of implicitly unassigning", async () => {
+    const { html, options } = await assignmentOptions("synthetic-inactive");
+    expect(options.filter(option => option.selected).map(option => option.value)).toEqual(["synthetic-inactive"]);
+    expect(options.find(option => option.value === "synthetic-inactive")).toMatchObject({
+      disabled: false, text: "Synthetic current staff (currently unavailable)",
+    });
+    expect(options.find(option => option.value === "")).toMatchObject({ selected: false });
+    expect(html).toContain("Choose an available staff member or Unassigned before saving a change.");
+  });
+
+  it("does not duplicate or relabel an eligible current assignee", async () => {
+    const { html, options } = await assignmentOptions("synthetic-active", true);
+    expect(options.filter(option => option.value === "synthetic-active")).toEqual([{
+      value: "synthetic-active", selected: true, disabled: false, text: "Synthetic current staff",
+    }]);
+    expect(html).not.toContain("currently unavailable");
+  });
+
+  it("preserves a genuinely unassigned request", async () => {
+    const { html, options } = await assignmentOptions(null);
+    expect(options.filter(option => option.selected).map(option => option.value)).toEqual([""]);
+    expect(html).not.toContain("currently unavailable");
+  });
+});
