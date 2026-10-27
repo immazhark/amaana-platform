@@ -1,3 +1,7 @@
+## 2026-10-27 IST — Appeals verification-method contrast lane
+
+CHATGPT_ACTIVE remains the sole writer on new main-based `fix/appeals-method-contrast-20261027` (`83044f775166be0a3533d807a7ec3e268795530f` base). #494 and #495 passed full exact-head and separate post-promotion ready-state, both READY and unmerged; #496 full browser run remains in progress. AF-R019 method-card contrast and hover-veil fix is scoped to the Appeals CSS module, not PR #495 legacy stylesheet. Two native red/green regressions (including 4.14:1 ink and overlay), real-page 390/1440 E2E added. Final full local 2,285 pass/20 isolated-DB skips, strict TypeScript, full lint, production build/client-secret guard and spec syntax PASS. No local browser execution; hosted exact-head required. Preserve other PRs, Neon release hold, and canonical 149 totals. Commit/publish as a bounded draft; do not merge or activate production.
+
 ## 2026-10-27 IST — Current #472 release gate
 
 CHATGPT_ACTIVE sole writer. Recovered route contrast correction is red/green locally and still draft; new full hosted seven-job CI plus separate promotion/verify required after reconciling with main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd`. No deployment or 149-item promotion claimed. Details appear in the 2026-10-27 recovery entry below.
