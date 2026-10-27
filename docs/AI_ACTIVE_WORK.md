@@ -1,3 +1,11 @@
+## 2026-10-27 IST — Impact diagnostic local acceptance
+
+CHATGPT_ACTIVE sole writer, base main83044f775166be0a3533d807a7ec3e268795530f. Existing Impact programme-filter recovery is now associated with the invalid select, and aria-invalid is explicit; valid/empty selections preserve their prior semantics. Two actual-page failures reproduced first, final4 focused and2286 full local Vitest PASS/20 isolated-DB skips. Next production build including strict TypeScript and client-secret scanner PASS; independent read-only review PASS. Full lint is in progress; hosted exact-head acceptance remains required. No query, public data, media, religious/legal/financial or infrastructure behavior change. Prior fixes are now published as draft PR500(head78eb27428af6df189a9b5a49a2c4c1d895e77095) and501(head5b0ed550c8d9750977dd68cfacd31d83994ddbec); both tree-equal to tested local source. User approved publication after initial auto-review rejection, CLI lacks credentials, connected GitHub app succeeded. Neon hold retained: no merge/deployment or149 status promotion. Rollback revert isolated markup/test.
+
+## 2026-10-27 IST — Impact filter diagnostic association
+
+CHATGPT_ACTIVE sole implementation writer on `fix/impact-filter-error-description-20261027` from verified main83044f775166be0a3533d807a7ec3e268795530f; parallel agents read-only. Previous Faith/Stories commits published as draft PR500(head78eb2742) and501(head5b0ed550), exact trees matched local tests. No merge observed; Neon release hold retained. New bounded scope: invalid Impact programme control has no diagnostic association. Add aria-invalid/error description to existing markup, with actual-page regression first. No filter/query/data/media/policy changes. Rollback isolated markup/test;149 classifications unchanged.
+
 ## 2026-10-27 IST — Current implementation lane: PR #472
 
 CHATGPT_ACTIVE sole writer. Restored draft #472 after workspace reset; route-level progress label regression reproduced red at 3.5415:1 and passed green 5/5 after a single CSS override. Merge of current main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd` is in progress. Exact-head full CI, separate ready-state and protected guarded merge remain pending. Detailed evidence is preserved below.

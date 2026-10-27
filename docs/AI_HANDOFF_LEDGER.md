@@ -1,3 +1,7 @@
+## 2026-10-27 IST — Impact diagnostic local acceptance
+
+CHATGPT_ACTIVE sole writer, base main83044f775166be0a3533d807a7ec3e268795530f. Existing Impact programme-filter recovery is now associated with the invalid select, and aria-invalid is explicit; valid/empty selections preserve their prior semantics. Two actual-page failures reproduced first, final4 focused and2286 full local Vitest PASS/20 isolated-DB skips. Next production build including strict TypeScript and client-secret scanner PASS; independent read-only review PASS. Full lint is in progress; hosted exact-head acceptance remains required. No query, public data, media, religious/legal/financial or infrastructure behavior change. Prior fixes are now published as draft PR500(head78eb27428af6df189a9b5a49a2c4c1d895e77095) and501(head5b0ed550c8d9750977dd68cfacd31d83994ddbec); both tree-equal to tested local source. User approved publication after initial auto-review rejection, CLI lacks credentials, connected GitHub app succeeded. Neon hold retained: no merge/deployment or149 status promotion. Rollback revert isolated markup/test.
+
 ## 2026-10-27 IST — Current #472 release gate
 
 CHATGPT_ACTIVE sole writer. Recovered route contrast correction is red/green locally and still draft; new full hosted seven-job CI plus separate promotion/verify required after reconciling with main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd`. No deployment or 149-item promotion claimed. Details appear in the 2026-10-27 recovery entry below.
