@@ -690,6 +690,38 @@ test('mobile shared footer collapses secondary navigation while preserving tap t
   expect(minLinkHeight).toBeGreaterThanOrEqual(44);
 });
 
+test('mobile footer navigation remains operable with JavaScript disabled', async ({ browser }) => {
+  const context = await browser.newContext({
+    javaScriptEnabled: false,
+    viewport: { width: 390, height: 844 },
+    baseURL: 'http://127.0.0.1:3000',
+  });
+  try {
+    const page = await context.newPage();
+    const response = await page.goto('/about', { waitUntil: 'domcontentloaded' });
+    expect(response?.ok()).toBe(true);
+    const fallback = page.locator('.site-footer .footer-nav-group > noscript > .footer-nav-noscript-links');
+    await expect(fallback).toHaveCount(3);
+    const work = fallback.getByRole('link', { name: 'Our Work' });
+    const privacy = fallback.getByRole('link', { name: 'Privacy', exact: true });
+    await expect(work).toBeVisible();
+    await expect(privacy).toBeVisible();
+    await expect(page.locator('.site-footer .footer-nav-toggle').first()).toBeHidden();
+    expect(await work.evaluate(link => link.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+
+    await privacy.focus();
+    await expect(privacy).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page).toHaveURL(/\/privacy$/);
+
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await expect(page.locator('.footer-nav-noscript-links').first()).toBeHidden();
+    await expect(page.locator('.site-footer .footer-nav-group > .footer-links a').first()).toBeVisible();
+  } finally {
+    await context.close();
+  }
+});
+
 test('desktop footer exposes navigation directly without disclosure controls', async ({ page }) => {
   await open(page, '/about', 1440);
   const toggles = page.locator('.site-footer .footer-nav-toggle');

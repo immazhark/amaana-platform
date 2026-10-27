@@ -658,6 +658,7 @@ body{font-weight:var(--af-weight-body)}
 .footer-nav-title{margin:0}
 .footer-nav-label{display:block;color:#f1cf52;font-size:.75rem;font-weight:700;letter-spacing:.11em;line-height:1.35;text-transform:uppercase}
 .footer-nav-toggle{display:none}
+.footer-nav-group>noscript>.footer-nav-noscript-links{display:none}
 @media(max-width:520px){
   .footer-nav-label{display:none}
   .footer-nav-title{border-top:1px solid rgb(255 253 248 / 12%)}
@@ -670,6 +671,9 @@ body{font-weight:var(--af-weight-body)}
   .footer-nav-toggle-icon{color:rgb(255 253 248 / 72%);font-size:1.15rem;font-weight:500;line-height:1}
   .footer-nav-group>.footer-links{display:none;padding:.25rem 0 .75rem;grid-template-columns:repeat(2,minmax(0,1fr));gap:.1rem .75rem}
   .footer-nav-group[data-open="true"]>.footer-links{display:grid}
+  .footer-nav-group>noscript>.footer-nav-noscript-links{display:grid;padding:.25rem 0 .75rem;grid-template-columns:repeat(2,minmax(0,1fr));gap:.1rem .75rem}
+  .footer-nav-group:has(>noscript>.footer-nav-noscript-links) .footer-nav-toggle{display:none}
+  .footer-nav-group:has(>noscript>.footer-nav-noscript-links) .footer-nav-label{display:block;padding:.7rem .1rem}
 }
 
 
