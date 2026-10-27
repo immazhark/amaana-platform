@@ -1,3 +1,7 @@
+## 2026-10-27 — AF-R047/R057 browser CSS evidence correction — prepared
+
+CHATGPT_ACTIVE sole writer on `perf/browser-css-transfer-evidence-20261027`, base main `83044f7`. Defect: browser E2E summed independently fetched decoded CSS, then called it delivery. Navigation timing now separately records decoded/encoded/transfer bytes; all-zero/cache/opaque/missing timing remains unavailable, full transfer null with partial observation explicit. Prior route-selector assertions remain. Three new synthetic regressions red for absent API and green; native CSS11/11, bundle reporter13/13, full Vitest2282 PASS/20 isolated DB skips; strict TypeScript, full ESLint, governed Stylelint and Next build/postbuild client-secret PASS. Independent read-only review no blocker. Hosted exact-head Chromium remains unrun; local @playwright/test not installed. No app runtime/DB/payment/privacy/infra change, no 149-item classification change.
+
 ## 2026-10-27 IST — Current #472 release gate
 
 CHATGPT_ACTIVE sole writer. Recovered route contrast correction is red/green locally and still draft; new full hosted seven-job CI plus separate promotion/verify required after reconciling with main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd`. No deployment or 149-item promotion claimed. Details appear in the 2026-10-27 recovery entry below.

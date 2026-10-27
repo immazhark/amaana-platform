@@ -1,3 +1,7 @@
+## 2026-10-27 IST — AF-R047/R057 browser CSS transfer evidence
+
+CHATGPT_ACTIVE sole writer on `perf/browser-css-transfer-evidence-20261027`, based on protected main `83044f775166be0a3533d807a7ec3e268795530f`. Bounded test-first audit correction: the existing browser test mislabeled decoded stylesheet bytes from separate requests as network delivery. The updated test distinguishes navigation-timing decoded response body, encoded body and transfer with headers; missing/zero transfer is unavailable, with partial observations explicit. Existing CSS route-scope assertions remain. Source checks: 11 CSS native and 13 reporter cases PASS; full Vitest 2,282 PASS/20 isolated-DB skips; TypeScript, ESLint, governed Stylelint, Next production build and 84-file client-secret check PASS. Browser Playwright remains hosted-pending (not locally installed). Independent review found no code blocker. No app runtime/DB/payment/media/privacy/secrets/infra change. Earlier PR #491 remains separate/draft. Historical 149 totals unchanged. Rollback: revert this audit-only PR.
+
 ## 2026-10-27 IST — Current implementation lane: PR #472
 
 CHATGPT_ACTIVE sole writer. Restored draft #472 after workspace reset; route-level progress label regression reproduced red at 3.5415:1 and passed green 5/5 after a single CSS override. Merge of current main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd` is in progress. Exact-head full CI, separate ready-state and protected guarded merge remain pending. Detailed evidence is preserved below.
