@@ -1,3 +1,7 @@
+## 2026-10-27 IST — Story IST PR #480 staged for current-main validation
+
+CHATGPT_ACTIVE is sole implementation writer. Existing draft Story date PR #480 is reconciling by normal non-force merge with protected main `83044f775166be0a3533d807a7ec3e268795530f`; branch histories are retained. PR #472 passed full and separate ready-state, guarded merge and Railway exact-SHA SUCCESS, but public identity/readiness remains unverified. Scope is one display-timezone correction and isolated synthetic test, not source metadata/content, tax/finance, data, religious content or provider config. After local checks publish a new exact-tree draft head and run fresh full hosted CI; do not merge or trigger Railway during Neon budget hold (~94.6 of 100 CU-hours). No public DB requests or schema migrations authorized for this PR. Preserve 149-item status.
+
 ## 2026-10-26 IST — Story hero IST date current-main integration
 
 CHATGPT_ACTIVE single writer. Previously reviewed `fix/stories-ist-date-20261026` contained only `timeZone: "Asia/Kolkata"` for StoryPage's displayed publication date and one synthetic page-render regression (red1/green1). It now reconciles with released main `12f1ab3bc0713cccc0331aa04fe97c62c272e7a8`; Railway exact-SHA deployment `94d392bb-68b6-45da-8adb-bdffa73e3f28` SUCCESS but public version/readiness HTTP403 independently. Preserve both coordination histories. New merged-tree tests, exact-head hosted browser/build/database/security and separate promotion are mandatory. No content/publication/structured-data change or 149-item closure claim.
@@ -9,6 +13,22 @@ Merged-tree local validation completed: 2,268 Vitest passed/20 isolated-DB skipp
 CHATGPT_ACTIVE sole repository writer prepared `fix/stories-ist-date-20261026` locally from main `61edcd87`; PR #473 already merged and Railway deployed exact SHA successfully, independent public health remained HTTP 403 blocked. Existing PR #476 was separately reconciled to `b44a3e` and requires full exact-head CI `40355359483` plus promotion before merger. Next Story action after the queue: reconcile the local branch normally, preserve coordination histories, publish one bounded draft PR and require seven-job CI, separate ready-state, reviews and expected-head merge. No parallel implementation writer or infrastructure mutations.
 
 Story DateTime boundary `2026-10-26T20:00:00Z` rendered the prior UTC date in the hero; a synthetic actual-page regression failed before `timeZone: "Asia/Kolkata"`, passed afterward. Full local Vitest 2,254 pass/20 isolated-DB skips, TypeScript, scoped lint, full production build/postbuild and independent source review pass. One source-line correction plus test; no content/media/publication/privacy/finance/schema change. Rollback by reverting the bounded patch. No deployment, live timezone assertion, full backlog acceptance or 149-status change inferred.
+
+## 2026-10-27 IST — Current #472 release gate
+
+CHATGPT_ACTIVE sole writer. Recovered route contrast correction is red/green locally and still draft; new full hosted seven-job CI plus separate promotion/verify required after reconciling with main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd`. No deployment or 149-item promotion claimed. Details appear in the 2026-10-27 recovery entry below.
+
+## 2026-10-26 IST — PR #478 normal current-main reconciliation
+
+CHATGPT_ACTIVE single implementation writer. PR #477 completed hosted seven-job run `40361636703`, ready-state `40369750411` and exact-head guarded merge to protected main `12f1ab3bc0713cccc0331aa04fe97c62c272e7a8`. Railway website source-matched deployment `94d392bb-68b6-45da-8adb-bdffa73e3f28` was BUILDING; public runtime/readiness are not independently verified. Reconcile existing `feat/reviewed-faith-search-20261026` without changing publication/review eligibility, religious wording or full-library hero behavior. Only coordination histories overlap; preserve both. Require fresh exact-head CI, promotion/verify and guarded merge. No change to canonical 149 totals.
+
+Validation: feature module/page tests failed before implementation;10 focused tests and full local2254 pass/20 isolated-DB skips; strict TypeScript, scoped ESLint, spec syntax/diff checks pass. Independent source/security review PASS. Added hosted GET/format/clear/repeated-query browser test, not locally executed. Full-library hero stability source-reviewed, not independently media-tested. No reviewed content/criteria changes, religious acceptance or whole149 closure claim. Hosted exact-head and separate ready-state gates required.
+
+## 2026-10-26 IST — Reviewed Faith discovery
+
+CHATGPT_ACTIVE sole writer starts feat/reviewed-faith-search-20261026 from main655a1c23-equivalent source. Add title/excerpt GET search and closed ARTICLE/REMINDER/VIDEO filter after unchanged reviewed/public query. Keep full-library counts/topics/hero stable; explicit no-match recovery. No religious copy, review criteria, citations/calculations/DB changes. Regression first; source feature is not religious acceptance or whole149 closure. Existing473/476/477 remain frozen for hosted checks.
+
+
 
 ## 2026-10-26 IST — PR #477 current-main reconciliation
 
@@ -58,6 +78,7 @@ Validation: regression red1 then green1; clean candidate full Vitest2244 pass/20
 ## 2026-10-26 IST — Admin content keyboard bypass
 
 CHATGPT_ACTIVE sole writer on fix/admin-content-bypass-20261026 from main36d4e6ec. Source inspection: global #main target wraps admin sidebar; no direct task-content bypass exists. Add existing styled skip link and focusable unique target on existing content div. No auth, navigation permissions or actions change. Regression first; browser keyboard acceptance required. Rollback: revert scoped shell markup. PR470/473/474 remain browser-pending, no gate bypass.
+
 ## 2026-10-26 IST — Coordinated continuation of PR #470
 
 CHATGPT_ACTIVE sole implementation writer under renewed owner authorization; review agents are read-only. Reconciled current main 36d4e6ec068c88f697528bbdbf7887890303868d into existing perf/companion-minute-update-20261026, preserving both minute-update and retention-label histories. Prior head 820028eef1f7623e401fc6c6fcd9c2c5df3a6ed6 passed all seven jobs in 40326831879; independent source review found no blocker. This reconciliation requires fresh exact-head CI and separate ready-state before guarded merge. Railway website 1aa5eac3-2dc6-4125-8627-d02e50a50bb7 is SLEEPING at main 36d4e6e; public health request returned HTTP403 from this workspace, so runtime remains independently unverified. Historical 149 classifications unchanged.
@@ -1993,4 +2014,16 @@ On current protected main `f8694f71`, the 30-second Companion timer wrote a new 
 ## 2026-10-26 — Retention administration accessible labels scoped
 
 Current main `f8694f71` retained four disconnected labels in retention-review forms. Two synthetic document records prove eight unique `for`/`id` associations for decision, review date, deletion confirmation and reason. Red-before/green-after, TypeScript, lint, independent review and full 2,208 local Vitest pass (20 isolated-DB skips). Markup-only; no auth/RBAC, deletion semantics, documents, media, payments or approved retention schedule. Keep one writer; exact-head CI and separate protected release remain.
+
+## 2026-10-26 — AF-R019 low-contrast appeal metadata targeted
+
+Main `36d4e6ec` renders synthetic `AppealCard` against live `.v2-appeal-card{background:#fffdf8}`. Three visible text selectors (.v2-appeal-card-head small, .v2-appeal-progress-meta span, .v2-appeal-progress-foot) failed red at 3.7802/3.5415/3.5415:1 before the bounded three-declaration change. New `#66717d` yields 4.8915:1, 4/4 focused test green, full 2,247 local Vitest green (20 isolated-DB skips), strict TypeScript and scoped ESLint PASS; independent review no blockers. Hosted browser synthetic computed-style contrast awaits exact-head CI; no real appeal/field/user acceptance or fundraising/checkout changes claimed. AF-R019 wider site audit remains Partial.
+
+## 2026-10-26 IST — PR #472 held test repair checkpoint
+
+CHATGPT_ACTIVE corrected only the existing contrast browser assertion/math and narrowed the companion static test wording. CI `40331678571` failed when a computed translucent card background was equated with an opaque declaration; the revised test uses effective sRGB composition over the actual body and known canonical light underlays, with strict 4.5:1 checks including gradient endpoints. No production CSS changes. Full local 2247/20 skipped, targeted 4/4, TypeScript, scoped lint and spec syntax green; earlier concurrent timeout run is superseded by clean sequential pass, not silently counted as success. Existing PR #472 remains draft/red until normal latest-main reconciliation, new full exact-head hosted CI, separate ready-state verification and SHA-guarded merge. No deployment or user-data actions.
+
+## 2026-10-27 IST — #472 recovery and route-cascade accessibility defect
+
+Single writer CHATGPT_ACTIVE. The earlier unpublished corrected branch was lost when scratch was reset; GitHub retains old draft PR #472 head `88bfd7814a8152148ae159a4ae293092cd2b57e9` and failed browser CI `40369616477`. Recovered from remote, reproduced red exact 3.5415397988993007:1 with synthetic route-declaration regression, and corrected only the later Appeals CSS override; focused five tests and scoped lint/syntax pass. Local source fix `daa8e21d` is merging current main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd`. Require new full tests/build and hosted browser before ready/merge. Rollback revert this route color/token and the isolated regression if needed. No changes to eligibility, donation, personal data, tax, religious content, provider or deployment settings. 149-item count unchanged.
 
