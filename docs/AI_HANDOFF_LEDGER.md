@@ -1,3 +1,7 @@
+## 2026-10-27 IST — Appeal editor projections locally accepted
+
+CHATGPT_ACTIVE sole writer on `perf/appeal-editor-projections-20261027`, base main83044f775166be0a3533d807a7ec3e268795530f. Updates select rendered fields/authorname, audit history selects rendered fields/actorname, linked assistance selectsreference plusnine displayed verification boundary fields. Root appeal values, scope/order/null behavior/permissions/forms/actions/copy retained. Three actual-page query regressions failed before correction; final6 page cases plus appeal-action tests PASS; full2288 Vitest PASS/20 isolated-DB skips, full lint/clean production build including strict TypeScript/client-secret guard and independent read-only review PASS. Synthetic consent fixtures restrictive; no live/private records accessed and no credential-exposure claim. No policy/auth/workflow/schema/provider change, no149 promotion. Exact-head hosted acceptance required, no merge/deployment under Neon hold. Rollback isolated projections. Next separate bounded scope: latest-attempt clipboard feedback in direct-transfer form, leaving values/transaction code unchanged.
+
 ## 2026-10-27 IST — Current #472 release gate
 
 CHATGPT_ACTIVE sole writer. Recovered route contrast correction is red/green locally and still draft; new full hosted seven-job CI plus separate promotion/verify required after reconciling with main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd`. No deployment or 149-item promotion claimed. Details appear in the 2026-10-27 recovery entry below.

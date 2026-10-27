@@ -1,3 +1,11 @@
+## 2026-10-27 IST — Appeal editor projections locally accepted
+
+CHATGPT_ACTIVE sole writer on `perf/appeal-editor-projections-20261027`, base main83044f775166be0a3533d807a7ec3e268795530f. Updates select rendered fields/authorname, audit history selects rendered fields/actorname, linked assistance selectsreference plusnine displayed verification boundary fields. Root appeal values, scope/order/null behavior/permissions/forms/actions/copy retained. Three actual-page query regressions failed before correction; final6 page cases plus appeal-action tests PASS; full2288 Vitest PASS/20 isolated-DB skips, full lint/clean production build including strict TypeScript/client-secret guard and independent read-only review PASS. Synthetic consent fixtures restrictive; no live/private records accessed and no credential-exposure claim. No policy/auth/workflow/schema/provider change, no149 promotion. Exact-head hosted acceptance required, no merge/deployment under Neon hold. Rollback isolated projections. Next separate bounded scope: latest-attempt clipboard feedback in direct-transfer form, leaving values/transaction code unchanged.
+
+## 2026-10-27 IST — Appeal editor lean relation projections
+
+CHATGPT_ACTIVE sole writer on `perf/appeal-editor-projections-20261027` from verified main83044f775166be0a3533d807a7ec3e268795530f. Read-only reviewers confirmed update author/history actor use onlyname; linked assistance/verification needs onlyreference plus displayed boundary fields. Select only rendered relation data; preserve root appeal values, query IDs/orderings/null semantics/permission/actions/forms. Actual-page synthetic regressions first. No private/live records, credential relation or public assets accessed. No auth/policy/workflow/schema/provider change. PR500-507 remain separate drafts, main unchanged. Neon hold retained, no merge/deployment or149 status promotion. Rollback isolated projections.
+
 ## 2026-10-27 IST — Current implementation lane: PR #472
 
 CHATGPT_ACTIVE sole writer. Restored draft #472 after workspace reset; route-level progress label regression reproduced red at 3.5415:1 and passed green 5/5 after a single CSS override. Merge of current main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd` is in progress. Exact-head full CI, separate ready-state and protected guarded merge remain pending. Detailed evidence is preserved below.
