@@ -1,3 +1,7 @@
+## 2026-10-27 IST — AF-R054 programme hero preload, source candidate
+
+CHATGPT_ACTIVE is the sole implementation writer under the owner's current-session handoff. Branch `fix/programme-hero-preload-20261027`, base `83044f775166be0a3533d807a7ec3e268795530f`. Two existing `PageHero` paths now opt programme artwork into Next 16 image preload; category cards remain lazy and responsive `sizes`, source/alt, fallback selection are unchanged. Regression failed 1/7 before code and passed 9/9 focused after. Full local Vitest 2,284 passed / 20 isolated-database cases skipped (initial subprocess-EPERM rerun outside restricted sandbox); TypeScript, full lint and production build passed. Static JS 806,077/819,200; CSS 328,687/348,160 bytes. This is AF-R054 source consistency, not measured network/LCP/CWV or full acceptance. All newer draft PRs #479–#509 were checked for source overlap: none of the three paths changed. Current GitHub main is 83044f7; #509 still OPEN DRAFT despite owner's merged-status note. Neon compute-budget hold remains: publish draft only, no merge or deployment. Rollback: revert this scoped commit.
+
 ## 2026-10-27 IST — Current implementation lane: PR #472
 
 CHATGPT_ACTIVE sole writer. Restored draft #472 after workspace reset; route-level progress label regression reproduced red at 3.5415:1 and passed green 5/5 after a single CSS override. Merge of current main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd` is in progress. Exact-head full CI, separate ready-state and protected guarded merge remain pending. Detailed evidence is preserved below.

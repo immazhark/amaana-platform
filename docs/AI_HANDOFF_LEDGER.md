@@ -1,3 +1,7 @@
+## 2026-10-27 IST — AF-R054 bounded programme hero loading
+
+CHATGPT_ACTIVE sole writer took over under current owner instruction, independently verified protected main `83044f7` and retained existing 40 open draft PRs. Branch `fix/programme-hero-preload-20261027` adds a `ProgrammeArtwork` preload opt-in at two public `PageHero` call sites while card images stay lazy. One focused regression was red before implementation; focused 9 green. Full local suite 2,284 passed/20 opt-in database skips, strict TypeScript, full lint, clean production build and secret-boundary guard green. Aggregate built static JS 806,077/819,200 and CSS 328,687/348,160; not transfer/CWV. No payments, provider, media files, schema, donor data, infrastructure or public copy changed. Source-only AF-R054 increment; LCP element/waterfall/mobile/desktop remains unmeasured. No protected merge or Railway rollout while the existing Neon budget release hold stands. Rollback: revert the isolated task commit. Historical 149 classifications unchanged.
+
 ## 2026-10-27 IST — Current #472 release gate
 
 CHATGPT_ACTIVE sole writer. Recovered route contrast correction is red/green locally and still draft; new full hosted seven-job CI plus separate promotion/verify required after reconciling with main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd`. No deployment or 149-item promotion claimed. Details appear in the 2026-10-27 recovery entry below.
