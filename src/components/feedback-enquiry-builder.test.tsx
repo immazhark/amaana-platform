@@ -35,6 +35,20 @@ describe("feedback review query boundaries", () => {
     }
   });
 
+  it.each([
+    ["kind without review intent", { kind: "concern" }],
+    ["topic without review intent", { topic: "privacy" }],
+    ["both choices without review intent", { kind: "concern", topic: "privacy" }],
+    ["duplicate kind without review intent", { kind: ["concern", "appreciation"] }],
+    ["unreviewed sensitive kind without intent", { kind: "PRIVATE_USER_VALUE" }],
+  ] satisfies [string, Record<string, string | string[]>][])("recovers from %s", (_reason, preferences) => {
+    const html = renderToStaticMarkup(<FeedbackEnquiryBuilder preferences={preferences} />);
+    expect(html).toContain('role="alert"');
+    expect(html).toContain("These feedback preferences could not be read.");
+    expect(html).not.toContain("Open prepared feedback email");
+    expect(html).not.toContain("PRIVATE_USER_VALUE");
+  });
+
   it("preserves the reviewed native email handoff for a valid explicit submission", () => {
     const html = renderToStaticMarkup(<FeedbackEnquiryBuilder preferences={{
       intent: "review", kind: "concern", topic: "privacy",
