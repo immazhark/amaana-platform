@@ -256,7 +256,8 @@ export const getOurWorkIndexData = cache(async () => {
           mediaAssets: {
             where: PUBLIC_IDENTITY_IMAGE_WHERE,
             orderBy: [{ sourceYear: "desc" }],
-            take: 1,
+            // Keep fallback candidates when a newer image fails URL/alt validation.
+            take: 12,
             select: PUBLIC_IMAGE_SELECT,
           },
         },
