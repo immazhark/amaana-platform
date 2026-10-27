@@ -31,6 +31,7 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
   ]);
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
   const documents = await prisma.assistanceDocument.findMany({
+      where,
       include: {
         assistanceRequest: {
           select: {

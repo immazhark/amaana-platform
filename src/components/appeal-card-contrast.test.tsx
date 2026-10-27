@@ -7,6 +7,7 @@ import { AppealCard } from "./appeal-card";
 vi.mock("@/components/work-visual-placeholder", () => ({ WorkVisualPlaceholder: () => null }));
 
 const css = readFileSync(resolve(process.cwd(), "src/app/appeal-card.css"), "utf8");
+const routeCss = readFileSync(resolve(process.cwd(), "src/app/appeals.css"), "utf8");
 const selectors = [
   ".v2-appeal-card-head small",
   ".v2-appeal-progress-meta span",
@@ -63,5 +64,15 @@ describe("AF-R019 public appeal-card muted text contrast", () => {
     expect(background).toBe("#fffdf8");
     const foreground = cssProperty(selector, "color");
     expect(contrast(foreground, background)).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("keeps the Appeals route-level progress label override above 4.5:1", () => {
+    // Route CSS loads after the shared card styles; check its last direct
+    // declaration so a stale token cannot silently override the audited one.
+    const declarations = [...routeCss.matchAll(/\.v2-appeal-progress-meta span\s*\{\s*color:\s*(#[0-9a-fA-F]{6})\s*\}/g)];
+    expect(declarations.length).toBeGreaterThan(0);
+    const foreground = declarations.at(-1)?.[1];
+    if (!foreground) throw new Error("The Appeals progress label has no explicit route-level color");
+    expect(contrast(foreground, "#fffdf8")).toBeGreaterThanOrEqual(4.5);
   });
 });
