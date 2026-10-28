@@ -22,33 +22,36 @@ test("published Appeals update typography retains AA contrast on its dark gradie
   const response = await page.goto("/appeals", { waitUntil: "domcontentloaded" });
   expect(response?.ok()).toBe(true);
 
-  // CSS-only fixture: no live aid case, person, donor, or unpublished update is read.
-  await page.evaluate(() => {
-    const section = document.createElement("section");
-    section.className = "v2-section dark v2-appeal-updates";
-    section.id = "synthetic-appeal-update-contrast";
-    const line = document.createElement("div");
-    line.className = "v2-appeal-update-line";
-    const article = document.createElement("article");
-    const date = document.createElement("small");
-    date.textContent = "Synthetic publication date";
-    const body = document.createElement("p");
-    body.textContent = "Synthetic verified update for CSS audit only.";
-    article.append(date, body);
-    line.append(article);
-    section.append(line);
-    document.querySelector("main").append(section);
-  });
-
   for (const width of [390, 1440]) {
     await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
-    const surface = page.locator("#synthetic-appeal-update-contrast");
-    const computed = await surface.evaluate((section) => ({
-      backgroundImage: getComputedStyle(section).backgroundImage,
-      backgroundColor: getComputedStyle(section).backgroundColor,
-      date: getComputedStyle(section.querySelector("small")).color,
-      body: getComputedStyle(section.querySelector("article > p")).color,
-    }));
+    // Keep the synthetic fixture and style reads in one browser task.
+    // Hydration may replace nodes injected after domcontentloaded.
+    const computed = await page.evaluate(() => {
+      const section = document.createElement("section");
+      section.className = "v2-section dark v2-appeal-updates";
+      section.id = "synthetic-appeal-update-contrast";
+      const line = document.createElement("div");
+      line.className = "v2-appeal-update-line";
+      const article = document.createElement("article");
+      const date = document.createElement("small");
+      date.textContent = "Synthetic publication date";
+      const body = document.createElement("p");
+      body.textContent = "Synthetic verified update for CSS audit only.";
+      article.append(date, body);
+      line.append(article);
+      section.append(line);
+      document.querySelector("main").append(section);
+      try {
+        return {
+          backgroundImage: getComputedStyle(section).backgroundImage,
+          backgroundColor: getComputedStyle(section).backgroundColor,
+          date: getComputedStyle(date).color,
+          body: getComputedStyle(body).color,
+        };
+      } finally {
+        section.remove();
+      }
+    });
     expect(computed.backgroundImage, `${width}px approved dark gradient`).toContain("linear-gradient");
     const fallback = rgba(computed.backgroundColor);
     expect(fallback.rgb, "approved dark fallback").toEqual([29, 49, 80]);
