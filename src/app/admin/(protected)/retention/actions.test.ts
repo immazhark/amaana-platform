@@ -45,6 +45,16 @@ function deletionForm(confirm = "DELETE") {
   return form;
 }
 
+function holdForm() {
+  const form = new FormData();
+  form.set("documentId", "doc_123");
+  form.set("decision", "PLACE_HOLD");
+  form.set("reason", "Safeguarding review is active.");
+  form.set("expectedHoldAction", "");
+  form.set("expectedHoldCreatedAt", "");
+  return form;
+}
+
 describe("private document retention deletion", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -70,7 +80,7 @@ describe("private document retention deletion", () => {
     mocks.deleteDocumentRecord.mockResolvedValue({ id: "doc_123" });
     mocks.transaction.mockResolvedValue([]);
     mocks.serializableTransaction.mockImplementation(async callback => callback({
-      assistanceDocument: { findUniqueOrThrow: mocks.findUniqueOrThrow },
+      assistanceDocument: { findUniqueOrThrow: mocks.findUniqueOrThrow, updateMany: mocks.updateManyDocument },
       auditEvent: { findFirst: mocks.findFirstAudit, create: mocks.createAudit },
     }));
   });
@@ -151,10 +161,10 @@ describe("private document retention deletion", () => {
     form.set("expectedHoldAction", "assistance.document_legal_hold_placed");
     form.set("expectedHoldCreatedAt", createdAt.toISOString());
 
-    mocks.findFirstAudit.mockResolvedValue({
-      action: "assistance.document_legal_hold_placed",
-      createdAt,
-    });
+    mocks.findFirstAudit.mockImplementation(async args =>
+      args.where.action === "assistance.document_deletion_started"
+        ? null
+        : { action: "assistance.document_legal_hold_placed", createdAt });
 
     await reviewDocumentRetention(form);
 
@@ -166,6 +176,40 @@ describe("private document retention deletion", () => {
         metadata: expect.objectContaining({ documentId: "doc_123" }),
       }),
     }));
+  });
+
+  it("blocks a hold after a deletion claim, before creating an audit entry", async () => {
+    mocks.findFirstAudit.mockImplementation(async args =>
+      args.where.action === "assistance.document_deletion_started"
+        ? { action: "assistance.document_deletion_started" }
+        : null);
+
+    await expect(reviewDocumentRetention(holdForm())).rejects.toThrow(/deletion.*progress|deletion.*claimed/i);
+    expect(mocks.createAudit).not.toHaveBeenCalled();
+    expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
+  });
+
+  it("updates the document version inside the hold transaction", async () => {
+    let inTransaction = false;
+    mocks.serializableTransaction.mockImplementation(async callback => {
+      inTransaction = true;
+      try {
+        return await callback({
+          assistanceDocument: { findUniqueOrThrow: mocks.findUniqueOrThrow, updateMany: mocks.updateManyDocument },
+          auditEvent: { findFirst: mocks.findFirstAudit, create: mocks.createAudit },
+        });
+      } finally {
+        inTransaction = false;
+      }
+    });
+    mocks.updateManyDocument.mockImplementation(async () => {
+      expect(inTransaction).toBe(true);
+      return { count: 1 };
+    });
+
+    await reviewDocumentRetention(holdForm());
+    expect(mocks.updateManyDocument).toHaveBeenCalledOnce();
+    expect(mocks.createAudit).toHaveBeenCalledOnce();
   });
 
   it("requires exact destructive confirmation before loading the document", async () => {
@@ -220,6 +264,72 @@ describe("private document retention deletion", () => {
         expect(arg.data.metadata).not.toHaveProperty("sizeBytes");
       }
     }
+  });
+
+  it("claims and audits deletion in one serializable transaction before object deletion", async () => {
+    let inTransaction = false;
+    mocks.serializableTransaction.mockImplementation(async callback => {
+      inTransaction = true;
+      try {
+        return await callback({
+          assistanceDocument: { findUniqueOrThrow: mocks.findUniqueOrThrow, updateMany: mocks.updateManyDocument },
+          auditEvent: { findFirst: mocks.findFirstAudit, create: mocks.createAudit },
+        });
+      } finally {
+        inTransaction = false;
+      }
+    });
+    mocks.updateManyDocument.mockImplementation(async () => {
+      expect(inTransaction).toBe(true);
+      return { count: 1 };
+    });
+    mocks.createAudit.mockImplementation(async args => {
+      if (args.data.action === "assistance.document_deletion_started") expect(inTransaction).toBe(true);
+      return { id: "audit_123" };
+    });
+
+    await reviewDocumentRetention(deletionForm());
+    expect(mocks.serializableTransaction).toHaveBeenCalledOnce();
+    expect(mocks.deletePrivateDocumentObject).toHaveBeenCalledOnce();
+  });
+
+  it("rejects a second deletion when an earlier deletion claim remains", async () => {
+    mocks.findFirstAudit.mockImplementation(async args =>
+      args.where.action === "assistance.document_deletion_started"
+        ? { action: "assistance.document_deletion_started" }
+        : null);
+
+    await expect(reviewDocumentRetention(deletionForm())).rejects.toThrow(/deletion.*progress|deletion.*claimed/i);
+    expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
+    expect(mocks.deleteDocumentRecord).not.toHaveBeenCalled();
+  });
+
+  it("does not delete storage if the deletion-claim audit cannot commit", async () => {
+    mocks.createAudit.mockRejectedValueOnce(new Error("Synthetic audit write failure"));
+
+    await expect(reviewDocumentRetention(deletionForm())).rejects.toThrow(/Synthetic audit write failure/);
+    expect(mocks.serializableTransaction).toHaveBeenCalledOnce();
+    expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
+    expect(mocks.deleteDocumentRecord).not.toHaveBeenCalled();
+  });
+
+  it("keeps a later hold blocked after an uncertain object deletion failure", async () => {
+    let started = false;
+    mocks.findFirstAudit.mockImplementation(async args =>
+      args.where.action === "assistance.document_deletion_started" && started
+        ? { id: "deletion_started_123" }
+        : null);
+    mocks.createAudit.mockImplementation(async args => {
+      if (args.data.action === "assistance.document_deletion_started") started = true;
+      return { id: "audit_123" };
+    });
+    mocks.deletePrivateDocumentObject.mockRejectedValueOnce(new Error("Synthetic uncertain storage failure"));
+
+    await expect(reviewDocumentRetention(deletionForm())).rejects.toThrow(/uncertain storage failure/);
+    await expect(reviewDocumentRetention(holdForm())).rejects.toThrow(/deletion.*progress|deletion.*claimed/i);
+    expect(mocks.deletePrivateDocumentObject).toHaveBeenCalledOnce();
+    expect(mocks.deleteDocumentRecord).not.toHaveBeenCalled();
+    expect(mocks.createAudit).toHaveBeenCalledOnce();
   });
 
   it("revalidates a newly placed hold immediately before storage deletion", async () => {

@@ -54,6 +54,25 @@ async function currentLegalHold(documentId: string, db: Pick<typeof prisma, "aud
   return event?.action === "assistance.document_legal_hold_placed";
 }
 
+async function deletionClaimed(documentId: string, requestId: string, db: Pick<typeof prisma, "auditEvent"> = prisma) {
+  const event = await db.auditEvent.findFirst({
+    where: {
+      entityType: "AssistanceRequest",
+      entityId: requestId,
+      action: "assistance.document_deletion_started",
+      metadata: { path: ["documentId"], equals: documentId },
+    },
+    select: { id: true },
+  });
+  return event !== null;
+}
+
+function requireUnclaimedDeletion(claimed: boolean) {
+  if (claimed) {
+    throw new Error("Document deletion is already claimed or in progress. Stop and reconcile the deletion before another retention decision.");
+  }
+}
+
 export async function reviewDocumentRetention(formData: FormData) {
   const user = await requirePermission("assistance.approve");
   const documentId = String(singleTextField(formData, "documentId") ?? "").trim();
@@ -96,7 +115,7 @@ export async function reviewDocumentRetention(formData: FormData) {
     await withSerializableTransactionRetry(async tx => {
       const freshDocument = await tx.assistanceDocument.findUniqueOrThrow({
         where: { id: documentId },
-        select: { assistanceRequestId: true, objectKey: true },
+        select: { assistanceRequestId: true, objectKey: true, updatedAt: true },
       });
       if (freshDocument.assistanceRequestId !== document.assistanceRequestId || freshDocument.objectKey !== document.objectKey) {
         throw new Error("This evidence record changed while you were reviewing it. Refresh before recording retention.");
@@ -110,6 +129,14 @@ export async function reviewDocumentRetention(formData: FormData) {
       const currentlyHeld = latestAction === "assistance.document_legal_hold_placed";
       if (decision === "PLACE_HOLD" && currentlyHeld) throw new Error("This document is already under legal/audit/safeguarding hold");
       if (decision === "RELEASE_HOLD" && !currentlyHeld) throw new Error("This document is not currently under hold");
+      requireUnclaimedDeletion(await deletionClaimed(documentId, document.assistanceRequestId, tx));
+      const updated = await tx.assistanceDocument.updateMany({
+        where: { id: documentId, objectKey: document.objectKey, updatedAt: freshDocument.updatedAt },
+        data: { updatedAt: new Date() },
+      });
+      if (updated.count !== 1) {
+        throw new Error("This evidence record changed while you were reviewing it. Refresh before recording retention.");
+      }
       const action = decision === "PLACE_HOLD"
         ? "assistance.document_legal_hold_placed"
         : decision === "RELEASE_HOLD"
@@ -133,56 +160,56 @@ export async function reviewDocumentRetention(formData: FormData) {
       throw new Error("Raw evidence can only be deleted after the assistance request is closed/rejected or its linked appeal is closed");
     }
 
-    // Revalidate the destructive preconditions immediately before touching
-    // storage. The initial read is only for the operator preview; it must not
-    // authorize a later deletion after another admin changes the request/hold.
-    const deletionSnapshot = await prisma.assistanceDocument.findUniqueOrThrow({
-      where: { id: documentId },
-      select: {
-        assistanceRequestId: true,
-        objectKey: true,
-        updatedAt: true,
-        assistanceRequest: {
-          select: {
-            status: true,
-            appeal: { select: { status: true } },
+    // The hold path and deletion claim both update the same document version
+    // in a serializable transaction. A committed claim bars later holds before
+    // external storage deletion starts, including after an uncertain failure.
+    await withSerializableTransactionRetry(async tx => {
+      const deletionSnapshot = await tx.assistanceDocument.findUniqueOrThrow({
+        where: { id: documentId },
+        select: {
+          assistanceRequestId: true,
+          objectKey: true,
+          updatedAt: true,
+          assistanceRequest: {
+            select: {
+              status: true,
+              appeal: { select: { status: true } },
+            },
           },
         },
-      },
-    });
-    if (deletionSnapshot.assistanceRequestId !== document.assistanceRequestId ||
-        deletionSnapshot.objectKey !== document.objectKey ||
-        deletionSnapshot.updatedAt.getTime() !== document.updatedAt.getTime()) {
-      throw new Error("This evidence record changed while you were reviewing it. Refresh before deleting.");
-    }
-    if (await currentLegalHold(documentId)) {
-      throw new Error("This document was placed under hold while you were reviewing it. Refresh before deleting.");
-    }
-    const stillTerminal = ["CLOSED", "REJECTED"].includes(deletionSnapshot.assistanceRequest.status);
-    const stillClosedLinkedAppeal = deletionSnapshot.assistanceRequest.appeal?.status === "CLOSED";
-    if (!stillTerminal && !stillClosedLinkedAppeal) {
-      throw new Error("The request or linked appeal changed while you were reviewing it. Refresh before deleting.");
-    }
+      });
+      if (deletionSnapshot.assistanceRequestId !== document.assistanceRequestId ||
+          deletionSnapshot.objectKey !== document.objectKey ||
+          deletionSnapshot.updatedAt.getTime() !== document.updatedAt.getTime()) {
+        throw new Error("This evidence record changed while you were reviewing it. Refresh before deleting.");
+      }
+      if (await currentLegalHold(documentId, tx)) {
+        throw new Error("This document was placed under hold while you were reviewing it. Refresh before deleting.");
+      }
+      requireUnclaimedDeletion(await deletionClaimed(documentId, document.assistanceRequestId, tx));
+      const stillTerminal = ["CLOSED", "REJECTED"].includes(deletionSnapshot.assistanceRequest.status);
+      const stillClosedLinkedAppeal = deletionSnapshot.assistanceRequest.appeal?.status === "CLOSED";
+      if (!stillTerminal && !stillClosedLinkedAppeal) {
+        throw new Error("The request or linked appeal changed while you were reviewing it. Refresh before deleting.");
+      }
 
-    const claimed = await prisma.assistanceDocument.updateMany({
-      where: { id: documentId, objectKey: document.objectKey, updatedAt: deletionSnapshot.updatedAt },
-      data: { updatedAt: new Date() },
-    });
-    if (claimed.count !== 1) {
-      throw new Error("This evidence record changed while you were reviewing it. Refresh before deleting.");
-    }
+      const claimed = await tx.assistanceDocument.updateMany({
+        where: { id: documentId, objectKey: document.objectKey, updatedAt: deletionSnapshot.updatedAt },
+        data: { updatedAt: new Date() },
+      });
+      if (claimed.count !== 1) {
+        throw new Error("This evidence record changed while you were reviewing it. Refresh before deleting.");
+      }
 
-    await prisma.auditEvent.create({
-      data: {
-        actorId: user.id,
-        action: "assistance.document_deletion_started",
-        entityType: "AssistanceRequest",
-        entityId: document.assistanceRequestId,
-        metadata: {
-          documentId,
-          reason,
+      await tx.auditEvent.create({
+        data: {
+          actorId: user.id,
+          action: "assistance.document_deletion_started",
+          entityType: "AssistanceRequest",
+          entityId: document.assistanceRequestId,
+          metadata: { documentId, reason },
         },
-      },
+      });
     });
 
     await deletePrivateDocumentObject(document.objectKey, document.assistanceRequestId);

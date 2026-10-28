@@ -1,3 +1,9 @@
+## 2026-10-28 IST — CHATGPT_ACTIVE sole-writer handoff and retention claim candidate
+
+Mohammed Mazhar Khan explicitly transferred sole repository implementation ownership to this ChatGPT session. Source parent: frozen #527 `91634eb3d221c8cd9c531dd03b030feeafcc8c12` stacked on #526 `f97f398e31ce8cc5cf142e56d1f2ff5f138ac912`; protected main `83044f775166be0a3533d807a7ec3e268795530f`. No published #523 branch/PR was found; prior local work was not silently assumed available. New isolated task branch: `fix/retention-hold-delete-claim-20261028`.
+
+Four new race-contract tests RED before implementation, then 37 retention unit cases GREEN. Serializable same-row version updates coordinate hold decisions and deletion claims. The deletion-start audit commits atomically with the claim before any storage call; later holds/repeated deletions fail closed. Added two isolated PostgreSQL ordering tests to the actual database job; local PostgreSQL unavailable. Full local 2,524 Vitest PASS /22 isolated-DB SKIP; strict TS, scoped lint, clean production build, client secret/image guards PASS. No live data, storage deletion, migration or rollout. Keep draft stacked until exact-head hosted database/browser/build tests, separate ready-state and protected SHA-guarded release. Risk: HIGH private-evidence deletion; uncertain provider failure retains an operator-reconciliation hold. Rollback: normal revert. Historical 149 statuses unchanged.
+
 ## 2026-10-28 IST — Notification recovery scalar validation accepted locally
 
 CODEX_ACTIVE sole writer, branch `fix/notification-recovery-inputs-20261028`, parent #526 `f97f398e31ce8cc5cf142e56d1f2ff5f138ac912`. Fresh GitHub confirms #526 remains draft/unmerged, with hosted browser acceptance still running; main remains `83044f775166be0a3533d807a7ec3e268795530f`. Owner continuation and standing merge approval are recorded; no assumption that approval itself changed Git.
