@@ -1,3 +1,7 @@
+## 2026-10-28 IST — Donation-detail display timezone correction claimed
+
+CHATGPT_ACTIVE sole writer, branch `fix/admin-donation-detail-ist-20261028`, base protected main `83044f775166be0a3533d807a7ec3e268795530f`. Private donation detail previously showed unzoned event/transfer/record timestamps on UTC production. Two actual-page SSR synthetic tests first failed at IST year boundary then passed after explicit Asia/Kolkata formatting and helper reuse for provider events. Full Vitest 2,284 PASS / 20 opt-in isolated-DB SKIP; strict TS, full ESLint+Stylelint and clean production build with admin-edge, contracts, client-secret and image gates PASS. A first build failed on generated `.next` persistence; old artifacts were moved recoverably to `/tmp/amaana-donation-ist-build.se9Vaq/build-before-clean-retry`, and the next clean run succeeded. No payment lifecycle, donor eligibility, data, RBAC, schema, provider calls, actions or production rollout; keep draft under Neon release hold and require exact-head hosted acceptance, protected guards and live verification. Historical 149 totals unchanged. Rollback by reverting this bounded patch.
+
 ## 2026-10-27 IST — Current #472 release gate
 
 CHATGPT_ACTIVE sole writer. Recovered route contrast correction is red/green locally and still draft; new full hosted seven-job CI plus separate promotion/verify required after reconciling with main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd`. No deployment or 149-item promotion claimed. Details appear in the 2026-10-27 recovery entry below.
