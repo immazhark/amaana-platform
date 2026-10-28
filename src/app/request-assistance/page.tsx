@@ -21,7 +21,7 @@ const assistanceCopy = {
   evidenceHelp: <small id="documents-help">Documents are used for private verification and administration. Uploading a document does not give Amaana permission to publish it.</small>,
   privacyNote: <p className={formStyles.privacyNote}>Your request and supporting documents remain private by default. Public use of identity, photographs or sensitive circumstances is a separate reviewed decision.</p>,
   consentHelp: <small id="assistance-consent-help">I understand that submission does not guarantee assistance or public fundraising, and that Amaana may request further information to verify the need. Public use of a name, photograph or sensitive story details requires a separate decision and consent review.</small>,
-  termsNotice: <p className="muted">Before submitting, please review the <a href="/terms" target="_blank" rel="noreferrer">assistance and platform terms</a> and <a href="/privacy" target="_blank" rel="noreferrer">privacy notice</a>.</p>,
+  termsNotice: <p className="muted">Before submitting, please review the <a href="/terms" target="_blank" rel="noreferrer">assistance and platform terms<span className="sr-only"> (opens in a new tab)</span></a> and <a href="/privacy" target="_blank" rel="noreferrer">privacy notice<span className="sr-only"> (opens in a new tab)</span></a>.</p>,
 };
 
 export default function RequestAssistancePage() {

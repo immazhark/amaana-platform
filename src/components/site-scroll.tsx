@@ -58,7 +58,11 @@ export function useSiteScroll(pathname: string) {
       // Ctrl+wheel also represents touchpad pinch zoom; scroll locks must
       // leave the browser's zoom gesture available.
       if (event.ctrlKey) return;
-      if (document.body.matches(".af-menu-lock,.af-navigation-lock")) {
+      // Keep the page locked while letting a constrained mobile menu handle
+      // its own native wheel scrolling. Navigation transitions stay locked.
+      const inOpenMenu = event.target instanceof Element && Boolean(event.target.closest(".mobile-menu.open"));
+      if (document.body.matches(".af-navigation-lock") ||
+          (document.body.matches(".af-menu-lock") && !inOpenMenu)) {
         event.preventDefault();
         return;
       }

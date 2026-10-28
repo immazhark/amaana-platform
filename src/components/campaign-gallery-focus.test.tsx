@@ -1,3 +1,4 @@
+import { isValidElement, type ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 afterEach(() => {
@@ -26,16 +27,21 @@ async function openFixture() {
   const closeFocus = vi.fn();
   const refs = [dialogRef, { current: { focus: closeFocus } }, { current: [trigger, fallback] }];
   let refIndex = 0;
+  let activeId: string | null = null;
   const body = { style: { overflow: "scroll" } };
   const windowTarget = new EventTarget();
 
   vi.doMock("react", async importOriginal => ({
     ...await importOriginal<typeof import("react")>(),
-    useState: () => ["first", vi.fn()],
+    useState: () => [activeId, (next: string | null | ((id: string | null) => string | null)) => { activeId = typeof next === "function" ? next(activeId) : next; }],
     useMemo: (factory: () => unknown) => factory(),
     useCallback: (callback: unknown) => callback,
     useId: () => "focus-fixture",
-    useRef: () => refs[refIndex++],
+    useRef: (initial: unknown) => {
+      const index = refIndex++;
+      if (!refs[index]) refs[index] = { current: initial } as typeof refs[number];
+      return refs[index];
+    },
     useEffect: (callback: () => (() => void) | undefined) => { effects.push(callback); },
   }));
   vi.doMock("next/image", () => ({ default: () => null }));
@@ -47,19 +53,46 @@ async function openFixture() {
   }));
 
   const { CampaignMediaGallery } = await import("./campaign-media-gallery");
-  CampaignMediaGallery({ items: [
+  const items = [
     { id: "first", url: "/media/first.webp", alt: "First photograph" },
     { id: "second", url: "/media/second.webp", alt: "Second photograph" },
-  ] });
+  ];
+  function render() {
+    refIndex = 0;
+    effects.length = 0;
+    return CampaignMediaGallery({ items });
+  }
+  function findOpener(node: ReactNode): ((event: { currentTarget: unknown }) => void) | undefined {
+    if (Array.isArray(node)) {
+      for (const child of node) { const handler = findOpener(child); if (handler) return handler; }
+    } else if (isValidElement<{ children?: ReactNode; "aria-label"?: string; onClick?: (event: { currentTarget: unknown }) => void }>(node)) {
+      if (node.type === "button" && node.props["aria-label"]?.startsWith("Enlarge image 1")) return node.props.onClick;
+      return findOpener(node.props.children);
+    }
+  }
+  const opener = findOpener(render());
+  if (!opener) throw new Error("Expected thumbnail opening handler");
+  opener({ currentTarget: trigger });
+  render();
   const effect = effects[0];
   if (!effect) throw new Error("Expected the gallery lifecycle effect");
-  const cleanup = effect();
+  let cleanup = effect();
   if (!cleanup) throw new Error("Expected modal cleanup");
   expect(body.style.overflow).toBe("hidden");
   expect(closeFocus).toHaveBeenCalledOnce();
 
   return {
     dialogRef, dialog, trigger, fallback, triggerFocus, fallbackFocus, body, firstFocus, lastFocus,
+    navigate() {
+      const event = new Event("keydown", { cancelable: true });
+      Object.defineProperty(event, "key", { value: "ArrowRight" });
+      windowTarget.dispatchEvent(event);
+      expect(event.defaultPrevented).toBe(true);
+      cleanup?.();
+      render();
+      cleanup = effects[0]?.();
+      if (!cleanup) throw new Error("Expected navigation lifecycle");
+    },
     key(key: string, modifiers: object = {}) {
       const event = new Event("keydown", { cancelable: true });
       Object.defineProperties(event, Object.fromEntries(Object.entries({ key, ...modifiers }).map(([name, value]) => [name, { value }])));
@@ -76,7 +109,7 @@ async function openFixture() {
     close() {
       dialog.isConnected = false;
       dialogRef.current = null;
-      cleanup();
+      cleanup?.();
       expect(body.style.overflow).toBe("scroll");
     },
     flush() {
@@ -87,6 +120,15 @@ async function openFixture() {
 }
 
 describe("gallery delayed focus restoration", () => {
+  it("returns to the original opener after navigating to another image", async () => {
+    const fixture = await openFixture();
+    fixture.navigate();
+    fixture.close();
+    fixture.flush();
+    expect(fixture.triggerFocus).toHaveBeenCalledOnce();
+    expect(fixture.fallbackFocus).not.toHaveBeenCalled();
+  });
+
   it("does not move focus out of a gallery dialog reopened before the frame runs", async () => {
     const fixture = await openFixture();
     fixture.close();

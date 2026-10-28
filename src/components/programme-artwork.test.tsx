@@ -18,4 +18,20 @@ describe("programme artwork selection", () => {
     }
     expect(hasProgrammeArtwork("unknown-programme")).toBe(false);
   });
+
+  it("preloads opted-in hero artwork without changing its responsive size", () => {
+    const html = renderToStaticMarkup(
+      <ProgrammeArtwork slug="ramadan-eid" sizes="(max-width: 900px) 90vw, 45vw" priority />,
+    );
+    expect(html).toContain('rel="preload"');
+    expect(html).toContain('as="image"');
+    expect(html).toContain('sizes="(max-width: 900px) 90vw, 45vw"');
+    expect(html).not.toContain('loading="lazy"');
+  });
+
+  it("leaves programme cards lazy and without a preload hint", () => {
+    const html = renderToStaticMarkup(<ProgrammeArtwork slug="winter-relief" />);
+    expect(html).toContain('loading="lazy"');
+    expect(html).not.toContain('rel="preload"');
+  });
 });

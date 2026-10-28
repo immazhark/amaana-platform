@@ -10,8 +10,8 @@ const transitions: Record<string, string[]> = { DRAFT: ["UNDER_REVIEW"], UNDER_R
 export default async function AppealEditorPage({ params }: Props) {
   const user = await requirePermission("appeal.view"); const { id } = await params;
   const [appeal, history] = await Promise.all([
-    prisma.appeal.findUnique({ where: { id }, include: { updates: { include: { author: true }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] }, assistanceRequest: { include: { verification: true } } } }),
-    prisma.auditEvent.findMany({ where: { entityType: "Appeal", entityId: id }, include: { actor: true }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] }),
+    prisma.appeal.findUnique({ where: { id }, include: { updates: { select: { id: true, title: true, content: true, isPublic: true, author: { select: { name: true } } }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] }, assistanceRequest: { select: { referenceNumber: true, verification: { select: { decision: true, completedAt: true, confidentialityLevel: true, publicNameConsent: true, photoConsent: true, medicalDetailsConsent: true, institutionNameConsent: true, archiveConsent: true, zakatStatus: true } } } } } }),
+    prisma.auditEvent.findMany({ where: { entityType: "Appeal", entityId: id }, select: { id: true, action: true, createdAt: true, actor: { select: { name: true } } }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] }),
   ]);
   if (!appeal) notFound();
   const editable = ["DRAFT", "UNDER_REVIEW", "REJECTED"].includes(appeal.status) && hasPermission(user, "appeal.update");

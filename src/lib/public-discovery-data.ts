@@ -79,6 +79,22 @@ export async function getFaithDiscoveryData() {
           topic: { select: { slug: true, name: true } },
         },
       },
+
+    },
+  });
+}
+
+/** Only the library hero and filtered lead render images. Recheck publication
+ * when loading their candidates so a withdrawn record supplies no media. */
+export async function getVisibleFaithMedia(ids: readonly string[]) {
+  const visibleIds = [...new Set(ids)];
+  if (visibleIds.length > 2) throw new Error("At most two Faith media records are allowed");
+  if (visibleIds.length === 0) return [];
+
+  return prisma.faithContent.findMany({
+    where: { ...publicFaithWhere, id: { in: visibleIds } },
+    select: {
+      id: true,
       mediaAssets: {
         where: {
           kind: "IMAGE",

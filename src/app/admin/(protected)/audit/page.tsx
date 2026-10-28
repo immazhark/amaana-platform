@@ -68,16 +68,16 @@ export default async function AuditHistoryPage({ searchParams }: Props) {
     {action && <p className="muted">Showing exact action <strong>{action}</strong>. <Link href={{ pathname: "/admin/audit", query: entityType ? { entityType } : {} }}>Clear action filter</Link></p>}
     <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Audit events">
       <table>
-        <thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Entity</th><th>Details</th></tr></thead>
+        <thead><tr><th>Time (IST)</th><th>Actor</th><th>Action</th><th>Entity</th><th>Details</th></tr></thead>
         <tbody>{events.map(event => <tr key={event.id}>
-          <td>{event.createdAt.toLocaleString("en-IN")}</td>
+          <td>{event.createdAt.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</td>
           <td>{event.actor.name}<br/><small>{event.actor.email}</small></td>
           <td><Link href={{ pathname: "/admin/audit", query: { action: event.action, ...(entityType ? { entityType } : {}) } }}><strong>{event.action}</strong></Link></td>
           <td>{event.entityType}<br/><small>{event.entityId}</small></td>
           <td><small>{formatMetadata(event.metadata)}</small></td>
         </tr>)}</tbody>
       </table>
-      {events.length === 0 && <p className="empty-state">No audit events have been recorded yet.</p>}
+      {events.length === 0 && <p className="empty-state">{action || entityType ? <>No audit events match these filters. <Link href="/admin/audit">View all audit events</Link></> : "No audit events have been recorded yet."}</p>}
     </div>
     <nav className="filter-row" aria-label="Audit history pagination">
       {pagination.hasPrevious && <Link href={pageHref(pagination.page - 1)}>Previous</Link>}

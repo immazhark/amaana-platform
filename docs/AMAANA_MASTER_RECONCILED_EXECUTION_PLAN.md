@@ -1,3 +1,7 @@
+## 2026-10-28 IST — 43-draft source integration checkpoint
+
+Existing #479–#522 except superseded #517, plus parent #525, normally combined under `integrate/verified-draft-fixes-20261028`. Exact scopes/heads and two integration corrections are in `docs/INTEGRATED_DRAFT_FIXES_2026-10-28.md`. Full local 2,512 PASS /20 opt-in DB SKIP; types/lint/clean build/budgets/native checks and independent reviews PASS. Hosted acceptance/merge/deployment pending. No new master-row completion or historical149 count change; manual/provider/factual acceptance remains distinct. #523 unresolved.
+
 ## 2026-10-28 IST — AF-R069 new-tab source context
 
 Six source-link accessible-name corrections in Companion/assistance: actual-state SSR regressions RED four / GREEN four; full local Vitest 2,286 PASS / 20 isolated-DB SKIP; types, lint, clean build, secret/image guards and independent review PASS. Prepared real-browser accessible-name assertions await hosted execution. Preserve religious copy, calculations, URLs and assistance submission behavior. Source branch `fix/companion-and-assistance-link-context-20261028` from main83044f7; no merge/deploy/full accessibility or149-item acceptance claim. #519 separately covers other links.

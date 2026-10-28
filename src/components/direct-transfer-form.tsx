@@ -20,19 +20,21 @@ export function DirectTransferForm({ appealId, maxAmount, method, paymentDetails
   const [upiAmount, setUpiAmount] = useState("");
   const [uncertain, setUncertain] = useState(false);
   const submissionRef = useRef(false);
+  const copyAttemptRef = useRef(0);
   const transactionMax = Math.min(maxAmount, 1_000_000);
   const transactionMin = transactionMax < 10 ? transactionMax : 10;
   const bankUnavailable = method === "BANK_TRANSFER" && !paymentDetails.bank;
   const upiUri = getUpiPaymentUri(paymentDetails.upi.id, upiAmount, transactionMin, transactionMax);
 
   async function copyPaymentDetail(value: string, label: string) {
+    const attempt = ++copyAttemptRef.current;
     try {
       await navigator.clipboard.writeText(value);
-      setCopyFeedback({ method, text: `${label} copied.` });
+      if (attempt === copyAttemptRef.current) setCopyFeedback({ method, text: `${label} copied.` });
     } catch {
       // Clipboard access can be unavailable or explicitly denied. Keep the
       // donor on the verified payment details and offer an actionable fallback.
-      setCopyFeedback({ method, text: `Could not copy ${label}. Select the value above and copy it manually.` });
+      if (attempt === copyAttemptRef.current) setCopyFeedback({ method, text: `Could not copy ${label}. Select the value above and copy it manually.` });
     }
   }
   async function submit(event: FormEvent<HTMLFormElement>) {
