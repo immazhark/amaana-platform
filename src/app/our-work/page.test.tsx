@@ -69,3 +69,14 @@ describe("published portfolio page", () => {
     expect(html).toContain("These filters could not be read");
   });
 });
+
+
+it("keeps a text-matching umbrella when the selected year's edition does not match", async () => {
+  mocks.getWork.mockResolvedValue([{ initiatives: [
+    { ...initiative("dates-distribution", null, 2025, 2026), summary: "Synthetic umbrella match" },
+    { ...initiative("dates-distribution-2026", 2026), summary: "Annual edition" },
+  ] }]);
+  const html = await render({ q: "umbrella match", year: "2026" });
+  expect(resultLinks(html)).toEqual(["dates-distribution"]);
+  expect(html).toContain("1 published initiative matching these filters.");
+});

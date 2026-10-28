@@ -14,6 +14,7 @@ import { getAppealsIndexData, getCompletedAidShowcaseData, getDonationImpactHigh
 import styles from "./appeals-audit.module.css";
 import { canExposeSyntheticStagingContent, isSyntheticStagingAppeal } from "@/lib/public-environment";
 import { selectGalleryPublicImage } from "@/lib/public-media";
+import { selectAppealDiscovery, type AppealSearch } from "@/lib/appeal-discovery";
 
 export const metadata: Metadata = {
   title: "Verified Appeals",
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
 // Reviewed database projections retain their independent bounded caches.
 export const dynamic = "force-dynamic";
 
-export default async function AppealsPage() {
+export default async function AppealsPage({ searchParams }: { searchParams: Promise<AppealSearch> }) {
   const [appealRecords, completedAid, publishedOutcomes] = await Promise.all([
     getAppealsIndexData(),
     getCompletedAidShowcaseData(),
@@ -35,6 +36,7 @@ export default async function AppealsPage() {
   ]);
   const isStaging = canExposeSyntheticStagingContent();
   const appeals = appealRecords.filter(appeal => isAppealOpenForDonations(appeal) && (isStaging || !isSyntheticStagingAppeal(appeal)));
+  const selection = selectAppealDiscovery(appeals, await searchParams);
   const completedAidMedia = new Map(completedAid.map(item => [item.slug, selectGalleryPublicImage(item.mediaAssets)]));
   const publishedCompletedProgrammes = programmes.filter(
     programme => programme.causeSlug === "medical-financial-relief" && completedAidMedia.has(programme.slug),
@@ -59,7 +61,16 @@ export default async function AppealsPage() {
       <div className="v2-shell"><VerifiedImpactStrip headingId="appeals-published-outcomes" items={publishedOutcomes.flatMap(item =>
         item.primaryMetric && item.primaryMetricLabel ? [{ slug: item.slug, title: item.title, value: item.primaryMetric, label: item.primaryMetricLabel }] : [],
       )} /></div>
-      <section className="v2-section paper" id="current-appeals" aria-labelledby="current-appeals-title"><div className="v2-shell"><SectionHeading eyebrow={<>Current appeals</>} title={<>Give where a reviewed need is active.</>} subtitle={<>Donations are currently limited to India. Amaana does not accept foreign contributions because the Foundation is not FCRA-registered.</>} id="current-appeals-title" />{appeals.length ? <div className="v2-appeals-grid">{appeals.map(appeal => <div className={styles.appealItem} key={appeal.slug}>{isStaging && isSyntheticStagingAppeal(appeal) && <span className={styles.stagingBadge}>Staging test</span>}<AppealCard appeal={appeal} /></div>)}</div> : <div className="v2-appeals-empty"><span className="v2-section-label">No active public appeal right now</span><h3>No Public Appeal Is Open Right Now</h3><p>That does not mean the work has stopped. You can explore completed cases or enquire about Amaana’s recurring initiatives. New urgent appeals will appear here after verification.</p><div className="v2-hero-actions"><Link className="v2-button" href="/our-work">Explore completed work</Link><Link className="v2-text-link" href="/stories">Read Stories of Amanah →</Link></div></div>}</div></section>
+      <section className="v2-section paper" id="current-appeals" aria-labelledby="current-appeals-title"><div className="v2-shell"><SectionHeading eyebrow={<>Current appeals</>} title={<>Give where a reviewed need is active.</>} subtitle={<>Donations are currently limited to India. Amaana does not accept foreign contributions because the Foundation is not FCRA-registered.</>} id="current-appeals-title" />
+        <form key={selection.q} className="form-grid" method="get" action="/appeals#current-appeals" aria-label="Search active appeals">
+          <label className="field" htmlFor="appeal-search">Search active appeals<input id="appeal-search" name="q" type="search" maxLength={80} defaultValue={selection.q} aria-invalid={selection.invalid || undefined} aria-describedby={selection.invalid ? "appeal-search-help appeal-search-error" : "appeal-search-help"} /></label>
+          <button className="v2-button" type="submit">Find appeals</button>
+          {selection.active && <Link className="v2-text-link" href="/appeals#current-appeals">Clear appeal search</Link>}
+        </form>
+        <p id="appeal-search-help">Search reviewed public titles and summaries. Do not enter personal or case details.</p>
+        {selection.invalid && <p id="appeal-search-error" role="status">This search could not be read. Clear the search or use up to 80 characters.</p>}
+        {selection.active && <p>{selection.count} active {selection.count === 1 ? "appeal" : "appeals"} match this search.</p>}
+        {selection.results.length ? <div className="v2-appeals-grid">{selection.results.map(appeal => <div className={styles.appealItem} key={appeal.slug}>{isStaging && isSyntheticStagingAppeal(appeal) && <span className={styles.stagingBadge}>Staging test</span>}<AppealCard appeal={appeal} /></div>)}</div> : appeals.length > 0 && selection.active ? <div className="v2-appeals-empty"><h3>No active appeals match this search</h3><p>Change your search or clear it to see current reviewed appeals.</p><Link className="v2-text-link" href="/appeals#current-appeals">View all active appeals</Link></div> : <div className="v2-appeals-empty"><span className="v2-section-label">No active public appeal right now</span><h3>No Public Appeal Is Open Right Now</h3><p>That does not mean the work has stopped. You can explore completed cases or enquire about Amaana’s recurring initiatives. New urgent appeals will appear here after verification.</p><div className="v2-hero-actions"><Link className="v2-button" href="/our-work">Explore completed work</Link><Link className="v2-text-link" href="/stories">Read Stories of Amanah →</Link></div></div>}</div></section>
 
       {publishedCompletedProgrammes.length > 0 && <section className="v2-section amaana-bg-body" id="completed-causes"><div className="v2-shell"><SectionHeading eyebrow="Completed support" title="See What Support Made Possible" subtitle="Completed appeals should not disappear when fundraising closes. Keeping the verified need, amount raised and documented outcome visible helps donors see how community support translated into action." /><BodyCarousel label="Completed support outcomes" variant="content-deck">{publishedCompletedProgrammes.map(p=>{const media=completedAidMedia.get(p.slug)??null;return <BodyCard key={p.slug} title={p.title} visual={media?<PublicMedia asset={media}/>:<WorkVisualPlaceholder label={p.title}/> }><p>{p.primaryMetric} · {p.primaryMetricLabel}</p><Link className="v2-text-link" href={`/our-work/${p.slug}`}>View the documented outcome →</Link></BodyCard>;})}</BodyCarousel></div></section>}
       <section className={`v2-section dark v2-appeal-method ${styles.method}`} aria-labelledby="appeal-method-title"><div className="v2-shell"><SectionHeading eyebrow={<>What review means</>} title={<>Verification happens privately. Accountability remains public.</>} subtitle={<>Supporting information is assessed before fundraising, while sensitive records stay outside the public experience. Once support is delivered, confirmed updates and known outcomes remain attached to the public record.</>} id="appeal-method-title" /><div className="v2-appeal-method-grid"><article><span>01</span><h3>Private evidence</h3><p>Relevant circumstances and supporting information are reviewed away from the public page.</p></article><article><span>02</span><h3>Responsible publication</h3><p>Only the context needed to understand an approved appeal is made public.</p></article><article><span>03</span><h3>Traceable outcome</h3><p>Confirmed progress and known outcomes remain connected to the appeal after fundraising.</p></article></div></div></section>

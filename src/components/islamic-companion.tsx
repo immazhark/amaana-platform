@@ -50,7 +50,12 @@ export function IslamicCompanion() {
   const rotationPointerIntent = useRef<boolean | null>(null);
 
   useEffect(() => {
-    const update = () => { if (!document.hidden) setNow(new Date()); };
+    const update = () => {
+      if (document.hidden) return;
+      const next = new Date();
+      setNow(previous => previous && Math.floor(previous.getTime() / 60_000) === Math.floor(next.getTime() / 60_000)
+        ? previous : next);
+    };
     update();
     const timer = window.setInterval(update, 30_000);
     const visible = update;

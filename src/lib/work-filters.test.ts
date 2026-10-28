@@ -140,3 +140,24 @@ it("rejects raw control characters without reflecting the query", () => {
   expect(result.invalid).toBe(true);
   expect(result.query).toBe("");
 });
+
+
+describe("combined text and year family selection", () => {
+  const records = [{ slug: "relief", initiatives: [
+    { slug: "winter", title: "Winter relief", summary: "Blankets", year: null, startYear: 2025, endYear: 2026 },
+    { slug: "winter-2026", parentSlug: "winter", title: "Seasonal kits", summary: "Warm clothing", year: 2026, startYear: null, endYear: null },
+  ] }];
+  it.each([
+    ["blankets", ["winter"]],
+    ["clothing", ["winter-2026"]],
+    ["", ["winter-2026"]],
+  ])("keeps the matching family representative for query %s", (q, expected) => {
+    const result = filterWork(records, { programme: "relief", year: "2026", q });
+    expect(result.invalid).toBe(false);
+    expect(result.results.flatMap(p => p.initiatives.map(i => i.slug))).toEqual(expected);
+  });
+  it("keeps only the edition when both parent and child satisfy all filters", () => {
+    const matching = [{ ...records[0]!, initiatives: records[0]!.initiatives.map(i => ({ ...i, summary: "Blankets" })) }];
+    expect(filterWork(matching, { year: "2026", q: "blankets" }).results[0]?.initiatives.map(i => i.slug)).toEqual(["winter-2026"]);
+  });
+});
