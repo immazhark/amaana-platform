@@ -1,3 +1,6 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
 const credentialMarker = /(?:^|_)(?:SECRET|PASSWORD|PRIVATE_KEY|ACCESS_KEY|API_TOKEN|AUTH_TOKEN|CREDENTIALS?)(?:_|$)/;
 const storageMarker = /(?:^|_)(?:S3|R2|AWS|MEDIA|STORAGE)(?:_|$)/;
 const keyMarker = /(?:^|_)(?:KEY|TOKEN)(?:_|$)/;
@@ -11,4 +14,12 @@ export function rejectPublicCredentialNames(env) {
     })
     .sort()
     .map((name) => `${name} must not expose credential settings through NEXT_PUBLIC_.`);
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  const problems = rejectPublicCredentialNames(process.env);
+  if (problems.length > 0) {
+    for (const problem of problems) console.error(problem);
+    process.exitCode = 1;
+  }
 }
