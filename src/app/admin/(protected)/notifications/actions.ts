@@ -51,12 +51,22 @@ export async function enqueueControlledEmailAcceptance() {
   revalidatePath("/admin/notifications");
 }
 
+function singleTextField(formData: FormData, name: string): string {
+  const values = formData.getAll(name);
+  if (values.length > 1) throw new Error(`Repeated ${name} fields are not accepted.`);
+  const value = values[0];
+  if (value !== undefined && typeof value !== "string") {
+    throw new Error(`Use a single text ${name} field.`);
+  }
+  return (value ?? "").trim();
+}
+
 export async function requeueFailedNotification(formData: FormData) {
   const user = await requirePermission("notification.manage");
-  const id = String(formData.get("id") ?? "").trim();
-  const expectedUpdatedAtRaw = String(formData.get("expectedUpdatedAt") ?? "").trim();
+  const id = singleTextField(formData, "id");
+  const expectedUpdatedAtRaw = singleTextField(formData, "expectedUpdatedAt");
   const expectedUpdatedAt = new Date(expectedUpdatedAtRaw);
-  const reason = String(formData.get("reason") ?? "").trim();
+  const reason = singleTextField(formData, "reason");
 
   if (!id) throw new Error("Notification is required");
   if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime())) throw new Error("Notification version is missing or invalid. Refresh before requeueing");
