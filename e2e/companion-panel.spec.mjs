@@ -137,3 +137,28 @@ test('optional malformed moon and tomorrow data retain the current timetable', a
   await expect(page.getByText('Calculated estimate · Hyderabad moon-sighting not yet confirmed.', { exact: true })).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+
+test('Companion source links announce their new tabs', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-10-30T10:00:00+05:30') });
+  const moon = { day: 1, month: 1, label: 'Synthetic confirmed date', authority: 'Synthetic authority', sourceUrl: 'https://example.org/synthetic-announcement' };
+  await page.route('**/api/public/islamic-companion?*', route => route.fulfill({ json: {
+    today: { date: '2026-10-30', timings: { Fajr: '05:00', Sunrise: '06:15', Dhuhr: '12:30', Asr: '16:00', Maghrib: '18:00', Isha: '20:00' } },
+    tomorrow: null, school: '1', method: 'Synthetic method', asr: 'Hanafi', note: 'Synthetic timetable.', moon, eveningMoon: moon,
+  } }));
+  await page.goto('/browser-acceptance/home-hero');
+  const reminder = page.locator('.amaana-reminder-source');
+  await expect(reminder).toHaveAccessibleName(/ \(opens in a new tab\)$/);
+  await page.locator('.amaana-companion-dock button').click();
+  const readingLinks = page.locator('.amaana-companion-panel a[target="_blank"]');
+  await expect(readingLinks).toHaveCount(2);
+  for (const link of await readingLinks.all()) {
+    await expect(link).toHaveAccessibleName(/ \(opens in a new tab\)$/);
+    await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  }
+  await page.getByRole('tab', { name: 'Salah & Hijri', exact: true }).click();
+  const announcement = page.getByRole('link', { name: 'Moon-sighting announcement (opens in a new tab)', exact: true });
+  await expect(announcement).toHaveAttribute('href', moon.sourceUrl);
+  await page.getByText('Calculation & date sources', { exact: true }).click();
+  await expect(page.getByRole('link', { name: 'AlAdhan (opens in a new tab)', exact: true })).toHaveAttribute('href', 'https://aladhan.com/calculation-methods');
+});
