@@ -62,6 +62,24 @@ describe("private retention form accessible names", () => {
   });
 });
 
+describe("retention hold timestamp safety", () => {
+  it("shows a reconciliation notice and disables submission for opposing events with the same timestamp", async () => {
+    const createdAt = new Date("2026-10-28T08:00:00.000Z");
+    mocks.documents.mockResolvedValue([documentRows[0]]);
+    mocks.events.mockResolvedValue([
+      { id: "hold-release", action: "assistance.document_legal_hold_released", createdAt,
+        metadata: { documentId: "synthetic-one" }, actor: { name: "Synthetic reviewer" } },
+      { id: "hold-placement", action: "assistance.document_legal_hold_placed", createdAt,
+        metadata: { documentId: "synthetic-one" }, actor: { name: "Synthetic reviewer" } },
+    ]);
+
+    const html = renderToStaticMarkup(await RetentionReviewPage({ searchParams: Promise.resolve({}) }));
+    expect(html).toContain("HOLD REVIEW REQUIRED");
+    expect(html).toContain("Hold history requires reconciliation");
+    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Record retention decision<\/button>/);
+  });
+});
+
 
 describe("retention selected-state query", () => {
   it.each(["eligible", "active"])("applies the %s count predicate to the bounded document list", async state => {

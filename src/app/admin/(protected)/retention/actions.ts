@@ -38,7 +38,7 @@ function optionalReviewDate(value: string | null) {
 }
 
 async function latestLegalHoldEvent(documentId: string, db: Pick<typeof prisma, "auditEvent"> = prisma) {
-  return db.auditEvent.findFirst({
+  const event = await db.auditEvent.findFirst({
     where: {
       entityType: "AssistanceRequest",
       action: { in: ["assistance.document_legal_hold_placed", "assistance.document_legal_hold_released"] },
@@ -47,6 +47,23 @@ async function latestLegalHoldEvent(documentId: string, db: Pick<typeof prisma, 
     orderBy: { createdAt: "desc" },
     select: { action: true, createdAt: true },
   });
+  if (!event) return null;
+  const opposingAction = event.action === "assistance.document_legal_hold_placed"
+    ? "assistance.document_legal_hold_released"
+    : "assistance.document_legal_hold_placed";
+  const conflict = await db.auditEvent.findFirst({
+    where: {
+      entityType: "AssistanceRequest",
+      action: opposingAction,
+      createdAt: event.createdAt,
+      metadata: { path: ["documentId"], equals: documentId },
+    },
+    select: { id: true },
+  });
+  if (conflict) {
+    throw new Error("Conflicting legal hold events share a timestamp. Stop and reconcile this document before making a retention decision.");
+  }
+  return event;
 }
 
 async function currentLegalHold(documentId: string, db: Pick<typeof prisma, "auditEvent"> = prisma) {
@@ -173,6 +190,7 @@ export async function reviewDocumentRetention(formData: FormData) {
           assistanceRequest: {
             select: {
               status: true,
+              updatedAt: true,
               appeal: { select: { status: true } },
             },
           },
@@ -199,6 +217,20 @@ export async function reviewDocumentRetention(formData: FormData) {
       });
       if (claimed.count !== 1) {
         throw new Error("This evidence record changed while you were reviewing it. Refresh before deleting.");
+      }
+
+      // Status changes update this same request row. Serializable write
+      // conflicts make the winner visible before either path can commit.
+      const requestClaim = await tx.assistanceRequest.updateMany({
+        where: {
+          id: document.assistanceRequestId,
+          status: deletionSnapshot.assistanceRequest.status,
+          updatedAt: deletionSnapshot.assistanceRequest.updatedAt,
+        },
+        data: { updatedAt: new Date() },
+      });
+      if (requestClaim.count !== 1) {
+        throw new Error("The request changed while you were reviewing it. Refresh before deleting.");
       }
 
       await tx.auditEvent.create({

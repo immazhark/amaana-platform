@@ -260,6 +260,27 @@ export async function updateRequest(formData: FormData) {
       throw new Error("Verification changed while you were reviewing it. Refresh and confirm the declined verification before saving.");
     }
 
+    if (current.status !== status) {
+      const documents = await tx.assistanceDocument.findMany({
+        where: { assistanceRequestId: id },
+        select: { id: true },
+      });
+      for (const document of documents) {
+        const deletion = await tx.auditEvent.findFirst({
+          where: {
+            entityType: "AssistanceRequest",
+            entityId: id,
+            action: "assistance.document_deletion_started",
+            metadata: { path: ["documentId"], equals: document.id },
+          },
+          select: { id: true },
+        });
+        if (deletion) {
+          throw new Error("Evidence deletion is in progress for this request. Reconcile the deletion before changing its status.");
+        }
+      }
+    }
+
     const updated = await tx.assistanceRequest.updateMany({
       where: {
         id,

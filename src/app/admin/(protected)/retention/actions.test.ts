@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   createAudit: vi.fn(),
   deleteDocumentRecord: vi.fn(),
   updateManyDocument: vi.fn(),
+  updateManyRequest: vi.fn(),
   transaction: vi.fn(),
   serializableTransaction: vi.fn(),
   deletePrivateDocumentObject: vi.fn(),
@@ -26,6 +27,7 @@ vi.mock("@/lib/prisma", () => ({
       delete: mocks.deleteDocumentRecord,
       updateMany: mocks.updateManyDocument,
     },
+    assistanceRequest: { updateMany: mocks.updateManyRequest },
     auditEvent: {
       findFirst: mocks.findFirstAudit,
       create: mocks.createAudit,
@@ -61,6 +63,7 @@ describe("private document retention deletion", () => {
     mocks.requirePermission.mockResolvedValue({ id: "user_123" });
     mocks.findFirstAudit.mockResolvedValue(null);
     mocks.updateManyDocument.mockResolvedValue({ count: 1 });
+    mocks.updateManyRequest.mockResolvedValue({ count: 1 });
     mocks.findUniqueOrThrow.mockResolvedValue({
       id: "doc_123",
       assistanceRequestId: "request_123",
@@ -72,6 +75,7 @@ describe("private document retention deletion", () => {
       assistanceRequest: {
         referenceNumber: "AFR-123",
         status: "CLOSED",
+        updatedAt: new Date("2026-09-23T00:00:00.000Z"),
         appeal: null,
       },
     });
@@ -81,13 +85,14 @@ describe("private document retention deletion", () => {
     mocks.transaction.mockResolvedValue([]);
     mocks.serializableTransaction.mockImplementation(async callback => callback({
       assistanceDocument: { findUniqueOrThrow: mocks.findUniqueOrThrow, updateMany: mocks.updateManyDocument },
+      assistanceRequest: { updateMany: mocks.updateManyRequest },
       auditEvent: { findFirst: mocks.findFirstAudit, create: mocks.createAudit },
     }));
   });
 
   function expectNoRecordEffects() {
     for (const effect of [mocks.findUniqueOrThrow, mocks.findFirstAudit, mocks.createAudit,
-      mocks.updateManyDocument, mocks.deleteDocumentRecord, mocks.transaction,
+      mocks.updateManyDocument, mocks.updateManyRequest, mocks.deleteDocumentRecord, mocks.transaction,
       mocks.serializableTransaction, mocks.deletePrivateDocumentObject, mocks.revalidatePath]) {
       expect(effect).not.toHaveBeenCalled();
     }
@@ -162,9 +167,9 @@ describe("private document retention deletion", () => {
     form.set("expectedHoldCreatedAt", createdAt.toISOString());
 
     mocks.findFirstAudit.mockImplementation(async args =>
-      args.where.action === "assistance.document_deletion_started"
-        ? null
-        : { action: "assistance.document_legal_hold_placed", createdAt });
+      Array.isArray(args.where.action?.in)
+        ? { action: "assistance.document_legal_hold_placed", createdAt }
+        : null);
 
     await reviewDocumentRetention(form);
 
@@ -196,6 +201,7 @@ describe("private document retention deletion", () => {
       try {
         return await callback({
           assistanceDocument: { findUniqueOrThrow: mocks.findUniqueOrThrow, updateMany: mocks.updateManyDocument },
+          assistanceRequest: { updateMany: mocks.updateManyRequest },
           auditEvent: { findFirst: mocks.findFirstAudit, create: mocks.createAudit },
         });
       } finally {
@@ -273,6 +279,7 @@ describe("private document retention deletion", () => {
       try {
         return await callback({
           assistanceDocument: { findUniqueOrThrow: mocks.findUniqueOrThrow, updateMany: mocks.updateManyDocument },
+          assistanceRequest: { updateMany: mocks.updateManyRequest },
           auditEvent: { findFirst: mocks.findFirstAudit, create: mocks.createAudit },
         });
       } finally {
@@ -291,6 +298,30 @@ describe("private document retention deletion", () => {
     await reviewDocumentRetention(deletionForm());
     expect(mocks.serializableTransaction).toHaveBeenCalledOnce();
     expect(mocks.deletePrivateDocumentObject).toHaveBeenCalledOnce();
+  });
+
+  it("claims the request version before storage deletion so status transitions must serialize", async () => {
+    await reviewDocumentRetention(deletionForm());
+
+    expect(mocks.updateManyRequest).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
+        id: "request_123", status: "CLOSED", updatedAt: expect.any(Date),
+      }),
+      data: { updatedAt: expect.any(Date) },
+    }));
+    const requestClaimOrder = mocks.updateManyRequest.mock.invocationCallOrder[0];
+    const storageOrder = mocks.deletePrivateDocumentObject.mock.invocationCallOrder[0];
+    if (requestClaimOrder === undefined || storageOrder === undefined) {
+      throw new Error("Expected the request claim and storage deletion to be called.");
+    }
+    expect(requestClaimOrder).toBeLessThan(storageOrder);
+  });
+
+  it("does not delete object storage if the request version claim fails", async () => {
+    mocks.updateManyRequest.mockResolvedValueOnce({ count: 0 });
+
+    await expect(reviewDocumentRetention(deletionForm())).rejects.toThrow(/request.*changed/i);
+    expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
   });
 
   it("rejects a second deletion when an earlier deletion claim remains", async () => {
@@ -387,8 +418,27 @@ describe("private document retention deletion", () => {
     expect(mocks.transaction).not.toHaveBeenCalled();
   });
 
+  it("fails closed if a hold placement and release share the latest timestamp", async () => {
+    const tiedAt = new Date("2026-10-28T08:00:00.000Z");
+    mocks.findFirstAudit.mockImplementation(async args => {
+      if (Array.isArray(args.where.action?.in)) {
+        return { action: "assistance.document_legal_hold_released", createdAt: tiedAt };
+      }
+      if (args.where.action === "assistance.document_legal_hold_placed" && args.where.createdAt) {
+        return { id: "opposing-hold" };
+      }
+      return null;
+    });
+
+    await expect(reviewDocumentRetention(deletionForm())).rejects.toThrow(/conflicting legal hold/i);
+    expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
+    expect(mocks.createAudit).not.toHaveBeenCalled();
+  });
+
   it("blocks deletion while an active hold exists", async () => {
-    mocks.findFirstAudit.mockResolvedValue({ action: "assistance.document_legal_hold_placed" });
+    mocks.findFirstAudit.mockImplementation(async args => Array.isArray(args.where.action?.in)
+      ? { action: "assistance.document_legal_hold_placed", createdAt: new Date("2026-10-28T08:00:00.000Z") }
+      : null);
     await expect(reviewDocumentRetention(deletionForm())).rejects.toThrow(/Release the legal/);
     expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
   });

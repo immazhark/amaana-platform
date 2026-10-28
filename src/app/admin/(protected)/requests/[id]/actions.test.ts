@@ -7,6 +7,8 @@ const mocks = vi.hoisted(() => ({
   requestFind: vi.fn(),
   requestFindFirst: vi.fn(),
   requestUpdateMany: vi.fn(),
+  documentFindMany: vi.fn(),
+  auditFindFirst: vi.fn(),
   userFindFirst: vi.fn(),
   verificationUpsert: vi.fn(),
   appealCreate: vi.fn(),
@@ -26,6 +28,8 @@ vi.mock("@/lib/prisma", () => ({
       findFirst: mocks.requestFindFirst,
       updateMany: mocks.requestUpdateMany,
     },
+    assistanceDocument: { findMany: mocks.documentFindMany },
+    auditEvent: { findFirst: mocks.auditFindFirst },
   },
 }));
 vi.mock("@/lib/prisma-transaction", () => ({
@@ -34,7 +38,7 @@ vi.mock("@/lib/prisma-transaction", () => ({
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
 
-import { assignRequest, convertToAppeal, saveVerification } from "./actions";
+import { assignRequest, convertToAppeal, saveVerification, updateRequest } from "./actions";
 
 function form(values: Record<string, string>) {
   const data = new FormData();
@@ -49,10 +53,11 @@ function tx() {
       findFirst: mocks.requestFindFirst,
       updateMany: mocks.requestUpdateMany,
     },
+    assistanceDocument: { findMany: mocks.documentFindMany },
     assistanceVerification: { upsert: mocks.verificationUpsert },
     user: { findFirst: mocks.userFindFirst },
     appeal: { create: mocks.appealCreate },
-    auditEvent: { create: mocks.auditCreate },
+    auditEvent: { create: mocks.auditCreate, findFirst: mocks.auditFindFirst },
     notification: { create: mocks.notificationCreate },
   };
 }
@@ -65,6 +70,33 @@ describe("assistance admin concurrency guards", () => {
     mocks.transaction.mockImplementation(async callback => callback(tx()));
     mocks.auditCreate.mockResolvedValue({ id: "audit-1" });
     mocks.requestUpdateMany.mockResolvedValue({ count: 1 });
+    mocks.documentFindMany.mockResolvedValue([]);
+    mocks.auditFindFirst.mockResolvedValue(null);
+  });
+
+  it("blocks reopening a closed request while a document deletion claim exists", async () => {
+    const renderedAt = new Date("2026-10-28T08:00:00.000Z");
+    const previous = {
+      id: "request-1", status: AssistanceStatus.CLOSED, appealId: null,
+      updatedAt: renderedAt, email: null, referenceNumber: "SYN-1", verification: null,
+    };
+    mocks.requestFind.mockResolvedValue(previous);
+    mocks.documentFindMany.mockResolvedValue([{ id: "document-1" }]);
+    mocks.auditFindFirst.mockResolvedValue({ id: "claim-1" });
+
+    await expect(updateRequest(form({
+      id: "request-1", expectedUpdatedAt: renderedAt.toISOString(),
+      status: AssistanceStatus.UNDER_VERIFICATION, internalNotes: "Reassessment requested",
+    }))).rejects.toThrow(/evidence deletion.*progress/i);
+
+    expect(mocks.auditFindFirst).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
+        action: "assistance.document_deletion_started",
+        metadata: { path: ["documentId"], equals: "document-1" },
+      }),
+    }));
+    expect(mocks.requestUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
   });
 
   it("rejects a retained unavailable assignee before any request mutation or audit", async () => {
