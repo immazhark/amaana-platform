@@ -145,6 +145,23 @@ test("validates optional public-media storage overrides without requiring them",
   assert.deepEqual(validateProductionEnvironmentContract(explicitOverrides), []);
 });
 
+test("rejects public-prefixed media credentials without exposing their values", () => {
+  const env = validEnv();
+  env.NEXT_PUBLIC_MEDIA_S3_ACCESS_KEY_ID = "private-access-should-not-be-public";
+  env.NEXT_PUBLIC_PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY = "private-secret-should-not-be-public";
+  env.NEXT_PUBLIC_R2_API_TOKEN = "private-token-should-not-be-public";
+
+  const problems = validateProductionEnvironmentContract(env);
+  for (const name of [
+    "NEXT_PUBLIC_MEDIA_S3_ACCESS_KEY_ID",
+    "NEXT_PUBLIC_PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY",
+    "NEXT_PUBLIC_R2_API_TOKEN",
+  ]) {
+    assert.ok(problems.some(problem => problem.includes(name)), `${name} must be rejected`);
+  }
+  assert.ok(problems.every(problem => !problem.includes("should-not-be-public")));
+});
+
 test("rejects shared public/private storage and launch-only acceptance flags", () => {
   const env = validEnv();
   env.PUBLIC_MEDIA_S3_BUCKET = env.S3_BUCKET;
