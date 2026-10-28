@@ -75,6 +75,54 @@ describe("private document retention deletion", () => {
     }));
   });
 
+  function expectNoRecordEffects() {
+    for (const effect of [mocks.findUniqueOrThrow, mocks.findFirstAudit, mocks.createAudit,
+      mocks.updateManyDocument, mocks.deleteDocumentRecord, mocks.transaction,
+      mocks.serializableTransaction, mocks.deletePrivateDocumentObject, mocks.revalidatePath]) {
+      expect(effect).not.toHaveBeenCalled();
+    }
+  }
+
+  it.each(["documentId", "decision", "deleteConfirmation", "reason", "reviewAfter", "expectedHoldAction", "expectedHoldCreatedAt"])(
+    "rejects repeated %s fields before private record access", async field => {
+      const form = deletionForm();
+      if (!form.has(field)) form.set(field, "");
+      form.append(field, "ambiguous second value");
+      await expect(reviewDocumentRetention(form)).rejects.toThrow(/Repeated/);
+      expectNoRecordEffects();
+    },
+  );
+
+  it.each(["documentId", "decision", "deleteConfirmation", "reason", "reviewAfter", "expectedHoldAction", "expectedHoldCreatedAt"])(
+    "rejects file-valued %s before private record access", async field => {
+      const form = deletionForm();
+      form.set(field, new Blob(["synthetic"]), "synthetic.txt");
+      await expect(reviewDocumentRetention(form)).rejects.toThrow(/single text/);
+      expectNoRecordEffects();
+    },
+  );
+
+  it.each(["2027-02-31", "2027-02-29", "2028-04-31", "2028-2-09", "2028-13-01", "2028-01-00", "not-a-date"])(
+    "rejects impossible or noncanonical review date %s before private record access", async date => {
+      const form = deletionForm();
+      form.set("decision", "RETAIN");
+      form.set("reviewAfter", date);
+      await expect(reviewDocumentRetention(form)).rejects.toThrow(/Invalid review date/);
+      expectNoRecordEffects();
+    },
+  );
+
+  it.each(["2096-02-29", "2097-02-28"])("preserves valid future review date %s", async date => {
+    const form = deletionForm();
+    form.set("decision", "RETAIN");
+    form.set("reviewAfter", date);
+    await reviewDocumentRetention(form);
+    expect(mocks.createAudit).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ metadata: expect.objectContaining({ reviewAfter: `${date}T00:00:00.000Z` }) }),
+    }));
+    expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
+  });
+
   it("rejects a stale hold decision without writing contradictory audit history", async () => {
     const form = new FormData();
     form.set("documentId", "doc_123");

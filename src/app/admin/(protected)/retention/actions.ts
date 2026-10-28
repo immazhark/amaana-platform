@@ -9,18 +9,31 @@ import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 
 const allowedDecisions = new Set(["RETAIN", "PLACE_HOLD", "RELEASE_HOLD", "DELETE"]);
 
-function requiredText(value: FormDataEntryValue | null, field: string, max: number) {
+function singleTextField(formData: FormData, name: string): string | null {
+  const values = formData.getAll(name);
+  if (values.length > 1) throw new Error(`Repeated ${name} fields are not accepted.`);
+  const value = values[0];
+  if (value !== undefined && typeof value !== "string") {
+    throw new Error(`Use a single text ${name} field.`);
+  }
+  return value ?? null;
+}
+
+function requiredText(value: string | null, field: string, max: number) {
   const text = String(value ?? "").trim();
   if (!text) throw new Error(`${field} is required`);
   if (text.length > max) throw new Error(`${field} is too long`);
   return text;
 }
 
-function optionalReviewDate(value: FormDataEntryValue | null) {
+function optionalReviewDate(value: string | null) {
   const raw = String(value ?? "").trim();
   if (!raw) return null;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) throw new Error("Invalid review date");
   const date = new Date(`${raw}T00:00:00.000Z`);
-  if (Number.isNaN(date.getTime())) throw new Error("Invalid review date");
+  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== raw) {
+    throw new Error("Invalid review date");
+  }
   return date.toISOString();
 }
 
@@ -43,17 +56,17 @@ async function currentLegalHold(documentId: string, db: Pick<typeof prisma, "aud
 
 export async function reviewDocumentRetention(formData: FormData) {
   const user = await requirePermission("assistance.approve");
-  const documentId = String(formData.get("documentId") ?? "").trim();
-  const decision = String(formData.get("decision") ?? "");
+  const documentId = String(singleTextField(formData, "documentId") ?? "").trim();
+  const decision = String(singleTextField(formData, "decision") ?? "");
   if (!documentId) throw new Error("Document is required");
   if (!allowedDecisions.has(decision)) throw new Error("Invalid retention decision");
-  if (!retentionDeletionConfirmed(decision, String(formData.get("deleteConfirmation") ?? ""))) {
+  if (!retentionDeletionConfirmed(decision, String(singleTextField(formData, "deleteConfirmation") ?? ""))) {
     throw new Error("Type DELETE to confirm permanent evidence deletion");
   }
-  const reason = requiredText(formData.get("reason"), "Retention reason", 2000);
-  const reviewAfter = optionalReviewDate(formData.get("reviewAfter"));
-  const expectedHoldAction = String(formData.get("expectedHoldAction") ?? "");
-  const expectedHoldCreatedAt = String(formData.get("expectedHoldCreatedAt") ?? "");
+  const reason = requiredText(singleTextField(formData, "reason"), "Retention reason", 2000);
+  const reviewAfter = optionalReviewDate(singleTextField(formData, "reviewAfter"));
+  const expectedHoldAction = String(singleTextField(formData, "expectedHoldAction") ?? "");
+  const expectedHoldCreatedAt = String(singleTextField(formData, "expectedHoldCreatedAt") ?? "");
   if (["RETAIN", "PLACE_HOLD"].includes(decision) && reviewAfter && new Date(reviewAfter).getTime() <= Date.now()) {
     throw new Error("Next retention review must be scheduled for a future date");
   }

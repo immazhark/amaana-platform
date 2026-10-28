@@ -80,7 +80,7 @@ export default async function ImpactPage({ searchParams }: { searchParams: Promi
           <SectionHeading eyebrow={<>Wall of impact</>} title={<>See what each initiative achieved.</>} subtitle={<>Explore an outcome, then open the initiative to understand the work behind it.</>} id="impact-wall-title" />
           <form key={filtered.programme} action="/impact#evidence" method="get" aria-label="Filter documented impact by programme" className="v2-hero-actions">
             <label htmlFor="impact-programme">Programme
-              <select id="impact-programme" name="programme" defaultValue={filtered.programme}>
+              <select id="impact-programme" name="programme" defaultValue={filtered.programme} aria-invalid={filtered.invalid || undefined} aria-describedby={filtered.invalid ? "impact-filter-error" : undefined}>
                 <option value="">All programmes</option>
                 {filtered.options.map(area => (
                   <option value={area.slug} key={area.slug}>{area.title} ({area.count})</option>
@@ -90,7 +90,7 @@ export default async function ImpactPage({ searchParams }: { searchParams: Promi
             <button type="submit" className="v2-button">Explore impact</button>
             {filtered.active && <Link href="/impact#evidence" className="v2-text-link">Clear impact filter</Link>}
           </form>
-          {filtered.invalid && <p role="status">These filters could not be read. Select a published programme or clear the impact filter.</p>}
+          {filtered.invalid && <p id="impact-filter-error" role="status">These filters could not be read. Select a published programme or clear the impact filter.</p>}
           <p role="status" aria-live="polite">{filtered.count} published {filtered.count === 1 ? "initiative" : "initiatives"}{filtered.active && !filtered.invalid ? " in this programme" : " available to explore"}.</p>
           <p><Link href="/impact/compare" className="v2-text-link">Compare two initiatives</Link></p>
           {filtered.results.length > 0 ? <div className="v2-impact-wall">{filtered.results.map((item, index) => {

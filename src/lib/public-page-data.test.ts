@@ -26,6 +26,7 @@ import {
 } from "./public-page-data";
 import { getPublishedInitiativeBySlug } from "./public-content";
 import { getInitiativePageData } from "./public-page-data";
+import { programmes } from "./master-copy";
 
 describe("public page gallery media query contracts", () => {
   afterEach(() => vi.unstubAllEnvs());
@@ -76,15 +77,15 @@ describe("public page gallery media query contracts", () => {
   it("keeps homepage outcome metrics without loading unused initiative media and story fields", async () => {
     mocks.initiativeFindMany
       .mockResolvedValueOnce([
-        { slug: "verified-2026", title: "Verified initiative", primaryMetric: "234", primaryMetricLabel: "winter kits" },
+        { slug: "taleem", title: "Education initiative", primaryMetric: "234", primaryMetricLabel: "winter kits" },
       ])
       .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([{ slug: "verified-2026" }]);
+      .mockResolvedValueOnce([{ slug: "taleem" }]);
     const data = await getHomepageDiscoveryData();
     expect(data.initiatives).toEqual([
-      { slug: "verified-2026", title: "Verified initiative", primaryMetric: "234", primaryMetricLabel: "winter kits" },
+      { slug: "taleem", title: "Education initiative", primaryMetric: "234", primaryMetricLabel: "winter kits" },
     ]);
-    expect(data.publishedProgrammeSlugs).toEqual(["verified-2026"]);
+    expect(data.publishedProgrammeSlugs).toEqual(["taleem"]);
     expect(mocks.initiativeFindMany).toHaveBeenCalledTimes(3);
     expect(mocks.causeFindMany).toHaveBeenCalledOnce();
 
@@ -101,6 +102,23 @@ describe("public page gallery media query contracts", () => {
     }
     expect(mocks.initiativeFindMany.mock.calls[0]?.[0].where)
       .toHaveProperty("mediaAssets.some");
+  });
+
+  it("limits homepage publication membership reads to the canonical programme routes", async () => {
+    const canonicalSlugs = programmes.map(programme => programme.slug);
+    expect(canonicalSlugs).toContain("eid-gift-kits");
+    expect(canonicalSlugs).toContain("taleem");
+
+    await getHomepageDiscoveryData();
+
+    expect(mocks.initiativeFindMany.mock.calls[2]?.[0]).toEqual({
+      where: {
+        status: "PUBLISHED",
+        cause: { status: "PUBLISHED" },
+        slug: { in: canonicalSlugs },
+      },
+      select: { slug: true },
+    });
   });
 
   it("restricts the public appeals index to unpaid, unexpired published candidates at SQL", async () => {
@@ -241,5 +259,27 @@ describe("public page gallery media query contracts", () => {
       status: "PUBLISHED",
       cause: { status: "PUBLISHED" },
     });
+  });
+
+  it("requests completed-support galleries only for canonical programmes shown on /appeals", async () => {
+    const visibleSlugs = programmes
+      .filter(programme => programme.causeSlug === "medical-financial-relief")
+      .map(programme => programme.slug);
+    expect(visibleSlugs).toContain("auto-rickshaw-livelihood-support");
+    expect(visibleSlugs).toContain("jewellery-loan-intervention");
+    expect(new Set(visibleSlugs).size).toBe(visibleSlugs.length);
+
+    await getCompletedAidShowcaseData();
+
+    const query = mocks.initiativeFindMany.mock.calls[0]?.[0];
+    expect(query).toMatchObject({
+      where: {
+        slug: { in: visibleSlugs },
+        status: "PUBLISHED",
+        cause: { slug: "medical-financial-relief", status: "PUBLISHED" },
+      },
+      select: { slug: true, mediaAssets: { take: 12 } },
+    });
+    expect(query.where.slug.in).not.toContain("unlisted-relief-gallery");
   });
 });

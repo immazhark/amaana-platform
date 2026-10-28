@@ -137,3 +137,80 @@ test('optional malformed moon and tomorrow data retain the current timetable', a
   await expect(page.getByText('Calculated estimate · Hyderabad moon-sighting not yet confirmed.', { exact: true })).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+
+test('Companion source links announce their new tabs', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-10-30T10:00:00+05:30') });
+  const moon = { day: 1, month: 1, label: 'Synthetic confirmed date', authority: 'Synthetic authority', sourceUrl: 'https://example.org/synthetic-announcement' };
+  await page.route('**/api/public/islamic-companion?*', route => route.fulfill({ json: {
+    today: { date: '2026-10-30', timings: { Fajr: '05:00', Sunrise: '06:15', Dhuhr: '12:30', Asr: '16:00', Maghrib: '18:00', Isha: '20:00' } },
+    tomorrow: null, school: '1', method: 'Synthetic method', asr: 'Hanafi', note: 'Synthetic timetable.', moon, eveningMoon: moon,
+  } }));
+  await page.goto('/browser-acceptance/home-hero');
+  const reminder = page.locator('.amaana-reminder-source');
+  await expect(reminder).toHaveAccessibleName(/ \(opens in a new tab\)$/);
+  await page.locator('.amaana-companion-dock button').click();
+  const readingLinks = page.locator('.amaana-companion-panel a[target="_blank"]');
+  await expect(readingLinks).toHaveCount(2);
+  for (const link of await readingLinks.all()) {
+    await expect(link).toHaveAccessibleName(/ \(opens in a new tab\)$/);
+    await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  }
+  await page.getByRole('tab', { name: 'Salah & Hijri', exact: true }).click();
+  const announcement = page.getByRole('link', { name: 'Moon-sighting announcement (opens in a new tab)', exact: true });
+  await expect(announcement).toHaveAttribute('href', moon.sourceUrl);
+  await page.getByText('Calculation & date sources', { exact: true }).click();
+  await expect(page.getByRole('link', { name: 'AlAdhan (opens in a new tab)', exact: true })).toHaveAttribute('href', 'https://aladhan.com/calculation-methods');
+});
+
+
+test('Escape dismisses mobile navigation before the underlying Companion panel', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.route('**/api/public/islamic-companion?*', route => route.fulfill({ status: 503, json: { error: 'Timings are temporarily unavailable.' } }));
+  await page.goto('/browser-acceptance/home-hero');
+  const dock = page.locator('.amaana-companion-dock button');
+  await dock.click();
+  const panel = page.getByRole('region', { name: 'Today’s reflection', exact: true });
+  await expect(panel).toBeVisible();
+  const toggle = page.getByRole('button', { name: 'Open navigation menu', exact: true });
+  await toggle.click();
+  await expect(page.getByRole('navigation', { name: 'Mobile navigation', exact: true })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('navigation', { name: 'Mobile navigation', exact: true })).toBeHidden();
+  await expect(panel).toBeVisible();
+  await expect(toggle).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(panel).toHaveCount(0);
+  await expect(dock).toBeFocused();
+});
+
+for (const latestSucceeds of [true, false]) {
+  test(`Companion copy feedback belongs to the latest attempt, success=${latestSucceeds}`, async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__companionCopies = [];
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
+        writeText: () => new Promise((resolve, reject) => window.__companionCopies.push({ resolve, reject })),
+      } });
+    });
+    await page.goto('/browser-acceptance/home-hero');
+    await page.locator('.amaana-companion-dock button').click();
+    const panel = page.locator('.amaana-companion-panel');
+    const copy = panel.getByRole('button', { name: 'Copy reading & references', exact: true });
+    await copy.click();
+    await copy.click();
+    expect(await page.evaluate(() => window.__companionCopies.length)).toBe(2);
+    await page.evaluate(success => {
+      const latest = window.__companionCopies[1];
+      if (success) latest.resolve(); else latest.reject(new Error('Synthetic latest denial'));
+    }, latestSucceeds);
+    const status = panel.getByRole('status');
+    const expected = latestSucceeds ? 'Reading and references copied.' : 'Copy is unavailable. You can select the text or open its source link.';
+    await expect(status).toHaveText(expected);
+    await page.evaluate(async success => {
+      const older = window.__companionCopies[0];
+      if (success) older.reject(new Error('Synthetic older denial')); else older.resolve();
+      await new Promise(resolve => requestAnimationFrame(() => resolve()));
+    }, latestSucceeds);
+    await expect(status).toHaveText(expected);
+  });
+}

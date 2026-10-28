@@ -64,12 +64,13 @@ export function IslamicCompanionPanel({
   const [loading, setLoading] = useState(false);
   const [copyMessage, setCopyMessage] = useState("");
   const panelRef = useRef<HTMLDivElement>(null);
+  const copyActionRef = useRef(0);
 
   useEffect(() => {
     panelRef.current?.focus({ preventScroll: true });
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.defaultPrevented || event.isComposing || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
-      if (event.key === "Escape" && !document.querySelector('[role="dialog"][aria-modal="true"],dialog[open]')) onClose();
+      if (event.key === "Escape" && !document.querySelector('[role="dialog"][aria-modal="true"],dialog[open],.mobile-menu.open:not([hidden])')) onClose();
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
@@ -126,13 +127,15 @@ export function IslamicCompanionPanel({
 
   async function copyReading() {
     if (!reading) return;
+    const action = ++copyActionRef.current;
+    setCopyMessage("");
     const { ayah, hadith } = reading;
     const text = `Amaana Foundation · ${reading.date}\nQur’an ${ayah.key}${ayah.excerpt ? " (excerpt)" : ""}\n${ayah.arabic}\n${ayah.meaning}\nThe Clear Quran · Dr. Mustafa Khattab\nhttps://quran.com/${ayah.key.replace(":", "/")}\n\nHadith meaning summary: ${hadith.summary}\n${hadith.reference}\n${hadith.url}`;
     try {
       await navigator.clipboard.writeText(text);
-      setCopyMessage("Reading and references copied.");
+      if (action === copyActionRef.current) setCopyMessage("Reading and references copied.");
     } catch {
-      setCopyMessage("Copy is unavailable. You can select the text or open its source link.");
+      if (action === copyActionRef.current) setCopyMessage("Copy is unavailable. You can select the text or open its source link.");
     }
   }
 
@@ -177,14 +180,14 @@ export function IslamicCompanionPanel({
                 <p className="amaana-arabic" lang="ar" dir="rtl">{reading.ayah.arabic}</p>
                 <blockquote>{reading.ayah.meaning}</blockquote>
                 <p className="amaana-companion-note">Dr. Mustafa Khattab · The Clear Quran{reading.ayah.excerpt ? " · excerpt" : ""}</p>
-                <a href={`https://quran.com/${reading.ayah.key.replace(":", "/")}`} target="_blank" rel="noopener noreferrer">Read, listen & explore tafsir on Quran.com</a>
+                <a href={`https://quran.com/${reading.ayah.key.replace(":", "/")}`} target="_blank" rel="noopener noreferrer">Read, listen & explore tafsir on Quran.com<span className="sr-only"> (opens in a new tab)</span></a>
               </section>
               <section className="amaana-daily-hadith" aria-labelledby="daily-hadith-title">
                 <h3 id="daily-hadith-title">Hadith of the day</h3>
                 <h4>{reading.hadith.title}</h4>
                 <p>{reading.hadith.summary}</p>
                 <p className="amaana-companion-note">Meaning summary, not a verbatim quotation · {reading.hadith.grade}</p>
-                <a href={reading.hadith.url} target="_blank" rel="noopener noreferrer">{reading.hadith.reference} · Read the full narration</a>
+                <a href={reading.hadith.url} target="_blank" rel="noopener noreferrer">{reading.hadith.reference} · Read the full narration<span className="sr-only"> (opens in a new tab)</span></a>
               </section>
               <button className="amaana-companion-action" type="button" onClick={copyReading}>Copy reading & references</button>
               <p role="status" className="amaana-companion-note">{copyMessage}</p>
@@ -201,7 +204,7 @@ export function IslamicCompanionPanel({
           <div className="amaana-hijri">
             <h3>Hijri date</h3>
             <strong>{moon?.label ?? (date ? estimatedHijri(afterSunset ? shiftDate(date, 1) : date) : "Loading date…")}</strong>
-            <p>{moon ? <>Based on {moon.authority}. <a href={moon.sourceUrl} target="_blank" rel="noopener noreferrer">Moon-sighting announcement</a></> : "Calculated estimate · Hyderabad moon-sighting not yet confirmed."}</p>
+            <p>{moon ? <>Based on {moon.authority}. <a href={moon.sourceUrl} target="_blank" rel="noopener noreferrer">Moon-sighting announcement<span className="sr-only"> (opens in a new tab)</span></a></> : "Calculated estimate · Hyderabad moon-sighting not yet confirmed."}</p>
             <small>{maghrib !== null ? "The Hijri day advances at Hyderabad Maghrib." : "Civil-day estimate; sunset rollover is unavailable until prayer times load."}</small>
           </div>
           <label className="amaana-asr-choice">
@@ -235,7 +238,7 @@ export function IslamicCompanionPanel({
               <p className="amaana-companion-note">{currentData.note}</p>
               <details className="amaana-companion-details">
                 <summary>Calculation & date sources</summary>
-                <p>Prayer times: <a href="https://aladhan.com/calculation-methods" target="_blank" rel="noopener noreferrer">AlAdhan</a> · {currentData.method} · {currentData.asr} Asr. This widget uses Hyderabad’s city coordinates; it does not request your location.</p>
+                <p>Prayer times: <a href="https://aladhan.com/calculation-methods" target="_blank" rel="noopener noreferrer">AlAdhan<span className="sr-only"> (opens in a new tab)</span></a> · {currentData.method} · {currentData.asr} Asr. This widget uses Hyderabad’s city coordinates; it does not request your location.</p>
                 <p>The fallback calendar is tabular Islamic Civil, not an Indian moon-sighting announcement. A dated local announcement is required before a month is labelled locally confirmed.</p>
               </details>
             </>

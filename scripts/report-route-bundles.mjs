@@ -14,6 +14,11 @@ function normalizedStaticAsset(value) {
   return normalized;
 }
 
+function measuredBytes(value, label) {
+  if (!Number.isSafeInteger(value) || value < 0) throw new Error(`Invalid ${label} size`);
+  return value;
+}
+
 export function summarizeAppRouteBundles(pages, byteSize) {
   if (!pages || typeof pages !== "object" || Array.isArray(pages)) {
     throw new Error("Next.js app build manifest has no valid pages map");
@@ -34,15 +39,15 @@ export function summarizeAppRouteBundles(pages, byteSize) {
         if (normalized) assets.add(normalized);
       }
     }
-    const resources = [...assets].map(asset => ({ asset, bytes: byteSize(asset) }));
-    const jsBytes = resources.filter(item => item.asset.endsWith(".js")).reduce((n, item) => n + item.bytes, 0);
-    const cssBytes = resources.filter(item => item.asset.endsWith(".css")).reduce((n, item) => n + item.bytes, 0);
+    const resources = [...assets].map(asset => ({ asset, bytes: measuredBytes(byteSize(asset), "bundle") }));
+    const jsBytes = measuredBytes(resources.filter(item => item.asset.endsWith(".js")).reduce((n, item) => n + item.bytes, 0), "JavaScript total");
+    const cssBytes = measuredBytes(resources.filter(item => item.asset.endsWith(".css")).reduce((n, item) => n + item.bytes, 0), "CSS total");
     return {
       route: page === "/page" ? "/" : page.slice(0, -"/page".length),
       entries: resources.length,
       jsBytes,
       cssBytes,
-      totalBytes: jsBytes + cssBytes,
+      totalBytes: measuredBytes(jsBytes + cssBytes, "route total"),
     };
   }).sort((a, b) => b.totalBytes - a.totalBytes || a.route.localeCompare(b.route));
 }
@@ -60,14 +65,18 @@ export function summarizeUnattributedAppAssets(appPaths, assets) {
     .filter(([key, route]) => key.endsWith("/page") && typeof route === "string")
     .map(([, route]) => route))].sort();
   if (!routes.length) throw new Error("No App Router pages found in the path manifest");
-  const jsBytes = assets.filter(asset => asset.path.endsWith(".js")).reduce((sum, asset) => sum + asset.bytes, 0);
-  const cssBytes = assets.filter(asset => asset.path.endsWith(".css")).reduce((sum, asset) => sum + asset.bytes, 0);
+  if (!Array.isArray(assets) || assets.some(asset => !asset || typeof asset.path !== "string" ||
+      !Number.isSafeInteger(asset.bytes) || asset.bytes < 0)) {
+    throw new Error("Invalid aggregate asset size or path");
+  }
+  const jsBytes = measuredBytes(assets.filter(asset => asset.path.endsWith(".js")).reduce((sum, asset) => sum + asset.bytes, 0), "JavaScript total");
+  const cssBytes = measuredBytes(assets.filter(asset => asset.path.endsWith(".css")).reduce((sum, asset) => sum + asset.bytes, 0), "CSS total");
   return {
     metric: "unattributed-uncompressed-build-assets",
     routeAttributionAvailable: false,
     routeCount: routes.length,
     routes,
-    aggregate: { jsBytes, cssBytes, totalBytes: jsBytes + cssBytes, assetCount: assets.length },
+    aggregate: { jsBytes, cssBytes, totalBytes: measuredBytes(jsBytes + cssBytes, "aggregate total"), assetCount: assets.length },
   };
 }
 

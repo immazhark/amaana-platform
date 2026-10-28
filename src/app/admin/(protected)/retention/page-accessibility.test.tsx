@@ -98,3 +98,25 @@ describe("retention selected-state query", () => {
     expect(mocks.documents.mock.calls[0]?.[0]?.where).toBeUndefined();
   });
 });
+
+
+describe("retention empty-view recovery", () => {
+  it.each(["eligible", "active"])("does not claim global absence for an empty %s view", async state => {
+    mocks.count.mockReset().mockResolvedValueOnce(0).mockResolvedValueOnce(2).mockResolvedValueOnce(state === "eligible" ? 0 : 2);
+    mocks.documents.mockResolvedValue([]);
+    const html = renderToStaticMarkup(await RetentionReviewPage({ searchParams: Promise.resolve({ state }) }));
+    expect(html).toContain("No private assistance documents match this workflow state.");
+    expect(html).not.toContain("No private assistance documents are currently stored.");
+    expect(html).toMatch(/href="\/admin\/retention"[^>]*>View all documents<\/a>/);
+    expect(html).toContain("All (2)");
+    expect(mocks.events).not.toHaveBeenCalled();
+  });
+
+  it("keeps the global empty explanation when there is no filter", async () => {
+    mocks.count.mockResolvedValue(0);
+    mocks.documents.mockResolvedValue([]);
+    const html = renderToStaticMarkup(await RetentionReviewPage({ searchParams: Promise.resolve({}) }));
+    expect(html).toContain("No private assistance documents are currently stored.");
+    expect(html).not.toContain("View all documents");
+  });
+});

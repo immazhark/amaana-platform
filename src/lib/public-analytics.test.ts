@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { analyticsDateForHyderabad, isTrackablePublicPath, normalizePublicAnalyticsPath, shouldRecordPublicPageView } from "./public-analytics";
 
+const additionalPublicRoutes = [
+  "/team", "/recognition", "/partner", "/impact/compare",
+  "/get-involved/volunteer", "/get-involved/monthly-giving", "/get-involved/sponsor-education",
+] as const;
+
 describe("isTrackablePublicPath", () => {
   it("tracks public discovery and detail routes", () => {
     expect(isTrackablePublicPath("/")).toBe(true);
@@ -11,12 +16,30 @@ describe("isTrackablePublicPath", () => {
     expect(isTrackablePublicPath("/appeals/verified-need")).toBe(true);
   });
 
+  it.each(additionalPublicRoutes)("tracks the published static page %s", path => {
+    expect(isTrackablePublicPath(path)).toBe(true);
+    expect(normalizePublicAnalyticsPath(path)).toBe(path);
+    expect(shouldRecordPublicPageView(path, false, path)).toBe(true);
+    expect(shouldRecordPublicPageView(path, true, path)).toBe(false);
+  });
+
   it("does not track sensitive, admin or malformed routes", () => {
     expect(isTrackablePublicPath("/request-assistance")).toBe(false);
     expect(isTrackablePublicPath("/donate/example")).toBe(false);
     expect(isTrackablePublicPath("/donations/ABC123")).toBe(false);
     expect(isTrackablePublicPath("/admin")).toBe(false);
     expect(isTrackablePublicPath("/our-work/not valid")).toBe(false);
+  });
+
+  it.each([
+    "/contact/feedback", "/team/private-case", "/recognition/person", "/partner/details",
+    "/impact/compare/private", "/get-involved/volunteer/applicant",
+    "/get-involved/monthly-giving/receipt", "/get-involved/sponsor-education/student",
+    "/team?reference=private", "/recognition#private",
+  ])("retains the narrow privacy boundary for %s", path => {
+    expect(isTrackablePublicPath(path)).toBe(false);
+    expect(normalizePublicAnalyticsPath(path)).toBeNull();
+    expect(shouldRecordPublicPageView(path, false)).toBe(false);
   });
 });
 

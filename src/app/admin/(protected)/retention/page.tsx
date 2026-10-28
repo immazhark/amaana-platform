@@ -98,7 +98,7 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
         <Link href="/admin/retention?state=eligible" aria-current={selectedState === "eligible" ? "page" : undefined}>Review eligible ({eligibleDocuments})</Link>
         <Link href="/admin/retention?state=active" aria-current={selectedState === "active" ? "page" : undefined}>Active case ({activeDocuments})</Link>
       </div>
-      {documents.length === 0 ? <p className="empty-state">No private assistance documents are currently stored.</p> : <div className="admin-media-list">{documents.map(document => {
+      {documents.length === 0 ? <p className="empty-state">{selectedState ? <>No private assistance documents match this workflow state. <Link href="/admin/retention">View all documents</Link></> : "No private assistance documents are currently stored."}</p> : <div className="admin-media-list">{documents.map(document => {
         const history = documentEvents.get(document.id) ?? [];
         const latestHoldEvent = history.find(event => ["assistance.document_legal_hold_placed", "assistance.document_legal_hold_released"].includes(event.action));
         const held = latestHoldEvent?.action === "assistance.document_legal_hold_placed";

@@ -28,9 +28,19 @@ describe("anonymous Core Web Vitals ingestion", () => {
   });
 
   it.each([
+    "/team", "/recognition", "/partner", "/impact/compare",
+    "/get-involved/volunteer", "/get-involved/monthly-giving", "/get-involved/sponsor-education",
+  ])("accepts an eligible public page's bounded Web Vital metric: %s", async path => {
+    await expect(parseWebVitalPayload(request({ path, name: "LCP", value: 980 })))
+      .resolves.toEqual({ path, name: "LCP", bucket: "excellent" });
+  });
+
+  it.each([
     { path: "/admin", name: "INP", value: 75 },
     { path: "/donations/private/acknowledgement", name: "CLS", value: 0.1 },
     { path: "/request-assistance/status", name: "LCP", value: 900 },
+    { path: "/contact/feedback", name: "LCP", value: 900 },
+    { path: "/get-involved/volunteer/applicant", name: "LCP", value: 900 },
     { path: "/our-work?token=private", name: "LCP", value: 900 },
     { path: "/about", name: "TTFB", value: 100 },
     { path: "/about", name: "INP", value: -1 },

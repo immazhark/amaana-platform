@@ -44,6 +44,7 @@ for (const scenario of [
     await expect(page.locator('input[name="applicantName"]')).toHaveValue("Synthetic Recovery Applicant");
     await expect(page.locator('input[name="consent"]')).toBeChecked();
     await expect(page.getByRole("link", { name: "Contact Amaana about this request" })).toHaveAttribute("target", "_blank");
+    await expect(page.getByRole("link", { name: "Contact Amaana about this request" })).toHaveAccessibleName("Contact Amaana about this request (opens in a new tab)");
     await page.locator("form.v2-assistance-form").evaluate(form => form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })));
     expect(calls).toBe(1);
     expect(errors).toEqual([]);
