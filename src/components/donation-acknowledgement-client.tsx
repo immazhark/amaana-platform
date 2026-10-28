@@ -10,14 +10,15 @@ import { formatAcknowledgementINR, isAcknowledgementResponse, type Acknowledgeme
 
 
 export function DonationAcknowledgementClient({ reference }: { reference: string }) {
-  const [record, setRecord] = useState<AcknowledgementRecord | null | "error" | undefined>(undefined);
+  const [snapshot, setSnapshot] = useState<{ reference: string; record: AcknowledgementRecord | null | "error" }>();
+  const record = snapshot?.reference === reference ? snapshot.record : undefined;
   const [attempt, retry] = useState(0);
   const credential = useRef<[string, string | null]>([reference, null]);
 
   useEffect(() => {
     let controller: AbortController | undefined;
     const frame = window.requestAnimationFrame(() => {
-      setRecord(undefined);
+      setSnapshot(undefined);
       const resolvedToken = parsePrivateDonationAcknowledgementLocation(window.location.search, window.location.hash)
         ?? (credential.current[0] === reference ? credential.current[1] : null);
       credential.current = [reference, resolvedToken];
@@ -26,7 +27,7 @@ export function DonationAcknowledgementClient({ reference }: { reference: string
       }
 
       if (!resolvedToken) {
-        setRecord(null);
+        setSnapshot({ reference, record: null });
         return;
       }
 
@@ -45,9 +46,11 @@ export function DonationAcknowledgementClient({ reference }: { reference: string
           if (!isAcknowledgementResponse(body, reference)) throw new Error("Invalid private acknowledgement");
           return body;
         })
-        .then(result => setRecord(result.found ? result : null))
+        .then(result => {
+          if (!controller?.signal.aborted) setSnapshot({ reference, record: result.found ? result : null });
+        })
         .catch(error => {
-          if (error?.name !== "AbortError") setRecord("error");
+          if (!controller?.signal.aborted && error?.name !== "AbortError") setSnapshot({ reference, record: "error" });
         });
     });
 
@@ -63,7 +66,7 @@ export function DonationAcknowledgementClient({ reference }: { reference: string
 
   if (!record || record === "error") {
     const failed = record === "error";
-    return <div className="v2-home v2-state-page"><section className="v2-state-hero"><div className="v2-shell"><p className="v2-section-label">Donation acknowledgement</p><h1>{failed ? "Unable to open your acknowledgement." : "Private acknowledgement unavailable."}</h1><p>{failed ? "Service temporarily unavailable. Retry without paying again." : "This link is incomplete, invalid or unavailable."} Your record stays private and requires a valid token.</p><div className="v2-hero-actions">{failed ? <button className="v2-button" type="button" onClick={() => { setRecord(undefined); retry(value => value + 1); }}>Try again</button> : <Link className="v2-button" href="/appeals">View verified needs</Link>}<Link className="v2-text-link" href="/contact">Contact Amaana →</Link></div></div></section></div>;
+    return <div className="v2-home v2-state-page"><section className="v2-state-hero"><div className="v2-shell"><p className="v2-section-label">Donation acknowledgement</p><h1>{failed ? "Unable to open your acknowledgement." : "Private acknowledgement unavailable."}</h1><p>{failed ? "Service temporarily unavailable. Retry without paying again." : "This link is incomplete, invalid or unavailable."} Your record stays private and requires a valid token.</p><div className="v2-hero-actions">{failed ? <button className="v2-button" type="button" onClick={() => { setSnapshot(undefined); retry(value => value + 1); }}>Try again</button> : <Link className="v2-button" href="/appeals">View verified needs</Link>}<Link className="v2-text-link" href="/contact">Contact Amaana →</Link></div></div></section></div>;
   }
 
   const { donation, presentation } = record;

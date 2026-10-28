@@ -1,3 +1,7 @@
+## 2026-10-28 IST — Scoped private review corrections
+
+AF-CONSENT: retention scalar/calendar boundary hardened (17 negative cases RED first, 31 focused GREEN), not concurrency certification. AF-R012/private-record correctness: acknowledgement abort and reference snapshot regressions RED four / final five GREEN. Combined full Vitest 2,310 PASS / 20 isolated-DB SKIP; types, lint, build and independent reviews PASS. Source branch `fix/private-review-input-and-lookup-boundaries-20261028`, base main `83044f775166be0a3533d807a7ec3e268795530f`; hosted acceptance/merge/deploy pending. New HIGH hold/delete race #523 is independently reproduced and unresolved. Historical 149 classifications remain unchanged. Latest executive approval supersedes administrative hold, while fresh actual Neon use is 97.5028/100 CU-hours with endpoint active.
+
 # Amaana Master Reconciled Execution Plan — War-Footing Revision
 
 ## Verified engineering checkpoint — 25 October 2026 (#433 runtime, #434 tooling)
