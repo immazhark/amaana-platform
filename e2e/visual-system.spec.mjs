@@ -698,7 +698,7 @@ test('mobile footer navigation remains operable with JavaScript disabled', async
   });
   try {
     const page = await context.newPage();
-    const response = await page.goto('/about', { waitUntil: 'domcontentloaded' });
+    const response = await page.goto('/terms', { waitUntil: 'domcontentloaded' });
     expect(response?.ok()).toBe(true);
     const fallback = page.locator('.site-footer .footer-nav-group > noscript > .footer-nav-noscript-links');
     await expect(fallback).toHaveCount(3);

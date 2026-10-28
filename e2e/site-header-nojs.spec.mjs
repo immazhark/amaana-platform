@@ -9,7 +9,7 @@ test('mobile header links remain usable without JavaScript', async ({ browser })
 
   try {
     const page = await context.newPage();
-    const response = await page.goto('/about', { waitUntil: 'domcontentloaded' });
+    const response = await page.goto('/terms', { waitUntil: 'domcontentloaded' });
     expect(response?.ok()).toBe(true);
 
     const fallback = page.locator('header.site-header > noscript > details.mobile-nav-noscript');
