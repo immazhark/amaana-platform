@@ -77,6 +77,24 @@ test("never echoes secret values in validation failures", () => {
   assert.ok(problems.every(problem => !problem.includes("tiny")));
 });
 
+test("pre-deploy blocks public-prefixed private credentials in staging and production", () => {
+  for (const environment of ["staging", "production"]) {
+    const env = base();
+    if (environment === "production") {
+      env.APP_ENVIRONMENT = "production";
+      env.NEXT_PUBLIC_APP_URL = "https://amaanafoundation.org";
+      env.NEXT_PUBLIC_RAZORPAY_KEY_ID = "rzp_live_example";
+      env.PRODUCTION_INDEXING_DECISION = "keep_disabled";
+    }
+    env.NEXT_PUBLIC_S3_SECRET_ACCESS_KEY = "private-secret-value-do-not-log";
+    env.NEXT_PUBLIC_AWS_ACCESS_KEY_ID = "private-access-value-do-not-log";
+    const problems = validateRailwayDeployEnvironment(env);
+    assert.ok(problems.some(problem => problem.includes("NEXT_PUBLIC_S3_SECRET_ACCESS_KEY")));
+    assert.ok(problems.some(problem => problem.includes("NEXT_PUBLIC_AWS_ACCESS_KEY_ID")));
+    assert.ok(problems.every(problem => !problem.includes("do-not-log")));
+  }
+});
+
 test("wrapper runs release preparation before declaring pre-deploy completion", async () => {
   const source = await readFile("prisma/railway-predeploy.mjs", "utf8");
   const releasePrepare = source.indexOf('await import("./release-prepare.mjs")');

@@ -108,6 +108,7 @@ jobs:
       - name: Validate launch readiness register
         run: |
           node --test scripts/test-launch-readiness.mjs
+          node --test scripts/test-public-env-secret-names.mjs
           node --test scripts/test-production-environment.mjs
           node --test scripts/test-railway-predeploy.mjs scripts/test-notification-cron.mjs
           node scripts/check-launch-readiness.mjs
