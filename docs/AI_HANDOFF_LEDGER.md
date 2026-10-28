@@ -1,3 +1,7 @@
+## 2026-10-28 IST — Consolidated main-target draft #528
+
+CHATGPT_ACTIVE retargeted draft #528 to protected main to release #526, #527 and the new retention fix as one verified source tree, preserving all parent PRs and branch ancestry. This avoids separate production deployments. Local application code and test results are unchanged; a coordination-only follow-up will trigger the full main-target source acceptance. The new hosted disposable PostgreSQL interleaving cases are not certified yet, and the candidate remains DRAFT, unmerged and undeployed. No 149-item status promotion. See the preceding implementation handoff below for red/green details and rollback.
+
 ## 2026-10-28 IST — CHATGPT_ACTIVE sole-writer handoff and retention claim candidate
 
 Mohammed Mazhar Khan explicitly transferred sole repository implementation ownership to this ChatGPT session. Source parent: frozen #527 `91634eb3d221c8cd9c531dd03b030feeafcc8c12` stacked on #526 `f97f398e31ce8cc5cf142e56d1f2ff5f138ac912`; protected main `83044f775166be0a3533d807a7ec3e268795530f`. No published #523 branch/PR was found; prior local work was not silently assumed available. New isolated task branch: `fix/retention-hold-delete-claim-20261028`.
