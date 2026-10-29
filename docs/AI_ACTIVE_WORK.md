@@ -1,3 +1,10 @@
+## 2026-10-29 IST — AF-R042 Impact nested motion
+
+CHATGPT_ACTIVE sole writer; continuing561 published head efff0ff9212feac084fd45ce67864492fd8a0e41. Current main31c011c unchanged. Impact refinement resets outer card but leaves nested hover/focus image zoom and action translation. Scope matching reduced-only nested resets and fail-first regression; preserve media eligibility, content, normal effects, focus and links. No DB/provider/payment/auth/infra action; inherited Neon/release hold and149 classes unchanged.
+
+Validation: three nested-state regressions RED before correction; final full Vitest2606 PASS/24 isolated-DB opt-in SKIP. Strict TypeScript, full zero-warning ESLint/governed Stylelint, optimized build/pre/postbuild, syntax/diff and independent read-only review PASS. JS808283/CSS323951 uncompressed bytes within existing caps. Synthetic Playwright checks nested image/video/action transforms under hover and confirmed keyboard focus-visible with both preferences; UNEXECUTED under known Chromium socket restriction. No full accessibility or live browser claim. Expand existing561; hosted/browser, separate ready-state and Neon hold remain. No merge/deploy or149 status promotion.
+
+
 ## 2026-10-29 IST — AF-R042 assistance and carousel hover cluster
 
 CHATGPT_ACTIVE sole writer continuing existing draft561, published base cfa49c05a61849534cd7dc188251e438d2317779; local branch fix/public-flow-motion-local-20261029. Read-only reviewer found reachable reduced-motion hover translations in assistance after-flow and shared carousel controls. Add two matching state resets, preserve normal-motion effects, disabled/focus feedback and actions; fail-first regression before CSS. Expand existing coherent public-motion PR, no extra child. Main remains31c011c; preserve Neon capacity hold, required acceptance, no149 class promotion. No form/payment/auth/data/provider/infra change. Rollback isolated CSS/tests.

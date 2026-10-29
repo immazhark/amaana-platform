@@ -124,3 +124,22 @@ test('Assistance follow-up and enabled carousel controls honor reduced motion', 
     await expect(enabled).toHaveCSS('outline-style', 'solid');
   }
 });
+
+
+test('Impact nested media and action honor reduced motion on hover and focus', async ({ page }) => {
+  const css = stylesheet('src/app/impact/impact-refinement.module.css').replace(/:global\((.*?)\)(?=[{,])/gs, '$1');
+  await page.setContent(`<style>${css}</style><a href="#impact" class="v2-impact-tile"><div class="v2-impact-tile-media">${image}<video></video></div><span class="v2-impact-tile-action">Explore impact</span></a>`);
+  const tile = page.getByRole('link');
+  for (const reducedMotion of ['reduce', 'no-preference']) {
+    await page.emulateMedia({ reducedMotion });
+    for (const state of ['hover', 'focus']) {
+      await page.mouse.move(0, 0);
+      if (state === 'hover') await tile.hover();
+      else { await page.keyboard.press('Tab'); await tile.focus(); await expect.poll(() => tile.evaluate(element => element.matches(':focus-visible'))).toBe(true); }
+      for (const target of await tile.locator('img, video, .v2-impact-tile-action').all()) {
+        if (reducedMotion === 'reduce') await expect(target).toHaveCSS('transform', 'none');
+        else await expect.poll(() => target.evaluate(element => getComputedStyle(element).transform)).not.toBe('none');
+      }
+    }
+  }
+});

@@ -176,4 +176,7 @@
 @media(prefers-reduced-motion:reduce){
   :global(.v2-impact-tile),:global(.v2-impact-tile-media img),:global(.v2-impact-tile-media video),:global(.v2-impact-tile-shade),:global(.v2-impact-tile-action){transition:none!important}
   :global(.v2-impact-tile:is(:hover,:focus-visible)){transform:none}
+  :global(.v2-impact-tile:is(:hover,:focus-visible) .v2-impact-tile-media img),
+  :global(.v2-impact-tile:is(:hover,:focus-visible) .v2-impact-tile-media video),
+  :global(.v2-impact-tile:is(:hover,:focus-visible) .v2-impact-tile-action){transform:none}
 }
