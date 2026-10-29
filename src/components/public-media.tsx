@@ -56,12 +56,13 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
       />
     );
 
+    const caption = asset.caption?.trim();
     return (
       <figure className="v2-media-item">
         {/* Local approved campaign media uses Next's responsive optimizer. External approved HTTPS media stays direct until hosts are explicitly allowlisted. */}
         {image}
-        {(asset.caption || asset.sourceYear) && (
-          <figcaption>{asset.caption}{asset.caption && asset.sourceYear ? " · " : ""}{asset.sourceYear ?? ""}</figcaption>
+        {(caption || asset.sourceYear) && (
+          <figcaption>{caption}{caption && asset.sourceYear ? " · " : ""}{asset.sourceYear ?? ""}</figcaption>
         )}
       </figure>
     );
