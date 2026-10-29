@@ -92,3 +92,15 @@ it("makes no database reads when page access is denied", async () => {
   expect(mocks.appeal).not.toHaveBeenCalled(); expect(mocks.history).not.toHaveBeenCalled();
   expect(mocks.privateRequest).not.toHaveBeenCalled();
 });
+
+
+it("shows the appeal audit instant in IST across midnight", async () => {
+  mocks.history.mockResolvedValue([{ id: "synthetic-audit", action: "synthetic_reviewed", createdAt: new Date("2026-12-31T20:00:00.000Z"), actor: { name: "Synthetic actor" } }]);
+  const html = await render();
+  expect(html).toContain("Synthetic actor · 1/1/2027, 1:30:00 am");
+});
+it("shows the private verification completion on its IST calendar day", async () => {
+  mocks.privateRequest.mockResolvedValue({ referenceNumber: "SYNTHETIC-REQUEST", verification: { ...verification, completedAt: new Date("2026-12-31T20:00:00.000Z") } });
+  const html = await render();
+  expect(html).toContain("Completed 1/1/2027");
+});
