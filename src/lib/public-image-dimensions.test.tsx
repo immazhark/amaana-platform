@@ -55,6 +55,19 @@ describe("approved public image intrinsic dimensions", () => {
     expect(getPublicImageDimensions(input)).toEqual(valid ? input : fallback);
   });
 
+  it.each([
+    null,
+    undefined,
+    false,
+    "640x480",
+    42,
+    [],
+    Object.assign([], { width: 960, height: 1280 }),
+  ])("falls back for non-record public image metadata %j", input => {
+    expect(hasValidPublicImageDimensions(input)).toBe(false);
+    expect(getPublicImageDimensions(input)).toEqual(fallback);
+  });
+
   it("applies safe intrinsic dimensions in public-media rendering", () => {
     const html = renderToStaticMarkup(createElement(PublicMedia, {
       asset: {
