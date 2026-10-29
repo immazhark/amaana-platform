@@ -86,7 +86,7 @@
   font-family:var(--af-font-display);
   font-size:clamp(2.35rem,3.35vw,3.9rem);
   font-weight:400;
-  line-height:.88;
+  line-height:1.08;
   letter-spacing:-.045em;
   font-variant-numeric:lining-nums tabular-nums;
   white-space:normal;
