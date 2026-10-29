@@ -7,7 +7,7 @@ import { PublicMedia } from "@/components/public-media";
 import { getFaithDiscoveryData, getVisibleFaithMedia } from "@/lib/public-discovery-data";
 import { selectIdentityPublicImage } from "@/lib/public-media";
 import styles from "./faith-audit.module.css";
-import { selectFaithDiscovery, type FaithSearch } from "@/lib/faith-discovery";
+import { FAITH_PAGE_SIZE, selectFaithDiscovery, type FaithSearch } from "@/lib/faith-discovery";
 
 export const dynamic = "force-dynamic";
 
@@ -35,12 +35,20 @@ export default async function FaithAndReflectionsPage({ searchParams }: { search
   const articles = content.filter(item => item.type === "ARTICLE");
   const reminders = content.filter(item => item.type === "REMINDER");
   const videos = content.filter(item => item.type === "VIDEO");
-  const lead = selection.results[0];
+  // Only page one has the editorial lead; later pages contain archive cards.
+  const lead = selection.page === 1 ? selection.results[0] : undefined;
   const visibleMedia = await getVisibleFaithMedia([...new Set([content[0]?.id, lead?.id].filter((id): id is string => Boolean(id)))]);
   const mediaById = new Map(visibleMedia.map(item => [item.id, item.mediaAssets]));
   const heroMedia = selectIdentityPublicImage((content[0] ? mediaById.get(content[0].id) : undefined) ?? []);
   const leadMedia = selectIdentityPublicImage((lead ? mediaById.get(lead.id) : undefined) ?? []);
-  const rest = selection.results.slice(1);
+  const rest = lead ? selection.results.slice(1) : selection.results;
+  const pageHref = (page: number) => {
+    const params = new URLSearchParams();
+    if (selection.q) params.set("q", selection.q);
+    if (selection.format) params.set("format", selection.format);
+    params.set("page", String(page));
+    return `/faith-and-reflections?${params}#library`;
+  };
 
   return (
     <div className="v2-home v2-faith-page">
@@ -73,8 +81,9 @@ export default async function FaithAndReflectionsPage({ searchParams }: { search
             {selection.active && <Link className="v2-text-link" href="/faith-and-reflections#library">Clear reflection filters</Link>}
           </form>
           <p id="faith-search-help">Search reviewed titles and excerpts. Do not enter personal or case details.</p>
-          {selection.invalid && <p id="faith-search-error" role="status">These filters could not be read. Clear them or use up to 80 characters and a listed format.</p>}
+          {selection.invalid && <p id="faith-search-error" role="status">These filters could not be read. Clear them or use up to 80 characters, a listed format and a valid page number.</p>}
           {selection.active && <p>{selection.count} reviewed {selection.count === 1 ? "item" : "items"} match these filters.</p>}
+          {selection.totalPages > 1 && <nav aria-label="Reviewed reflection result pages">{selection.page > 1 && <Link className="v2-button" href={pageHref(selection.page - 1)}>Previous reflections</Link>}<span> Page {selection.page} of {selection.totalPages} </span>{selection.page < selection.totalPages && <Link className="v2-button" href={pageHref(selection.page + 1)}>Next reflections</Link>}</nav>}
           {content.length > 0 && selection.active && selection.count === 0 && <div className="v2-reminder"><h3>No reviewed items match these filters</h3><p>Change the search or clear the filters to explore the reviewed library.</p></div>}
 
           {content.length > 0 ? <div className="v2-faith-format-grid"><article><span>01</span><strong>{articles.length}</strong><h3>Articles</h3><p>Long-form reflection with source and review context.</p></article><article><span>02</span><strong>{reminders.length}</strong><h3>Reminders</h3><p>Concise, purposeful reflection without engagement bait.</p></article><article><span>03</span><strong>{videos.length}</strong><h3>Videos</h3><p>Reviewed visual content with attribution and context.</p></article></div> : <div className={styles.emptyState}><div className={styles.emptyIcon} aria-hidden="true">✦</div><span className={styles.emptyKicker}>Editorial library under curation</span><h3>Reviewed faith content will appear here when it is ready.</h3><p>Sources, translations, citations and scholarly attributions are checked before publication. Drafts remain private until that review is complete.</p><div className={styles.emptyActions}><Link className="v2-button" href="/our-work">See faith in action</Link><Link className="v2-text-link" href="/about">Why Amaana handles content carefully →</Link></div></div>}
@@ -83,7 +92,7 @@ export default async function FaithAndReflectionsPage({ searchParams }: { search
 
       {lead && <section className="v2-section dark v2-faith-feature" aria-labelledby="featured-reflection-title"><div className="v2-shell v2-faith-feature-grid"><div className="v2-faith-feature-copy"><p className="v2-section-label">Featured reflection</p><small>{lead.type.toLowerCase()}</small><h2 id="featured-reflection-title">{lead.title}</h2><p>{lead.excerpt}</p>{lead.sourceCitation && <div className="v2-faith-source"><span>Reviewed source</span><p>{lead.sourceCitation}</p></div>}<Link className="v2-button ghost" href={`/faith-and-reflections/${lead.slug}`}>Read the reviewed reflection</Link></div><div className="v2-faith-feature-media">{leadMedia ? <PublicMedia asset={leadMedia} /> : <div className="v2-faith-feature-placeholder"><span>Reviewed content</span><strong>{lead.title}</strong><small>Visual media appears only when separately approved for public use.</small></div>}</div></div></section>}
 
-      {rest.length > 0 && <section className="v2-section v2-faith-archive" aria-labelledby="published-reflections-title"><div className="v2-shell"><SectionHeading eyebrow={<>Published reflections</>} title={<>Verified before it reaches you.</>} subtitle={<>Every public item has both publication approval and verified religious review.</>} id="published-reflections-title" /><div className="v2-faith-library-grid">{rest.map((item,index)=><Link className={`v2-faith-library-item ${index===0?"wide":""}`} href={`/faith-and-reflections/${item.slug}`} key={item.id} aria-label={`Open reflection: ${item.title}`}><span>{String(index+2).padStart(2,"0")}</span><small>{item.type.toLowerCase()}</small><h3>{item.title}</h3><p>{item.excerpt}</p>{item.sourceCitation && <div><b>Source</b><p>{item.sourceCitation}</p></div>}<strong className="v2-faith-library-action">Open reflection ↗</strong></Link>)}</div></div></section>}
+      {rest.length > 0 && <section className="v2-section v2-faith-archive" aria-labelledby="published-reflections-title"><div className="v2-shell"><SectionHeading eyebrow={<>Published reflections</>} title={<>Verified before it reaches you.</>} subtitle={<>Every public item has both publication approval and verified religious review.</>} id="published-reflections-title" /><div className="v2-faith-library-grid">{rest.map((item,index)=><Link className={`v2-faith-library-item ${index===0?"wide":""}`} href={`/faith-and-reflections/${item.slug}`} key={item.id} aria-label={`Open reflection: ${item.title}`}><span>{String((selection.page - 1) * FAITH_PAGE_SIZE + index + (lead ? 2 : 1)).padStart(2,"0")}</span><small>{item.type.toLowerCase()}</small><h3>{item.title}</h3><p>{item.excerpt}</p>{item.sourceCitation && <div><b>Source</b><p>{item.sourceCitation}</p></div>}<strong className="v2-faith-library-action">Open reflection ↗</strong></Link>)}</div></div></section>}
 
       <section className="v2-section paper v2-faith-topics"><div className="v2-shell"><SectionHeading eyebrow={<>Themes</>} title={<>A library that grows with meaning.</>} subtitle={<>Themes appear as reviewed reflections are published, helping related ideas stay connected without forcing content into artificial categories.</>} />{topics.length > 0 ? <div className="v2-faith-topic-cloud">{topics.map(([slug,name],index)=><span key={slug}><b>{String(index+1).padStart(2,"0")}</b>{name}</span>)}</div> : <p className="v2-section-intro">Topics will appear when reviewed Faith content is published.</p>}</div></section>
 
