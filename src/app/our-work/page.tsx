@@ -9,6 +9,7 @@ import { VerifiedImpactStrip } from "@/components/verified-impact-strip";
 import { getOurWorkIndexData } from "@/lib/public-page-data";
 import { selectIdentityPublicImage } from "@/lib/public-media";
 import { filterWork, type WorkSearch } from "@/lib/work-filters";
+import { projectCanonicalWork } from "@/lib/canonical-work-projection";
 import "./work-filters.css";
 import auditStyles from "./work-filter-audit.module.css";
 import { programmeBySlug, programmeCategories } from '@/lib/master-copy';
@@ -27,12 +28,7 @@ export default async function OurWorkPage({ searchParams }: { searchParams: Prom
   const rawCauses = await getOurWorkIndexData();
   const search = await searchParams;
   const allInitiatives = rawCauses.flatMap(cause => cause.initiatives);
-  const canonicalInitiatives = allInitiatives.flatMap(item => {
-    const canonical = programmeBySlug(item.slug);
-    if (!canonical) return [];
-    return [{ ...item, causeSlug: canonical.causeSlug,
-      parentSlug: "parentSlug" in canonical ? canonical.parentSlug : null }];
-  });
+  const { canonicalInitiatives, publishedOutcomes } = projectCanonicalWork(allInitiatives, programmeBySlug);
   const allCauses = programmeCategories.map(category => ({
     id: category.slug, slug: category.slug, title: category.title, summary: category.summary,
     initiatives: canonicalInitiatives.filter(item => item.causeSlug === category.slug),
@@ -66,9 +62,7 @@ export default async function OurWorkPage({ searchParams }: { searchParams: Prom
         visual={heroMedia ? <PublicMedia asset={heroMedia} priority sizes="(max-width: 900px) calc(100vw - 2rem), 42vw" /> : <div className="page-hero__visual-fallback page-hero__visual-fallback--stats"><span>Documented public portfolio</span><strong>{initiativeCount} published programmes</strong><div className="page-hero__stat-row"><b>{causeCount}</b><small>programme areas</small></div><i /></div>}
       />
 
-      <div className="v2-shell"><VerifiedImpactStrip headingId="work-published-outcomes" items={allInitiatives.flatMap(item =>
-        item.primaryMetric && item.primaryMetricLabel ? [{ slug: item.slug, title: item.title, value: item.primaryMetric, label: item.primaryMetricLabel }] : [],
-      )} /></div>
+      <div className="v2-shell"><VerifiedImpactStrip headingId="work-published-outcomes" items={publishedOutcomes} /></div>
       <section className="v2-section paper" id="work-results"><div className="v2-shell"><SectionHeading eyebrow={<>Explore by need</>} title={<>A living portfolio of service.</>} subtitle={<>Start with a programme area, then use the year filter to explore a specific annual edition.</>} />
         <form key={`${filters.programme}:${filters.year}:${filters.query}`} className={`work-filters ${auditStyles.toolbar}`} action="/our-work#work-results" method="get" aria-label="Filter published initiatives"><label className={auditStyles.filterLabel} htmlFor="work-search">Search public initiatives<input className={auditStyles.filterSelect} id="work-search" name="q" type="search" maxLength={80} defaultValue={filters.query} placeholder="Title or summary" aria-invalid={filters.invalid || undefined} aria-describedby={filters.invalid ? "work-search-note work-filter-error" : "work-search-note"} /></label><label className={auditStyles.filterLabel} htmlFor="work-programme">Programme<select className={auditStyles.filterSelect} id="work-programme" aria-invalid={filters.invalid || undefined} aria-describedby={filters.invalid ? "work-filter-error" : undefined} name="programme" defaultValue={filters.programme}><option value="">All programmes</option>{allCauses.map(cause => <option key={cause.slug} value={cause.slug}>{cause.title}</option>)}</select></label><label className={auditStyles.filterLabel} htmlFor="work-year">Year<select className={auditStyles.filterSelect} id="work-year" aria-invalid={filters.invalid || undefined} aria-describedby={filters.invalid ? "work-filter-error" : undefined} name="year" defaultValue={filters.year}><option value="">All years</option>{filters.years.map(year => <option key={year} value={year}>{year}</option>)}</select></label><button className="v2-button" type="submit">Apply filters</button>{filters.active && <Link className={auditStyles.clear} href="/our-work#work-results">Clear filters</Link>}</form>
         <p id="work-search-note">Search published titles and summaries. Please do not enter personal or case details.</p>
