@@ -33,14 +33,13 @@ it("preserves canonical umbrella and edition relationships, omitting incomplete 
 });
 
 it("does not mutate published records, rewrite approved copy or invent unknown programme metrics", () => {
-  const records = Object.freeze([
-    { slug: "reviewed", title: "  Reviewed work ", primaryMetric: "1,001", primaryMetricLabel: "documented kits" },
-  ]);
+  const record = { slug: "reviewed", title: "  Reviewed work ", primaryMetric: "1,001", primaryMetricLabel: "documented kits" };
+  const records = Object.freeze([record]);
   const result = projectCanonicalWork(records, slug => slug === "reviewed" ? { causeSlug: "relief" } : undefined);
   expect(result.publishedOutcomes).toEqual([
     { slug: "reviewed", title: "  Reviewed work ", value: "1,001", label: "documented kits" },
   ]);
-  expect(Object.hasOwn(records[0], "causeSlug")).toBe(false);
+  expect(Object.hasOwn(record, "causeSlug")).toBe(false);
   expect(projectCanonicalWork(records, () => undefined)).toEqual({
     canonicalInitiatives: [], publishedOutcomes: [],
   });
