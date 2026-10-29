@@ -45,3 +45,40 @@ it("does not mutate published records, rewrite approved copy or invent unknown p
     canonicalInitiatives: [], publishedOutcomes: [],
   });
 });
+
+it("keeps Home documented outcomes within the published canonical programme registry", () => {
+  const featured = [
+    { slug: "legacy", title: "Unregistered legacy programme", primaryMetric: "999", primaryMetricLabel: "kits" },
+    { slug: "relief", title: "Relief", primaryMetric: "40", primaryMetricLabel: "kits" },
+    { slug: "relief-2026", title: "Relief 2026", primaryMetric: "25", primaryMetricLabel: "kits" },
+    { slug: "education", title: "Education", primaryMetric: null, primaryMetricLabel: "students" },
+  ];
+  const canonical = (slug: string) => ({
+    relief: { causeSlug: "relief" },
+    "relief-2026": { causeSlug: "relief", parentSlug: "relief" },
+    education: { causeSlug: "education" },
+  })[slug as "relief" | "relief-2026" | "education"];
+  expect(projectCanonicalWork(featured, canonical).publishedOutcomes.map(item => item.slug))
+    .toEqual(["relief", "relief-2026"]);
+});
+
+it("keeps Impact documented outcomes within its canonical umbrella wall", () => {
+  const indexed = [
+    { slug: "legacy", title: "Unregistered", primaryMetric: "999", primaryMetricLabel: "families" },
+    { slug: "relief", title: "Relief", primaryMetric: "40", primaryMetricLabel: "kits" },
+    { slug: "relief-2026", title: "Relief 2026", primaryMetric: "25", primaryMetricLabel: "kits" },
+    { slug: "education", title: "Education", primaryMetric: null, primaryMetricLabel: "students" },
+  ];
+  const canonical = (slug: string) => ({
+    relief: { causeSlug: "relief" },
+    "relief-2026": { causeSlug: "relief", parentSlug: "relief" },
+    education: { causeSlug: "education" },
+  })[slug as "relief" | "relief-2026" | "education"];
+  const wall = indexed.filter(item => {
+    const programme = canonical(item.slug);
+    return Boolean(programme) && !(programme && "parentSlug" in programme && programme.parentSlug);
+  });
+  const outcomes = projectCanonicalWork(wall, canonical).publishedOutcomes;
+  expect(wall.map(item => item.slug)).toEqual(["relief", "education"]);
+  expect(outcomes).toEqual([{ slug: "relief", title: "Relief", value: "40", label: "kits" }]);
+});

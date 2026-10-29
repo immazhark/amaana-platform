@@ -7,6 +7,7 @@ import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { TrustEvidenceBoundary } from "@/components/trust-evidence-boundary";
 import { VerifiedImpactStrip } from "@/components/verified-impact-strip";
+import { projectCanonicalWork } from "@/lib/canonical-work-projection";
 import { programmeBySlug, programmeCategories } from "@/lib/master-copy";
 import { filterImpactByProgramme, type ImpactProgrammeSearch } from "@/lib/impact-programme-filter";
 import { getImpactPageData } from "@/lib/public-page-data";
@@ -39,6 +40,8 @@ export default async function ImpactPage({ searchParams }: { searchParams: Promi
     const canonical = programmeBySlug(item.slug);
     return Boolean(canonical) && !(canonical && "parentSlug" in canonical && canonical.parentSlug);
   });
+  // Outcomes must link only to the same canonical umbrella records as the Impact wall.
+  const impactOutcomes = projectCanonicalWork(initiatives, programmeBySlug).publishedOutcomes;
   const filtered = filterImpactByProgramme(
     initiatives,
     search,
@@ -71,9 +74,7 @@ export default async function ImpactPage({ searchParams }: { searchParams: Promi
         )}
       />
 
-      <div className="v2-shell"><VerifiedImpactStrip headingId="impact-published-outcomes" items={rawInitiatives.flatMap(item =>
-        item.primaryMetric && item.primaryMetricLabel ? [{ slug: item.slug, title: item.title, value: item.primaryMetric, label: item.primaryMetricLabel }] : [],
-      )} /></div>
+      <div className="v2-shell"><VerifiedImpactStrip headingId="impact-published-outcomes" items={impactOutcomes} /></div>
       <section className="v2-section paper v2-impact-wall-section" id="evidence" aria-labelledby="impact-wall-title">
         <div className="v2-shell">
           <TrustEvidenceBoundary context="impact" className={evidenceStyles.boundary} />

@@ -11,10 +11,11 @@ import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { getHomepageAppeals } from "@/lib/public-content";
 import { HomeGrowth, HomeTrust } from "@/components/home-evidence";
 import { VerifiedImpactStrip } from "@/components/verified-impact-strip";
+import { projectCanonicalWork } from "@/lib/canonical-work-projection";
 import { getHomepageDiscoveryData } from "@/lib/public-page-data";
 import { PublicMedia } from "@/components/public-media";
 import { ScrollCarousel } from "@/components/scroll-carousel";
-import { programmeCategories, programmes } from '@/lib/master-copy';
+import { programmeBySlug, programmeCategories, programmes } from '@/lib/master-copy';
 import { ConfiguredHomeSlide } from "@/components/home-story-slide";
 import { getHomeCarouselConfig, getHomeCarouselImages } from "@/lib/home-carousel-data";
 import { composeHomeSlides, defaultHomeSlides } from "@/lib/home-carousel";
@@ -63,6 +64,7 @@ export default async function HomePage() {
   const heroSlides = composeHomeSlides(config, appealSlides);
   const hasOpenAppeals = liveAppeals.length > 0;
   const publicProgrammeSlugs = new Set(discovery.publishedProgrammeSlugs);
+  const homeOutcomes = projectCanonicalWork(discovery.initiatives, programmeBySlug).publishedOutcomes;
   const eidProgrammePublished = publicProgrammeSlugs.has("eid-gift-kits");
   const visibleProgrammeCategories = programmeCategories.filter(category => {
     const destination = programmeCategoryPath(category.slug);
@@ -142,9 +144,7 @@ export default async function HomePage() {
 
       <HomeGrowth eidProgrammePublished={eidProgrammePublished} />
       <HomeTrust hasOpenAppeals={hasOpenAppeals} />
-      <div className="v3-shell"><VerifiedImpactStrip headingId="home-published-outcomes" items={discovery.initiatives.flatMap(item =>
-        item.primaryMetric && item.primaryMetricLabel ? [{ slug: item.slug, title: item.title, value: item.primaryMetric, label: item.primaryMetricLabel }] : [],
-      )} /></div>
+      <div className="v3-shell"><VerifiedImpactStrip headingId="home-published-outcomes" items={homeOutcomes} /></div>
 
       <section className="v3-section v3-appeals" aria-labelledby="appeals-title">
         <div className="v3-shell">
