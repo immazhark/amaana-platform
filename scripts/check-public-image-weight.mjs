@@ -9,15 +9,22 @@ const types = /\.(?:webp|avif|png|jpe?g)$/i;
 /** CI budget for repository hero artwork only, not consent-reviewed S3 galleries. */
 export function evaluateImageWeights(files, limit = MAX_ARTWORK_BYTES) {
   if (!Number.isSafeInteger(limit) || limit <= 0) throw new Error("Invalid image weight budget");
-  const sorted = files.slice().sort((a, b) => b.bytes - a.bytes);
-  for (const file of sorted) {
-    if (!file.path || !Number.isSafeInteger(file.bytes) || file.bytes < 0) {
+  if (!Array.isArray(files)) throw new Error("Invalid image inventory");
+  for (const file of files) {
+    if (!file || typeof file.path !== "string" || !file.path.trim() ||
+        !Number.isSafeInteger(file.bytes) || file.bytes < 0) {
       throw new Error("Invalid image inventory entry");
     }
   }
+  const sorted = files.slice().sort((a, b) => b.bytes - a.bytes);
+  const totalBytes = sorted.reduce((sum, file) => {
+    const next = sum + file.bytes;
+    if (!Number.isSafeInteger(next)) throw new Error("Invalid aggregate image byte size");
+    return next;
+  }, 0);
   return {
     imageCount: sorted.length,
-    totalBytes: sorted.reduce((sum, file) => sum + file.bytes, 0),
+    totalBytes,
     largest: sorted.slice(0, 5),
     violations: sorted.filter(file => file.bytes > limit),
   };
