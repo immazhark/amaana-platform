@@ -24,7 +24,8 @@ export function stylesheetsInHtml(html, origin = ORIGIN) {
     if (asset.origin !== site.origin || asset.username || asset.password) continue;
     if (!/^\/_next\/static\/[A-Za-z0-9_./-]+\.css$/.test(asset.pathname)) continue;
     if (asset.pathname.split("/").includes("..")) continue;
-    unique.add(asset.origin + asset.pathname);
+    // Preserve the requested CSS variant. Fragments are not sent in HTTP requests.
+    unique.add(asset.origin + asset.pathname + asset.search);
   }
   return [...unique];
 }

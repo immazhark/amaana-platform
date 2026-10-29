@@ -245,3 +245,45 @@ test("preserves safe integer boundary and partial-transfer unavailability", () =
   assert.equal(cached.observedTransferBytes, 90);
   assert.deepEqual(cached.unavailableTransferStylesheets, [a]);
 });
+
+test("counts query-specific CSS resources separately without fetching URL fragments", () => {
+  const html = [
+    '<link rel="stylesheet" href="/_next/static/chunks/app.css?v=one">',
+    '<link href="/_next/static/chunks/app.css?v=two#view" rel="stylesheet">',
+    '<link href="/_next/static/chunks/app.css?v=one#duplicate" rel="stylesheet">',
+    '<link href="https://external.invalid/_next/static/chunks/app.css?v=other" rel="stylesheet">',
+  ].join("");
+  assert.deepEqual(stylesheetsInHtml(html), [
+    "https://amaanafoundation.org/_next/static/chunks/app.css?v=one",
+    "https://amaanafoundation.org/_next/static/chunks/app.css?v=two",
+  ]);
+});
+
+test("measures distinct same-path CSS query variants at their actual URLs", async () => {
+  const cssOne = "https://amaanafoundation.org/_next/static/site.css?v=one";
+  const cssTwo = "https://amaanafoundation.org/_next/static/site.css?v=two";
+  const html = '<link rel="stylesheet" href="/_next/static/site.css?v=one">'
+    + '<link rel="stylesheet" href="/_next/static/site.css?v=two">';
+  const seen = [];
+  const responses = new Map([
+    ["https://amaanafoundation.org/", { body: html, type: "text/html" }],
+    [cssOne, { body: "a{color:red}", type: "text/css" }],
+    [cssTwo, { body: "b{color:blue}", type: "text/css" }],
+  ]);
+  const fetchImpl = async (url, options) => {
+    seen.push(url);
+    assert.equal(options.redirect, "manual");
+    const response = responses.get(url);
+    if (!response) throw new Error("Unexpected stylesheet request: " + url);
+    return {
+      ok: true, status: 200, url,
+      headers: { get: () => response.type },
+      text: async () => response.body,
+      arrayBuffer: async () => new TextEncoder().encode(response.body).buffer,
+    };
+  };
+  const report = await auditPublicRouteCss({ fetchImpl, routes: ["/"] });
+  assert.equal(report.routes[0].stylesheetCount, 2);
+  assert.equal(report.routes[0].cssBytes, 25);
+  assert.deepEqual(seen, ["https://amaanafoundation.org/", cssOne, cssTwo]);
+});
