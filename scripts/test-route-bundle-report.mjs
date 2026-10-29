@@ -314,3 +314,30 @@ test("Next16 JS rejects duplicate manifest keys claiming the same layout", () =>
     page => jsReferenceSource(page, manifest), [], () => 1),
     /Ambiguous client-reference JavaScript entries/);
 });
+
+test("Next16 per-route CSS totals reject unsafe integer overflow but accept the exact boundary", () => {
+  const styles = { "[project]/src/app/layout": [
+    { path: "static/css/large.css", inlined: false },
+    { path: "static/css/small.css", inlined: false },
+  ] };
+  const report = size => reporter.summarizeClientReferenceCss({ "/page": "/" },
+    page => referenceSource(page, styles),
+    asset => asset.endsWith("large.css") ? size : 1);
+  assert.throws(() => report(Number.MAX_SAFE_INTEGER), /Invalid CSS total size/);
+  assert.deepEqual(report(Number.MAX_SAFE_INTEGER - 1), [{
+    route: "/", appPath: "/page", cssBytes: Number.MAX_SAFE_INTEGER, stylesheetCount: 2,
+  }]);
+});
+
+test("Next16 per-route JS totals reject unsafe integer overflow but accept the exact boundary", () => {
+  const scripts = { "[project]/src/app/layout": [
+    "static/chunks/large.js", "static/chunks/small.js",
+  ] };
+  const report = size => reporter.summarizeClientReferenceJs({ "/page": "/" },
+    page => jsReferenceSource(page, scripts), [],
+    asset => asset.endsWith("large.js") ? size : 1);
+  assert.throws(() => report(Number.MAX_SAFE_INTEGER), /Invalid JavaScript total size/);
+  assert.deepEqual(report(Number.MAX_SAFE_INTEGER - 1), [{
+    route: "/", appPath: "/page", jsBytes: Number.MAX_SAFE_INTEGER, scriptCount: 2,
+  }]);
+});
