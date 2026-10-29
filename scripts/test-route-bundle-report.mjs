@@ -270,6 +270,47 @@ test("Next16 JS assignments reject wrong identities, traversal and absent sizes"
   assert.equal(read, false);
   for (const size of [undefined, -1, NaN, Infinity, 1.1]) {
     assert.throws(() => reporter.summarizeClientReferenceJs({ '/page': '/' },
-      page => jsReferenceSource(page, { root: ['static/chunks/shared.js'] }), [], () => size), /size/);
+      page => jsReferenceSource(page, { '[project]/src/app/layout': ['static/chunks/shared.js'] }), [], () => size), /size/);
   }
+});
+
+
+test("Next16 JS excludes sibling pages while retaining root and ancestor layout assets", () => {
+  const sizes = {
+    "static/chunks/runtime.js": 7,
+    "static/chunks/shared.js": 11,
+    "static/chunks/home.js": 17,
+    "static/chunks/appeals-layout.js": 5,
+    "static/chunks/appeals.js": 13,
+  };
+  const entryJSFiles = {
+    "[project]/src/app/layout": ["static/chunks/shared.js"],
+    "[project]/src/app/page": ["static/chunks/home.js"],
+    "[project]/src/app/appeals/layout": ["static/chunks/appeals-layout.js"],
+    "[project]/src/app/appeals/page": ["static/chunks/appeals.js"],
+  };
+  const rows = reporter.summarizeClientReferenceJs({
+    "/page": "/", "/appeals/page": "/appeals",
+  }, page => jsReferenceSource(page, entryJSFiles),
+  ["static/chunks/runtime.js"], asset => {
+    assert.ok(Object.hasOwn(sizes, asset), asset);
+    return sizes[asset];
+  });
+  const byRoute = Object.fromEntries(rows.map(row => [row.route, row]));
+  assert.deepEqual(byRoute["/"], {
+    route: "/", appPath: "/page", jsBytes: 35, scriptCount: 3,
+  });
+  assert.deepEqual(byRoute["/appeals"], {
+    route: "/appeals", appPath: "/appeals/page", jsBytes: 36, scriptCount: 4,
+  });
+});
+
+test("Next16 JS rejects duplicate manifest keys claiming the same layout", () => {
+  const manifest = {
+    "[project]/src/app/layout": ["static/chunks/a.js"],
+    "[other]/src/app/layout": ["static/chunks/b.js"],
+  };
+  assert.throws(() => reporter.summarizeClientReferenceJs({ "/page": "/" },
+    page => jsReferenceSource(page, manifest), [], () => 1),
+    /Ambiguous client-reference JavaScript entries/);
 });
