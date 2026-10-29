@@ -48,3 +48,30 @@ test('Gallery thumbnail hover honors both motion preferences', async ({ page }) 
     } else await expect.poll(() => photo.evaluate(element => getComputedStyle(element).transform)).not.toBe('none');
   }
 });
+
+test('Shared controls honor reduced motion on hover, focus and expanded state', async ({ page }) => {
+  const css = ['src/app/world-class-polish.css', 'src/app/islamic-companion.css', 'src/app/experience-finish.css', 'src/app/site-chrome.css'].map(stylesheet).join('\n');
+  await page.setViewportSize({ width: 700, height: 900 });
+  await page.setContent(`<style>${css}.motion-control{display:block!important;position:static!important;margin:1rem!important;width:12rem!important;min-height:3rem!important}</style><header class="site-header"><button class="menu-toggle motion-control">Menu</button><a href="#donate" class="nav-donate motion-control">Donate</a></header><nav><div class="mobile-menu-primary"><a class="motion-control" href="#work">Our Work</a></div><div class="mobile-menu-secondary"><a class="motion-control" href="#contact">Contact</a></div></nav><a class="af-support-cta motion-control" href="#support">Support</a><a class="amaana-live-cta motion-control" href="#live">Live</a><div class="amaana-companion-dock"><button class="motion-control" aria-expanded="false">Companion</button></div>`);
+  for (const reducedMotion of ['reduce', 'no-preference']) {
+    await page.emulateMedia({ reducedMotion });
+    for (const control of await page.locator('.motion-control').all()) {
+      await control.hover();
+      if (reducedMotion === 'reduce') await expect(control).toHaveCSS('transform', 'none');
+      else await expect.poll(() => control.evaluate(element => getComputedStyle(element).transform)).not.toBe('none');
+    }
+    await page.mouse.move(0, 0);
+    for (const control of await page.locator('.af-support-cta, .nav-donate').all()) {
+      await page.keyboard.press('Tab');
+      await control.focus();
+      await expect.poll(() => control.evaluate(element => element.matches(':focus-visible'))).toBe(true);
+      if (reducedMotion === 'reduce') await expect(control).toHaveCSS('transform', 'none');
+      else await expect.poll(() => control.evaluate(element => getComputedStyle(element).transform)).not.toBe('none');
+    }
+    const dock = page.locator('.amaana-companion-dock>button');
+    await dock.evaluate(element => element.setAttribute('aria-expanded', 'true'));
+    if (reducedMotion === 'reduce') await expect(dock).toHaveCSS('transform', 'none');
+    else await expect.poll(() => dock.evaluate(element => getComputedStyle(element).transform)).not.toBe('none');
+    await dock.evaluate(element => element.setAttribute('aria-expanded', 'false'));
+  }
+});
