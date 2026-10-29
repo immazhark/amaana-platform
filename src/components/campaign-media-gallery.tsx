@@ -32,7 +32,8 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
       if (!url || seenUrls.has(url) || seenIds.has(item.id)) return [];
       seenUrls.add(url);
       seenIds.add(item.id);
-      return [{ ...item, url }];
+      // A blank caption must not become an empty figcaption or dialog description.
+      return [{ ...item, url, caption: item.caption?.trim() || null }];
     });
   }, [items]);
   const [activeId, setActiveId] = useState<string | null>(null);
