@@ -23,3 +23,14 @@ it("finds approved appeal titles with extra internal whitespace", () => {
   expect(result).toMatchObject({ invalid: false, count: 1 });
   expect(result.results).toEqual(items);
 });
+
+it("bounds pages after search while preserving total count and source order", () => {
+ const items = Array.from({length:25}, (_, i) => ({title:`Reviewed ${i}`,summary:"Support"}));
+ expect(selectAppealDiscovery(items, {}).results).toEqual(items.slice(0,12));
+ expect(selectAppealDiscovery(items, {q:"support",page:"2"})).toMatchObject({page:2,totalPages:3,count:25,results:items.slice(12,24)});
+ expect(selectAppealDiscovery(items, {page:"999"})).toMatchObject({page:3,results:items.slice(24)});
+ expect(selectAppealDiscovery(items, {q:"missing",page:"2"})).toMatchObject({page:1,totalPages:1,count:0,results:[]});
+});
+it.each(["0","01","-1","1.5","1e3","9007199254740993",["1","2"]])("rejects malformed page %j", page => {
+ expect(selectAppealDiscovery(records,{page})).toMatchObject({invalid:true,results:[],q:"",page:1});
+});
