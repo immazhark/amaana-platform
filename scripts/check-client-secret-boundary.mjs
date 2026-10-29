@@ -1,4 +1,4 @@
-import { readdir, readFile } from "node:fs/promises";
+import { lstat, readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 
 const root = path.resolve(".next/static");
@@ -17,10 +17,15 @@ const forbiddenMarkers = [
 ];
 
 async function filesUnder(directory) {
+  // A symlinked public artifact can evade this scanner while remaining served.
+  if ((await lstat(directory)).isSymbolicLink()) {
+    throw new Error("Symbolic link in public client bundle");
+  }
   const entries = await readdir(directory, { withFileTypes: true });
   const files = [];
   for (const entry of entries) {
     const fullPath = path.join(directory, entry.name);
+    if (entry.isSymbolicLink()) throw new Error("Symbolic link in public client bundle");
     if (entry.isDirectory()) files.push(...await filesUnder(fullPath));
     else if (entry.isFile()) files.push(fullPath);
   }
@@ -45,7 +50,8 @@ const secretValues = [...new Set([
 
 const offenders = [];
 for (const file of files) {
-  if (!/\.(?:js|mjs|css|map)$/i.test(file)) continue;
+  // Next static JSON, HTML and vector/text assets can be directly fetched too.
+  if (!/\.(?:js|mjs|css|map|json|html|svg|txt|xml|webmanifest)$/i.test(file)) continue;
   const content = await readFile(file, "utf8");
   for (const marker of forbiddenMarkers) {
     if (content.includes(marker)) offenders.push({ file: path.relative(process.cwd(), file), marker });
