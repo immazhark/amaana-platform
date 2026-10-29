@@ -10,6 +10,10 @@ const accessibilityRules = [
   "jsx-a11y/aria-unsupported-elements",
   "jsx-a11y/role-has-required-aria-props",
   "jsx-a11y/role-supports-aria-props",
+  "jsx-a11y/anchor-is-valid",
+  "jsx-a11y/click-events-have-key-events",
+  "jsx-a11y/no-static-element-interactions",
+  "jsx-a11y/tabindex-no-positive",
 ];
 
 describe("source lint enforcement", () => {
@@ -33,6 +37,19 @@ describe("source lint enforcement", () => {
     if (!result) throw new Error("ESLint omitted the synthetic accessibility result");
     expect(result.messages.some(message => message.ruleId === "jsx-a11y/alt-text" && message.severity === 2))
       .toBe(true);
+  });
+
+  it("rejects invalid anchors, pointer-only controls and positive tab order", async () => {
+    const eslint = new ESLint();
+    const [result] = await eslint.lintText(
+      'export function InteractionProbe() { return <><a href="#">Broken</a><div onClick={() => undefined}>Action</div><button tabIndex={2}>Next</button></>; }',
+      { filePath: "src/components/__lint_interaction_probe__.tsx" },
+    );
+    if (!result) throw new Error("ESLint omitted the synthetic interaction result");
+    for (const rule of ["jsx-a11y/anchor-is-valid", "jsx-a11y/click-events-have-key-events", "jsx-a11y/no-static-element-interactions", "jsx-a11y/tabindex-no-positive"]) {
+      expect(result.messages.some(message => message.ruleId === rule && message.severity === 2), rule)
+        .toBe(true);
+    }
   });
 
   it("rejects a synthetic circular source import with error severity", async () => {
