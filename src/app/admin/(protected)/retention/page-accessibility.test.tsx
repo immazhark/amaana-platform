@@ -189,3 +189,29 @@ describe("retention pending deletion reconciliation", () => {
     expect(html).not.toContain("<form");
   });
 });
+
+
+describe("retention operational dates", () => {
+  const createdAt = new Date("2026-10-28T20:00:00.000Z");
+  const event = { id: "synthetic-review", createdAt, actor: { name: "Synthetic reviewer" } };
+
+  it("shows retention review and hold instants in IST across midnight", async () => {
+    mocks.documents.mockResolvedValue([documentRows[0]]);
+    mocks.events.mockResolvedValue([
+      { ...event, action: "assistance.document_retention_reviewed", metadata: { documentId: "synthetic-one", reason: "Synthetic reason" } },
+      { ...event, id: "synthetic-hold", action: "assistance.document_legal_hold_placed", metadata: { documentId: "synthetic-one" } },
+    ]);
+    const html = renderToStaticMarkup(await RetentionReviewPage({ searchParams: Promise.resolve({}) }));
+    expect(html).toContain("Synthetic reviewer · 29/10/2026, 1:30:00 am");
+    expect(html).toContain("Placed by Synthetic reviewer on 29/10/2026, 1:30:00 am.");
+  });
+
+  it("preserves the chosen review calendar date outside the server timezone", async () => {
+    mocks.documents.mockResolvedValue([documentRows[0]]);
+    mocks.events.mockResolvedValue([
+      { ...event, action: "assistance.document_retention_reviewed", metadata: { documentId: "synthetic-one", reviewAfter: "2026-10-29T00:00:00.000Z" } },
+    ]);
+    const html = renderToStaticMarkup(await RetentionReviewPage({ searchParams: Promise.resolve({}) }));
+    expect(html).toContain("review after 29/10/2026");
+  });
+});

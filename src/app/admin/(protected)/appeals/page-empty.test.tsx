@@ -33,3 +33,13 @@ describe("appeal empty-view recovery", () => {
     expect(html).not.toContain("View all appeals");
   });
 });
+
+
+it("shows appeal updates on the IST calendar day across year end", async () => {
+  mocks.count.mockResolvedValue(1);
+  mocks.find.mockResolvedValue([{ id: "synthetic-appeal", title: "Synthetic appeal", slug: "synthetic", status: "DRAFT", goalAmount: { toNumber: () => 100 }, createdBy: { name: "Synthetic author" }, reviewedBy: null, updatedAt: new Date("2026-12-31T20:00:00.000Z") }]);
+  const html = renderToStaticMarkup(await AdminAppealsPage({ searchParams: Promise.resolve({}) }));
+  expect(html).toContain("<td>1/1/2027</td>");
+  expect(html).toContain("Updated (IST)");
+  expect(mocks.permission).toHaveBeenCalledWith("appeal.view");
+});
