@@ -58,4 +58,30 @@ describe("public media image optimization", () => {
     expect(html).toContain("<h3>Reviewed document summary</h3>");
     expect(html).toContain('aria-label="Open approved source: Reviewed document summary (new tab)"');
   });
+
+  it("omits an empty figcaption for whitespace-only reviewed image captions", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const html = renderToStaticMarkup(PublicMedia({
+      asset: { ...asset, caption: "   ", sourceYear: null },
+    }));
+    expect(html).not.toContain("<figcaption>");
+  });
+
+  it("renders the year without a stray separator when the image caption is blank", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const html = renderToStaticMarkup(PublicMedia({
+      asset: { ...asset, caption: "   ", sourceYear: 2026 },
+    }));
+    expect(html).toContain("<figcaption>2026</figcaption>");
+    expect(html).not.toContain(" · 2026");
+  });
+
+  it("trims a reviewed image caption before appending its year", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const html = renderToStaticMarkup(PublicMedia({
+      asset: { ...asset, caption: " Reviewed scene  ", sourceYear: 2026 },
+    }));
+    expect(html).toContain("<figcaption>Reviewed scene · 2026</figcaption>");
+  });
+
 });
