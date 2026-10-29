@@ -29,3 +29,22 @@ it("keeps only privacy help associated with valid filters", async () => {
   expect(html).not.toContain('aria-invalid="true"');
   expect(html.match(/aria-describedby="story-search-help"/g)).toHaveLength(2);
 });
+
+it("shows the same published programme labels on featured and archived stories as in the filter", async () => {
+  const records = [
+    { id: "a", slug: "field-note-a", title: "School field note", summary: "Public summary",
+      cause: null, initiative: { title: "Annual edition", status: "PUBLISHED",
+        cause: { title: "Education", status: "PUBLISHED" } }, mediaAssets: [] },
+    { id: "b", slug: "field-note-b", title: "Relief field note", summary: "Public summary",
+      cause: { title: "Relief", status: "PUBLISHED" },
+      initiative: { title: "Unrelated edition", status: "PUBLISHED",
+        cause: { title: "  ", status: "PUBLISHED" } }, mediaAssets: [] },
+  ];
+  mocks.index.mockResolvedValue(records);
+  mocks.cards.mockResolvedValue(records);
+  const html = renderToStaticMarkup(await StoriesPage({ searchParams: Promise.resolve({}) }));
+  expect(html).toContain("<small>Education</small>");
+  expect(html).toContain("<small>Relief</small>");
+  expect(html).not.toContain("<small>Annual edition</small>");
+  expect(html).not.toContain("<small>Unrelated edition</small>");
+});
