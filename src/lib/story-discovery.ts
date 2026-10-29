@@ -2,15 +2,17 @@ import { hasUnsupportedPublicQueryFields } from "./public-navigation-query.mjs";
 export type StorySearch = Record<string, string | string[] | undefined>;
 type PublicStory = { title: string; summary: string; cause?: {title:string;status:string}|null; initiative?: {status:string;cause:{title?:string;status:string}}|null };
 export const STORY_PAGE_SIZE = 12;
+/** Reuse the same published programme context for filters and visible story labels.
+ * Unpublished or blank parent labels must never become public-facing context. */
+export function publishedStoryProgrammeContext(story: PublicStory): string | null {
+ const initiativeCause = story.initiative?.status === "PUBLISHED" && story.initiative.cause.status === "PUBLISHED"
+   ? story.initiative.cause.title : null;
+ if (initiativeCause?.trim()) return initiativeCause;
+ const directCause = story.cause?.status === "PUBLISHED" ? story.cause.title : null;
+ return directCause?.trim() ? directCause : null;
+}
 export function selectStoryDiscovery<T extends PublicStory>(records: readonly T[], search: StorySearch) {
- const context = (story: T) => {
-   const initiativeCause = story.initiative?.status === "PUBLISHED" && story.initiative.cause.status === "PUBLISHED"
-     ? story.initiative.cause.title : null;
-   if (initiativeCause?.trim()) return initiativeCause;
-   const directCause = story.cause?.status === "PUBLISHED" ? story.cause.title : null;
-   return directCause?.trim() ? directCause : null;
- };
- const contexts = records.map(context);
+ const contexts = records.map(publishedStoryProgrammeContext);
  const programmes = [...new Set(contexts.flatMap(value => value ? [value] : []))].sort();
  const raw = typeof search.q === "string" ? search.q : "";
  const q = raw.length > 80 ? "" : raw.trim().replace(/\s+/g," ");
