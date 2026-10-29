@@ -18,7 +18,10 @@ export default async function AdminAppealsPage({ searchParams }: Props) {
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
   const appeals = await prisma.appeal.findMany({
     where,
-    include: { createdBy: true, reviewedBy: true },
+    select: {
+      id: true, title: true, slug: true, status: true, goalAmount: true, updatedAt: true,
+      createdBy: { select: { name: true } }, reviewedBy: { select: { name: true } },
+    },
     orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
     skip: pagination.skip,
     take: pagination.pageSize,

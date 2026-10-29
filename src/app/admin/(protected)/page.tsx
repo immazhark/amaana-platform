@@ -22,7 +22,11 @@ export default async function AdminQueuePage({ searchParams }: Props) {
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
   const requests = await prisma.assistanceRequest.findMany({
     where,
-    include: { assignedTo: true, _count: { select: { documents: true } } },
+    select: {
+      id: true, referenceNumber: true, applicantName: true, city: true,
+      category: true, status: true, createdAt: true,
+      assignedTo: { select: { name: true } }, _count: { select: { documents: true } },
+    },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     skip: pagination.skip,
     take: pagination.pageSize,
