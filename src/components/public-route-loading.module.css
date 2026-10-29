@@ -4,7 +4,7 @@
   color: var(--af-color-navy-950);
 }
 .shell {
-  width: min(calc(100% - 2 * var(--af-public-gutter)), var(--af-public-shell));
+  width: min(calc(100% - var(--af-public-gutter) - var(--af-public-gutter)), var(--af-public-shell));
   margin-inline: auto;
 }
 .hero {

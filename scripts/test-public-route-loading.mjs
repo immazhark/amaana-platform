@@ -32,6 +32,7 @@ test('branded placeholders are responsive and do not animate when reduced motion
   const css = read('src/components/public-route-loading.module.css');
   assert.match(css, /var\(--af-color-canvas\)/);
   assert.match(css, /var\(--af-color-blue-600\)/);
+  assert.ok(css.includes('calc(100% - var(--af-public-gutter) - var(--af-public-gutter))'), 'Use widely supported calc subtraction instead of CSS multiplication');
   assert.match(css, /@media\s*\(max-width:\s*600px\)/);
   assert.match(css, /@media\s*\(prefers-reduced-motion:\s*reduce\)/);
   assert.match(css, /animation:\s*none/);

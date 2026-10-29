@@ -1,3 +1,7 @@
+## 2026-10-29 IST — Held #570 loading CSS gutter compatibility correction
+
+Review of exact source head `1ba1db16cefb6c1e25d6922a0d0fe1578fc8b215` found the new shared loading shell used typed CSS multiplication inside `calc()`. Added a native source regression: RED 1/3 with the multiplication expression, GREEN 3/3 after using broadly supported repeated gutter subtraction. No user-facing copy or routes changed; browser layout still requires hosted visual acceptance. Remains draft, no merge/deploy.
+
 ## 2026-10-29 IST — AF-R071 public discovery route loading boundaries (draft #570)
 
 CHATGPT_ACTIVE sole implementation writer on exact held PR #569 parent `6d5dfab02d0388d85313bf88f809a3be71a67bb3`, protected main `31c011c3c9f0a9c0e257fe84e095ed759a4f2bae`. Read-only full Git tree confirmed zero App Router `loading.tsx` files at this head; five public data-backed discovery routes had no route-local async fallback: /stories, /our-work, /impact, /appeals and /faith-and-reflections. Bounded new static server-only `PublicRouteLoading` and route-local boundaries now show a visually reserved, brand-token cream/blue/gold skeleton and visible polite loading status. All decorative geometry is aria-hidden; no nested main, focusable controls, remote image, fabricated beneficiary/impact/donation figures, or client/dependency additions. CSS responds at 600px and disables animation for reduced motion. This is a navigation-fallback improvement, NOT certification of route speed or field Web Vitals.
