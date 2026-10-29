@@ -49,7 +49,7 @@ export function AppealShare({ title, summary, path }: AppealShareProps) {
       <div className="v2-appeal-share-actions">
         <button type="button" className="v2-text-link" onClick={() => void act("share")}>Share appeal ↗</button>
         <a className="v2-text-link" href={whatsappUrl} target="_blank" rel="noopener noreferrer"
-          onClick={() => { actionId.current++; setStatus(""); }}>WhatsApp ↗</a>
+          onClick={() => { actionId.current++; setStatus(""); }}>WhatsApp ↗ <span className="sr-only">(opens in a new tab)</span></a>
         <button type="button" className="v2-text-link" onClick={() => void act("copy")}>Copy link</button>
       </div>
       <p className="v2-appeal-share-status" role="status">{status}</p>
