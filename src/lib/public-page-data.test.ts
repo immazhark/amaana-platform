@@ -45,18 +45,20 @@ describe("public page gallery media query contracts", () => {
 
   it("projects at most eight published initiative outcomes with no financial or private records", async () => {
     mocks.initiativeFindMany.mockResolvedValueOnce([
-      { slug: "eid-kits-2026", title: "Eid Kits", primaryMetric: "710", primaryMetricLabel: "kits distributed" },
+      { slug: "eid-gift-kits-2026", title: "Eid Kits", primaryMetric: "710", primaryMetricLabel: "kits distributed" },
+      { slug: "legacy-unlisted", title: "Unlisted old record", primaryMetric: "999", primaryMetricLabel: "kits" },
       { slug: "unverified-metric", title: "Unverified metric", primaryMetric: " ", primaryMetricLabel: "kits" },
       { slug: "winter-relief", title: "Winter Relief", primaryMetric: "234", primaryMetricLabel: "kits" },
     ]);
     const { getDonationImpactHighlights } = await import("./public-page-data");
     const items = await getDonationImpactHighlights();
     expect(items).toHaveLength(2);
-    expect(items.map(item => item.slug)).toEqual(["eid-kits-2026", "winter-relief"]);
+    expect(items.map(item => item.slug)).toEqual(["eid-gift-kits-2026", "winter-relief"]);
     const query = mocks.initiativeFindMany.mock.calls.at(-1)?.[0];
     expect(query).toMatchObject({
       where: {
         status: "PUBLISHED", cause: { status: "PUBLISHED" },
+        slug: { in: programmes.map(programme => programme.slug) },
         primaryMetric: { not: null }, primaryMetricLabel: { not: null },
       },
       take: 8,
@@ -282,4 +284,19 @@ describe("public page gallery media query contracts", () => {
     });
     expect(query.where.slug.in).not.toContain("unlisted-relief-gallery");
   });
+});
+
+it("requires canonical programme membership for donation and appeals outcome highlights even when Prisma returns an unexpected record", async () => {
+  mocks.initiativeFindMany.mockReset();
+  const { getDonationImpactHighlights } = await import("./public-page-data");
+  mocks.initiativeFindMany.mockResolvedValueOnce([
+    { slug: "legacy-unregistered", title: "Unlisted", primaryMetric: "999", primaryMetricLabel: "people" },
+    { slug: "eid-gift-kits-2026", title: "Eid Kits", primaryMetric: "710", primaryMetricLabel: "kits distributed" },
+    { slug: "winter-relief", title: "Winter Relief", primaryMetric: "234", primaryMetricLabel: "kits" },
+  ]);
+  const results = await getDonationImpactHighlights();
+  expect(results.map(item => item.slug)).toEqual(["eid-gift-kits-2026", "winter-relief"]);
+  expect(results.some(item => item.slug === "legacy-unregistered")).toBe(false);
+  const query = mocks.initiativeFindMany.mock.calls.at(-1)?.[0];
+  expect(query.where.slug.in).toEqual(programmes.map(programme => programme.slug));
 });

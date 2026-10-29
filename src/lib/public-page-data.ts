@@ -52,6 +52,7 @@ export const PUBLIC_GALLERY_MEDIA_PROJECTION = {
 };
 
 const CANONICAL_PROGRAMME_SLUGS = programmes.map(programme => programme.slug);
+const CANONICAL_PROGRAMME_SLUG_SET = new Set(CANONICAL_PROGRAMME_SLUGS);
 
 /**
  * React request memoization for dynamic routes whose metadata and page body
@@ -477,6 +478,7 @@ export const getDonationImpactHighlights = cache(async () => {
     where: {
       status: "PUBLISHED",
       cause: { status: "PUBLISHED" },
+      slug: { in: CANONICAL_PROGRAMME_SLUGS },
       primaryMetric: { not: null },
       primaryMetricLabel: { not: null },
     },
@@ -484,7 +486,8 @@ export const getDonationImpactHighlights = cache(async () => {
     take: 8,
     select: { slug: true, title: true, primaryMetric: true, primaryMetricLabel: true },
   });
-  return rows.filter(item => item.primaryMetric?.trim() && item.primaryMetricLabel?.trim()).slice(0, 3);
+  return rows.filter(item => CANONICAL_PROGRAMME_SLUG_SET.has(item.slug)
+    && item.primaryMetric?.trim() && item.primaryMetricLabel?.trim()).slice(0, 3);
 });
 
 /**
