@@ -64,3 +64,28 @@ test("Impact, Contact and initiative copy avoid low-contrast literal", () => {
     assert.doesNotMatch(css, /color:\s*#68717a/i);
   }
 });
+
+test("Stories archive beginning label uses readable deep-gold ink", () => {
+  const styles = readFileSync(new URL("../src/app/stories.css", import.meta.url), "utf8");
+  const later = readFileSync(new URL("../src/app/stories-wow.css", import.meta.url), "utf8");
+  const design = readFileSync(new URL("../src/app/brand.css", import.meta.url), "utf8");
+  const tokens = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
+
+  assert.ok(styles.includes(".v2-stories-single-note span{"), "Stories archive label selector must exist");
+  const themedGroups = [...later.matchAll(/([^{}]+)\{color:\s*var\(--amaana-gold-deep\)\}/g)];
+  assert.ok(
+    themedGroups.some(([, selectors]) => selectors.split(",").some((name) => name.trim() === ".v2-stories-single-note span")),
+    "Stories archive label must use the deep-gold light-surface override",
+  );
+  assert.match(design, /--amaana-gold-deep:\s*var\(--af-color-gold-ink\)/);
+
+  const color = (name) => {
+    const value = tokens.match(new RegExp(`--af-color-${name}:\\s*(#[0-9a-f]{6})\\s*;`, "i"));
+    assert.ok(value, `Missing canonical ${name} color`);
+    return value[1];
+  };
+  for (const background of ["surface", "canvas", "surface-muted"]) {
+    const ratio = contrast(color("gold-ink"), color(background));
+    assert.ok(ratio >= 4.5, `Stories archive label below WCAG AA on ${background}: ${ratio.toFixed(2)}:1`);
+  }
+});
