@@ -31,14 +31,14 @@ export function evaluateImageWeights(files, limit = MAX_ARTWORK_BYTES) {
 }
 
 export function readHeroImageInventory(root = process.cwd()) {
-  return folders.flatMap(folder => {
-    const dir = join(root, folder);
-    return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
-      if (!entry.isFile() || !types.test(entry.name)) return [];
-      const path = join(dir, entry.name);
-      return [{ path: relative(root, path).split(sep).join("/"), bytes: statSync(path).size }];
-    });
+  const visit = dir => readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) return visit(path);
+    // Ignore symlinks and non-raster files; never follow artwork out of scope.
+    if (!entry.isFile() || !types.test(entry.name)) return [];
+    return [{ path: relative(root, path).split(sep).join("/"), bytes: statSync(path).size }];
   });
+  return folders.flatMap(folder => visit(join(root, folder)));
 }
 
 function run() {

@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { evaluateImageWeights, MAX_ARTWORK_BYTES } from "./check-public-image-weight.mjs";
+import { evaluateImageWeights, MAX_ARTWORK_BYTES, readHeroImageInventory } from "./check-public-image-weight.mjs";
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 test("accepts assets at or below the per-image cap", () => {
   const report = evaluateImageWeights([
@@ -41,4 +44,27 @@ test("rejects malformed paths and null entries before reporting artwork", () => 
     assert.throws(() => evaluateImageWeights([bad]), /Invalid image inventory entry/);
   }
   assert.throws(() => evaluateImageWeights(null), /Invalid image inventory/);
+});
+
+
+test("includes nested checked-in raster artwork and still excludes unrelated files", () => {
+  const root = mkdtempSync(join(tmpdir(), "amaana-artwork-guard-"));
+  try {
+    const hero = join(root, "public/hero/seasonal");
+    const programme = join(root, "public/programme-artwork/2026");
+    const unrelated = join(root, "public/unreviewed");
+    mkdirSync(hero, { recursive: true });
+    mkdirSync(programme, { recursive: true });
+    mkdirSync(unrelated, { recursive: true });
+    writeFileSync(join(hero, "safe.webp"), Buffer.alloc(7));
+    writeFileSync(join(programme, "huge.PNG"), Buffer.alloc(MAX_ARTWORK_BYTES + 1));
+    writeFileSync(join(programme, "provenance.json"), "{}");
+    writeFileSync(join(unrelated, "ignore.webp"), Buffer.alloc(MAX_ARTWORK_BYTES + 100));
+    const report = evaluateImageWeights(readHeroImageInventory(root));
+    assert.equal(report.imageCount, 2);
+    assert.deepEqual(report.violations.map(file => file.path), ["public/programme-artwork/2026/huge.PNG"]);
+    assert.equal(report.totalBytes, MAX_ARTWORK_BYTES + 8);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
