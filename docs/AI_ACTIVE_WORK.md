@@ -1,3 +1,13 @@
+## 2026-10-29 IST — Public discovery query normalization
+
+CHATGPT_ACTIVE sole writer on perf/discovery-query-normalization-20261029, base published561 ca46583cea4108784a664c91e4f80e72fb9cc388. Read-only motion audit found no further confirmed reachable defect. Four discovery selectors repeat locale query folding once per candidate; measure with synthetic spy before hoisting once per valid active query. Preserve selection, query validation and published input; no DB/data/provider/auth/payment/infra changes. Inherited release/Neon hold and149 classifications remain. Rollback isolated selectors/tests.
+
+Validation: four query-folding regressions RED20 calls vs1 → GREEN; story-context regression RED3 vs1 → GREEN. Final full Vitest2616 PASS/24 isolated-DB opt-in SKIP. Synthetic tests preserve empty/invalid/unmatched/mixed-case behavior, original story identity, initiative precedence and private-context exclusion. Two independent read-only reviewers found no blockers. Query fold now once per valid nonempty query; story context once per record reused in options/results. No measured latency/transfer/CWV assertion. Parent561 remains frozen; this search performance cluster is a separate held child. Exact-head hosted/ready-state and Neon capacity requirements remain; no merge/deploy/149 class promotion.
+
+
+Final exact-source strict TypeScript, full zero-warning ESLint/governed Stylelint, optimized Next build/pre/postbuild and diff checks PASS. Uncompressed JS808283/CSS323951 unchanged and within caps.
+
+
 ## 2026-10-29 IST — AF-R042 Impact nested motion
 
 CHATGPT_ACTIVE sole writer; continuing561 published head efff0ff9212feac084fd45ce67864492fd8a0e41. Current main31c011c unchanged. Impact refinement resets outer card but leaves nested hover/focus image zoom and action translation. Scope matching reduced-only nested resets and fail-first regression; preserve media eligibility, content, normal effects, focus and links. No DB/provider/payment/auth/infra action; inherited Neon/release hold and149 classes unchanged.
