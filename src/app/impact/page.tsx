@@ -7,6 +7,7 @@ import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { TrustEvidenceBoundary } from "@/components/trust-evidence-boundary";
 import { VerifiedImpactStrip } from "@/components/verified-impact-strip";
+import { documentedImpactMetric } from "@/lib/documented-impact-metric";
 import { projectCanonicalWork } from "@/lib/canonical-work-projection";
 import { programmeBySlug, programmeCategories } from "@/lib/master-copy";
 import { filterImpactByProgramme, type ImpactProgrammeSearch } from "@/lib/impact-programme-filter";
@@ -96,11 +97,12 @@ export default async function ImpactPage({ searchParams }: { searchParams: Promi
           <p><Link href="/impact/compare" className="v2-text-link">Compare two initiatives</Link></p>
           {filtered.results.length > 0 ? <div className="v2-impact-wall">{filtered.results.map((item, index) => {
             const thumbnail = selectIdentityPublicImage(item.mediaAssets) ?? null;
+            const outcome = documentedImpactMetric(item.primaryMetric, item.primaryMetricLabel);
             return <Link href={`/our-work/${item.slug}`} className={`v2-impact-tile ${thumbnail ? "has-media" : ""}`} key={item.id} aria-label={`Explore impact: ${item.title}`}>
               {thumbnail ? <div className="v2-impact-tile-media" aria-hidden="true"><PublicMedia asset={thumbnail} /></div> : null}
               <div className="v2-impact-tile-shade" aria-hidden="true" />
               <span className="v2-impact-tile-index">{String(index + 1).padStart(2, "0")}</span>
-              <div className="v2-impact-tile-copy"><small>{item.cause.title}</small>{item.primaryMetric ? <strong>{item.primaryMetric}</strong> : null}<span>{item.primaryMetricLabel ?? item.title}</span><h3>{item.title}</h3></div>
+              <div className="v2-impact-tile-copy"><small>{item.cause.title}</small>{outcome ? <strong>{outcome.value}</strong> : null}<span>{outcome?.label ?? item.title}</span><h3>{item.title}</h3></div>
               <span className="v2-impact-tile-action" aria-hidden="true">Explore impact ↗</span>
             </Link>;
           })}</div> : <div className="v2-reminder v2-light-reminder"><span className="v2-reminder-label">Impact updates</span><h3>{filtered.active ? "No published initiative outcomes match these filters." : "No initiative outcomes are published here yet."}</h3><p>{filtered.active ? "Choose a published programme or clear the filter to explore all documented outcomes." : "Outcomes will appear here when they are ready to share."}</p></div>}
