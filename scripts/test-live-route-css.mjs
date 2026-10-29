@@ -157,3 +157,45 @@ test("never follows redirects before validating the response origin", async () =
   );
   assert.deepEqual(visited, ["https://amaanafoundation.org/"]);
 });
+
+test("rejects a per-route decoded CSS sum beyond Number.MAX_SAFE_INTEGER", () => {
+  const a = "https://amaanafoundation.org/_next/static/a.css";
+  const b = "https://amaanafoundation.org/_next/static/b.css";
+  assert.throws(() => summarizeRouteCssBytes(
+    [{ route: "/", stylesheets: [a, b] }],
+    new Map([[a, Number.MAX_SAFE_INTEGER], [b, 1]]),
+  ), /CSS route size exceeds safe integer/);
+});
+
+test("rejects an aggregate shared CSS sum beyond Number.MAX_SAFE_INTEGER", () => {
+  const a = "https://amaanafoundation.org/_next/static/a.css";
+  const b = "https://amaanafoundation.org/_next/static/b.css";
+  assert.throws(() => summarizeRouteCssBytes(
+    [{ route: "/", stylesheets: [a] }, { route: "/impact", stylesheets: [b] }],
+    new Map([[a, Number.MAX_SAFE_INTEGER], [b, 1]]),
+  ), /CSS shared size exceeds safe integer/);
+});
+
+test("allows exact safe-integer CSS totals without double-counting a stylesheet", () => {
+  const a = "https://amaanafoundation.org/_next/static/a.css";
+  const b = "https://amaanafoundation.org/_next/static/b.css";
+  const result = summarizeRouteCssBytes(
+    [{ route: "/", stylesheets: [a, b, b] }],
+    new Map([[a, Number.MAX_SAFE_INTEGER - 1], [b, 1]]),
+  );
+  assert.deepEqual(result.routes, [{
+    route: "/", stylesheetCount: 2, cssBytes: Number.MAX_SAFE_INTEGER,
+  }]);
+  assert.deepEqual(result.shared, {
+    uniqueStylesheets: 2, decodedCssBytes: Number.MAX_SAFE_INTEGER,
+  });
+});
+
+test("retains per-stylesheet size validation when totals are guarded", () => {
+  const a = "https://amaanafoundation.org/_next/static/a.css";
+  for (const invalidSize of [-1, Number.MAX_SAFE_INTEGER + 1]) {
+    assert.throws(() => summarizeRouteCssBytes(
+      [{ route: "/", stylesheets: [a] }], new Map([[a, invalidSize]]),
+    ), /Missing CSS size/);
+  }
+});

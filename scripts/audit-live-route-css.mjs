@@ -29,6 +29,12 @@ export function stylesheetsInHtml(html, origin = ORIGIN) {
   return [...unique];
 }
 
+function addCssBytes(total, bytes, scope) {
+  const sum = total + bytes;
+  if (!Number.isSafeInteger(sum)) throw new Error(`CSS ${scope} size exceeds safe integer`);
+  return sum;
+}
+
 /** Decoded stylesheet bytes; not compressed transfer or Core Web Vitals. */
 export function summarizeRouteCssBytes(entries, sizes) {
   const unique = new Set();
@@ -38,14 +44,14 @@ export function summarizeRouteCssBytes(entries, sizes) {
     for (const asset of current) {
       const bytes = sizes.get(asset);
       if (!Number.isSafeInteger(bytes) || bytes < 0) throw new Error("Missing CSS size for " + asset);
-      cssBytes += bytes;
+      cssBytes = addCssBytes(cssBytes, bytes, "route");
       unique.add(asset);
     }
     return { route, stylesheetCount: current.length, cssBytes };
   });
   return { routes, shared: {
     uniqueStylesheets: unique.size,
-    decodedCssBytes: [...unique].reduce((total, asset) => total + sizes.get(asset), 0),
+    decodedCssBytes: [...unique].reduce((total, asset) => addCssBytes(total, sizes.get(asset), "shared"), 0),
   } };
 }
 
