@@ -157,3 +157,133 @@ test("never follows redirects before validating the response origin", async () =
   );
   assert.deepEqual(visited, ["https://amaanafoundation.org/"]);
 });
+
+test("rejects a per-route decoded CSS sum beyond Number.MAX_SAFE_INTEGER", () => {
+  const a = "https://amaanafoundation.org/_next/static/a.css";
+  const b = "https://amaanafoundation.org/_next/static/b.css";
+  assert.throws(() => summarizeRouteCssBytes(
+    [{ route: "/", stylesheets: [a, b] }],
+    new Map([[a, Number.MAX_SAFE_INTEGER], [b, 1]]),
+  ), /CSS route size exceeds safe integer/);
+});
+
+test("rejects an aggregate shared CSS sum beyond Number.MAX_SAFE_INTEGER", () => {
+  const a = "https://amaanafoundation.org/_next/static/a.css";
+  const b = "https://amaanafoundation.org/_next/static/b.css";
+  assert.throws(() => summarizeRouteCssBytes(
+    [{ route: "/", stylesheets: [a] }, { route: "/impact", stylesheets: [b] }],
+    new Map([[a, Number.MAX_SAFE_INTEGER], [b, 1]]),
+  ), /CSS shared size exceeds safe integer/);
+});
+
+test("allows exact safe-integer CSS totals without double-counting a stylesheet", () => {
+  const a = "https://amaanafoundation.org/_next/static/a.css";
+  const b = "https://amaanafoundation.org/_next/static/b.css";
+  const result = summarizeRouteCssBytes(
+    [{ route: "/", stylesheets: [a, b, b] }],
+    new Map([[a, Number.MAX_SAFE_INTEGER - 1], [b, 1]]),
+  );
+  assert.deepEqual(result.routes, [{
+    route: "/", stylesheetCount: 2, cssBytes: Number.MAX_SAFE_INTEGER,
+  }]);
+  assert.deepEqual(result.shared, {
+    uniqueStylesheets: 2, decodedCssBytes: Number.MAX_SAFE_INTEGER,
+  });
+});
+
+test("retains per-stylesheet size validation when totals are guarded", () => {
+  const a = "https://amaanafoundation.org/_next/static/a.css";
+  for (const invalidSize of [-1, Number.MAX_SAFE_INTEGER + 1]) {
+    assert.throws(() => summarizeRouteCssBytes(
+      [{ route: "/", stylesheets: [a] }], new Map([[a, invalidSize]]),
+    ), /Missing CSS size/);
+  }
+});
+
+test("rejects browser CSS decoded byte totals beyond safe integer precision", () => {
+  const a = "https://amaanafoundation.org/_next/static/a.css";
+  const b = "https://amaanafoundation.org/_next/static/b.css";
+  assert.throws(() => summarizeLinkedCssResourceTiming([a, b], [
+    { name: a, decodedBodySize: Number.MAX_SAFE_INTEGER, encodedBodySize: 1, transferSize: 1 },
+    { name: b, decodedBodySize: 1, encodedBodySize: 1, transferSize: 1 },
+  ]), /Invalid browser CSS decoded total/);
+});
+
+test("rejects browser CSS encoded byte totals beyond safe integer precision", () => {
+  const a = "https://amaanafoundation.org/_next/static/a.css";
+  const b = "https://amaanafoundation.org/_next/static/b.css";
+  assert.throws(() => summarizeLinkedCssResourceTiming([a, b], [
+    { name: a, decodedBodySize: 1, encodedBodySize: Number.MAX_SAFE_INTEGER, transferSize: 1 },
+    { name: b, decodedBodySize: 1, encodedBodySize: 1, transferSize: 1 },
+  ]), /Invalid browser CSS encoded total/);
+});
+
+test("rejects browser CSS observed transfer byte totals beyond safe integer precision", () => {
+  const a = "https://amaanafoundation.org/_next/static/a.css";
+  const b = "https://amaanafoundation.org/_next/static/b.css";
+  assert.throws(() => summarizeLinkedCssResourceTiming([a, b], [
+    { name: a, decodedBodySize: 1, encodedBodySize: 1, transferSize: Number.MAX_SAFE_INTEGER },
+    { name: b, decodedBodySize: 1, encodedBodySize: 1, transferSize: 1 },
+  ]), /Invalid browser CSS transfer total/);
+});
+
+test("preserves safe integer boundary and partial-transfer unavailability", () => {
+  const a = "https://amaanafoundation.org/_next/static/a.css";
+  const b = "https://amaanafoundation.org/_next/static/b.css";
+  const atLimit = summarizeLinkedCssResourceTiming([a, a, b], [
+    { name: a, decodedBodySize: Number.MAX_SAFE_INTEGER - 1, encodedBodySize: 20, transferSize: 100 },
+    { name: b, decodedBodySize: 1, encodedBodySize: 30, transferSize: 200 },
+  ]);
+  assert.equal(atLimit.decodedBodyBytes, Number.MAX_SAFE_INTEGER);
+  assert.equal(atLimit.encodedBodyBytes, 50);
+  assert.equal(atLimit.transferBytes, 300);
+  const cached = summarizeLinkedCssResourceTiming([a, b], [
+    { name: a, decodedBodySize: 200, encodedBodySize: 100, transferSize: 0 },
+    { name: b, decodedBodySize: 300, encodedBodySize: 130, transferSize: 90 },
+  ]);
+  assert.equal(cached.transferBytes, null);
+  assert.equal(cached.observedTransferBytes, 90);
+  assert.deepEqual(cached.unavailableTransferStylesheets, [a]);
+});
+
+test("counts query-specific CSS resources separately without fetching URL fragments", () => {
+  const html = [
+    '<link rel="stylesheet" href="/_next/static/chunks/app.css?v=one">',
+    '<link href="/_next/static/chunks/app.css?v=two#view" rel="stylesheet">',
+    '<link href="/_next/static/chunks/app.css?v=one#duplicate" rel="stylesheet">',
+    '<link href="https://external.invalid/_next/static/chunks/app.css?v=other" rel="stylesheet">',
+  ].join("");
+  assert.deepEqual(stylesheetsInHtml(html), [
+    "https://amaanafoundation.org/_next/static/chunks/app.css?v=one",
+    "https://amaanafoundation.org/_next/static/chunks/app.css?v=two",
+  ]);
+});
+
+test("measures distinct same-path CSS query variants at their actual URLs", async () => {
+  const cssOne = "https://amaanafoundation.org/_next/static/site.css?v=one";
+  const cssTwo = "https://amaanafoundation.org/_next/static/site.css?v=two";
+  const html = '<link rel="stylesheet" href="/_next/static/site.css?v=one">'
+    + '<link rel="stylesheet" href="/_next/static/site.css?v=two">';
+  const seen = [];
+  const responses = new Map([
+    ["https://amaanafoundation.org/", { body: html, type: "text/html" }],
+    [cssOne, { body: "a{color:red}", type: "text/css" }],
+    [cssTwo, { body: "b{color:blue}", type: "text/css" }],
+  ]);
+  const fetchImpl = async (url, options) => {
+    seen.push(url);
+    assert.equal(options.redirect, "manual");
+    const response = responses.get(url);
+    if (!response) throw new Error("Unexpected stylesheet request: " + url);
+    return {
+      ok: true, status: 200, url,
+      headers: { get: () => response.type },
+      text: async () => response.body,
+      arrayBuffer: async () => new TextEncoder().encode(response.body).buffer,
+    };
+  };
+  const report = await auditPublicRouteCss({ fetchImpl, routes: ["/"] });
+  assert.equal(report.routes[0].stylesheetCount, 2);
+  assert.equal(report.routes[0].cssBytes, 25);
+  assert.deepEqual(seen, ["https://amaanafoundation.org/", cssOne, cssTwo]);
+});

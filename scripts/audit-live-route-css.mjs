@@ -24,9 +24,16 @@ export function stylesheetsInHtml(html, origin = ORIGIN) {
     if (asset.origin !== site.origin || asset.username || asset.password) continue;
     if (!/^\/_next\/static\/[A-Za-z0-9_./-]+\.css$/.test(asset.pathname)) continue;
     if (asset.pathname.split("/").includes("..")) continue;
-    unique.add(asset.origin + asset.pathname);
+    // Preserve the requested CSS variant. Fragments are not sent in HTTP requests.
+    unique.add(asset.origin + asset.pathname + asset.search);
   }
   return [...unique];
+}
+
+function addCssBytes(total, bytes, scope) {
+  const sum = total + bytes;
+  if (!Number.isSafeInteger(sum)) throw new Error(`CSS ${scope} size exceeds safe integer`);
+  return sum;
 }
 
 /** Decoded stylesheet bytes; not compressed transfer or Core Web Vitals. */
@@ -38,14 +45,14 @@ export function summarizeRouteCssBytes(entries, sizes) {
     for (const asset of current) {
       const bytes = sizes.get(asset);
       if (!Number.isSafeInteger(bytes) || bytes < 0) throw new Error("Missing CSS size for " + asset);
-      cssBytes += bytes;
+      cssBytes = addCssBytes(cssBytes, bytes, "route");
       unique.add(asset);
     }
     return { route, stylesheetCount: current.length, cssBytes };
   });
   return { routes, shared: {
     uniqueStylesheets: unique.size,
-    decodedCssBytes: [...unique].reduce((total, asset) => total + sizes.get(asset), 0),
+    decodedCssBytes: [...unique].reduce((total, asset) => addCssBytes(total, sizes.get(asset), "shared"), 0),
   } };
 }
 
