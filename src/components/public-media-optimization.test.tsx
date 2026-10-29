@@ -62,7 +62,7 @@ describe("public media image optimization", () => {
   it("omits an empty figcaption for whitespace-only reviewed image captions", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
     const html = renderToStaticMarkup(PublicMedia({
-      asset: { ...asset, caption: "  \\t ", sourceYear: null },
+      asset: { ...asset, caption: "   ", sourceYear: null },
     }));
     expect(html).not.toContain("<figcaption>");
   });
