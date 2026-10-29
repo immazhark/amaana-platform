@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { summarizeAppRouteBundles, summarizeUnattributedAppAssets } from "./report-route-bundles.mjs";
 import * as reporter from "./report-route-bundles.mjs";
 
@@ -340,4 +340,44 @@ test("Next16 per-route JS totals reject unsafe integer overflow but accept the e
   assert.deepEqual(report(Number.MAX_SAFE_INTEGER - 1), [{
     route: "/", appPath: "/page", jsBytes: Number.MAX_SAFE_INTEGER, scriptCount: 2,
   }]);
+});
+
+
+test("CLI tolerates a closed output reader while malformed builds still fail", async () => {
+  const directory = mkdtempSync(join(tmpdir(), "amaana-report-closed-output-"));
+  const cli = fileURLToPath(new URL("./report-route-bundles.mjs", import.meta.url));
+  try {
+    mkdirSync(join(directory, ".next/static"), { recursive: true });
+    writeFileSync(join(directory, ".next/app-path-routes-manifest.json"), JSON.stringify({ "/page": "/" }));
+    const result = await new Promise((resolve, reject) => {
+      const child = spawn(process.execPath, [cli, "--json"], {
+        cwd: directory, stdio: ["ignore", "pipe", "pipe"], timeout: 5000,
+      });
+      let stderr = "";
+      child.stderr.setEncoding("utf8");
+      child.stderr.on("data", chunk => { stderr += chunk; });
+      child.on("error", reject);
+      child.on("close", (status, signal) => resolve({ status, signal, stderr }));
+      // Close before the first CLI write, independent of pipe buffer capacity.
+      child.stdout.destroy();
+    });
+    assert.equal(result.signal, null);
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stderr, "");
+    const outputError = join(directory, "output-error.mjs");
+    writeFileSync(outputError, 'setImmediate(() => process.stdout.emit("error", Object.assign(new Error("synthetic output failure"), { code: "EIO" })));');
+    const failedOutput = spawnSync(process.execPath, ["--import", outputError, cli], {
+      cwd: directory, encoding: "utf8", timeout: 5000,
+    });
+    assert.equal(failedOutput.status, 1);
+    assert.match(failedOutput.stderr, /Unable to write route report: synthetic output failure/);
+    assert.match(failedOutput.stdout, /App Router pages: 1/);
+    writeFileSync(join(directory, ".next/app-path-routes-manifest.json"), "invalid json");
+    const malformed = spawnSync(process.execPath, [cli], { cwd: directory, encoding: "utf8", timeout: 5000 });
+    assert.equal(malformed.status, 1);
+    assert.notEqual(malformed.stderr, "");
+    assert.equal(malformed.stdout, "");
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });
