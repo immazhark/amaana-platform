@@ -51,3 +51,22 @@ test("Stories preserves published context precedence and private-context exclusi
   expect(selectStoryDiscovery(records, { programme: "Direct" }).results).toEqual([records[1], records[3]]);
   expect(selectStoryDiscovery(records, { programme: "Initiative" }).results).toEqual([records[0]]);
 });
+
+test.each(selectors)("%s rejects raw search input beyond 80 characters before whitespace normalization", (_, select) => {
+  const oversized = [" ".repeat(81), "  NeEdLe" + " ".repeat(80), "N ".repeat(41)];
+  for (const q of oversized) {
+    expect(select(q)).toMatchObject({ invalid: true, count: 0, results: [] });
+  }
+  expect(select(" ".repeat(80)).invalid).toBe(false);
+  expect(select("  NeEdLe  ").count).toBe(20);
+  expect(select("NeEdLe".padEnd(80, " ")).invalid).toBe(false);
+});
+
+test.each(selectors)("%s avoids trimming an oversized raw query", (_, select) => {
+  const oversized = " ".repeat(100_000);
+  const spy = vi.spyOn(String.prototype, "trim");
+  try {
+    expect(select(oversized)).toMatchObject({ invalid: true, count: 0 });
+    expect(spy.mock.contexts.some(value => String(value) === oversized)).toBe(false);
+  } finally { spy.mockRestore(); }
+});
