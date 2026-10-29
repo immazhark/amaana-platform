@@ -129,6 +129,10 @@ jobs:
         run: node --test scripts/test-client-secret-boundary.mjs
       - name: Enforce audited muted text contrast
         run: node --test scripts/test-audited-muted-contrast.mjs
+      - name: Guard public CSS minimum type size
+        run: |
+          node --test scripts/test-public-font-floor.mjs
+          node scripts/public-font-floor.mjs
       - name: Guard Companion text scaling under 200% root font size
         run: node --test scripts/test-companion-text-scaling.mjs
       - name: Enforce accessible public-media link names
