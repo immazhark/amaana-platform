@@ -32,3 +32,18 @@ it.each([{}, { programme: "synthetic-programme" }])("keeps valid filters free of
   expect(html).toContain('for="impact-programme"');
   expect(html).toContain("Synthetic initiative");
 });
+
+it.each([
+  { primaryMetric: "   ", primaryMetricLabel: "kits" },
+  { primaryMetric: "25", primaryMetricLabel: "  " },
+])("does not present incomplete quantities as documented Impact wall facts: %j", async metric => {
+  mocks.data.mockResolvedValueOnce([{
+    id: "synthetic", slug: "synthetic-initiative", title: "Synthetic initiative",
+    summary: "Synthetic outcome", mediaAssets: [], cause: { title: "Synthetic programme" },
+    ...metric,
+  }]);
+  const html = renderToStaticMarkup(await ImpactPage({ searchParams: Promise.resolve({}) }));
+  expect(html).not.toContain("<strong>   </strong>");
+  expect(html).not.toContain("<strong>25</strong>");
+  expect(html).toContain("<span>Synthetic initiative</span>");
+});

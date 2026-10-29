@@ -1,3 +1,15 @@
+## 2026-10-29 IST — Held draft #571 fact-safe incomplete-label fallback
+
+Exact-parent `6605fdd8da2342fd86d63e7786b59bd2c0e0d6a6` post-diff review: if quantity exists but contextual label is blank, the legacy "No headline quantity has been published" fallback overstates absence. Retain existing no-quantity copy for absent/blank quantity and use neutral "A complete headline outcome is not available" for a nonblank quantity without a label. Updated SSR regression, no new fact, figure, private data, provider setting or deployment. Source tests/pinned full app checks remain pending.
+
+## 2026-10-29 IST — Public documented-outcome completeness across Impact and comparison (held draft #571)
+
+CHATGPT_ACTIVE sole writer. Parent exact held PR #570 head `1cf36948849cb3eb33da30bf02a990b95aa462f3` and protected main `31c011c3c9f0a9c0e257fe84e095ed759a4f2bae` read-only verified before writes. Source-confirmed conditional defect: `VerifiedImpactStrip` accepts only nonblank metric+label; `/impact` wall and `/impact/compare` instead show a whitespace-only metric or an unqualified numeric metric with generic/blank label. Test-first RED on actual source expressions: 2 invalid synthetic metric+label records rendered by both views. New small pure `documentedImpactMetric` returns reviewed original value+label only when both are strings with nonblank whitespace; otherwise no headline figure. Impact tile falls back to its existing initiative title; compare page uses its already-approved “No headline quantity has been published” explanation. No aggregation, inferred label, number rewriting, private evidence or data/query changes.
+
+Local Node22 isolated 3/3 helper tests PASS (fixed test runner cross-realm assertion issue without changing helper); isolated global TypeScript strict noEmit PASS. Added focused Vitest helper cases, two Impact-wall SSR cases, and two comparison SSR cases; complete repository-pinned Vitest/TS/lint/Next optimized build/browser/database/security, independent review and separate ready-state remain UNEXECUTED in connector-only workspace. No claim these malformed records were observed live.
+
+No checkout/payment, auth/RBAC, DB schema/data, public media/identity, provider, secrets or cron/infrastructure mutation. Draft child of #570; unchanged Neon capacity hold, source/runtime SHA distinction, protected checks and historical149 denominator. Rollback two view changes, small pure helper and tests while preserving coordination. Next exact-head full application/SSR acceptance and verified protected ready-state before merge.
+
 ## 2026-10-29 IST — Held #570 loading CSS gutter compatibility correction
 
 Review of exact source head `1ba1db16cefb6c1e25d6922a0d0fe1578fc8b215` found the new shared loading shell used typed CSS multiplication inside `calc()`. Added a native source regression: RED 1/3 with the multiplication expression, GREEN 3/3 after using broadly supported repeated gutter subtraction. No user-facing copy or routes changed; browser layout still requires hosted visual acceptance. Remains draft, no merge/deploy.

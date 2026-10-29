@@ -5,6 +5,22 @@ import { SectionHeading } from "@/components/section-heading";
 import { programmeBySlug } from "@/lib/master-copy";
 import { selectImpactComparison, type ImpactComparisonSearch } from "@/lib/impact-comparison";
 import { getImpactComparisonPageData } from "@/lib/public-page-data";
+import { documentedImpactMetric } from "@/lib/documented-impact-metric";
+
+/** A published headline requires both its quantity and its context label.
+ * Keep reviewed original strings; do not imply evidence where the label is blank. */
+function DocumentedComparisonOutcome({ value, label }: {
+  value: string | null | undefined;
+  label: string | null | undefined;
+}) {
+  const metric = documentedImpactMetric(value, label);
+  if (metric) return <p><strong>{metric.value}</strong> — {metric.label}</p>;
+  // A quantity without a contextual unit is not evidence; do not claim the
+  // underlying quantity was never published.
+  return typeof value === "string" && value.trim()
+    ? <p>A complete headline outcome is not available for this initiative.</p>
+    : <p>No headline quantity has been published for this initiative.</p>;
+}
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -81,9 +97,7 @@ export default async function ImpactComparisonPage({
                 <article className="v2-reminder" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", minWidth: 0, overflowWrap: "anywhere" }} key={item.slug}>
                   <span className="v2-reminder-label">Published initiative {index + 1} · {item.cause.title}</span>
                   <h2>{item.title}</h2>
-                  {item.primaryMetric ? (
-                    <p><strong>{item.primaryMetric}</strong> — {item.primaryMetricLabel || "Documented outcome"}</p>
-                  ) : <p>No headline quantity has been published for this initiative.</p>}
+                  <DocumentedComparisonOutcome value={item.primaryMetric} label={item.primaryMetricLabel} />
                   <p>{item.summary}</p>
                   <Link className="v2-button" style={{ marginTop: "auto", maxWidth: "100%", whiteSpace: "normal" }} href={`/our-work/${item.slug}`}>Read the full initiative</Link>
                 </article>
