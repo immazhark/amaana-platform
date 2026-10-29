@@ -37,3 +37,16 @@ it("distinguishes search misses from no eligible appeals", async () => {
   mocks.records.mockResolvedValue([]);
   expect(await render()).toContain("No Public Appeal Is Open Right Now");
 });
+
+it("renders only the selected eligible page with search-preserving navigation", async () => {
+ mocks.records.mockResolvedValue(Array.from({length:25},(_,i)=>({...open,slug:`reviewed-${i}`,title:`Reviewed appeal ${i}`,summary:"Food & shelter"})));
+ const html = renderToStaticMarkup(await AppealsPage({searchParams:Promise.resolve({q:"Food & shelter",page:"2",utm_source:"PRIVATE_TRACKING"})}));
+ expect((html.match(/<article>Reviewed appeal /g)||[]).length).toBe(12);
+ expect(html).toContain("Reviewed appeal 12</article>");
+ expect(html).not.toContain("Reviewed appeal 0</article>");
+ expect(html).toContain('aria-label="Appeal pages"');
+ expect(html).toContain("Page 2 of 3");
+ expect(html).toContain("q=Food+%26+shelter&amp;page=1#current-appeals");
+ expect(html).toContain("q=Food+%26+shelter&amp;page=3#current-appeals");
+ expect(html).not.toContain("PRIVATE_TRACKING");
+});
