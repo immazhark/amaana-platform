@@ -80,11 +80,13 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
     );
   }
 
-  const linkTitle = asset.title ?? asset.caption ?? "approved source";
+  // Blank editorial fields must not suppress readable link and heading fallbacks.
+  const displayTitle = asset.title?.trim() || asset.caption?.trim();
+  const linkTitle = displayTitle || "approved source";
   return (
     <article className="v2-media-link">
       <small>{asset.kind === "DOCUMENT" ? "Document" : "Video"}{asset.sourceYear ? ` · ${asset.sourceYear}` : ""}</small>
-      <h3>{asset.title ?? asset.caption ?? "View approved source"}</h3>
+      <h3>{displayTitle || "View approved source"}</h3>
       <a href={url} target="_blank" rel="noopener noreferrer" aria-label={`Open approved source: ${linkTitle} (new tab)`}>Open approved source ↗</a>
     </article>
   );
