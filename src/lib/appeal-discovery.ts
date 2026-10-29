@@ -7,7 +7,8 @@ export function selectAppealDiscovery<T extends { title: string; summary: string
   const q = raw.trim().replace(/\s+/g, " ");
   const invalid = hasUnsupportedPublicQueryFields(search, ["q"])
     || Array.isArray(search.q) || q.length > 80 || /[\u0000-\u001f\u007f]/.test(raw);
+  const normalizedQuery = invalid || !q ? "" : q.toLocaleLowerCase("en");
   const results = invalid ? [] : records.filter(record => !q
-    || `${record.title} ${record.summary}`.replace(/\s+/g, " ").toLocaleLowerCase("en").includes(q.toLocaleLowerCase("en")));
+    || `${record.title} ${record.summary}`.replace(/\s+/g, " ").toLocaleLowerCase("en").includes(normalizedQuery));
   return { q: invalid ? "" : q, invalid, active: Boolean(q || invalid), results, count: results.length };
 }

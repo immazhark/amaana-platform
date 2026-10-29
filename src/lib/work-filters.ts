@@ -22,6 +22,7 @@ export function filterWork<T extends Programme>(programmes: T[], search: WorkSea
     || Array.isArray(search.programme) || Array.isArray(search.year)
     || Boolean(programme && !programmes.some(p => p.slug === programme))
     || Boolean(year && !years.some(value => String(value) === year));
+  const normalizedQuery = invalid || !query ? "" : query.toLocaleLowerCase("en");
   const active = Boolean(programme || year || query || invalid);
   const results = invalid ? [] : programmes
     .filter(p => !programme || p.slug === programme)
@@ -30,7 +31,7 @@ export function filterWork<T extends Programme>(programmes: T[], search: WorkSea
       const matching = p.initiatives.filter(item => year
         ? yearsFor(item).includes(Number(year))
         : Boolean(query) || !item.parentSlug || !publishedSlugs.has(item.parentSlug))
-        .filter(item => !query || `${item.title ?? ""} ${item.summary ?? ""}`.replace(/\s+/g, " ").toLocaleLowerCase("en").includes(query.toLocaleLowerCase("en")));
+        .filter(item => !query || `${item.title ?? ""} ${item.summary ?? ""}`.replace(/\s+/g, " ").toLocaleLowerCase("en").includes(normalizedQuery));
       // An annual edition replaces its umbrella only when that edition is
       // published and matches all active filters. Preserve standalone ranges.
       const representedParents = new Set(matching.map(item => item.parentSlug).filter(Boolean));
