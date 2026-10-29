@@ -14,8 +14,11 @@ function DocumentedComparisonOutcome({ value, label }: {
   label: string | null | undefined;
 }) {
   const metric = documentedImpactMetric(value, label);
-  return metric
-    ? <p><strong>{metric.value}</strong> — {metric.label}</p>
+  if (metric) return <p><strong>{metric.value}</strong> — {metric.label}</p>;
+  // A quantity without a contextual unit is not evidence; do not claim the
+  // underlying quantity was never published.
+  return typeof value === "string" && value.trim()
+    ? <p>A complete headline outcome is not available for this initiative.</p>
     : <p>No headline quantity has been published for this initiative.</p>;
 }
 

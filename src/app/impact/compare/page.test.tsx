@@ -43,5 +43,6 @@ it("does not invent a label for an otherwise populated quantity", async () => {
     searchParams: Promise.resolve({ left: "relief", right: "education" }),
   }));
   expect(html).not.toContain("<strong>500</strong>");
-  expect(html).toContain("No headline quantity has been published for this initiative.");
+  expect(html).toContain("A complete headline outcome is not available for this initiative.");
+  expect(html).not.toContain("<strong>500</strong> — Documented outcome");
 });
