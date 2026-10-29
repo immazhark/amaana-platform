@@ -10,6 +10,6 @@ export function selectFaithDiscovery<T extends { title: string; excerpt: string;
     || q.length > 80 || /[\u0000-\u001f\u007f]/.test(raw)
     || Boolean(format && !["ARTICLE", "REMINDER", "VIDEO"].includes(format));
   const results = invalid ? [] : records.filter(item => (!format || item.type === format)
-    && (!q || `${item.title} ${item.excerpt}`.toLocaleLowerCase("en").includes(q.toLocaleLowerCase("en"))));
+    && (!q || `${item.title} ${item.excerpt}`.replace(/\s+/g, " ").toLocaleLowerCase("en").includes(q.toLocaleLowerCase("en"))));
   return { q: invalid ? "" : q, format: invalid ? "" : format, invalid, active: Boolean(q || format || invalid), results, count: results.length };
 }

@@ -161,3 +161,12 @@ describe("combined text and year family selection", () => {
     expect(filterWork(matching, { year: "2026", q: "blankets" }).results[0]?.initiatives.map(i => i.slug)).toEqual(["winter-2026"]);
   });
 });
+it("finds published initiative titles containing line breaks and excess spaces", () => {
+  const programmes = [{ slug: "seasonal", initiatives: [
+    { slug: "winter", title: "Winter\n  Kits", summary: "Verified public distribution", year: 2026, startYear: null, endYear: null },
+  ] }];
+  const result = filterWork(programmes, { q: "winter kits" });
+  expect(result.invalid).toBe(false);
+  expect(result.count).toBe(1);
+  expect(result.results[0]?.initiatives[0]?.slug).toBe("winter");
+});
