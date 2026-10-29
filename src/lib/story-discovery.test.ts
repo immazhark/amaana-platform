@@ -23,3 +23,35 @@ it("finds reviewed titles with irregular internal whitespace", () => {
   expect(result).toMatchObject({ invalid: false, count: 1 });
   expect(result.results).toEqual(records);
 });
+
+it("does not offer whitespace-only published cause titles as programme filters", () => {
+ const records = [
+   {title:"Blank direct",summary:"Public",cause:{status:"PUBLISHED",title:"  "}},
+   {title:"Valid direct",summary:"Public",cause:{status:"PUBLISHED",title:"Education"}},
+ ];
+ const result = selectStoryDiscovery(records, {});
+ expect(result.programmes).toEqual(["Education"]);
+ expect(result.results).toEqual(records);
+ expect(selectStoryDiscovery(records,{programme:"  "})).toMatchObject({invalid:true,count:0});
+});
+
+it("uses the published direct cause when a published initiative programme title is blank", () => {
+ const story = {title:"Reviewed story",summary:"Public",cause:{status:"PUBLISHED",title:"Relief"},initiative:{status:"PUBLISHED",cause:{status:"PUBLISHED",title:" \t "}}};
+ const result = selectStoryDiscovery([story],{programme:"Relief"});
+ expect(result.programmes).toEqual(["Relief"]);
+ expect(result.results[0]).toBe(story);
+ expect(result.invalid).toBe(false);
+});
+
+it("preserves original reviewed published titles and initiative precedence", () => {
+ const story = {title:"Story",summary:"Public",cause:{status:"PUBLISHED",title:"Direct"},initiative:{status:"PUBLISHED",cause:{status:"PUBLISHED",title:" Education "}}};
+ const result = selectStoryDiscovery([story],{programme:" Education "});
+ expect(result.programmes).toEqual([" Education "]);
+ expect(result.results[0]).toBe(story);
+});
+
+it("does not expose unpublished programme text through blank-title fallback", () => {
+ const story = {title:"Story",summary:"Public",cause:{status:"DRAFT",title:"Private"},initiative:{status:"PUBLISHED",cause:{status:"PUBLISHED",title:"  "}}};
+ expect(selectStoryDiscovery([story],{}).programmes).toEqual([]);
+ expect(selectStoryDiscovery([story],{programme:"Private"})).toMatchObject({invalid:true,count:0});
+});
