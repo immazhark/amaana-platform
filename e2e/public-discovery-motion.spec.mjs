@@ -75,3 +75,25 @@ test('Shared controls honor reduced motion on hover, focus and expanded state', 
     await dock.evaluate(element => element.setAttribute('aria-expanded', 'false'));
   }
 });
+
+
+test('Donation detail hover and Back focus honor reduced motion', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.setContent(`<style>html{font-size:16px}${stylesheet('src/app/donate-wow.css')}</style><a href="#back" class="v2-donate-back" style="display:inline-block">Back</a><div class="v2-donate-guide-list"><article><h3>Choose your amount</h3></article></div>`);
+  const article = page.locator('article');
+  const back = page.getByRole('link', { name: 'Back' });
+  for (const reducedMotion of ['reduce', 'no-preference']) {
+    await page.emulateMedia({ reducedMotion });
+    await article.hover();
+    await expect(article).toHaveCSS('padding-left', reducedMotion === 'reduce' ? '0px' : '11.2px');
+    await back.hover();
+    if (reducedMotion === 'reduce') await expect(back).toHaveCSS('transform', 'none');
+    else await expect.poll(() => back.evaluate(element => getComputedStyle(element).transform)).not.toBe('none');
+    await page.mouse.move(0, 0);
+    await page.keyboard.press('Tab');
+    await back.focus();
+    await expect.poll(() => back.evaluate(element => element.matches(':focus-visible'))).toBe(true);
+    if (reducedMotion === 'reduce') await expect(back).toHaveCSS('transform', 'none');
+    else await expect.poll(() => back.evaluate(element => getComputedStyle(element).transform)).not.toBe('none');
+  }
+});
