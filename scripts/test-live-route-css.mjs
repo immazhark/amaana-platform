@@ -199,3 +199,49 @@ test("retains per-stylesheet size validation when totals are guarded", () => {
     ), /Missing CSS size/);
   }
 });
+
+test("rejects browser CSS decoded byte totals beyond safe integer precision", () => {
+  const a = "https://amaanafoundation.org/_next/static/a.css";
+  const b = "https://amaanafoundation.org/_next/static/b.css";
+  assert.throws(() => summarizeLinkedCssResourceTiming([a, b], [
+    { name: a, decodedBodySize: Number.MAX_SAFE_INTEGER, encodedBodySize: 1, transferSize: 1 },
+    { name: b, decodedBodySize: 1, encodedBodySize: 1, transferSize: 1 },
+  ]), /Invalid browser CSS decoded total/);
+});
+
+test("rejects browser CSS encoded byte totals beyond safe integer precision", () => {
+  const a = "https://amaanafoundation.org/_next/static/a.css";
+  const b = "https://amaanafoundation.org/_next/static/b.css";
+  assert.throws(() => summarizeLinkedCssResourceTiming([a, b], [
+    { name: a, decodedBodySize: 1, encodedBodySize: Number.MAX_SAFE_INTEGER, transferSize: 1 },
+    { name: b, decodedBodySize: 1, encodedBodySize: 1, transferSize: 1 },
+  ]), /Invalid browser CSS encoded total/);
+});
+
+test("rejects browser CSS observed transfer byte totals beyond safe integer precision", () => {
+  const a = "https://amaanafoundation.org/_next/static/a.css";
+  const b = "https://amaanafoundation.org/_next/static/b.css";
+  assert.throws(() => summarizeLinkedCssResourceTiming([a, b], [
+    { name: a, decodedBodySize: 1, encodedBodySize: 1, transferSize: Number.MAX_SAFE_INTEGER },
+    { name: b, decodedBodySize: 1, encodedBodySize: 1, transferSize: 1 },
+  ]), /Invalid browser CSS transfer total/);
+});
+
+test("preserves safe integer boundary and partial-transfer unavailability", () => {
+  const a = "https://amaanafoundation.org/_next/static/a.css";
+  const b = "https://amaanafoundation.org/_next/static/b.css";
+  const atLimit = summarizeLinkedCssResourceTiming([a, a, b], [
+    { name: a, decodedBodySize: Number.MAX_SAFE_INTEGER - 1, encodedBodySize: 20, transferSize: 100 },
+    { name: b, decodedBodySize: 1, encodedBodySize: 30, transferSize: 200 },
+  ]);
+  assert.equal(atLimit.decodedBodyBytes, Number.MAX_SAFE_INTEGER);
+  assert.equal(atLimit.encodedBodyBytes, 50);
+  assert.equal(atLimit.transferBytes, 300);
+  const cached = summarizeLinkedCssResourceTiming([a, b], [
+    { name: a, decodedBodySize: 200, encodedBodySize: 100, transferSize: 0 },
+    { name: b, decodedBodySize: 300, encodedBodySize: 130, transferSize: 90 },
+  ]);
+  assert.equal(cached.transferBytes, null);
+  assert.equal(cached.observedTransferBytes, 90);
+  assert.deepEqual(cached.unavailableTransferStylesheets, [a]);
+});
