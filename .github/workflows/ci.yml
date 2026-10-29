@@ -77,6 +77,8 @@ jobs:
 
       - name: Audit global CSS architecture
         run: node scripts/audit-global-css.mjs
+      - name: Enforce public Compliance hold text contrast
+        run: node --test scripts/test-compliance-hold-contrast.mjs
       - name: Validate App Router bundle reporting
         run: node --test scripts/test-route-bundle-report.mjs scripts/test-live-route-css.mjs
       - name: Guard responsive hero/artwork image weight
@@ -129,6 +131,8 @@ jobs:
         run: node --test scripts/test-client-secret-boundary.mjs
       - name: Enforce audited muted text contrast
         run: node --test scripts/test-audited-muted-contrast.mjs
+      - name: Enforce light/dark Media source-label contrast
+        run: node --test scripts/test-public-contrast-boundaries.mjs
       - name: Guard Companion text scaling under 200% root font size
         run: node --test scripts/test-companion-text-scaling.mjs
       - name: Enforce accessible public-media link names
@@ -145,6 +149,8 @@ jobs:
         run: node --test scripts/test-donation-error-focus-race.mjs
       - name: Enforce admin eyebrow contrast by surface
         run: node --test scripts/test-admin-eyebrow-contrast.mjs
+      - name: Enforce Appeals update text contrast on dark surfaces
+        run: node --test scripts/test-appeal-update-contrast.mjs
       - name: Verify archive filters
         run: node --experimental-strip-types --test scripts/test-work-filters.mjs
       - name: Validate local-only mobile profiling contracts
@@ -216,7 +222,7 @@ jobs:
           node scripts/test-home-carousel-migration.mjs
           node scripts/test-historical-pageview-migration.mjs
           node --test scripts/test-master-content-assets.mjs
-          npx vitest run src/app/api/webhooks/razorpay/route.database.test.ts src/lib/auth-rate-limit.database.test.ts src/lib/auth-session.database.test.ts
+          npx vitest run src/app/api/webhooks/razorpay/route.database.test.ts src/lib/auth-rate-limit.database.test.ts src/lib/auth-session.database.test.ts 'src/app/admin/(protected)/retention/actions.database.test.ts'
 
 
   production:

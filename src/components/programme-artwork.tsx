@@ -22,10 +22,10 @@ function getProgrammeArtwork(slug: string) {
   return Object.hasOwn(artworks, artworkSlug) ? artworks[artworkSlug] : undefined;
 }
 
-export function ProgrammeArtwork({ slug, sizes = "(max-width: 700px) 86vw, 30rem" }: { slug: string; sizes?: string }) {
+export function ProgrammeArtwork({ slug, sizes = "(max-width: 700px) 86vw, 30rem", priority = false }: { slug: string; sizes?: string; priority?: boolean }) {
   const artwork = getProgrammeArtwork(slug);
   if (!artwork) return null;
-  return <Image src={artwork.src} width={1536} height={1024} alt={artwork.alt} sizes={sizes} data-programme-artwork={slug} />;
+  return <Image src={artwork.src} width={1536} height={1024} alt={artwork.alt} sizes={sizes} preload={priority} loading={priority ? undefined : "lazy"} data-programme-artwork={slug} />;
 }
 
 export function hasProgrammeArtwork(slug: string) {

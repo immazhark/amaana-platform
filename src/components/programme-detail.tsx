@@ -97,7 +97,7 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
       {label: publishedChildren.length>0?(slug==='taleem'?'Explore Taleem Programmes':'View Year-by-Year Impact'):'Read about this work',href:publishedChildren.length>0?'#programme-pathways':'#programme-story'},
       ...(media.length>0?[{label:'View photographs',href:'#campaign-gallery',secondary:true} as const]:[]),
     ]}
-    visual={collage?<ProgrammeArtwork slug={slug} sizes="(max-width: 900px) 90vw, 45vw" />:lead?<PublicMedia asset={lead} priority sizes="(max-width: 900px) 90vw, 45vw" />:<WorkVisualPlaceholder label={title} className="campaign-lead-placeholder" />}
+    visual={collage?<ProgrammeArtwork slug={slug} sizes="(max-width: 900px) 90vw, 45vw" priority />:lead?<PublicMedia asset={lead} priority sizes="(max-width: 900px) 90vw, 45vw" />:<WorkVisualPlaceholder label={title} className="campaign-lead-placeholder" />}
   />
   {(primaryMetric||primaryMetricLabel)&&<section className="campaign-impact-strip" aria-label="Programme impact summary"><div className="v2-shell"><div><span>Documented impact</span><strong>{primaryMetric??"Published record"}</strong><p>{primaryMetricLabel??statusLabel}</p></div><div><span>Status</span><strong>{statusLabel}</strong></div></div></section>}
   <section className="campaign-story" id="programme-story"><div className="v2-shell campaign-story-layout"><div><p className="v2-section-label">The work</p><h2>How the programme took shape</h2></div><div className="campaign-story-copy">{storyParagraphs.length>0?storyParagraphs.map((paragraph,index)=><p key={index}>{paragraph}</p>):<p>{fallbackStory}</p>}</div></div></section>

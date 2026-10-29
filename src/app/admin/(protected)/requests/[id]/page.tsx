@@ -21,27 +21,29 @@ export default async function RequestDetailPage({ params }: Props) {
     prisma.assistanceRequest.findUnique({
       where: { id },
       include: {
-        assignedTo: true,
         documents: true,
         appeal: true,
-        verification: { include: { reviewedBy: true } },
+        assignedTo: { select: { name: true } },
+        verification: { include: { reviewedBy: { select: { name: true } } } },
       },
     }),
     prisma.user.findMany({
       where: { status: "ACTIVE", roles: { some: { role: { permissions: { some: { permission: { key: "assistance.view" } } } } } } },
       orderBy: { name: "asc" },
+      select: { id: true, name: true },
     }),
-    prisma.auditEvent.findMany({ where: { entityType: "AssistanceRequest", entityId: id }, include: { actor: true }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] }),
+    prisma.auditEvent.findMany({ where: { entityType: "AssistanceRequest", entityId: id }, select: { id: true, action: true, createdAt: true, actor: { select: { name: true } } }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] }),
   ]);
   if (!request) notFound();
 
+  const currentAssigneeUnavailable = Boolean(request.assignedToId && !staff.some(member => member.id === request.assignedToId));
   const converted = request.status === "CONVERTED_TO_APPEAL" || Boolean(request.appealId);
   const manualStatuses = [...MANUAL_ASSISTANCE_STATUSES];
   const visibleStatuses = converted
     ? ["CONVERTED_TO_APPEAL"]
     : hasPermission(user, "assistance.approve")
       ? manualStatuses
-      : manualStatuses.filter(status => !["APPROVED", "REJECTED"].includes(status));
+      : manualStatuses.filter(status => status === request.status || !["APPROVED", "REJECTED"].includes(status));
   const verification = request.verification;
   const publicAppealIssues = getPublicAppealVerificationIssues(verification);
   const publicAppealReady = publicAppealIssues.length === 0;
@@ -53,7 +55,7 @@ export default async function RequestDetailPage({ params }: Props) {
       <div>
         <p className="eyebrow">{request.referenceNumber}</p>
         <h1>{request.applicantName}</h1>
-        <p className="muted">{request.category.replaceAll("_", " ")} · {request.city} · received {request.createdAt.toLocaleDateString("en-IN", { dateStyle: "long" })}</p>
+        <p className="muted">{request.category.replaceAll("_", " ")} · {request.city} · received {request.createdAt.toLocaleDateString("en-IN", { dateStyle: "long", timeZone: "Asia/Kolkata" })}</p>
       </div>
       <span className="status-badge">{request.status.replaceAll("_", " ")}</span>
     </div>
@@ -133,7 +135,7 @@ export default async function RequestDetailPage({ params }: Props) {
 
             <label className="checkbox"><input type="checkbox" name="markComplete" defaultChecked={Boolean(verification?.completedAt)} disabled={verificationLocked || !canCompleteVerification}/><span><strong>Verification complete</strong><small>Completing verification records the approving reviewer and enables approved workflow transitions. Approval permission is required.</small></span></label>
             {!canCompleteVerification && !verificationLocked && <small className="muted">You may save verification work, but only an authorised approver can mark it complete.</small>}
-            {verification?.completedAt && <small className="muted">Completed {verification.completedAt.toLocaleString("en-IN")} by {verification.reviewedBy?.name ?? "authorised reviewer"}.</small>}
+            {verification?.completedAt && <small className="muted">Completed {verification.completedAt.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} by {verification.reviewedBy?.name ?? "authorised reviewer"}.</small>}
             {verificationLocked && <small className="muted">Verification is locked because this request has already been converted into a linked appeal.</small>}
             <button className="button" disabled={!hasPermission(user, "assistance.update") || verificationLocked}>Save verification</button>
           </form>
@@ -146,7 +148,7 @@ export default async function RequestDetailPage({ params }: Props) {
 
         <section className="card">
           <h2>Audit history</h2>
-          {history.length ? <ol className="history">{history.map(event => <li key={event.id}><strong>{event.action.replaceAll("_", " ")}</strong><span>{event.actor.name} · {event.createdAt.toLocaleString("en-IN")}</span></li>)}</ol> : <p className="muted">No changes recorded yet.</p>}
+          {history.length ? <ol className="history">{history.map(event => <li key={event.id}><strong>{event.action.replaceAll("_", " ")}</strong><span>{event.actor.name} · {event.createdAt.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</span></li>)}</ol> : <p className="muted">No changes recorded yet.</p>}
         </section>
       </div>
 
@@ -157,7 +159,8 @@ export default async function RequestDetailPage({ params }: Props) {
             <input type="hidden" name="id" value={id}/>
             <input type="hidden" name="expectedUpdatedAt" value={request.updatedAt.toISOString()}/>
             <label htmlFor="assignedToId">Assigned staff member</label>
-            <select id="assignedToId" name="assignedToId" defaultValue={request.assignedToId ?? ""}><option value="">Unassigned</option>{staff.map(member => <option key={member.id} value={member.id}>{member.name}</option>)}</select>
+            <select id="assignedToId" name="assignedToId" defaultValue={request.assignedToId ?? ""} aria-describedby={currentAssigneeUnavailable ? "assignment-availability" : undefined}><option value="">Unassigned</option>{currentAssigneeUnavailable && <option value={request.assignedToId!}>{`${request.assignedTo?.name ?? "Current staff member"} (currently unavailable)`}</option>}{staff.map(member => <option key={member.id} value={member.id}>{member.name}</option>)}</select>
+            {currentAssigneeUnavailable && <small id="assignment-availability" className="muted">The current assignee is unavailable for assignment. Choose an available staff member or Unassigned before saving a change.</small>}
             <button className="button secondary" disabled={!hasPermission(user, "assistance.assign")}>Save assignment</button>
           </form>
         </section>

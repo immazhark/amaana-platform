@@ -2,6 +2,14 @@ import { describe, expect, it } from "vitest";
 import { canRecordWebVitalOnCurrentRoute, normalizePublicWebVitalPath } from "./web-vitals-path";
 
 describe("privacy-safe public performance route grouping", () => {
+  it.each([
+    "/team", "/recognition", "/partner", "/impact/compare",
+    "/get-involved/volunteer", "/get-involved/monthly-giving", "/get-involved/sponsor-education",
+  ])("preserves a published public static route for opt-in RUM: %s", path => {
+    expect(normalizePublicWebVitalPath(path)).toBe(path);
+    expect(canRecordWebVitalOnCurrentRoute(path, path)).toBe(true);
+    expect(canRecordWebVitalOnCurrentRoute(path, path, true)).toBe(false);
+  });
   it.each(["/", "/about", "/appeals", "/stories", "/our-work", "/impact", "/compliance"])(
     "preserves static public route %s", path => {
       expect(normalizePublicWebVitalPath(path)).toBe(path);
@@ -25,6 +33,7 @@ describe("privacy-safe public performance route grouping", () => {
   it.each([
     "/admin", "/donate", "/donations/secret-token",
     "/request-assistance", "/request-assistance/status",
+    "/contact/feedback", "/team/private-case", "/get-involved/volunteer/applicant",
     "/appeals/name?secret=1", "/appeals/name#private", "https://amaanafoundation.org/about",
     "//other-domain", "/stories/name/second",
   ])("rejects excluded or malformed pathname %s", value => {

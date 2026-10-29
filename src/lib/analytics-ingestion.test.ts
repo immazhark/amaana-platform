@@ -15,6 +15,14 @@ describe("parseAnalyticsPayload", () => {
     await expect(parseAnalyticsPayload(analyticsRequest(JSON.stringify({ path: "/about" })))).resolves.toEqual({ path: "/about" });
   });
 
+  it.each([
+    "/team", "/recognition", "/partner", "/impact/compare",
+    "/get-involved/volunteer", "/get-involved/monthly-giving", "/get-involved/sponsor-education",
+  ])("accepts the exact published public route %s without retaining query data", async path => {
+    await expect(parseAnalyticsPayload(analyticsRequest(JSON.stringify({ path })))).resolves.toEqual({ path });
+    await expect(parseAnalyticsPayload(analyticsRequest(JSON.stringify({ path: `${path}?token=private` })))).resolves.toBeNull();
+  });
+
   it("removes beneficiary and story identifiers from ingested daily counters", async () => {
     for (const [raw, normalized] of [
       ["/appeals/person-name-medical-case", "/appeals/:slug"],
@@ -37,6 +45,8 @@ describe("parseAnalyticsPayload", () => {
   it("rejects sensitive and malformed public paths", async () => {
     await expect(parseAnalyticsPayload(analyticsRequest(JSON.stringify({ path: "/request-assistance" })))).resolves.toBeNull();
     await expect(parseAnalyticsPayload(analyticsRequest(JSON.stringify({ path: "/our-work/not valid" })))).resolves.toBeNull();
+    await expect(parseAnalyticsPayload(analyticsRequest(JSON.stringify({ path: "/contact/feedback" })))).resolves.toBeNull();
+    await expect(parseAnalyticsPayload(analyticsRequest(JSON.stringify({ path: "/get-involved/volunteer/applicant" })))).resolves.toBeNull();
   });
 
   it("rejects malformed JSON", async () => {

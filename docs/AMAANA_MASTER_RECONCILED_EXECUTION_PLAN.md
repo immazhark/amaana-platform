@@ -1,3 +1,15 @@
+## 2026-10-28 IST — 43-draft source integration checkpoint
+
+Existing #479–#522 except superseded #517, plus parent #525, normally combined under `integrate/verified-draft-fixes-20261028`. Exact scopes/heads and two integration corrections are in `docs/INTEGRATED_DRAFT_FIXES_2026-10-28.md`. Full local 2,512 PASS /20 opt-in DB SKIP; types/lint/clean build/budgets/native checks and independent reviews PASS. Hosted acceptance/merge/deployment pending. No new master-row completion or historical149 count change; manual/provider/factual acceptance remains distinct. #523 unresolved.
+
+## 2026-10-28 IST — AF-R069 new-tab source context
+
+Six source-link accessible-name corrections in Companion/assistance: actual-state SSR regressions RED four / GREEN four; full local Vitest 2,286 PASS / 20 isolated-DB SKIP; types, lint, clean build, secret/image guards and independent review PASS. Prepared real-browser accessible-name assertions await hosted execution. Preserve religious copy, calculations, URLs and assistance submission behavior. Source branch `fix/companion-and-assistance-link-context-20261028` from main83044f7; no merge/deploy/full accessibility or149-item acceptance claim. #519 separately covers other links.
+
+## 2026-10-28 IST — Scoped private review corrections
+
+AF-CONSENT: retention scalar/calendar boundary hardened (17 negative cases RED first, 31 focused GREEN), not concurrency certification. AF-R012/private-record correctness: acknowledgement abort and reference snapshot regressions RED four / final five GREEN. Combined full Vitest 2,310 PASS / 20 isolated-DB SKIP; types, lint, build and independent reviews PASS. Source branch `fix/private-review-input-and-lookup-boundaries-20261028`, base main `83044f775166be0a3533d807a7ec3e268795530f`; hosted acceptance/merge/deploy pending. New HIGH hold/delete race #523 is independently reproduced and unresolved. Historical 149 classifications remain unchanged. Latest executive approval supersedes administrative hold, while fresh actual Neon use is 97.5028/100 CU-hours with endpoint active.
+
 # Amaana Master Reconciled Execution Plan — War-Footing Revision
 
 ## Verified engineering checkpoint — 25 October 2026 (#433 runtime, #434 tooling)

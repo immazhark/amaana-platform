@@ -6,6 +6,7 @@ import { isAppealOpenForDonations } from "@/lib/appeals";
 import { canExposeAppealArchive } from "@/lib/appeal-update-publication";
 import { canExposePublicAppeal, canExposeSyntheticStagingContent } from "@/lib/public-environment";
 import { IDENTITY_MEDIA_SORT_ORDER } from "@/lib/public-media";
+import { programmes } from "@/lib/master-copy";
 import {
   getPublishedFaithContentBySlug,
   getPublishedInitiativeBySlug,
@@ -49,6 +50,8 @@ export const PUBLIC_GALLERY_MEDIA_PROJECTION = {
   take: 12,
   select: PUBLIC_IMAGE_SELECT,
 };
+
+const CANONICAL_PROGRAMME_SLUGS = programmes.map(programme => programme.slug);
 
 /**
  * React request memoization for dynamic routes whose metadata and page body
@@ -207,6 +210,7 @@ export const getHomepageDiscoveryData = cache(async () => {
       where: {
         status: "PUBLISHED",
         cause: { status: "PUBLISHED" },
+        slug: { in: CANONICAL_PROGRAMME_SLUGS },
       },
       select: { slug: true },
     }),
@@ -256,7 +260,8 @@ export const getOurWorkIndexData = cache(async () => {
           mediaAssets: {
             where: PUBLIC_IDENTITY_IMAGE_WHERE,
             orderBy: [{ sourceYear: "desc" }],
-            take: 1,
+            // Keep fallback candidates when a newer image fails URL/alt validation.
+            take: 12,
             select: PUBLIC_IMAGE_SELECT,
           },
         },
@@ -317,14 +322,19 @@ export const getImpactComparisonPageData = cache(async () => {
 
 /**
  * Completed-case showcase for /appeals. Keep this intentionally narrow: only
- * published initiatives under the canonical medical/financial relief cause and
- * a bounded set of approved public images per record is used so the card strip can prefer documentary gallery photography.
+ * curated medical/financial programmes can appear in the card strip. Do not
+ * load gallery rows for published initiatives that the page cannot display.
  */
+const COMPLETED_AID_PROGRAMME_SLUGS = programmes
+  .filter(programme => programme.causeSlug === "medical-financial-relief")
+  .map(programme => programme.slug);
+
 export const getCompletedAidShowcaseData = cache(async () => {
   return prisma.initiative.findMany({
     where: {
       status: "PUBLISHED",
       cause: { slug: "medical-financial-relief", status: "PUBLISHED" },
+      slug: { in: COMPLETED_AID_PROGRAMME_SLUGS },
     },
     orderBy: [{ displayOrder: "asc" }, { publishedAt: "desc" }],
     select: {
