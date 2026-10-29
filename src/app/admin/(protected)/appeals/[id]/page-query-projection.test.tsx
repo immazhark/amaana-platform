@@ -1,8 +1,8 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-const mocks = vi.hoisted(() => ({ permission: vi.fn(), allowed: vi.fn(), appeal: vi.fn(), history: vi.fn() }));
+const mocks = vi.hoisted(() => ({ permission: vi.fn(), allowed: vi.fn(), appeal: vi.fn(), history: vi.fn(), privateRequest: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ requirePermission: mocks.permission, hasPermission: mocks.allowed }));
-vi.mock("@/lib/prisma", () => ({ prisma: { appeal: { findUnique: mocks.appeal }, auditEvent: { findMany: mocks.history } } }));
+vi.mock("@/lib/prisma", () => ({ prisma: { appeal: { findUnique: mocks.appeal }, auditEvent: { findMany: mocks.history }, assistanceRequest: { findUnique: mocks.privateRequest } } }));
 vi.mock("../actions", () => ({ addAppealUpdate: vi.fn(), publishAppealUpdate: vi.fn(), transitionAppeal: vi.fn(), unpublishAppealUpdate: vi.fn(), updateAppeal: vi.fn(), updateFeaturing: vi.fn() }));
 import AppealEditorPage from "./page";
 
@@ -19,11 +19,29 @@ function record() {
   };
 }
 beforeEach(() => {
-  vi.resetAllMocks(); mocks.permission.mockResolvedValue({}); mocks.allowed.mockReturnValue(false);
+  vi.resetAllMocks(); mocks.permission.mockResolvedValue({});
+  mocks.allowed.mockImplementation((_user, permission) => permission === "assistance.view");
   mocks.appeal.mockResolvedValue(record());
+  mocks.privateRequest.mockResolvedValue(record().assistanceRequest);
   mocks.history.mockResolvedValue([{ id: "synthetic-audit", action: "synthetic_reviewed", createdAt: new Date("2026-10-27T00:00:00Z"), actor: { name: "Synthetic actor" } }]);
 });
 const render = async () => renderToStaticMarkup(await AppealEditorPage({ params: Promise.resolve({ id: "synthetic-appeal" }) }));
+
+it("keeps private request verification out of an appeal-only viewer's query and markup", async () => {
+  mocks.allowed.mockReturnValue(false);
+
+  const html = await render();
+  expect(mocks.appeal.mock.calls[0]?.[0].include.assistanceRequest).toBeFalsy();
+  expect(mocks.privateRequest).not.toHaveBeenCalled();
+  expect(mocks.allowed).toHaveBeenCalledWith(expect.anything(), "assistance.view");
+  expect(html).not.toContain("SYNTHETIC-REQUEST");
+  expect(html).not.toContain("Verification &amp; consent boundary");
+  expect(html).not.toContain("HIGHLY SENSITIVE");
+  expect(html).not.toContain("NOT ALLOWED");
+  expect(html).toContain("Synthetic public summary");
+  expect(html).toContain("Appeal details");
+  expect(html).not.toContain("Legacy standalone appeal");
+});
 
 it("reads only rendered update fields and the author's name", async () => {
   const html = await render();
@@ -36,7 +54,8 @@ it("reads only rendered update fields and the author's name", async () => {
 });
 it("limits linked private request data to the reference and displayed verification boundary", async () => {
   const html = await render();
-  expect(mocks.appeal.mock.calls[0]?.[0].include.assistanceRequest).toEqual({ select: {
+  expect(mocks.appeal.mock.calls[0]?.[0].include.assistanceRequest).toBeUndefined();
+  expect(mocks.privateRequest.mock.calls[0]?.[0]).toEqual({ where: { appealId: "synthetic-appeal" }, select: {
     referenceNumber: true, verification: { select: Object.fromEntries(Object.keys(verification).map(key => [key, true])) },
   } });
   expect(html).toContain("Created from SYNTHETIC-REQUEST");
@@ -55,13 +74,13 @@ it("keeps only audit display fields and actor name with unchanged scope and orde
   expect(html).toContain("synthetic reviewed");
 });
 it("preserves the standalone legacy appeal state", async () => {
-  mocks.appeal.mockResolvedValue({ ...record(), assistanceRequest: null });
+  mocks.privateRequest.mockResolvedValue(null);
   const html = await render();
   expect(html).toContain("Legacy standalone appeal");
   expect(html).not.toContain("Verification &amp; consent boundary");
 });
 it("keeps a linked reference visible when verification is absent", async () => {
-  mocks.appeal.mockResolvedValue({ ...record(), assistanceRequest: { referenceNumber: "SYNTHETIC-REQUEST", verification: null } });
+  mocks.privateRequest.mockResolvedValue({ referenceNumber: "SYNTHETIC-REQUEST", verification: null });
   const html = await render();
   expect(html).toContain("Created from SYNTHETIC-REQUEST");
   expect(html).not.toContain("Verification &amp; consent boundary");
@@ -71,4 +90,5 @@ it("makes no database reads when page access is denied", async () => {
   await expect(render()).rejects.toThrow("denied");
   expect(mocks.permission).toHaveBeenCalledWith("appeal.view");
   expect(mocks.appeal).not.toHaveBeenCalled(); expect(mocks.history).not.toHaveBeenCalled();
+  expect(mocks.privateRequest).not.toHaveBeenCalled();
 });
