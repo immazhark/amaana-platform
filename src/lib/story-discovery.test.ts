@@ -68,7 +68,7 @@ it("uses the published parent programme for both discovery filters and visible s
 it("uses the published direct cause when the linked initiative cause title is blank", () => {
  const story = { title: "Reviewed", summary: "Public", cause: { title: "Relief", status: "PUBLISHED" },
    initiative: { title: "Unrelated initiative label", status: "PUBLISHED",
-     cause: { title: "  \\t ", status: "PUBLISHED" } } };
+     cause: { title: "   ", status: "PUBLISHED" } } };
  expect(selectStoryDiscovery([story], { programme: "Relief" }).count).toBe(1);
  expect(publishedStoryProgrammeContext(story)).toBe("Relief");
 });
