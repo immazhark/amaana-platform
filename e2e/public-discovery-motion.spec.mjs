@@ -97,3 +97,30 @@ test('Donation detail hover and Back focus honor reduced motion', async ({ page 
     else await expect.poll(() => back.evaluate(element => getComputedStyle(element).transform)).not.toBe('none');
   }
 });
+
+
+test('Assistance follow-up and enabled carousel controls honor reduced motion', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  const css = stylesheet('src/app/assistance-wow.css') + stylesheet('src/components/scroll-carousel.module.css');
+  await page.setContent(`<style>:root{--af-color-focus:#466faa}${css}</style><div class="v2-assistance-after-flow"><div>Received</div></div><div class="controls"><button type="button">Next</button><button type="button" disabled>Previous</button></div>`);
+  const step = page.locator('.v2-assistance-after-flow>div');
+  const enabled = page.getByRole('button', { name: 'Next' });
+  const disabled = page.getByRole('button', { name: 'Previous' });
+  for (const reducedMotion of ['reduce', 'no-preference']) {
+    await page.emulateMedia({ reducedMotion });
+    for (const target of [step, enabled]) {
+      await target.hover();
+      if (reducedMotion === 'reduce') {
+        await expect(target).toHaveCSS('transform', 'none');
+        await expect(target).toHaveCSS('transition-property', 'none');
+      } else await expect.poll(() => target.evaluate(element => getComputedStyle(element).transform)).not.toBe('none');
+    }
+    await disabled.hover();
+    await expect(disabled).toBeDisabled();
+    await expect(disabled).toHaveCSS('transform', 'none');
+    await page.keyboard.press('Tab');
+    await enabled.focus();
+    await expect.poll(() => enabled.evaluate(element => element.matches(':focus-visible'))).toBe(true);
+    await expect(enabled).toHaveCSS('outline-style', 'solid');
+  }
+});
