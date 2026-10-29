@@ -23,3 +23,22 @@ test("rejects invalid image metadata and invalid limits", () => {
   assert.throws(() => evaluateImageWeights([{ path: "", bytes: 1 }]), /Invalid image inventory/);
   assert.throws(() => evaluateImageWeights([], 0), /Invalid image weight budget/);
 });
+
+test("rejects aggregate bytes outside the safe integer range", () => {
+  assert.throws(() => evaluateImageWeights([
+    { path: "public/hero/a.webp", bytes: Number.MAX_SAFE_INTEGER },
+    { path: "public/hero/b.webp", bytes: 1 },
+  ]), /Invalid aggregate image byte size/);
+  const atLimit = evaluateImageWeights([
+    { path: "public/hero/a.webp", bytes: Number.MAX_SAFE_INTEGER - 1 },
+    { path: "public/hero/b.webp", bytes: 1 },
+  ]);
+  assert.equal(atLimit.totalBytes, Number.MAX_SAFE_INTEGER);
+});
+
+test("rejects malformed paths and null entries before reporting artwork", () => {
+  for (const bad of [null, { path: 42, bytes: 100 }, { path: {}, bytes: 100 }, { path: "  ", bytes: 100 }]) {
+    assert.throws(() => evaluateImageWeights([bad]), /Invalid image inventory entry/);
+  }
+  assert.throws(() => evaluateImageWeights(null), /Invalid image inventory/);
+});
