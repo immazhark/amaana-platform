@@ -170,3 +170,27 @@ it("finds published initiative titles containing line breaks and excess spaces",
   expect(result.count).toBe(1);
   expect(result.results[0]?.initiatives[0]?.slug).toBe("winter");
 });
+
+describe("search-only initiative family deduplication", () => {
+  const published = [{ slug: "seasonal", initiatives: [
+    { slug: "winter", title: "Winter Relief", summary: "Public overview", year: null, startYear: 2024, endYear: 2026 },
+    { slug: "winter-2026", parentSlug: "winter", title: "Winter Relief 2026", summary: "Reviewed kits", year: 2026, startYear: null, endYear: null },
+  ] }];
+
+  it("shows only the matching annual edition when both family members match the text search", () => {
+    const result = filterWork(published, { q: "winter relief" });
+    expect(result.invalid).toBe(false);
+    expect(result.results.flatMap(p => p.initiatives.map(item => item.slug))).toEqual(["winter-2026"]);
+    expect(result.count).toBe(1);
+  });
+
+  it("preserves the umbrella when only it matches and keeps default and year selections", () => {
+    const slugs = (query: Record<string, string>) =>
+      filterWork(published, query).results.flatMap(p => p.initiatives.map(item => item.slug));
+    expect(slugs({ q: "public overview" })).toEqual(["winter"]);
+    expect(slugs({ q: "reviewed kits" })).toEqual(["winter-2026"]);
+    expect(slugs({})).toEqual(["winter"]);
+    expect(slugs({ q: "winter relief", year: "2026" })).toEqual(["winter-2026"]);
+    expect(slugs({ q: "missing" })).toEqual([]);
+  });
+});

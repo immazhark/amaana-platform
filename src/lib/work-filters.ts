@@ -33,7 +33,7 @@ export function filterWork<T extends Programme>(programmes: T[], search: WorkSea
         .filter(item => !query || `${item.title ?? ""} ${item.summary ?? ""}`.replace(/\s+/g, " ").toLocaleLowerCase("en").includes(query.toLocaleLowerCase("en")));
       // An annual edition replaces its umbrella only when that edition is
       // published and matches all active filters. Preserve standalone ranges.
-      const representedParents = new Set(year ? matching.map(item => item.parentSlug).filter(Boolean) : []);
+      const representedParents = new Set(matching.map(item => item.parentSlug).filter(Boolean));
       return { ...p, initiatives: matching.filter(item => !item.slug || !representedParents.has(item.slug)) } as T;
     })
     .filter(p => p.initiatives.length > 0);
