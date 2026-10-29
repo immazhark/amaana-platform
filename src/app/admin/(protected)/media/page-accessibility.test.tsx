@@ -66,3 +66,15 @@ it.each([
   expect(html).toContain(`Reviewed by Synthetic reviewer on ${date} (IST).`);
   expect(mocks.permission).toHaveBeenCalledWith("content.view");
 });
+
+
+it("announces each media asset tab without changing its URL", async () => {
+  mocks.assets.mockResolvedValue(assets.map(asset => ({ ...asset, publicUrl: `https://example.invalid/${asset.id}.webp` })));
+  const html = renderToStaticMarkup(await AdminMediaPage({ searchParams: Promise.resolve({}) }));
+  for (const asset of assets) {
+    const anchor = [...html.matchAll(/<a\b[^>]*>[\s\S]*?<\/a>/g)].map(match => match[0]).find(link => link.includes(`href="https://example.invalid/${asset.id}.webp"`));
+    expect(anchor).toContain('target="_blank"');
+    expect(anchor).toContain('rel="noreferrer"');
+    expect(anchor).toContain('Open public asset ↗<span class="sr-only"> (opens in a new tab)</span>');
+  }
+});

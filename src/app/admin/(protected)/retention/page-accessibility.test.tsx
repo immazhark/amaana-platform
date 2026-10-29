@@ -215,3 +215,14 @@ describe("retention operational dates", () => {
     expect(html).toContain("review after 29/10/2026");
   });
 });
+
+
+it("announces both private document tabs while preserving each record link", async () => {
+  const html = renderToStaticMarkup(await RetentionReviewPage({ searchParams: Promise.resolve({}) }));
+  for (const document of documentRows) {
+    const anchor = [...html.matchAll(/<a\b[^>]*>[\s\S]*?<\/a>/g)].map(match => match[0]).find(link => link.includes(`href="/admin/documents/${document.id}"`));
+    expect(anchor).toContain('target="_blank"');
+    expect(anchor).toContain('rel="noreferrer"');
+    expect(anchor).toContain('Open private document ↗<span class="sr-only"> (opens in a new tab)</span>');
+  }
+});

@@ -76,3 +76,14 @@ it("shows the audit event instant in IST across midnight", async () => {
   const html = await render();
   expect(html).toContain("Synthetic actor · 29/10/2026, 1:30:00 am");
 });
+
+
+it("announces the new tab for each private document without changing its destination", async () => {
+  const request = await mocks.request.getMockImplementation()!();
+  mocks.request.mockResolvedValue({ ...request, documents: [{ id: "synthetic-document", originalName: "Synthetic evidence.pdf", mimeType: "application/pdf", sizeBytes: 1000 }] });
+  const html = await render();
+  const anchor = html.match(/<a\b[^>]*href="\/admin\/documents\/synthetic-document"[^>]*>[\s\S]*?<\/a>/)?.[0];
+  expect(anchor).toContain('target="_blank"');
+  expect(anchor).toContain('rel="noreferrer"');
+  expect(anchor).toContain('Synthetic evidence.pdf<span class="sr-only"> (opens in a new tab)</span>');
+});
