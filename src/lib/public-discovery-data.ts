@@ -1,4 +1,4 @@
-import { publicFaithWhere } from "@/lib/faith-publication";
+import { isPublicFaithReviewComplete, publicFaithWhere } from "@/lib/faith-publication";
 import { prisma } from "@/lib/prisma";
 import { STORY_PAGE_SIZE } from "@/lib/story-discovery";
 
@@ -63,10 +63,12 @@ export async function getVisibleStoryCards(ids: readonly string[]) {
 }
 
 export async function getFaithDiscoveryData() {
-  return prisma.faithContent.findMany({
+  const records = await prisma.faithContent.findMany({
     where: publicFaithWhere,
     orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }],
     select: {
+      status: true,
+      religiousReviewStatus: true,
       id: true,
       slug: true,
       type: true,
@@ -82,6 +84,7 @@ export async function getFaithDiscoveryData() {
 
     },
   });
+  return records.filter(isPublicFaithReviewComplete);
 }
 
 /** Only the library hero and filtered lead render images. Recheck publication

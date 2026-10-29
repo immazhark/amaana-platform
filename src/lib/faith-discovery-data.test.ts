@@ -42,3 +42,10 @@ it("does not replace a withdrawn visible record with another library image", asy
   expect(await getVisibleFaithMedia(["withdrawn-hero", "lead"])).toEqual([{ id: "lead", mediaAssets: [] }]);
   expect(mocks.findMany.mock.calls[0]?.[0].where).toEqual({ ...publicFaithWhere, id: { in: ["withdrawn-hero", "lead"] } });
 });
+
+it("excludes incomplete religious review records before library counts and cards", async () => {
+ const reviewed = { id:"reviewed",status:"PUBLISHED",religiousReviewStatus:"VERIFIED",verifiedAt:new Date("2026-01-01"),sourceCitation:"Reviewed source" };
+ mocks.findMany.mockResolvedValue([reviewed,...["", "   ", null].map(sourceCitation=>({...reviewed,id:"incomplete",sourceCitation})),{...reviewed,id:"unverified",religiousReviewStatus:"PENDING"}]);
+ expect(await getFaithDiscoveryData()).toEqual([reviewed]);
+ expect(mocks.findMany.mock.calls[0]?.[0].select).toMatchObject({status:true,religiousReviewStatus:true});
+});

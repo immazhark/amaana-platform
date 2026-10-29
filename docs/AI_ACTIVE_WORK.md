@@ -1,3 +1,9 @@
+## 2026-10-30 IST — CODEX_ACTIVE — Faith discovery citation completeness
+
+Sole writer starts fix/faith-discovery-citation-gate-20261030 from #573 e7b99009937a1c80d4ffbbfa611c32cb1f08e6cb. Scope: reuse existing review-completeness helper after library query; select review status fields so invalid/blank citations cannot enter cards, topics or counts. No new religious criteria/text, provider/data mutation or media activation. Synthetic regression first; parallel review read-only. Preserve held release gates and Neon hold. Rollback isolated discovery/test changes;149 unchanged.
+
+Acceptance: regression RED1/5 before correction; GREEN5/5; full Vitest2677 PASS/24 opt-in isolated-PostgreSQL SKIP. Strict TypeScript, full zero-warning ESLint/governed Stylelint, optimized Next production build including pre/postbuild guards and diff hygiene PASS. Independent read-only review confirms filtering precedes all index-derived cards/counts/topics/media IDs. Browser/hosted exact-head/disposable-DB/separate-ready gates pending. No merge/deployment or live database use. Other public Faith paths are outside this index-specific scope.
+
 ## 2026-10-30 IST — CODEX_ACTIVE — Bounded Appeals discovery pagination
 
 Sole writer continues from #572 daa5b299 on feat/appeal-discovery-pagination-20261030. Source-confirmed gap: selector returns every eligible match and rejects page navigation. Acceptance: twelve cards per page, total match count, validated/clamped page, search-preserving accessible previous/next links; eligibility/publication/staging checks remain before selection. Synthetic tests first; no payment behavior, schema, data, media or provider change. Parallel reviewers read-only. Preserve Neon hold/draft release gates. Rollback isolated selector/page/tests; no canonical149 promotion.
