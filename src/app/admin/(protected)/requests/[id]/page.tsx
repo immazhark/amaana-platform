@@ -55,7 +55,7 @@ export default async function RequestDetailPage({ params }: Props) {
       <div>
         <p className="eyebrow">{request.referenceNumber}</p>
         <h1>{request.applicantName}</h1>
-        <p className="muted">{request.category.replaceAll("_", " ")} · {request.city} · received {request.createdAt.toLocaleDateString("en-IN", { dateStyle: "long" })}</p>
+        <p className="muted">{request.category.replaceAll("_", " ")} · {request.city} · received {request.createdAt.toLocaleDateString("en-IN", { dateStyle: "long", timeZone: "Asia/Kolkata" })}</p>
       </div>
       <span className="status-badge">{request.status.replaceAll("_", " ")}</span>
     </div>
@@ -135,7 +135,7 @@ export default async function RequestDetailPage({ params }: Props) {
 
             <label className="checkbox"><input type="checkbox" name="markComplete" defaultChecked={Boolean(verification?.completedAt)} disabled={verificationLocked || !canCompleteVerification}/><span><strong>Verification complete</strong><small>Completing verification records the approving reviewer and enables approved workflow transitions. Approval permission is required.</small></span></label>
             {!canCompleteVerification && !verificationLocked && <small className="muted">You may save verification work, but only an authorised approver can mark it complete.</small>}
-            {verification?.completedAt && <small className="muted">Completed {verification.completedAt.toLocaleString("en-IN")} by {verification.reviewedBy?.name ?? "authorised reviewer"}.</small>}
+            {verification?.completedAt && <small className="muted">Completed {verification.completedAt.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} by {verification.reviewedBy?.name ?? "authorised reviewer"}.</small>}
             {verificationLocked && <small className="muted">Verification is locked because this request has already been converted into a linked appeal.</small>}
             <button className="button" disabled={!hasPermission(user, "assistance.update") || verificationLocked}>Save verification</button>
           </form>
@@ -148,7 +148,7 @@ export default async function RequestDetailPage({ params }: Props) {
 
         <section className="card">
           <h2>Audit history</h2>
-          {history.length ? <ol className="history">{history.map(event => <li key={event.id}><strong>{event.action.replaceAll("_", " ")}</strong><span>{event.actor.name} · {event.createdAt.toLocaleString("en-IN")}</span></li>)}</ol> : <p className="muted">No changes recorded yet.</p>}
+          {history.length ? <ol className="history">{history.map(event => <li key={event.id}><strong>{event.action.replaceAll("_", " ")}</strong><span>{event.actor.name} · {event.createdAt.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</span></li>)}</ol> : <p className="muted">No changes recorded yet.</p>}
         </section>
       </div>
 
