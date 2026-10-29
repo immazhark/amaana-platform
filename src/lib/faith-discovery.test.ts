@@ -20,3 +20,9 @@ it("ignores bounded tracking and rejects repeated or oversized tracking", () => 
   expect(selectFaithDiscovery(records, { utm_source: ["one"] }).invalid).toBe(true);
   expect(selectFaithDiscovery(records, { utm_source: "x".repeat(257) }).invalid).toBe(true);
 });
+it("finds reviewed reflection text separated by irregular whitespace", () => {
+  const items = [{ title: "Synthetic\t service", excerpt: "Reviewed example", type: "ARTICLE" }];
+  const result = selectFaithDiscovery(items, { q: "synthetic service", format: "ARTICLE" });
+  expect(result).toMatchObject({ invalid: false, count: 1 });
+  expect(result.results).toEqual(items);
+});

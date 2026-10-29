@@ -17,3 +17,9 @@ it("filters initiative-linked stories through published parent programmes", () =
  expect(selectStoryDiscovery(records,{programme:"Education"}).count).toBe(1);
  expect(selectStoryDiscovery(records,{}).programmes).toEqual(["Education"]);
 });
+it("finds reviewed titles with irregular internal whitespace", () => {
+  const records = [{ title: "Winter\n  Kits", summary: "Verified public support", cause: { title: "Relief", status: "PUBLISHED" } }];
+  const result = selectStoryDiscovery(records, { q: "WINTER KITS" });
+  expect(result).toMatchObject({ invalid: false, count: 1 });
+  expect(result.results).toEqual(records);
+});

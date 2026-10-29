@@ -8,6 +8,6 @@ export function selectAppealDiscovery<T extends { title: string; summary: string
   const invalid = hasUnsupportedPublicQueryFields(search, ["q"])
     || Array.isArray(search.q) || q.length > 80 || /[\u0000-\u001f\u007f]/.test(raw);
   const results = invalid ? [] : records.filter(record => !q
-    || `${record.title} ${record.summary}`.toLocaleLowerCase("en").includes(q.toLocaleLowerCase("en")));
+    || `${record.title} ${record.summary}`.replace(/\s+/g, " ").toLocaleLowerCase("en").includes(q.toLocaleLowerCase("en")));
   return { q: invalid ? "" : q, invalid, active: Boolean(q || invalid), results, count: results.length };
 }
