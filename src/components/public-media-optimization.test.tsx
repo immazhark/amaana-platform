@@ -36,4 +36,26 @@ describe("public media image optimization", () => {
     expect(html).toContain('loading="lazy"');
     expect(html).not.toContain("/_next/image?");
   });
+  it("uses a readable fallback when public document title and caption are blank", () => {
+    const html = renderToStaticMarkup(PublicMedia({
+      asset: {
+        ...asset, kind: "DOCUMENT", publicUrl: "/media/reviewed-document.pdf",
+        title: "   ", caption: "\t  ", altText: null,
+      },
+    }));
+    expect(html).toContain("<h3>View approved source</h3>");
+    expect(html).toContain('aria-label="Open approved source: approved source (new tab)"');
+    expect(html).not.toContain("<h3>   </h3>");
+  });
+
+  it("uses the trimmed caption when the reviewed document title is blank", () => {
+    const html = renderToStaticMarkup(PublicMedia({
+      asset: {
+        ...asset, kind: "DOCUMENT", publicUrl: "/media/reviewed-document.pdf",
+        title: "  ", caption: " Reviewed document summary ", altText: null,
+      },
+    }));
+    expect(html).toContain("<h3>Reviewed document summary</h3>");
+    expect(html).toContain('aria-label="Open approved source: Reviewed document summary (new tab)"');
+  });
 });
