@@ -49,7 +49,7 @@ function normalizeBlocks(blocks: ArticleBlock[]) {
 }
 
 function isSafeInternalPathwayHref(href: string) {
-  return href.startsWith("/") && !href.startsWith("//") && !/\s/.test(href);
+  return href.startsWith("/") && !href.startsWith("//") && !/[\\\s\u0000-\u001F\u007F]/.test(href);
 }
 
 function normalizePathways(pathways?: ArticlePathway[]) {
