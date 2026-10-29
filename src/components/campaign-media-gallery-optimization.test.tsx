@@ -37,6 +37,26 @@ describe("campaign gallery managed image optimization", () => {
     expect(html).not.toContain(">Privacy protected</span>");
   });
 
+  it("suppresses blank gallery captions instead of rendering empty descriptions", () => {
+    const html = renderToStaticMarkup(<CampaignMediaGallery items={[{
+      id: "blank-caption", url: "/media/reviewed.webp",
+      alt: "Approved photo", caption: "  \t  ",
+    }]} />);
+    expect(html).toContain("Enlarge image 1 of 1");
+    expect(html).not.toContain("<figcaption>");
+    expect(html).not.toContain("  \t  ");
+  });
+
+  it("trims reviewed gallery caption text without changing the approved image", () => {
+    const html = renderToStaticMarkup(<CampaignMediaGallery items={[{
+      id: "captioned", url: "/media/reviewed.webp",
+      alt: "Approved photo", caption: "  Reviewed documentation  ",
+    }]} />);
+    expect(html).toContain("<figcaption>Reviewed documentation</figcaption>");
+    expect(html).not.toContain("<figcaption>  Reviewed documentation  </figcaption>");
+    expect(html).toContain("Enlarge image 1 of 1");
+  });
+
   it("keeps media selection stable when malformed input repeats an asset ID", () => {
     const html = renderToStaticMarkup(<CampaignMediaGallery items={[
       { id: "same-id", url: "/media/first.webp", alt: "First reviewed image" },
