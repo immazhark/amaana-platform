@@ -32,3 +32,6 @@
     transition:none;
   }
 }
+.v2-faith-library-item{color:inherit;text-decoration:none}
+.v2-faith-library-action{display:block;margin-top:auto;padding-top:1.5rem;color:var(--v2-gold);font-size:.76rem;letter-spacing:.03em}
+.v2-faith-library-item:focus-visible{outline:3px solid var(--v2-gold);outline-offset:4px}
