@@ -136,3 +136,35 @@ test("pathless route groups cannot conceal colliding public admin URLs", () => {
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("parallel slot segments cannot hide administrative routes from a protected-path proposal", () => {
+  const root = mkdtempSync(join(tmpdir(), "amaana-slot-admin-"));
+  try {
+    for (const file of [
+      "admin/page.tsx", "admin/login/page.tsx", "admin/forbidden/page.tsx",
+      "(internal)/@review/admin/reports/page.tsx",
+      "api/(private)/@policy/admin/status/route.ts",
+      "@review/stories/page.tsx",
+    ]) {
+      const fullPath = join(root, file);
+      mkdirSync(fullPath.slice(0, fullPath.lastIndexOf("/")), { recursive: true });
+      writeFileSync(fullPath, "export default function SyntheticRoute() { return null; }\n");
+    }
+    const discovered = discoverAdminRoutes(root);
+    assert.deepEqual(discovered, [
+      "/admin", "/admin/forbidden", "/admin/login", "/admin/reports", "/api/admin/status",
+    ]);
+    assert.throws(() => auditAdminEdgeCoverage({
+      discovered,
+      proposed: ["/admin"],
+    }), /Uncovered admin routes.*reports.*status/);
+    const report = auditAdminEdgeCoverage({
+      discovered,
+      proposed: ["/admin", "/admin/reports", "/api/admin/status"],
+    });
+    assert.equal(report.status, "PLAN_ONLY_UNVERIFIED");
+    assert.equal(report.proposedProtectedRouteCount, 3);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});

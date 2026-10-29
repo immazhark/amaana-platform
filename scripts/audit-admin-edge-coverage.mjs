@@ -100,7 +100,7 @@ function routePathsUnder(directory, relativeSegments) {
     if (entry.isDirectory()) {
       paths.push(...routePathsUnder(join(directory, entry.name), [...relativeSegments, entry.name]));
     } else if (entry.isFile() && /^(page\.(tsx|ts|jsx|js)|route\.(tsx|ts|jsx|js))$/.test(entry.name)) {
-      const segments = relativeSegments.filter(segment => !/^\(.*\)$/.test(segment));
+      const segments = relativeSegments.filter(segment => !/^\(.*\)$/.test(segment) && !/^@[^/]+$/.test(segment));
       paths.push("/" + segments.join("/"));
     }
   }
