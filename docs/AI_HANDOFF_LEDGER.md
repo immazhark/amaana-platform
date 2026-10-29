@@ -2387,3 +2387,14 @@ CHATGPT_ACTIVE sole writer on `fix/admin-preview-tab-and-a11y-lint-20261029` fro
 ## 2026-10-29 IST — AF-R068 Faith route CSS attribution correction
 
 CHATGPT_ACTIVE sole writer on `perf/faith-detail-route-css-20261029` from held #544 head `399bdf51d84e9ac0b9d4e034e977f892c06af759`. Moved three unchanged shared Faith library-card/action/focus rules into `faith-wow.css`, moved article-only `faith-detail.css` import from shared layout to `[slug]` page. Two scope regressions failed before change and passed after; existing motion case 3/3 focused PASS. Fresh optimized build reduced `/faith-and-reflections` assigned CSS by 1,748 uncompressed bytes (176,821 → 175,073), article assignment unchanged; no aggregate or JS reduction, network-transfer or measured Web Vitals claim. Full Vitest 2,562 PASS/24 opt-in DB SKIP, strict TS/full lint, optimized Next build/postbuild gates, reviewer and diff checks PASS. No local browser run. Hold child behind #544 through #528 and Neon release-budget boundary; exact-head hosted checks and separate ready-state/guarded merge remain required. No schema, auth, payments, providers, media, secrets, external infrastructure or production action. Canonical 149 unchanged. Rollback isolated CSS/import/tests.
+
+
+## 2026-10-29 IST — Restored native validation through held PR #557
+
+- Owner: CHATGPT_ACTIVE, sole repository writer under explicit takeover; read-only parallel review only.
+- Source candidate: #557 `bbdfa6754a086bcda9f08c1496700ca387d52015`, existing branch `fix/gallery-blank-caption-semantics-20261029`; main independently observed `31c011c3c9f0a9c0e257fe84e095ed759a4f2bae`.
+- Full checkout validation supersedes connector-only limitations for this exact source: Vitest2,587 PASS/24 opt-in DB SKIP; TypeScript, full ESLint/Stylelint, optimized Next build and pre/postbuild controls PASS; native route/artwork25/25 PASS. No skipped DB test represented as passed.
+- Aggregate uncompressed build JS808,283 and CSS322,890 bytes, both existing caps satisfied. No transfer/CWV claim.
+- Independent read-only bounded review found no confirmed reachable source blocker. VIDEO-label finding withdrawn because canRenderPublicMedia denies VIDEO pending synchronized caption tracks; proposed implementation and tests fully discarded.
+- Evidence-only continuation; no new runtime source, production data, financial/provider/infrastructure action, release or canonical149 promotion. Public /api/version403; Railway production has no pending changes and preview offline.
+- Keep #557 draft behind its preserved stack and Neon hold. Browser and new exact-head hosted/ready-state/review/SHA-guarded acceptance still required before merge. Next executable acceptance: combined synthetic browser suite in Chromium-capable environment.
