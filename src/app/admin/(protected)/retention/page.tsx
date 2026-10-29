@@ -57,6 +57,7 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
           "assistance.document_legal_hold_placed",
           "assistance.document_legal_hold_released",
           "assistance.document_deleted",
+          "assistance.document_deletion_started",
         ] },
       },
       include: { actor: { select: { name: true } } },
@@ -100,6 +101,7 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
       </div>
       {documents.length === 0 ? <p className="empty-state">{selectedState ? <>No private assistance documents match this workflow state. <Link href="/admin/retention">View all documents</Link></> : "No private assistance documents are currently stored."}</p> : <div className="admin-media-list">{documents.map(document => {
         const history = documentEvents.get(document.id) ?? [];
+        const deletionClaimed = history.some(event => event.action === "assistance.document_deletion_started");
         const latestHoldEvent = history.find(event => ["assistance.document_legal_hold_placed", "assistance.document_legal_hold_released"].includes(event.action));
         const conflictingHoldHistory = Boolean(latestHoldEvent && history.some(event =>
           ["assistance.document_legal_hold_placed", "assistance.document_legal_hold_released"].includes(event.action) &&
@@ -114,7 +116,7 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
 
         return <article className="admin-media-item" key={document.id}>
           <div className="admin-media-summary">
-            <div><span className="status-badge">{conflictingHoldHistory ? "HOLD REVIEW REQUIRED" : held ? "HOLD" : terminal ? "REVIEW ELIGIBLE" : "ACTIVE CASE"}</span><small>{document.mimeType} · {(document.sizeBytes / 1048576).toFixed(2)} MB</small></div>
+            <div><span className="status-badge">{deletionClaimed ? "DELETION RECONCILIATION REQUIRED" : conflictingHoldHistory ? "HOLD REVIEW REQUIRED" : held ? "HOLD" : terminal ? "REVIEW ELIGIBLE" : "ACTIVE CASE"}</span><small>{document.mimeType} · {(document.sizeBytes / 1048576).toFixed(2)} MB</small></div>
             <h3>{document.originalName}</h3>
             <p><Link href={`/admin/requests/${document.assistanceRequestId}`}>{document.assistanceRequest.referenceNumber} · {document.assistanceRequest.applicantName}</Link></p>
             <small>Request status: {document.assistanceRequest.status.replaceAll("_", " ")}{document.assistanceRequest.appeal ? ` · linked appeal ${document.assistanceRequest.appeal.status}` : ""}</small>
@@ -123,7 +125,7 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
             {conflictingHoldHistory ? <div className="admin-media-review-summary"><strong>Hold history requires reconciliation</strong><small>Placement and release share a timestamp. Retention decisions are blocked until this evidence record is reviewed.</small></div> : held && latestHoldEvent && <div className="admin-media-review-summary"><strong>Deletion suspended by hold</strong><small>Placed by {latestHoldEvent.actor.name} on {latestHoldEvent.createdAt.toLocaleString("en-IN")}.</small></div>}
           </div>
 
-          <form action={reviewDocumentRetention} className="form-grid admin-media-edit">
+          {deletionClaimed ? <div className="admin-media-review-summary"><strong>Deletion outcome requires reconciliation</strong><p>A deletion claim is recorded for this file. Confirm the storage deletion outcome before any further retention decision.</p></div> : <form action={reviewDocumentRetention} className="form-grid admin-media-edit">
             <input type="hidden" name="documentId" value={document.id}/>
             <input type="hidden" name="expectedHoldAction" value={latestHoldEvent?.action ?? ""}/>
             <input type="hidden" name="expectedHoldCreatedAt" value={latestHoldEvent?.createdAt.toISOString() ?? ""}/>
@@ -132,7 +134,7 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
             <div className="field full"><label htmlFor={`${fieldPrefix}-deleteConfirmation`}>Permanent deletion confirmation <span className="muted">only when deleting</span></label><input id={`${fieldPrefix}-deleteConfirmation`} name="deleteConfirmation" autoComplete="off" placeholder="Type DELETE to confirm permanent deletion"/><small>For RETAIN or hold decisions, leave this blank. Permanent deletion fails closed unless the exact word DELETE is entered.</small></div>
             <div className="field full"><label htmlFor={`${fieldPrefix}-reason`}>Reason</label><textarea id={`${fieldPrefix}-reason`} name="reason" required maxLength={2000} placeholder="Why the file is still needed, why a hold applies, why a hold can be released, or why deletion is now appropriate."/></div>
             <div className="field full"><button className="button secondary" type="submit" disabled={conflictingHoldHistory}>Record retention decision</button><small>{conflictingHoldHistory ? "Conflicting hold events require administrator reconciliation before any decision." : terminal ? "Deletion is technically eligible if no hold applies, but the reviewer remains responsible for confirming audit/accounting/safeguarding needs first." : "Deletion is blocked while the case/linked appeal is still active; retain or place a hold instead."}</small></div>
-          </form>
+          </form>}
         </article>;
       })}</div>}
       <nav className="filter-row" aria-label="Retention pagination">
