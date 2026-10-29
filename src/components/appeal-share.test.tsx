@@ -98,5 +98,8 @@ describe("appeal sharing recovery", () => {
     expect(html).toContain('rel="noopener noreferrer"');
     expect(html).toContain('role="status"');
     expect(html).not.toContain("Could not copy");
+    const whatsapp = html.match(/<a[^>]*href="https:\/\/wa\.me\/\?text=[^"]+"[^>]*>[\s\S]*?<\/a>/)?.[0];
+    expect(whatsapp).toBeTruthy();
+    expect(whatsapp).toContain('<span class="sr-only">(opens in a new tab)</span>');
   });
 });

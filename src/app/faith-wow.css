@@ -26,3 +26,9 @@
 @keyframes v2-faith-breathe{from{transform:translateY(0) scale(1)}to{transform:translateY(-.55rem) scale(1.012)}}
 @media(max-width:900px){.v2-faith-library-grid .v2-faith-library-item:nth-child(even){transform:none}.v2-faith-feature-media{box-shadow:0 24px 58px rgb(2 12 26 / 22%)}}
 @media(prefers-reduced-motion:reduce){.v2-faith-library-item,.v2-faith-library-grid .v2-faith-library-item:nth-child(even){animation:none;transform:none;transition:none}.v2-faith-format-grid article::after,.v2-faith-library-item::after{transition:none}}
+@media(prefers-reduced-motion:reduce){
+  .v2-faith-page .v2-faith-library-item:is(:hover,:focus-visible){
+    transform:none;
+    transition:none;
+  }
+}
