@@ -64,6 +64,7 @@ export function IslamicCompanionPanel({
   const [loading, setLoading] = useState(false);
   const [copyMessage, setCopyMessage] = useState("");
   const panelRef = useRef<HTMLDivElement>(null);
+  const copyActionRef = useRef(0);
 
   useEffect(() => {
     panelRef.current?.focus({ preventScroll: true });
@@ -126,13 +127,15 @@ export function IslamicCompanionPanel({
 
   async function copyReading() {
     if (!reading) return;
+    const action = ++copyActionRef.current;
+    setCopyMessage("");
     const { ayah, hadith } = reading;
     const text = `Amaana Foundation · ${reading.date}\nQur’an ${ayah.key}${ayah.excerpt ? " (excerpt)" : ""}\n${ayah.arabic}\n${ayah.meaning}\nThe Clear Quran · Dr. Mustafa Khattab\nhttps://quran.com/${ayah.key.replace(":", "/")}\n\nHadith meaning summary: ${hadith.summary}\n${hadith.reference}\n${hadith.url}`;
     try {
       await navigator.clipboard.writeText(text);
-      setCopyMessage("Reading and references copied.");
+      if (action === copyActionRef.current) setCopyMessage("Reading and references copied.");
     } catch {
-      setCopyMessage("Copy is unavailable. You can select the text or open its source link.");
+      if (action === copyActionRef.current) setCopyMessage("Copy is unavailable. You can select the text or open its source link.");
     }
   }
 
