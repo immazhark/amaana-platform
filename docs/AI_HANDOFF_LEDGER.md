@@ -1,3 +1,9 @@
+## 2026-10-30 IST — CODEX_ACTIVE — Deterministic discovery page ordering
+
+Sole writer from #578a52483d. Faith and Appeals paginated indexes lack unique final ordering while Stories already uses id asc. Preserve editorial/date keys and append id asc to these two SQL queries; source-backed pagination consistency fix, not observed live duplicates. Query regressions first; no eligibility/media/payment/data/provider changes. Parallel read-only review; preserve held release/Neon gates and149 totals. Rollback isolated ordering/tests.
+
+Acceptance: RED2 query-order regressions, GREEN19 focused; full2688 PASS/24 opt-in isolated-DB SKIP. Strict TypeScript, full lint/Stylelint, clean optimized Next build with pre/postbuild controls/diff hygiene PASS. Read-only review confirmed unique schema IDs support non-selected SQL ordering; no editorial priority/projection change. Deterministic only for unchanged result sets; no live duplicate-page observation claimed. Next confirmed investigation: archive SQL count accepts whitespace-only alt/URL records that PublicMedia rejects, potentially empty pages/phantom next; requires bounded pagination design, not blanket filter after slicing. Preserve Neon/browser/hosted/disposable-DB/separate-ready gates. No production data/provider/schema/payment/eligibility/media mutation, merge/deploy or149 promotion.
+
 ## 2026-10-30 IST — CODEX_ACTIVE — Faith sitemap completeness
 
 Sole writer from #57752d478c; remaining sitemap query accepts blank non-null citations. Select required review metadata and filter unchanged completeness predicate before emitting Faith URLs. Tests must preserve disabled-indexing no-query behavior and original sitemap projection. No text/review criteria or provider/data mutation. Parallel read-only review; preserve Neon/draft gates and149 totals. Rollback isolated sitemap/test changes.

@@ -14,7 +14,7 @@ it("loads reviewed library metadata without media relations for the entire archi
   await getFaithDiscoveryData();
   const query = mocks.findMany.mock.calls[0]?.[0];
   expect(query.where).toEqual(publicFaithWhere);
-  expect(query.orderBy).toEqual([{ isFeatured: "desc" }, { publishedAt: "desc" }]);
+  expect(query.orderBy).toEqual([{ isFeatured: "desc" }, { publishedAt: "desc" }, { id: "asc" }]);
   expect(query.select).toMatchObject({ id: true, title: true, excerpt: true, topics: { select: { topic: { select: { slug: true, name: true } } } } });
   expect(query.select).not.toHaveProperty("mediaAssets");
 });

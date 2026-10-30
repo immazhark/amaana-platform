@@ -138,7 +138,7 @@ describe("public page gallery media query contracts", () => {
     expect(cutoff.getTime()).toBeGreaterThanOrEqual(before.getTime());
     expect(cutoff.getTime()).toBeLessThanOrEqual(after.getTime());
     expect(query).toMatchObject({
-      orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
+      orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }, { id: "asc" }],
       select: {
         slug: true,
         title: true,

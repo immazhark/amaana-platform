@@ -366,7 +366,7 @@ export const getAppealsIndexData = cache(async () => {
     // before retrieving card records. The page still applies the full balance,
     // staging and time checks as the final public presentation guard.
     where,
-    orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
+    orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }, { id: "asc" }],
     select: {
       slug: true,
       title: true,
