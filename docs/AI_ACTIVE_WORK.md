@@ -1,3 +1,9 @@
+## 2026-10-30 IST — CODEX_ACTIVE — AF-R007 public asset scan boundary
+
+Sole writer from #5817964bc8. Scanner covers .next/static but misses directly served public text assets. Extend unchanged marker/value/redaction/extension rules and symlink rejection to optional public root; .next/static remains required. Missing optional root allowed, other errors fail closed. Synthetic canary regressions first. No actual secrets read/logged beyond existing scanner behavior or production secret/provider change. Parallel read-only review; preserve Neon/draft gates and149 totals. Rollback isolated scanner/tests.
+
+Acceptance: RED2 new public-asset/symlink regressions before correction; final native9/9 PASS including mandatory-build rejection. Existing-build scanner PASS across110 inventoried build/public files (supported text extensions inspected; not arbitrary binary scanning). Full Vitest2694 PASS/24 isolated-DB SKIP, strict TypeScript/full lint/Stylelint/node syntax/diff checks PASS. Two read-only reviews found no introduced bypass/value logging. No new optimized app build: runtime source unchanged from verified parent; script tested on existing parent build artifacts. Hosted exact-head/build/browser/disposable-DB/separate-ready gates and Neon hold remain. No actual exposure observed, production secret/provider/data/media mutation, merge/deploy or149 promotion.
+
 ## 2026-10-30 IST — CODEX_ACTIVE — Explicit unavailable archive pages
 
 Sole writer from #580a3b0fe7. Reviewed bounded design: existing24+1 candidate query/count stays; filter current24 candidates through shared renderer predicate, retain candidate-based hasNext and nonnull empty pages; explicit accessible message and navigation preserve later valid items. No24-visible-item promise, schema/backfill/scans/relaxed privacy/media mutation. Synthetic regressions first; parallel reviewers read-only. Preserve Neon/draft gates and149 totals; rollback loader/page/tests.

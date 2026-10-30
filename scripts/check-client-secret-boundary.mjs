@@ -35,8 +35,18 @@ async function filesUnder(directory) {
 let files;
 try {
   files = await filesUnder(root);
+  // Next serves public/ directly; these files never enter .next/static.
+  const publicRoot = path.resolve("public");
+  let hasPublicRoot = true;
+  try {
+    await lstat(publicRoot);
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+    hasPublicRoot = false;
+  }
+  if (hasPublicRoot) files.push(...await filesUnder(publicRoot));
 } catch (error) {
-  console.error("Client bundle security check requires a completed Next.js build.", error);
+  console.error("Client bundle security check requires a completed Next.js build and readable public assets.", error);
   process.exit(1);
 }
 
@@ -67,4 +77,4 @@ if (offenders.length) {
   process.exit(1);
 }
 
-console.log(`Client bundle secret-boundary check passed across ${files.length} static build files.`);
+console.log(`Client bundle secret-boundary check passed across ${files.length} build/public files.`);
