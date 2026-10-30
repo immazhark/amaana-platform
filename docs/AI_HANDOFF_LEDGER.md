@@ -2045,3 +2045,41 @@ CHATGPT_ACTIVE sole writer. Current protected main `612feaecf11f550d1cebd7347e17
 
 ## 2026-10-30 IST — #589 reconciled after #588 protected merge
 
+## 2026-10-30 IST — five-candidate public-accessibility release consolidation
+
+CHATGPT_ACTIVE single writer; source main `faf51683ca6f1177d92a2e20185575391d427097` contains guarded #588/#589 merges; earlier production status separately observed. Original candidate heads #590 `1c3e4de4d80baf85b5f99e282cf11b12d87f8007`, #591 `a75b25010119a2d06b2c99a75a8f6bf7ec456592`, #592 `8f617a93e085acf655a5ad55aacc572d50ff43e4`, #593 `5e3c78dd9df1320ed5b81610248ba1e4913255c8`, #594 `869e3230e43d0533701c2eca3cf35a4b70f66b08` each independently source reviewed, with exact 38 disjoint source/test Git blob entries (23 tests, 15 source) and no overlapping paths. Five original PRs include historical red/green, prior full seven-job exact-head SUCCESS for #590/#591/#592/#594, and #593 browser was still in progress when consolidated; old checks do NOT certify combined tree. Test-first commit `b444ba23d3f5d3755c6f36c40b4dabe780b92aa8` holds the 23 exact test blobs before source integration. Restore reviewed source unchanged; combine #590 and #594 additive `.github/workflows/ci.yml` checks without replacing existing gates; preserve prior coordination note subjects and historical PRs until accepted direct-main replacement. Scope public contrast, IST display-only dates, mobile/menu/gallery keyboard focus, no-JS navigation, Impact wrapped metric leading, source CSS minimum-font floor. No factual claim, religious approval, payment, secret, auth, publication/privacy gate, schema, provider, notification or infrastructure mutation. Require full new exact-head seven-job CI, independent review, separate ready-state and guarded merge, then Railway/public identity. Canonical 149 totals unchanged. Rollback only this bounded release train; branches preserved.
+
+### Original PR #590 coordination note
+
+## 2026-10-30 IST — #590 browser-fixture race resolved after #588 source merge
+
+CHATGPT_ACTIVE sole writer. Browser run `41023355840`, job `123956051552`, proved a real RED failure: `e2e/appeal-update-contrast.spec.mjs:46` timed out twice waiting for `#synthetic-appeal-update-contrast` after the test inserted it in `<main>` before async hydration. This does NOT prove public contrast fails; fixture was removed by hydration. Preserve the original contrast assertions, source CSS, all other eleven restored source/test files. Move only the synthetic section mount to `document.body`, outside React-managed main, consistent with existing passing Media contrast test. Reconcile with protected main after #588 merge `264099b3b7c1db43218634628400225ebb85b2c9` via two-parent non-force commit, retaining prior #590 head `1adf3d91905b03c42c784a4ab1aacbfd01a19eb9` and its complete history plus #588 integration. Require fresh seven-job exact-head hosted green (including browser) and distinct ready-state before SHA-guarded merge. No checkout/payment/auth, public copy, impact, media assets, schema/DB or production config changed; no 149 class promotion. Rollback the single fixture mount change, keep old branches.
+
+
+### Original PR #591 coordination note
+
+## 2026-10-30 IST — #591 reconciled after #588 production acceptance
+
+CHATGPT_ACTIVE sole writer. Full seven-job CI for old #591 head `2ed9106086b10fa8fcddf4ed6c89858ba20e273a` passed (run `41024266312`), including responsive/browser and isolated database. Since #588 merged to protected main `264099b3b7c1db43218634628400225ebb85b2c9`, old #591 was no longer mergeable due shared coordination records, not the disjoint IST detail page code. Two-parent non-force branch reconciliation retains original test-first/production source Git blobs for Stories/Faith/Appeals, both complete histories and newly merged #588 source. New exact-head full and separate ready-state gates required on reconciled candidate. No timestamps stored, religious approval/wording, financial claims/payment, schema, sensitive records, or 149 totals modified. Rollback three display formatters and synthetic tests.
+
+
+### Original PR #592 coordination note
+
+## 2026-10-30 IST — #592 reconciled with protected #588 main
+
+CHATGPT_ACTIVE sole writer. Old tested-before-source candidate #592 head `78db491ba3c32ab2a624e8a63d233e5eaa78993b` contains byte-identical nine original source/test Git blobs from historical accepted PRs #479/#483/#486 (mobile menu wheel, campaign gallery opener focus, Companion Escape layer priority). Protected main moved to `264099b3b7c1db43218634628400225ebb85b2c9` after fully accepted live #588 release. Non-force two-parent branch reconciliation retains both original candidate and merged main history, merges coordination notes without dropping prior records, preserves exactly three source + six test blobs, and triggers FRESH exact-head full and separate ready-state verification. Old pending browser checks do not certify this new integration. No payment, religion, media content, data/schema, notification, infrastructure or 149 totals change. Rollback three source and six regression files.
+
+
+### Original PR #593 coordination note
+
+## 2026-10-30 IST — standalone no-JavaScript mobile navigation recovery (#516/#517)
+
+CHATGPT_ACTIVE sole writer; source base protected main `264099b3b7c1db43218634628400225ebb85b2c9`. Historical combined draft #516 includes the original #517 header and footer accessible no-script fallbacks. Its five existing changed source/test Git blobs were independently verified byte-identical at historical old base `83044f775166be0a3533d807a7ec3e268795530f` and current protected main; the new e2e file did not exist on main. Recover exact six tested/independently reviewed Git blobs onto bounded `fix/standalone-mobile-nojs-navigation-20261030`, test-only commit `9061ed5213c33df1706ced8cd7456eb229bf2449` before source. Preserve CSS responsive boundaries and existing primary/secondary navigation, semantics and normal JavaScript menu. Acceptance: #516's historical local Vitest, strict TypeScript/production build/isolated 2-of-2 Chromium no-JS browser evidence is provenance only; require fresh exact-head seven-job hosted CI and independent review, separate ready-state promotion/verify, SHA-guarded protected merge and Railway/runtime verification. No auth/payment/privacy/media publication/religious content/data/notifications/infra config or 149 totals changed. Keep #516 and explicit superseded #517 history until replacement accepted. Rollback three source files and three regressions.
+
+
+### Original PR #594 coordination note
+
+## 2026-10-30 IST — AF-R024/AF-R025 direct-main text-legibility cluster
+
+CHATGPT_ACTIVE sole writer. On protected main `264099b3b7c1db43218634628400225ebb85b2c9`, exact original baseline blobs for Impact CSS and the current CI workflow matched historical #531/#532 pre-change `83044f775166be0a3533d807a7ec3e268795530f`. Recover exact tested three new synthetic/unit/browser regression blobs in test-first commit `582419f38f672965d7dea9a748284dbb0fd33ae7`, then one-value Impact metric line-height .88 to 1.08 and public CSS font-size literal floor scanner source. CI retains all existing gates; exactly additive two Node checks. No impact values/cases, content, media, religious copy, auth/RBAC, payment, database, schema, delivery or infrastructure changed. Prior red/green and local 2,282 Vitest pass/20 isolated DB skips is historical provenance, not current acceptance. Require fresh seven-job exact-head CI, separate ready-state and guarded merge. Keep original #531/#532 PRs until source accepted/merged. Avoid claims this CSS declaration scan measures computed browser text/zoom/field accessibility. Canonical 149 historical classes unchanged. Rollback isolated CSS/scanner/tests and two CI additions.
+

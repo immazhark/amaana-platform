@@ -41,6 +41,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
   const dialogTitleId = `gallery-dialog-${useId().replaceAll(":", "")}`;
   const dialogCaptionId = `${dialogTitleId}-caption`;
   const triggerRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const openerRef = useRef<HTMLButtonElement | null>(null);
 
   const activeIndex = safeItems.findIndex(item => item.id === activeId);
   const active = activeIndex < 0 ? null : safeItems[activeIndex] ?? null;
@@ -65,7 +66,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
     // Read the live ref when deferred focus runs, after a possible reopen.
     const hasOpenDialog = () => dialogRef.current?.isConnected;
     const triggers = triggerRefs.current;
-    const trigger = triggers[activeIndex];
+    const trigger = openerRef.current;
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     if (!dialog?.contains(document.activeElement)) closeRef.current?.focus();
@@ -134,7 +135,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
               ref={node => { triggerRefs.current[index] = node; }}
               type="button"
               className={styles.trigger}
-              onClick={() => setActiveId(item.id)}
+              onClick={event => { openerRef.current = event.currentTarget; setActiveId(item.id); }}
               aria-label={`Enlarge image ${index + 1} of ${safeItems.length}: ${item.alt ?? "programme photograph"}`}
             >
               {canOptimizeLocally(item.url) ? <Image src={item.url} alt={item.alt ?? ""} width={width} height={height} sizes="(max-width: 900px) 50vw, 33vw" loading="lazy" /> : <img src={item.url} alt={item.alt ?? ""} width={width} height={height} loading="lazy" decoding="async" />}
