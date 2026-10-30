@@ -99,3 +99,16 @@ describe("private donation detail India-local timestamps", () => {
     expect(mocks.evidence).not.toHaveBeenCalled();
   });
 });
+
+
+it("announces the evidence tab while preserving the generated private URL", async () => {
+  mocks.findDonation.mockResolvedValue(donation({ transferEvidenceKey: "synthetic-evidence-key" }));
+  mocks.evidence.mockResolvedValue("https://example.invalid/synthetic-evidence");
+  const html = await renderDonation();
+  const anchor = html.match(/<a\b[^>]*href="https:\/\/example\.invalid\/synthetic-evidence"[^>]*>[\s\S]*?<\/a>/)?.[0];
+  expect(anchor).toContain('target="_blank"');
+  expect(anchor).toContain('rel="noreferrer"');
+  expect(anchor).toContain('Open private evidence<span class="sr-only"> (opens in a new tab)</span>');
+  expect(mocks.evidence).toHaveBeenCalledWith("synthetic-evidence-key", "synthetic-donation");
+  expect(mocks.permission).toHaveBeenCalledWith("donation.view");
+});
