@@ -1,3 +1,7 @@
+## 2026-10-31 IST — #578 current-main Faith sitemap citation recovery
+
+CHATGPT_ACTIVE sole writer on `fix/reconcile-faith-sitemap-citation-20261031` from protected main `4a8b15adaed33033077f4e44a2279a0dbd7e21a3`. Original PR #578 sitemap source Git blob and current main pre-fix blob match exactly. Reuse reviewed fixed source and deterministic synthetic regression as exact tested blobs without importing parent #577 or its dependent branch. Test-first commit `f05d9015bd432325753c8463882bf82c23a7975e`; original RED1/GREEN9 is historical evidence, not new local execution. New exact-head CI, independent review, separate ready-state and SHA-guarded merge required. No religious review/content edit, provider, data, schema, auth/payment, privacy, infrastructure change, 149 promotion or automatic public indexing claim.
+
 ## 2026-10-31 IST — #605 re-reconciliation after protected #604 merge
 
 CHATGPT_ACTIVE sole writer. Current protected main 3d487e4f6eedc705ae2d4be79cd6396d88d4e627 includes accepted #604 CSS scope. Source and regression content of #605 remains byte-identical to tested previous head e23d334b50af1a8aa2edbc7de54b600dd4095e21; only current coordination histories are reconciled. All source paths are disjoint from intervening main changes. Require fresh exact-head full CI, separate ready-state and guarded merge. Historical 149 unchanged.

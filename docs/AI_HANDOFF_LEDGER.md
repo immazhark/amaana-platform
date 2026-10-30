@@ -2136,3 +2136,8 @@ Parallel read-only queue findings: #530 is complementary to shipped artifact sca
 
 CHATGPT_ACTIVE sole writer. Current protected main 3d487e4f6eedc705ae2d4be79cd6396d88d4e627 includes accepted #604 CSS scope. Source and regression content of #605 remains byte-identical to tested previous head e23d334b50af1a8aa2edbc7de54b600dd4095e21; only current coordination histories are reconciled. All source paths are disjoint from intervening main changes. Require fresh exact-head full CI, separate ready-state and guarded merge. Historical 149 unchanged.
 
+
+
+## 2026-10-31 IST — #578 Faith sitemap direct-main recovery
+
+CHATGPT_ACTIVE retained original #578 source regression and sitemap correction only, based on current main pre-fix blob equality; test-first branch commit f05d9015bd432325753c8463882bf82c23a7975e. Full fresh head CI/browser/database and separate ready-state required before merge. Historical #578 preserved until accepted release, no 149 item promotion.
