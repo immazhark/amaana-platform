@@ -2095,3 +2095,8 @@ CHATGPT_ACTIVE sole writer. On protected main `264099b3b7c1db43218634628400225eb
 
 Acceptance checkpoint30 October2026 IST: tests committed before source; focused RED18/19 then GREEN19/19; full2331 Vitest PASS/20 opt-in isolated-DB SKIP. Independent actual-diff review found no blocker and confirmed Impact leading1.08 preserved. Production build retry after generated Turbopack cache panic is pending; hosted browser/production/disposable-DB exact-head and separate-ready remain required. Original #559–#561 preserved until acceptance. #596 merged02bb083 after full41040706353 and separate-ready41045009941; original #471 and13 #595-superseded PRs closed with branches preserved. No149 promotion.
 
+
+## 2026-10-30 IST — record/Stories presentation integration
+
+Acceptance checkpoint30 October2026 IST: new-main test-first run RED3/11 admin and RED1/7 native contrast; source restored GREEN14 focused Vitest (including motion) and GREEN7/7 native. Full2335 Vitest PASS/20 isolated-DB SKIP; clean optimized Next build with strict TypeScript/pre/postbuild guards PASS; full lint PASS. Historical #598/#599 source tests retained, #597 Stories motion additions preserved. Exact combined-head hosted/ready acceptance pending; no release/live claim or149 promotion.
+
