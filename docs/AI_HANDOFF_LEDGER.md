@@ -2118,9 +2118,21 @@ New merged-tree verification30 October2026 IST: full2358 Vitest PASS/20 isolated
 
 
 
+## 2026-10-30 IST — route CSS recovery evidence
+
+Acceptance30 October2026 IST: source reachability/ownership RED4/4 then GREEN4/4; full2357 Vitest PASS/20 opt-in isolated-DB SKIP. Clean optimized production build including TypeScript/pre/postbuild guards, standalone ESLint, globalCSS architecture audit and diff checks PASS. New aggregate uncompressed JS807083/CSS326954 bytes; no baseline savings/transfer/CWV claim. Client-reference assigned CSS: Appeals194617, Faith library175410, Faith article177158, OurWork173961 bytes, including shared assets. Independent actual-diff review confirms retained cascade/focus/motion and article rules unchanged; no unshipped historical Faith motion imported. Governed Stylelint locally unverified (prior unavailable offline dependency); hosted full exact-head/browser/ready checks required. Keep #539/#540/#545 until accepted replacement, no149 promotion or live acceptance.
+
+
+
+
 ## 2026-10-31 IST — enquiry/copy feedback recovery
 
 Acceptance31 October2026 IST: focused RED17/33 then GREEN33/33. Full2375 Vitest PASS/20 opt-in isolated-DB SKIP; clean optimized production build including strict TypeScript/pre/postbuild, standalone zero-warning ESLint and diff checks PASS. Two independent reviews prove5source paths limited to detection/year/copy feedback; native email handoff, no-JS footer, mobile Escape, reading text and payment submit/lock/provider/value logic byte-preserved. Added completed-then-pending copy case closes #509 coverage gap and verifies zero fetch/router/lock calls. Companion E2E appended2 ordering cases without replacing existing Escape coverage; not locally executed. Governed Stylelint remains locally unverified due prior offline dependency gap; hosted exact-head/browser/DB/lint/ready required. Keep513514518487509 until accepted replacement, no149 or live release claim.
 
 
 Parallel read-only queue findings: #530 is complementary to shipped artifact scanner; recover names-only preflight with synthetic lower/mixed-case/digit/underscore suffix regressions (Next inlines exact NEXT_PUBLIC_ prefix without uppercase suffix restriction). No actual env values read or guard source modified. #525 acknowledgement reference-keyed snapshot/abort guards remain unshipped; adapt #603 date fixture if recovering that state shape. #527 duplicate/file-valued manual recovery validation remains a bounded lead; #528 durable retention claims/hold synchronization requires isolated concurrency acceptance. #525/#526/#527/#528/#374 are not proven wholly superseded and must not be bulk-merged/closed. Discovery cluster552556562563564569 has verified selector baselines; use dedicated Stories programme-context test without inherited501 assertions. No live data/provider action was performed.
+
+## 2026-10-31 IST — #605 re-reconciliation after protected #604 merge
+
+CHATGPT_ACTIVE sole writer. Current protected main 3d487e4f6eedc705ae2d4be79cd6396d88d4e627 includes accepted #604 CSS scope. Source and regression content of #605 remains byte-identical to tested previous head e23d334b50af1a8aa2edbc7de54b600dd4095e21; only current coordination histories are reconciled. All source paths are disjoint from intervening main changes. Require fresh exact-head full CI, separate ready-state and guarded merge. Historical 149 unchanged.
+
