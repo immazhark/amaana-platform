@@ -1,3 +1,9 @@
+## 2026-10-30 IST — CODEX_ACTIVE — Team form native minimum lengths
+
+Sole writer from #5826e635e5. Admin team member fullName/designation/optional supplied slug and group key/title have server min2 but no native minLength; ordinary1-character values pass browser constraints then server redirect loses unsaved fields. Add matching minLength2 across create/edit shared controls, keep optional slug blank auto-derivation and key normalization. Server/auth/publication/media unchanged. Synthetic actual-component/page regressions first; parallel review read-only; preserve Neon/draft gates and149 totals. Rollback isolated markup/tests.
+
+Acceptance: RED4 new SSR form regressions, GREEN17 focused including existing server parser suite; full2698 PASS/24 isolated-DB SKIP. Strict TypeScript/full lint/Stylelint/clean optimized Next build with pre/postbuild controls (expanded public scan110 inventory)/diff checks PASS. Read-only review found no regression. Optional slug remains blank-derivable; no uppercase-only key pattern. Native raw minLength is not full trimmed/normalized server parity; tests verify rendered constraints, not browser interaction. No auth/action/publication/media/private data/provider/schema changes, merge/deploy or149 promotion. Preserve Neon/browser/hosted/disposable-DB/separate-ready acceptance.
+
 ## 2026-10-30 IST — CODEX_ACTIVE — AF-R007 public asset scan boundary
 
 Sole writer from #5817964bc8. Scanner covers .next/static but misses directly served public text assets. Extend unchanged marker/value/redaction/extension rules and symlink rejection to optional public root; .next/static remains required. Missing optional root allowed, other errors fail closed. Synthetic canary regressions first. No actual secrets read/logged beyond existing scanner behavior or production secret/provider change. Parallel read-only review; preserve Neon/draft gates and149 totals. Rollback isolated scanner/tests.
