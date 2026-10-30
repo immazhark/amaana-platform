@@ -104,3 +104,12 @@ it("shows the private verification completion on its IST calendar day", async ()
   const html = await render();
   expect(html).toContain("Completed 1/1/2027");
 });
+
+
+it("announces the public preview tab without changing the appeal destination", async () => {
+  const html = await render();
+  const anchor = html.match(/<a\b[^>]*href="\/appeals\/synthetic-appeal"[^>]*>[\s\S]*?<\/a>/)?.[0];
+  expect(anchor).toContain('target="_blank"');
+  expect(anchor).toContain('rel="noreferrer"');
+  expect(anchor).toContain('View public page<span class="sr-only"> (opens in a new tab)</span>');
+});
