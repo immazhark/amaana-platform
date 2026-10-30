@@ -2045,3 +2045,7 @@ CHATGPT_ACTIVE sole writer. Current protected main `612feaecf11f550d1cebd7347e17
 
 ## 2026-10-30 IST — #589 reconciled after #588 protected merge
 
+## 2026-10-30 IST — recovered PageHero fallback specificity (#471)
+
+CHATGPT_ACTIVE sole writer. Protected main `faf51683ca6f1177d92a2e20185575391d427097` still has the same `src/app/page-hero.css` Git blob as historical pre-change base `83044f775166be0a3533d807a7ec3e268795530f`. Original independent source-reviewed ready-state PR #471 changes only one fallback CSS specificity rule, replacing `height:auto!important` with a scoped ordinary selector and preserving identical PageHero geometry on Partner, Contact and Recognition at mobile/desktop/reduced-motion. Its two synthetic SSR/hosted browser tests do not exist on main. New direct-main branch `fix/reconcile-pagehero-fallback-cascade-20261030`, test-first commit `184dc511d34840622abe1e12b718a03b8a70f4f6`, restore exact original tested three source/test blobs; no visual redesign, page content, donor, religious, tax, payment, auth, schema, media or infrastructure change. Old local green and hosted CI evidence is provenance, not a new head pass. Require fresh full exact-head seven-job CI, separate ready-state verify, expected-head protected merge and Railway/public observation. Preserve historical #471 until accepted replacement released, 149 historical categories unchanged. Rollback one PageHero CSS correction and two regressions.
+
