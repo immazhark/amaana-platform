@@ -1,3 +1,9 @@
+## 2026-10-30 IST — CODEX_ACTIVE — Related Faith citation completeness
+
+Sole writer from #575a7427b4. Reuse existing review completeness check for initiative-linked cards and homepage featured projection; retrieve only required review metadata and return original public shape. Synthetic tests first. No text/review criteria/media/provider/data mutation. Parallel review read-only. Preserve Neon hold/draft gates; rollback isolated query projections/filter and tests;149 unchanged.
+
+Acceptance: corrected synthetic fixture on original source RED2/2, implementation GREEN2/2. Initial fixture lacked Prisma field-reference mock; corrected before final red/green proof. Full final Vitest2682 PASS/24 isolated-DB SKIP, strict TypeScript, full lint/Stylelint, optimized Next build with pre/postbuild guards and diff check PASS. Two independent read-only reviews found no projection/null/order regression. Original public output fields restored explicitly; no review metadata leakage. Media archive remains outside this scope. Browser/hosted/disposable-DB/separate-ready gates and Neon hold remain. No production data, merge or deployment;149 unchanged.
+
 ## 2026-10-30 IST — CODEX_ACTIVE — Faith full-record public loaders
 
 Sole writer from #574486bd8e; scope extends existing completeness predicate to full-record public list/detail/featured loaders. Blank citations currently pass SQL non-null checks. Reuse unchanged helper; no religious text/criteria or DB mutation. Narrow homepage/initiative projections remain outside this task. Regression first; parallel review read-only; preserve Neon/draft acceptance gates. Rollback isolated loaders/test;149 unchanged.
