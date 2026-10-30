@@ -37,4 +37,4 @@
 @keyframes v2-donate-context-float{from{transform:translateY(0)}to{transform:translateY(-.45rem)}}
 @media(max-width:900px){.v2-donate-context{animation:none;transform:none}.v2-donate-guide-list article:hover{padding-left:0;background:transparent}}
 @media(max-width:620px){.v2-premium-form{box-shadow:0 22px 58px rgb(47 76 122 / 9%)}.v2-donate-context{box-shadow:0 24px 60px rgb(2 12 26 / 18%)}}
-@media(prefers-reduced-motion:reduce){.v2-donate-context,.v2-donate-back,.v2-donate-guide-list article,.v2-donate-guide-list article::before{animation:none;transform:none;transition:none}}
+@media(prefers-reduced-motion:reduce){.v2-donate-context,.v2-donate-back,.v2-donate-guide-list article,.v2-donate-guide-list article::before{animation:none;transform:none;transition:none}.v2-donate-back:is(:hover,:focus-visible){transform:none}.v2-donate-guide-list article:hover{padding-left:0}}

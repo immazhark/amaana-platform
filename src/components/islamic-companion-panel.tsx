@@ -69,7 +69,7 @@ export function IslamicCompanionPanel({
     panelRef.current?.focus({ preventScroll: true });
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.defaultPrevented || event.isComposing || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
-      if (event.key === "Escape" && !document.querySelector('[role="dialog"][aria-modal="true"],dialog[open]')) onClose();
+      if (event.key === "Escape" && !document.querySelector('[role="dialog"][aria-modal="true"],dialog[open],.mobile-menu.open:not([hidden])')) onClose();
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);

@@ -41,6 +41,7 @@ test('gallery preserves modified arrows and composing or handled Escape', async 
   await expect(dialog).toContainText('Image 2 of 13');
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /^Enlarge image 1 of 13:/ })).toBeFocused();
 });
 
 
@@ -328,3 +329,16 @@ for (const backwards of [false, true]) {
     await expect(trigger).toBeFocused();
   });
 }
+
+
+test('gallery returns to a non-first opener after browsing with the Next button', async ({ page }) => {
+  await openGallery(page, 390);
+  const opener = page.getByRole('button', { name: /^Enlarge image 2 of 13:/ });
+  await opener.click();
+  const dialog = page.getByRole('dialog');
+  await dialog.getByRole('button', { name: 'Next', exact: true }).click();
+  await expect(dialog).toContainText('Image 3 of 13');
+  await dialog.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(dialog).toHaveCount(0);
+  await expect(opener).toBeFocused();
+});
