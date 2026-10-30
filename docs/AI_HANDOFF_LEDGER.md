@@ -2090,3 +2090,8 @@ CHATGPT_ACTIVE sole writer. On protected main `264099b3b7c1db43218634628400225eb
 ## 2026-10-30 IST — public UX release and PageHero reconciliation
 
 #595 protected merge `0087ca8de3e97082bfb32f2fea21ac98312aacc4` after independent review, full exact-head run41034750610 and separate ready-state41040347015. Includes exact recovered source from #590–#594. Railway508d6efe BUILDING; public version403, no live acceptance claim. #596 prior full and ready checks passed; normal two-parent reconciliation preserves both histories and production blobs, requires fresh head acceptance. CHATGPT_ACTIVE sole writer; parallel agents read-only. Historical149 counts unchanged.
+
+## 2026-10-30 IST — admin date recovery
+
+Acceptance30 October2026 IST: focused RED4/11 before source, GREEN11/11 after four formatter substitutions; full2316 Vitest PASS/20 isolated-DB SKIP. Clean optimized production build including TypeScript and pre/postbuild controls PASS; independent actual-diff review proves permission gates, projections, forms and actions byte-preserved. Hosted exact-head/disposable-DB/browser selection and separate-ready remain required. Original #522/#537 retained until replacement merged. No149 promotion or live verification claim.
+
