@@ -2100,3 +2100,8 @@ Acceptance checkpoint30 October2026 IST: tests committed before source; focused 
 
 Acceptance checkpoint30 October2026 IST: new-main test-first run RED3/11 admin and RED1/7 native contrast; source restored GREEN14 focused Vitest (including motion) and GREEN7/7 native. Full2335 Vitest PASS/20 isolated-DB SKIP; clean optimized Next build with strict TypeScript/pre/postbuild guards PASS; full lint PASS. Historical #598/#599 source tests retained, #597 Stories motion additions preserved. Exact combined-head hosted/ready acceptance pending; no release/live claim or149 promotion.
 
+
+## 2026-10-30 IST — admin query/selection recovery
+
+Acceptance30 October2026 IST: focused RED9/21 then GREEN21/21; full2353 Vitest PASS/20 opt-in isolated-DB SKIP. Clean optimized Next production build with TypeScript/pre/postbuild guards and diff checks PASS. Independent actual-diff review found no blocker, confirmed actions/eligibility unchanged and no inherited behavior. Added inactive-assignee action case is coverage of existing denial only. Full lint final status pending; exact new-head hosted/browser/DB/ready checks required. #508 closed as semantic supersession by safer shipped #529 permission-guarded query, not exact-source identity. Keep #504/#507/#484 until replacement accepted. Preserve #601 label additions during eventual main reconciliation. No149 promotion or measured latency/CWV claim.
+

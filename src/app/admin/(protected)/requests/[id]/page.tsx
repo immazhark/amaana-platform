@@ -21,27 +21,29 @@ export default async function RequestDetailPage({ params }: Props) {
     prisma.assistanceRequest.findUnique({
       where: { id },
       include: {
-        assignedTo: true,
+        assignedTo: { select: { name: true } },
         documents: true,
         appeal: true,
-        verification: { include: { reviewedBy: true } },
+        verification: { include: { reviewedBy: { select: { name: true } } } },
       },
     }),
     prisma.user.findMany({
       where: { status: "ACTIVE", roles: { some: { role: { permissions: { some: { permission: { key: "assistance.view" } } } } } } },
       orderBy: { name: "asc" },
+      select: { id: true, name: true },
     }),
-    prisma.auditEvent.findMany({ where: { entityType: "AssistanceRequest", entityId: id }, include: { actor: true }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] }),
+    prisma.auditEvent.findMany({ where: { entityType: "AssistanceRequest", entityId: id }, select: { id: true, action: true, createdAt: true, actor: { select: { name: true } } }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] }),
   ]);
   if (!request) notFound();
 
+  const currentAssigneeUnavailable = Boolean(request.assignedToId && !staff.some(member => member.id === request.assignedToId));
   const converted = request.status === "CONVERTED_TO_APPEAL" || Boolean(request.appealId);
   const manualStatuses = [...MANUAL_ASSISTANCE_STATUSES];
   const visibleStatuses = converted
     ? ["CONVERTED_TO_APPEAL"]
     : hasPermission(user, "assistance.approve")
       ? manualStatuses
-      : manualStatuses.filter(status => !["APPROVED", "REJECTED"].includes(status));
+      : manualStatuses.filter(status => status === request.status || !["APPROVED", "REJECTED"].includes(status));
   const verification = request.verification;
   const publicAppealIssues = getPublicAppealVerificationIssues(verification);
   const publicAppealReady = publicAppealIssues.length === 0;
@@ -157,7 +159,8 @@ export default async function RequestDetailPage({ params }: Props) {
             <input type="hidden" name="id" value={id}/>
             <input type="hidden" name="expectedUpdatedAt" value={request.updatedAt.toISOString()}/>
             <label htmlFor="assignedToId">Assigned staff member</label>
-            <select id="assignedToId" name="assignedToId" defaultValue={request.assignedToId ?? ""}><option value="">Unassigned</option>{staff.map(member => <option key={member.id} value={member.id}>{member.name}</option>)}</select>
+            <select id="assignedToId" name="assignedToId" defaultValue={request.assignedToId ?? ""} aria-describedby={currentAssigneeUnavailable ? "assignment-availability" : undefined}><option value="">Unassigned</option>{currentAssigneeUnavailable && <option value={request.assignedToId!}>{`${request.assignedTo?.name ?? "Current staff member"} (currently unavailable)`}</option>}{staff.map(member => <option key={member.id} value={member.id}>{member.name}</option>)}</select>
+            {currentAssigneeUnavailable && <small id="assignment-availability" className="muted">The current assignee is unavailable for assignment. Choose an available staff member or Unassigned before saving a change.</small>}
             <button className="button secondary" disabled={!hasPermission(user, "assistance.assign")}>Save assignment</button>
           </form>
         </section>
