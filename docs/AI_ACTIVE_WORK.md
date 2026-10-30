@@ -1,3 +1,9 @@
+## 2026-10-30 IST — CODEX_ACTIVE — Explicit unavailable archive pages
+
+Sole writer from #580a3b0fe7. Reviewed bounded design: existing24+1 candidate query/count stays; filter current24 candidates through shared renderer predicate, retain candidate-based hasNext and nonnull empty pages; explicit accessible message and navigation preserve later valid items. No24-visible-item promise, schema/backfill/scans/relaxed privacy/media mutation. Synthetic regressions first; parallel reviewers read-only. Preserve Neon/draft gates and149 totals; rollback loader/page/tests.
+
+Acceptance: RED4 new loader/page regressions before correction, GREEN46 focused after lookahead coverage expansion; final full2694 PASS/24 isolated-DB SKIP. Strict TypeScript/full lint/Stylelint/clean optimized Next build with pre/postbuild controls/diff checks PASS. Two independent actual-diff reviews found no regression. Tests cover valid25th deferred then page2, all25invalid, mixed source order, private-URL last empty page, prev/next and bounded query count. Candidate-slot pagination intentionally remains, not24-renderable-item pages. No real DB/concurrency/browser test claimed. Preserve Neon/hosted/browser/disposable-DB/separate-ready acceptance; no production data/provider/schema/media mutation, merge/deploy or149 promotion.
+
 ## 2026-10-30 IST — CODEX_ACTIVE — Fail-closed review timestamp validity
 
 Sole writer from #579ee6f10b. Shared Faith review predicate accepts Invalid Date because instanceof alone passes. Synthetic regression first, require finite epoch while preserving valid dates including epoch zero. Defensive runtime-input guard, not observed stored/live data corruption. Parallel agents design separate archive renderability/pagination fix; no archive edits here. No review-text/criteria/schema/provider/data mutation. Preserve Neon/held release gates and149 totals; rollback isolated finite-date guard/tests.

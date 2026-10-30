@@ -29,7 +29,7 @@ export default async function PublicMediaArchivePage({ params, searchParams }: P
     <a className="v2-text-link" href={back}>Back to {archive.title}</a>
     <h1>{archive.title}: approved media</h1>
     <p>Public-use reviewed photographs and supporting material. Page {page}.</p>
-    <div className="v2-media-grid">{archive.media.map(asset => <PublicMedia key={asset.id} asset={asset} sizes="auto, (max-width: 700px) 100vw, (max-width: 1100px) 48vw, 29rem" />)}</div>
+    {archive.media.length ? <div className="v2-media-grid">{archive.media.map(asset => <PublicMedia key={asset.id} asset={asset} sizes="auto, (max-width: 700px) 100vw, (max-width: 1100px) 48vw, 29rem" />)}</div> : <p role="status">No media can currently be displayed on this page. Use the page links below to continue browsing, or return to the main record.</p>}
     <nav className="v2-hero-actions" aria-label="Media archive pages">
       {page > 1 ? <a className="v2-button" href={`${path}?page=${page - 1}`}>Previous page</a> : null}
       <span aria-current="page">Page {page}</span>

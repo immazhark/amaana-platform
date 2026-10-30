@@ -138,3 +138,29 @@ it.each(["", "   ", null])("rejects incomplete Faith archive citation %j before 
  expect(await getPublicMediaArchive("faith",parent.slug,1)).toBeNull();
  expect(mocks.media).not.toHaveBeenCalled();
 });
+
+it("keeps later valid candidate pages reachable after an unavailable page", async () => {
+ const invalid = rows.map(row => ({...row,altText:"   "}));
+ mocks.media.mockResolvedValue([...invalid.slice(0,24),rows[24]]);
+ const first = await getPublicMediaArchive("initiative",parent.slug,1);
+ expect(first).toMatchObject({media:[],hasNext:true});
+ expect(mocks.media).toHaveBeenCalledOnce();
+ expect(mocks.media.mock.calls[0]?.[0]).toMatchObject({skip:0,take:25});
+ mocks.media.mockResolvedValue([rows[24]]);
+ const second = await getPublicMediaArchive("initiative",parent.slug,2);
+ expect(second).toMatchObject({media:[rows[24]],hasNext:false});
+ expect(mocks.media).toHaveBeenCalledTimes(2);
+ expect(mocks.media.mock.calls[1]?.[0]).toMatchObject({skip:24,take:25});
+});
+it("omits unavailable candidates without shifting slots or changing valid order",async()=>{
+ mocks.media.mockResolvedValue([rows[0],{...rows[1],altText:" "},rows[2]]);
+ expect(await getPublicMediaArchive("story",parent.slug,1)).toMatchObject({media:[rows[0],rows[2]],hasNext:false});
+ mocks.media.mockResolvedValue([{...rows[0],publicUrl:"/admin/private"}]);
+ expect(await getPublicMediaArchive("story",parent.slug,2)).toMatchObject({media:[],hasNext:false});
+});
+
+it("keeps an entirely unavailable candidate page accessible with its continuation",async()=>{
+ mocks.media.mockResolvedValue(rows.map(row=>({...row,altText:"   "})));
+ expect(await getPublicMediaArchive("initiative",parent.slug,1)).toMatchObject({media:[],hasNext:true});
+ expect(mocks.media).toHaveBeenCalledOnce();
+});
