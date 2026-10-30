@@ -12,6 +12,12 @@ export function FooterNavGroup({ label, children }: FooterNavGroupProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const id = `footer-nav-${useId().replaceAll(":", "")}`;
+  const links = Children.map(children, child => {
+    if (!isValidElement<{ href?: string; "aria-current"?: "page" }>(child)) return child;
+    const href = child.props.href;
+    const active = typeof href === "string" && pathname === href;
+    return cloneElement(child, { "aria-current": active ? "page" : undefined });
+  });
 
   return (
     <div className="footer-nav-group" data-open={open ? "true" : "false"}>
@@ -28,14 +34,8 @@ export function FooterNavGroup({ label, children }: FooterNavGroupProps) {
           <span className="footer-nav-toggle-icon" aria-hidden="true">{open ? "–" : "+"}</span>
         </button>
       </h3>
-      <div className="footer-links" id={id}>
-        {Children.map(children, child => {
-          if (!isValidElement<{ href?: string; "aria-current"?: "page" }>(child)) return child;
-          const href = child.props.href;
-          const active = typeof href === "string" && pathname === href;
-          return cloneElement(child, { "aria-current": active ? "page" : undefined });
-        })}
-      </div>
+      <div className="footer-links" id={id}>{links}</div>
+      <noscript><div className="footer-links footer-nav-noscript-links">{links}</div></noscript>
     </div>
   );
 }
