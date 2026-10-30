@@ -1,3 +1,10 @@
+## 2026-10-30 IST — public reduced-motion recovery cluster
+
+CHATGPT_ACTIVE sole writer on `fix/reconcile-public-reduced-motion-20261030`, based on protected main `02bb083cde6c467296620673c008931c0c22b9fc` after #596. Recover scoped #559–#561 reduced-motion changes and six synthetic/browser regressions. Apply source diffs rather than historical whole files: preserve accepted Impact line-height1.08 and all current source. Parallel review remains read-only. Tests first; fresh exact-head acceptance, independent review and separate ready-state required. No auth, payment, schema, factual/media-publication or infrastructure changes; canonical149 unchanged. Rollback only bounded motion rules/tests.
+
+
+Acceptance checkpoint30 October2026 IST: tests committed before source; focused RED18/19 then GREEN19/19; full2331 Vitest PASS/20 opt-in isolated-DB SKIP. Independent actual-diff review found no blocker and confirmed Impact leading1.08 preserved. Production build retry after generated Turbopack cache panic is pending; hosted browser/production/disposable-DB exact-head and separate-ready remain required. Original #559–#561 preserved until acceptance. #596 merged02bb083 after full41040706353 and separate-ready41045009941; original #471 and13 #595-superseded PRs closed with branches preserved. No149 promotion.
+
 ## 2026-10-30 IST — #595 merged; #596 reconciliation
 
 CHATGPT_ACTIVE remains the sole implementation writer under current owner authorization. Read-only parallel reviewers found no confirmed blocker in #595 and #596. Protected SHA-guarded #595 merge: `0087ca8de3e97082bfb32f2fea21ac98312aacc4`, tested head `fcad0e8aa74aad156c39612e625c3cea82187d74`; full seven-job run `41034750610` and separate promotion/final run `41040347015` succeeded. Railway deployment `508d6efe-4628-48eb-82fc-9cb930a56211` BUILDING; public version HTTP403, live acceptance unverified.
