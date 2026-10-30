@@ -24,6 +24,10 @@ async function filesUnder(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
   const files = [];
   for (const entry of entries) {
+    // Reject environment files even if their contents contain no known marker.
+    if (/^\.env(?:\.|$)/i.test(entry.name)) {
+      throw new Error("Sensitive environment file in public client bundle");
+    }
     const fullPath = path.join(directory, entry.name);
     if (entry.isSymbolicLink()) throw new Error("Symbolic link in public client bundle");
     if (entry.isDirectory()) files.push(...await filesUnder(fullPath));
