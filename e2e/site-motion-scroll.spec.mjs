@@ -56,9 +56,9 @@ test('compact fine-pointer menus contain wheel scrolling and release it on dismi
   await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(250);
 });
 
-test('an open compact menu preserves browser zoom without releasing ordinary wheel containment', async ({ page }) => {
-  await page.setViewportSize({ width: 900, height: 1000 });
-  await open(page);
+test('a short compact menu scrolls natively while background wheel stays contained and zoom works', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 480 });
+  await open(page, '/browser-acceptance/mobile-support');
   await page.getByRole('button', { name: 'Open navigation menu', exact: true }).click();
   const menu = page.locator('#mobile-navigation');
   await expect(menu).toBeVisible();
@@ -68,12 +68,29 @@ test('an open compact menu preserves browser zoom without releasing ordinary whe
     node.dispatchEvent(event);
     return event.defaultPrevented;
   }));
-  // Synthetic input proves cancellation policy, not an actual browser zoom.
-  expect(prevented).toEqual([false, true]);
+  // Synthetic input checks cancellation policy, not an actual browser zoom.
+  expect(prevented).toEqual([false, false]);
+  const backgroundPrevented = await page.locator('.mobile-menu-backdrop').evaluate(node => {
+    const event = new WheelEvent('wheel', { bubbles: true, cancelable: true, deltaY: 100 });
+    node.dispatchEvent(event);
+    return event.defaultPrevented;
+  });
+  expect(backgroundPrevented).toBe(true);
+  const dimensions = await menu.evaluate(node => ({ height: node.clientHeight, content: node.scrollHeight }));
+  expect(dimensions.content).toBeGreaterThan(dimensions.height);
+  const box = await menu.boundingBox();
+  expect(box).not.toBeNull();
+  await page.mouse.move(box.x + box.width / 2, box.y + Math.min(box.height / 2, 100));
+  await page.mouse.wheel(0, 500);
+  await expect.poll(() => menu.evaluate(node => node.scrollTop)).toBeGreaterThan(0);
+  expect(await page.evaluate(() => scrollY)).toBe(0);
   await expect(menu).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(menu).toBeHidden();
   await expect(page.locator('body')).not.toHaveClass(/af-menu-lock/);
+  await page.mouse.move(180, 410);
+  await page.mouse.wheel(0, 300);
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(100);
 });
 
 test('composing Home and End do not force document navigation or destroy active wheel enhancement', async ({ page }) => {
