@@ -1,3 +1,9 @@
+## 2026-10-30 IST — CODEX_ACTIVE — Faith media citation completeness
+
+Sole writer from #5762abf836. Scope: archive parent completeness before media read, repeat exact validated citation in media relation; visible Faith image loader filters unchanged completeness and returns original id/mediaAssets shape. Synthetic regressions first. Other parent/media privacy predicates retained. No review criteria/text/media content/provider/data mutation. Parallel reviewers read-only; preserve Neon/draft gates and149 totals. Rollback isolated loaders/tests.
+
+Acceptance: RED7 focused checks before correction; GREEN43/43; full2686 PASS/24 isolated-DB SKIP. Strict TypeScript, full lint/Stylelint, clean optimized Next build with pre/postbuild controls and diff hygiene PASS. Initial build failed on generated Turbopack persistence before compilation; cache preserved /tmp/amaana-faith-media-build.ijpXDh/next, clean build PASS. Two read-only reviews found no regression; comment corrected to distinguish server review metadata from returned public fields. Tests verify initial rejection/query citation recheck, not real concurrent DB interleaving. Main freshly31c011c; parent576 unchanged2abf836. Browser/hosted/disposable-DB/separate-ready acceptance and Neon hold remain. No production data/provider/media content mutation, merge/deploy or149 promotion.
+
 ## 2026-10-30 IST — CODEX_ACTIVE — Related Faith citation completeness
 
 Sole writer from #575a7427b4. Reuse existing review completeness check for initiative-linked cards and homepage featured projection; retrieve only required review metadata and return original public shape. Synthetic tests first. No text/review criteria/media/provider/data mutation. Parallel review read-only. Preserve Neon hold/draft gates; rollback isolated query projections/filter and tests;149 unchanged.

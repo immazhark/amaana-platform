@@ -94,9 +94,13 @@ export async function getVisibleFaithMedia(ids: readonly string[]) {
   if (visibleIds.length > 2) throw new Error("At most two Faith media records are allowed");
   if (visibleIds.length === 0) return [];
 
-  return prisma.faithContent.findMany({
+  const records = await prisma.faithContent.findMany({
     where: { ...publicFaithWhere, id: { in: visibleIds } },
     select: {
+      status: true,
+      religiousReviewStatus: true,
+      verifiedAt: true,
+      sourceCitation: true,
       id: true,
       mediaAssets: {
         where: {
@@ -112,4 +116,5 @@ export async function getVisibleFaithMedia(ids: readonly string[]) {
       },
     },
   });
+  return records.filter(isPublicFaithReviewComplete).map(({ id, mediaAssets }) => ({ id, mediaAssets }));
 }

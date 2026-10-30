@@ -12,7 +12,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   mocks.initiative.mockResolvedValue(parent);
   mocks.story.mockResolvedValue(parent);
-  mocks.faith.mockResolvedValue(parent);
+  mocks.faith.mockResolvedValue({...parent,status:"PUBLISHED",religiousReviewStatus:"VERIFIED",verifiedAt:new Date("2026-01-01"),sourceCitation:"Reviewed source"});
   mocks.media.mockResolvedValue(rows);
 });
 
@@ -112,7 +112,7 @@ describe("bounded published media archives", () => {
     await getPublicMediaArchive("faith", parent.slug, 1);
     const gate = { status: "PUBLISHED", religiousReviewStatus: "VERIFIED", verifiedAt: { not: null }, sourceCitation: { not: null } };
     expect(mocks.faith.mock.calls[0]?.[0].where).toMatchObject(gate);
-    expect(mocks.media.mock.calls[0]?.[0].where.faithContent).toMatchObject(gate);
+    expect(mocks.media.mock.calls[0]?.[0].where.faithContent).toMatchObject({...gate,sourceCitation:"Reviewed source"});
   });
   it("rejects huge out-of-range offsets before querying media", async () => {
     expect(await getPublicMediaArchive("initiative", parent.slug, 80_000_000)).toBeNull();
@@ -131,4 +131,10 @@ describe("bounded published media archives", () => {
     mocks.media.mockResolvedValue([]);
     expect(await getPublicMediaArchive("initiative", parent.slug, 1)).toBeNull();
   });
+});
+
+it.each(["", "   ", null])("rejects incomplete Faith archive citation %j before media read", async sourceCitation => {
+ mocks.faith.mockResolvedValue({...parent,status:"PUBLISHED",religiousReviewStatus:"VERIFIED",verifiedAt:new Date(),sourceCitation});
+ expect(await getPublicMediaArchive("faith",parent.slug,1)).toBeNull();
+ expect(mocks.media).not.toHaveBeenCalled();
 });
