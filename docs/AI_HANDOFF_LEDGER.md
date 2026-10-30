@@ -1,3 +1,9 @@
+## 2026-10-30 IST — CODEX_ACTIVE — Faith sitemap completeness
+
+Sole writer from #57752d478c; remaining sitemap query accepts blank non-null citations. Select required review metadata and filter unchanged completeness predicate before emitting Faith URLs. Tests must preserve disabled-indexing no-query behavior and original sitemap projection. No text/review criteria or provider/data mutation. Parallel read-only review; preserve Neon/draft gates and149 totals. Rollback isolated sitemap/test changes.
+
+Acceptance: new citation regression RED1 before correction, GREEN9 focused crawl/sitemap checks. Full2688 PASS/24 opt-in isolated-DB SKIP; final strict TypeScript/full lint/Stylelint/clean optimized Next build with pre/postbuild controls/diff check PASS. Initial TypeScript attempt overlapped moving generated .next for clean build and reported missing generated declarations; sequential postbuild rerun PASS. No source workaround. Independent review found no defect; second source sweep found no further public Faith query outside guarded loaders and sitemap (not a live-data audit). Browser/hosted/disposable-DB/separate-ready gates and Neon hold remain. No production data/provider/indexing setting changes, merge/deployment or149 promotion.
+
 ## 2026-10-30 IST — CODEX_ACTIVE — Faith media citation completeness
 
 Sole writer from #5762abf836. Scope: archive parent completeness before media read, repeat exact validated citation in media relation; visible Faith image loader filters unchanged completeness and returns original id/mediaAssets shape. Synthetic regressions first. Other parent/media privacy predicates retained. No review criteria/text/media content/provider/data mutation. Parallel reviewers read-only; preserve Neon/draft gates and149 totals. Rollback isolated loaders/tests.
