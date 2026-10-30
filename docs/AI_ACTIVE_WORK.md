@@ -1,3 +1,7 @@
+## 2026-10-30 IST — remaining record display dates
+
+CHATGPT_ACTIVE sole writer on fix/ist-record-dates-recovery-20261030 from main4fa141dc. Recover narrow #505/#506/#488/#489 formatter/text changes only: Audit/Media review/Notifications/admin labels, private tracking and acknowledgement dates in Asia/Kolkata. Preserve #601 labels when later reconciling; append existing E2E files, never replace newer token/response guards. Synthetic fixtures only, no notification activation, payments, record/API/auth/token/scheduling/schema/provider mutations. Test-first, independent review, exact-head hosted/ready acceptance required. No149 promotion.
+
 ## 2026-10-30 IST — admin query and selection recovery
 
 CHATGPT_ACTIVE sole writer on perf/admin-query-and-selection-recovery-20261030 from main e2b25813. Recover bounded #504 four non-editor option-query skips, #507 staff/reviewer/audit projections (retain narrow assignee name for #484), and #484 current-status/current-assignee selection preservation. Synthetic focused RED9/21 before source; one added action guard is regression coverage of existing denial, not a new runtime fix. Preserve permissions/server eligibility, query scope/order, IDs, original #601 labels when later reconciled, privacy/retention controls. No live records/DB/schema/provider/payment changes; fresh exact-head/ready acceptance required, no149 promotion.

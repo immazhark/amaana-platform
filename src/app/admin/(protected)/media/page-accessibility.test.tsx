@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
-const mocks = vi.hoisted(() => ({ permission: vi.fn(), allowed: vi.fn(), assets: vi.fn(), empty: vi.fn(), count: vi.fn() }));
+const mocks = vi.hoisted(() => ({ permission: vi.fn(), allowed: vi.fn(), assets: vi.fn(), empty: vi.fn(), count: vi.fn(), reviews: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ requirePermission: mocks.permission, hasPermission: mocks.allowed }));
 vi.mock("@/lib/prisma", () => ({ prisma: {
   mediaAsset: { count: mocks.count, groupBy: mocks.empty, findMany: mocks.assets },
   cause: { findMany: mocks.empty }, initiative: { findMany: mocks.empty },
-  story: { findMany: mocks.empty }, faithContent: { findMany: mocks.empty }, auditEvent: { findMany: mocks.empty },
+  story: { findMany: mocks.empty }, faithContent: { findMany: mocks.empty }, auditEvent: { findMany: mocks.reviews },
 } }));
 vi.mock("@/lib/storage", () => ({ getPublicMediaStorageReadiness: () => ({ uploadReady: false }) }));
 vi.mock("@/components/curated-gallery-importer", () => ({ CuratedGalleryImporter: () => null }));
@@ -19,7 +19,7 @@ const assets = ["synthetic-one", "synthetic-two"].map(id => ({ id, kind: "IMAGE"
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.permission.mockResolvedValue({}); mocks.allowed.mockReturnValue(true);
-  mocks.empty.mockResolvedValue([]); mocks.count.mockResolvedValue(2); mocks.assets.mockResolvedValue(assets);
+  mocks.empty.mockResolvedValue([]); mocks.reviews.mockResolvedValue([]); mocks.count.mockResolvedValue(2); mocks.assets.mockResolvedValue(assets);
 });
 
 describe("media card accessible labels", () => {
@@ -49,4 +49,20 @@ describe("media card accessible labels", () => {
     const html = renderToStaticMarkup(await AdminMediaPage({ searchParams: Promise.resolve({}) }));
     expect(html).not.toContain("<form");
   });
+});
+
+
+it.each([
+  ["2026-10-26T17:00:00Z", "26/10/2026"],
+  ["2026-10-26T22:00:00Z", "27/10/2026"],
+])("renders media review day in IST at %s independently of the host zone", async (instant, date) => {
+  if (process.env.AMAANA_EXPECT_TEST_ZONE) {
+    expect(Intl.DateTimeFormat().resolvedOptions().timeZone).toBe(process.env.AMAANA_EXPECT_TEST_ZONE);
+  }
+  mocks.reviews.mockResolvedValue([{
+    entityId: "synthetic-one", metadata: {}, createdAt: new Date(instant), actor: { name: "Synthetic reviewer" },
+  }]);
+  const html = renderToStaticMarkup(await AdminMediaPage({ searchParams: Promise.resolve({}) }));
+  expect(html).toContain(`Reviewed by Synthetic reviewer on ${date} (IST).`);
+  expect(mocks.permission).toHaveBeenCalledWith("content.view");
 });
