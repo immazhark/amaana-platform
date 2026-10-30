@@ -1,3 +1,7 @@
+## 2026-10-30 IST — admin new-tab label recovery
+
+CHATGPT_ACTIVE sole writer on fix/admin-new-tab-labels-recovery-20261030 from protected main e2b25813 after accepted #600. Recover five #538 label spans only; URLs, target, rel, permission/query/action/retention behavior unchanged. Append only matching tests to current four suites; dedicated Requests synthetic fixture omits all unshipped historical projection/date tests. No private records or external calls. Tests first, independent review, fresh exact-head hosted and separate-ready required; no149 promotion.
+
 ## 2026-10-30 IST — accepted presentation candidate integration
 
 CHATGPT_ACTIVE sole writer on `fix/integrate-record-stories-presentation-20261030`, current protected main e8526502 after #597 accepted merge. #597 full41045574049 and separate-ready41071639669 PASS; public/runtime observation separate. #598 admin date and #599 Stories contrast independently passed full seven-job CI41046278151/41046542376 on prior main02bb083. Recover only their exact three source/test paths each; keep #597 motion additions in Stories CSS. Tests first on new main, no other old branch import. Original candidates preserved until accepted replacement. Scope only display dates and semantic text color; no permission/query/action/payment/schema/media/infrastructure change or149 promotion. Require fresh full exact-head hosted/ready checks and independent review.
