@@ -61,7 +61,7 @@ const secretValues = [...new Set([
 const offenders = [];
 for (const file of files) {
   // Next static JSON, HTML and vector/text assets can be directly fetched too.
-  if (!/\.(?:js|mjs|css|map|json|html|svg|txt|xml|webmanifest)$/i.test(file)) continue;
+  if (!/\.(?:js|mjs|css|map|json|html|htm|svg|txt|md|markdown|csv|tsv|yaml|yml|ini|toml|xml|webmanifest)$/i.test(file)) continue;
   const content = await readFile(file, "utf8");
   for (const marker of forbiddenMarkers) {
     if (content.includes(marker)) offenders.push({ file: path.relative(process.cwd(), file), marker });
