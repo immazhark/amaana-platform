@@ -2117,6 +2117,13 @@ CHATGPT_ACTIVE sole writer. #602 protected merge4fa141dcecd6edbc5086149547e0ca21
 New merged-tree verification30 October2026 IST: full2358 Vitest PASS/20 isolated-DB SKIP, clean optimized production build with TypeScript/pre/postbuild guards and diff hygiene PASS. No source changed beyond normal merge of accepted main and original #601 five label spans. Online lint dependency resolution interrupted; offline validation pending, do not claim lint success yet. Required fresh exact-head hosted/ready acceptance pending; no #601 merge/deploy or public live-verification claim.
 
 
+
+## 2026-10-30 IST — route CSS recovery evidence
+
+Acceptance30 October2026 IST: source reachability/ownership RED4/4 then GREEN4/4; full2357 Vitest PASS/20 opt-in isolated-DB SKIP. Clean optimized production build including TypeScript/pre/postbuild guards, standalone ESLint, globalCSS architecture audit and diff checks PASS. New aggregate uncompressed JS807083/CSS326954 bytes; no baseline savings/transfer/CWV claim. Client-reference assigned CSS: Appeals194617, Faith library175410, Faith article177158, OurWork173961 bytes, including shared assets. Independent actual-diff review confirms retained cascade/focus/motion and article rules unchanged; no unshipped historical Faith motion imported. Governed Stylelint locally unverified (prior unavailable offline dependency); hosted full exact-head/browser/ready checks required. Keep #539/#540/#545 until accepted replacement, no149 promotion or live acceptance.
+
+
+
 ## 2026-10-31 IST — #502 Impact error association recovery
 
 CHATGPT_ACTIVE sole writer. Recover two original tested source/test blobs from f149454a3cb840cceaee43e2ebfc802583ee16af onto protected main 9e30b16494d72c2c967855d69a5ccf363cf82794 without source overlap; preserve current and historical coordination. No impact data/content/review behavior changed. Require new exact-head CI, ready-state verification and protected SHA merge. Historical 149 classifications unchanged.
@@ -2124,4 +2131,9 @@ CHATGPT_ACTIVE sole writer. Recover two original tested source/test blobs from f
 ## 2026-10-27 IST — Impact diagnostic local acceptance
 
 CHATGPT_ACTIVE sole writer, base main83044f775166be0a3533d807a7ec3e268795530f. Existing Impact programme-filter recovery is now associated with the invalid select, and aria-invalid is explicit; valid/empty selections preserve their prior semantics. Two actual-page failures reproduced first, final4 focused and2286 full local Vitest PASS/20 isolated-DB skips. Next production build including strict TypeScript and client-secret scanner PASS; independent read-only review PASS. Full lint is in progress; hosted exact-head acceptance remains required. No query, public data, media, religious/legal/financial or infrastructure behavior change. Prior fixes are now published as draft PR500(head78eb27428af6df189a9b5a49a2c4c1d895e77095) and501(head5b0ed550c8d9750977dd68cfacd31d83994ddbec); both tree-equal to tested local source. User approved publication after initial auto-review rejection, CLI lacks credentials, connected GitHub app succeeded. Neon hold retained: no merge/deployment or149 status promotion. Rollback revert isolated markup/test.
+
+
+## 2026-10-31 IST — #502 Impact filter error-control association after #604
+
+CHATGPT_ACTIVE sole writer. Preserve original tested source/regression Git blobs on current main 3d487e4f6eedc705ae2d4be79cd6396d88d4e627; maintain all coordination history. No impact facts, programme links or publication behavior changed. Require fresh seven-job exact-head CI, separate ready-state and SHA-guarded merge. 149 unchanged.
 

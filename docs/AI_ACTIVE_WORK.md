@@ -1,3 +1,7 @@
+## 2026-10-31 IST — #502 Impact filter error-control association after #604
+
+CHATGPT_ACTIVE sole writer. Preserve original tested source/regression Git blobs on current main 3d487e4f6eedc705ae2d4be79cd6396d88d4e627; maintain all coordination history. No impact facts, programme links or publication behavior changed. Require fresh seven-job exact-head CI, separate ready-state and SHA-guarded merge. 149 unchanged.
+
 ## 2026-10-31 IST — #502 Impact error association recovery
 
 CHATGPT_ACTIVE sole writer. Recover two original tested source/test blobs from f149454a3cb840cceaee43e2ebfc802583ee16af onto protected main 9e30b16494d72c2c967855d69a5ccf363cf82794 without source overlap; preserve current and historical coordination. No impact data/content/review behavior changed. Require new exact-head CI, ready-state verification and protected SHA merge. Historical 149 classifications unchanged.
@@ -9,6 +13,13 @@ CHATGPT_ACTIVE sole writer, base main83044f775166be0a3533d807a7ec3e268795530f. E
 ## 2026-10-27 IST — Impact filter diagnostic association
 
 CHATGPT_ACTIVE sole implementation writer on `fix/impact-filter-error-description-20261027` from verified main83044f775166be0a3533d807a7ec3e268795530f; parallel agents read-only. Previous Faith/Stories commits published as draft PR500(head78eb2742) and501(head5b0ed550), exact trees matched local tests. No merge observed; Neon release hold retained. New bounded scope: invalid Impact programme control has no diagnostic association. Add aria-invalid/error description to existing markup, with actual-page regression first. No filter/query/data/media/policy changes. Rollback isolated markup/test;149 classifications unchanged.
+
+## 2026-10-30 IST — route CSS recovery
+
+CHATGPT_ACTIVE sole writer on perf/route-css-recovery-20261030 from main4fa141dc. Recover #539 unused Our Work import, #540 retired Appeals selectors/keyframes, #545 Faith article-only CSS placement with three library rules kept shared. Preserve retained stylesheet files used by audits and all current motion/contrast rules; do not import historical parent Faith motion changes. Source inventories/test-first; independent review and fresh exact-head hosted/browser/build/ready acceptance required. No layout redesign, content/religious approval, data/auth/payment/provider/schema/infrastructure change or149 promotion.
+
+
+Acceptance30 October2026 IST: source reachability/ownership RED4/4 then GREEN4/4; full2357 Vitest PASS/20 opt-in isolated-DB SKIP. Clean optimized production build including TypeScript/pre/postbuild guards, standalone ESLint, globalCSS architecture audit and diff checks PASS. New aggregate uncompressed JS807083/CSS326954 bytes; no baseline savings/transfer/CWV claim. Client-reference assigned CSS: Appeals194617, Faith library175410, Faith article177158, OurWork173961 bytes, including shared assets. Independent actual-diff review confirms retained cascade/focus/motion and article rules unchanged; no unshipped historical Faith motion imported. Governed Stylelint locally unverified (prior unavailable offline dependency); hosted full exact-head/browser/ready checks required. Keep #539/#540/#545 until accepted replacement, no149 promotion or live acceptance.
 
 ## 2026-10-30 IST — #601 reconciliation after #602 release
 
