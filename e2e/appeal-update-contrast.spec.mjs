@@ -37,7 +37,8 @@ test("published Appeals update typography retains AA contrast on its dark gradie
     article.append(date, body);
     line.append(article);
     section.append(line);
-    document.querySelector("main").append(section);
+    // Mount outside React-managed <main> so late hydration cannot remove the synthetic fixture.
+    document.body.append(section);
   });
 
   for (const width of [390, 1440]) {
