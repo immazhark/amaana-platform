@@ -9,6 +9,17 @@ main{overflow:clip}.container,.v3-shell{padding-inline:max(0px,env(safe-area-ins
 /* Switch the complete navigation together before labels crowd tablet widths. */
 @media(max-width:1020px){.site-header .nav-links{display:none}.site-header .menu-toggle{display:grid}.site-header .mobile-menu.open{display:block;max-height:calc(100vh - 7.2rem);max-height:calc(100dvh - 7.2rem);overflow-y:auto;overscroll-behavior:contain}}
 
+/* Native header navigation remains available when the interactive menu cannot hydrate. */
+.site-header>noscript>.mobile-nav-noscript{display:none}
+@media(max-width:1020px){
+  .site-header>noscript>.mobile-nav-noscript{display:block;border-top:1px solid rgb(18 34 57 / 12%);background:#fffdf8}
+  .mobile-nav-noscript summary{display:flex;align-items:center;min-height:3rem;padding:.65rem 1.25rem;color:#466faa;font-weight:700;cursor:pointer}
+  .mobile-nav-noscript nav{max-height:calc(100vh - var(--af-chrome-height) - 3rem);max-height:calc(100dvh - var(--af-chrome-height) - 3rem);overflow-y:auto;overscroll-behavior:contain}
+  .mobile-nav-noscript .mobile-menu-secondary{display:grid}
+  .mobile-nav-noscript a{min-height:2.75rem;display:flex;align-items:center}
+  .site-header:has(>noscript>.mobile-nav-noscript) button[aria-controls="mobile-navigation"]{display:none}
+}
+
 /* Proof strip: clearer baseline and stronger grouping */
 .v3-proof-grid{align-items:stretch}.v3-proof-item{display:flex;min-height:9rem;flex-direction:column;justify-content:center}.v3-proof-item strong{font-variant-numeric:tabular-nums}.v3-proof-item span{max-width:17rem}
 
@@ -658,6 +669,7 @@ body{font-weight:var(--af-weight-body)}
 .footer-nav-title{margin:0}
 .footer-nav-label{display:block;color:#f1cf52;font-size:.75rem;font-weight:700;letter-spacing:.11em;line-height:1.35;text-transform:uppercase}
 .footer-nav-toggle{display:none}
+.footer-nav-group>noscript>.footer-nav-noscript-links{display:none}
 @media(max-width:520px){
   .footer-nav-label{display:none}
   .footer-nav-title{border-top:1px solid rgb(255 253 248 / 12%)}
@@ -670,6 +682,9 @@ body{font-weight:var(--af-weight-body)}
   .footer-nav-toggle-icon{color:rgb(255 253 248 / 72%);font-size:1.15rem;font-weight:500;line-height:1}
   .footer-nav-group>.footer-links{display:none;padding:.25rem 0 .75rem;grid-template-columns:repeat(2,minmax(0,1fr));gap:.1rem .75rem}
   .footer-nav-group[data-open="true"]>.footer-links{display:grid}
+  .footer-nav-group>noscript>.footer-nav-noscript-links{display:grid;padding:.25rem 0 .75rem;grid-template-columns:repeat(2,minmax(0,1fr));gap:.1rem .75rem}
+  .footer-nav-group:has(>noscript>.footer-nav-noscript-links) .footer-nav-toggle{display:none}
+  .footer-nav-group:has(>noscript>.footer-nav-noscript-links) .footer-nav-label{display:block;padding:.7rem .1rem}
 }
 
 

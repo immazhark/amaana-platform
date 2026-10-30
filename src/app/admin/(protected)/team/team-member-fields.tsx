@@ -8,15 +8,15 @@ export function TeamMemberFields({ groups, member }: Props) {
     <div className="form-grid">
       <div className="field">
         <label htmlFor={`${prefix}-name`}>Full name</label>
-        <input id={`${prefix}-name`} name="fullName" required maxLength={120} defaultValue={member?.fullName ?? ""} />
+        <input id={`${prefix}-name`} name="fullName" required minLength={2} maxLength={120} defaultValue={member?.fullName ?? ""} />
       </div>
       <div className="field">
         <label htmlFor={`${prefix}-designation`}>Designation</label>
-        <input id={`${prefix}-designation`} name="designation" required maxLength={120} defaultValue={member?.designation ?? ""} />
+        <input id={`${prefix}-designation`} name="designation" required minLength={2} maxLength={120} defaultValue={member?.designation ?? ""} />
       </div>
       <div className="field">
         <label htmlFor={`${prefix}-slug`}>Unique slug (leave blank to derive from the name)</label>
-        <input id={`${prefix}-slug`} name="slug" maxLength={100} defaultValue={member?.slug ?? ""} pattern="[a-z0-9]+(-[a-z0-9]+)*" />
+        <input id={`${prefix}-slug`} name="slug" minLength={2} maxLength={100} defaultValue={member?.slug ?? ""} pattern="[a-z0-9]+(-[a-z0-9]+)*" />
       </div>
       <div className="field">
         <label htmlFor={`${prefix}-group`}>Team group</label>
