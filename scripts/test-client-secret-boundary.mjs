@@ -142,3 +142,17 @@ test("directly served plaintext assets cannot bypass server-secret scanning", ()
     assert.equal(clean.status, 0, clean.stderr);
   }
 });
+
+test("scanner rejects public environment files regardless of secret marker contents", () => {
+  for (const filename of [".env", ".env.production.local", "nested/.env.local"]) {
+    const leaked = runScanner(`SYNTHETIC_ENV_VALUE=${canary}`, {}, filename, "public");
+    assert.equal(leaked.status, 1, `Public environment file was accepted: ${filename}`);
+    assert.match(leaked.stderr, /Sensitive environment file/);
+    assert.doesNotMatch(leaked.stderr + leaked.stdout, new RegExp(canary));
+  }
+  const clean = runScanner("SYNTHETIC_ENV_VALUE=placeholder", {}, ".env.example", "public");
+  assert.equal(clean.status, 1, "An unmarked environment file must be rejected");
+  assert.match(clean.stderr, /Sensitive environment file/);
+  const safe = runScanner("Site verification text", {}, ".well-known/verification.txt", "public");
+  assert.equal(safe.status, 0, safe.stderr);
+});
