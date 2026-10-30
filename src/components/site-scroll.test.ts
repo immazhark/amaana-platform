@@ -40,6 +40,45 @@ test.each(["af-menu-lock", "af-navigation-lock"])(
   },
 );
 
+test.each([
+  { lock: "af-menu-lock", inOpenMenu: true, prevented: false },
+  { lock: "af-menu-lock", inOpenMenu: false, prevented: true },
+  { lock: "af-navigation-lock", inOpenMenu: true, prevented: true },
+])(
+  "$lock wheel with inOpenMenu=$inOpenMenu has defaultPrevented=$prevented",
+  async ({ lock, inOpenMenu, prevented }) => {
+    let cleanup: (() => void) | undefined;
+    const created = vi.fn();
+    vi.doMock("react", () => ({
+      useEffect: (effect: () => () => void) => { cleanup = effect(); },
+    }));
+    vi.doMock("lenis", () => ({ default: class { constructor() { created(); } } }));
+    const windowTarget = Object.assign(new EventTarget(), {
+      matchMedia: (query: string) => Object.assign(new EventTarget(), { matches: query === "(pointer: fine)" }),
+    });
+    vi.stubGlobal("window", windowTarget);
+    vi.stubGlobal("document", Object.assign(new EventTarget(), {
+      hidden: false,
+      body: { matches: (selector: string) => selector.split(",").includes(`.${lock}`) },
+    }));
+    vi.stubGlobal("Element", class {
+      closest(selector: string) {
+        return inOpenMenu && (selector === ".mobile-menu.open" || selector.includes(".mobile-menu,")) ? this : null;
+      }
+    });
+    const { useSiteScroll } = await import("./site-scroll");
+    useSiteScroll("/about");
+    try {
+      const wheel = new Event("wheel", { cancelable: true });
+      Object.defineProperty(wheel, "target", { value: new Element() });
+      windowTarget.dispatchEvent(wheel);
+      expect(wheel.defaultPrevented).toBe(prevented);
+      await vi.dynamicImportSettled();
+      expect(created).not.toHaveBeenCalled();
+    } finally { cleanup?.(); }
+  },
+);
+
 test.each(["Tab", "ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "])(
   "%s cancels pending wheel enhancement and a later wheel may restart it",
   async key => {

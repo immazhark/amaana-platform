@@ -113,7 +113,7 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
             <h3>{document.originalName}</h3>
             <p><Link href={`/admin/requests/${document.assistanceRequestId}`}>{document.assistanceRequest.referenceNumber} · {document.assistanceRequest.applicantName}</Link></p>
             <small>Request status: {document.assistanceRequest.status.replaceAll("_", " ")}{document.assistanceRequest.appeal ? ` · linked appeal ${document.assistanceRequest.appeal.status}` : ""}</small>
-            <div style={{ marginTop: "0.75rem" }}><a href={`/admin/documents/${document.id}`} target="_blank" rel="noreferrer">Open private document ↗</a></div>
+            <div style={{ marginTop: "0.75rem" }}><a href={`/admin/documents/${document.id}`} target="_blank" rel="noreferrer">Open private document ↗<span className="sr-only"> (opens in a new tab)</span></a></div>
             {latestReview && <div className="admin-media-review-summary"><strong>Last retention review</strong><small>{latestReview.actor.name} · {latestReview.createdAt.toLocaleString("en-IN")} · {reviewMeta.reason ?? "Reason recorded"}{reviewMeta.reviewAfter ? ` · review after ${new Date(reviewMeta.reviewAfter).toLocaleDateString("en-IN")}` : ""}</small></div>}
             {held && latestHoldEvent && <div className="admin-media-review-summary"><strong>Deletion suspended by hold</strong><small>Placed by {latestHoldEvent.actor.name} on {latestHoldEvent.createdAt.toLocaleString("en-IN")}.</small></div>}
           </div>
