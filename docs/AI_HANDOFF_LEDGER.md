@@ -2105,3 +2105,8 @@ Acceptance checkpoint30 October2026 IST: new-main test-first run RED3/11 admin a
 
 Acceptance30 October2026 IST: focused RED9/21 then GREEN21/21; full2353 Vitest PASS/20 opt-in isolated-DB SKIP. Clean optimized Next production build with TypeScript/pre/postbuild guards and diff checks PASS. Independent actual-diff review found no blocker, confirmed actions/eligibility unchanged and no inherited behavior. Added inactive-assignee action case is coverage of existing denial only. Full lint final status pending; exact new-head hosted/browser/DB/ready checks required. #508 closed as semantic supersession by safer shipped #529 permission-guarded query, not exact-source identity. Keep #504/#507/#484 until replacement accepted. Preserve #601 label additions during eventual main reconciliation. No149 promotion or measured latency/CWV claim.
 
+
+## 2026-10-30 IST — route CSS recovery evidence
+
+Acceptance30 October2026 IST: source reachability/ownership RED4/4 then GREEN4/4; full2357 Vitest PASS/20 opt-in isolated-DB SKIP. Clean optimized production build including TypeScript/pre/postbuild guards, standalone ESLint, globalCSS architecture audit and diff checks PASS. New aggregate uncompressed JS807083/CSS326954 bytes; no baseline savings/transfer/CWV claim. Client-reference assigned CSS: Appeals194617, Faith library175410, Faith article177158, OurWork173961 bytes, including shared assets. Independent actual-diff review confirms retained cascade/focus/motion and article rules unchanged; no unshipped historical Faith motion imported. Governed Stylelint locally unverified (prior unavailable offline dependency); hosted full exact-head/browser/ready checks required. Keep #539/#540/#545 until accepted replacement, no149 promotion or live acceptance.
+
