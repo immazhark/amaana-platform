@@ -1,3 +1,18 @@
+## 2026-10-31 IST — #603 reconciliation after accepted #605
+
+CHATGPT_ACTIVE sole implementation writer. #605 merged protected main at 4a8b15adaed33033077f4e44a2279a0dbd7e21a3 after seven exact-head and separate ready-state checks. #603 original tested twelve application/regression blobs are preserved verbatim with current main by a normal two-parent commit; #605's source and both coordination histories are preserved. Fresh exact-head CI, independent review, separate ready-state and SHA-guarded protected merge remain required. No notification activation, tax/public claims, financial behavior, schema, production data, infrastructure change or 149-item promotion.
+
+## 2026-10-31 IST — #605 re-reconciliation after protected #604 merge
+
+CHATGPT_ACTIVE sole writer. Current protected main 3d487e4f6eedc705ae2d4be79cd6396d88d4e627 includes accepted #604 CSS scope. Source and regression content of #605 remains byte-identical to tested previous head e23d334b50af1a8aa2edbc7de54b600dd4095e21; only current coordination histories are reconciled. All source paths are disjoint from intervening main changes. Require fresh exact-head full CI, separate ready-state and guarded merge. Historical 149 unchanged.
+
+## 2026-10-31 IST — public query and copy feedback recovery
+
+CHATGPT_ACTIVE sole writer on fix/public-query-copy-feedback-recovery-20261031 from main4fa141dc. Parallel read-only squad selected #513/#514/#518/#487/#509: safe malformed volunteer/feedback query recovery, IST footer year, latest-attempt clipboard feedback. Add completed-then-pending transfer-copy regression and clear stale feedback on new attempt. Preserve all payment submit/lock/provider/reading/source text, native mailto handoff, mobile-menu Escape and no-JS footer behavior. No email send, real private records, schema/auth/provider/notification activation or149 promotion. Test-first, independent review, fresh exact-head/ready acceptance required.
+
+
+Acceptance31 October2026 IST: focused RED17/33 then GREEN33/33. Full2375 Vitest PASS/20 opt-in isolated-DB SKIP; clean optimized production build including strict TypeScript/pre/postbuild, standalone zero-warning ESLint and diff checks PASS. Two independent reviews prove5source paths limited to detection/year/copy feedback; native email handoff, no-JS footer, mobile Escape, reading text and payment submit/lock/provider/value logic byte-preserved. Added completed-then-pending copy case closes #509 coverage gap and verifies zero fetch/router/lock calls. Companion E2E appended2 ordering cases without replacing existing Escape coverage; not locally executed. Governed Stylelint remains locally unverified due prior offline dependency gap; hosted exact-head/browser/DB/lint/ready required. Keep513514518487509 until accepted replacement, no149 or live release claim.
+
 ## 2026-10-31 IST — #603 date-display recovery after protected #604 merge
 
 CHATGPT_ACTIVE sole writer. Current main 3d487e4f6eedc705ae2d4be79cd6396d88d4e627 contains released CSS cleanups. Preserve exactly twelve tested source/regression Git blobs from old candidate bcfff55c95178f81599a629f649707db293349d5, including #601 Media Library tab disclosure and the IST date-case tests. Reconcile coordination histories without overwriting current main. Fresh exact-head CI and ready-state checks required; no scheduled notification activation, financial behavior, or 149 status changes.

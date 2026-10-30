@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { hasUnsupportedPublicQueryFields } from "@/lib/public-navigation-query.mjs";
 import { ActionIcon } from "@/components/action-icon";
 import {
   buildVolunteerEnquiryHref, parseVolunteerPreferences,
@@ -19,7 +20,9 @@ type Preferences = Record<string, string | string[] | undefined>;
 /** Native fixed-choice GET review, then visitor-owned email. No client state,
  * automatic message delivery, user accounts or volunteer database. */
 export function VolunteerInterestBuilder({ preferences = {} }: { preferences?: Preferences }) {
-  const requested = Object.prototype.hasOwnProperty.call(preferences, "intent");
+  const fields = ["intent", "skill", "availability"];
+  const requested = fields.some(field => Object.prototype.hasOwnProperty.call(preferences, field))
+    || hasUnsupportedPublicQueryFields(preferences, fields);
   const selection = requested ? parseVolunteerPreferences(preferences) : null;
   return (
     <div>
