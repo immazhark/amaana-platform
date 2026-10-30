@@ -46,6 +46,28 @@ describe("volunteer interest experience", () => {
     expect(markup).not.toContain("PRIVATE_INFORMATION");
     expect(markup).not.toContain("Open prepared email");
   });
+
+  it.each([
+    ["skill without review intent", { skill: "Event logistics" }],
+    ["availability without review intent", { availability: "Weekends" }],
+    ["unapproved personal detail", { email: "PRIVATE_EMAIL_VALUE" }],
+    ["repeated tracking parameter", { utm_source: ["untrusted", "repeated"] }],
+  ] satisfies [string, Record<string, string | string[]>][])("shows safe recovery for %s", (_reason, preferences) => {
+    const markup = renderToStaticMarkup(createElement(VolunteerInterestBuilder, { preferences }));
+    expect(markup).toContain('role="alert"');
+    expect(markup).toContain("Those volunteer choices could not be read.");
+    expect(markup).not.toContain("Open prepared email");
+    expect(markup).not.toContain("PRIVATE_EMAIL_VALUE");
+  });
+
+  it("does not call an ordinary attribution-only visit an invalid enquiry", () => {
+    const markup = renderToStaticMarkup(createElement(VolunteerInterestBuilder, {
+      preferences: { utm_source: "partner", utm_campaign: "volunteer" },
+    }));
+    expect(markup).not.toContain('role="alert"');
+    expect(markup).not.toContain("Open prepared email");
+    expect(markup).not.toContain("partner");
+  });
   it("keeps React client hydration, storage and on-site submissions out of the source", async () => {
     const { readFileSync } = await import("node:fs");
     const source = readFileSync(new URL("./volunteer-interest-builder.tsx", import.meta.url), "utf8");

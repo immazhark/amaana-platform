@@ -1,3 +1,7 @@
+## 2026-10-31 IST — public query and copy feedback recovery
+
+CHATGPT_ACTIVE sole writer on fix/public-query-copy-feedback-recovery-20261031 from main4fa141dc. Parallel read-only squad selected #513/#514/#518/#487/#509: safe malformed volunteer/feedback query recovery, IST footer year, latest-attempt clipboard feedback. Add completed-then-pending transfer-copy regression and clear stale feedback on new attempt. Preserve all payment submit/lock/provider/reading/source text, native mailto handoff, mobile-menu Escape and no-JS footer behavior. No email send, real private records, schema/auth/provider/notification activation or149 promotion. Test-first, independent review, fresh exact-head/ready acceptance required.
+
 ## 2026-10-30 IST — admin query and selection recovery
 
 CHATGPT_ACTIVE sole writer on perf/admin-query-and-selection-recovery-20261030 from main e2b25813. Recover bounded #504 four non-editor option-query skips, #507 staff/reviewer/audit projections (retain narrow assignee name for #484), and #484 current-status/current-assignee selection preservation. Synthetic focused RED9/21 before source; one added action guard is regression coverage of existing denial, not a new runtime fix. Preserve permissions/server eligibility, query scope/order, IDs, original #601 labels when later reconciled, privacy/retention controls. No live records/DB/schema/provider/payment changes; fresh exact-head/ready acceptance required, no149 promotion.
