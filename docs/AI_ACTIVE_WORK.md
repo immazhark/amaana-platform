@@ -1,3 +1,7 @@
+## 2026-10-31 IST — #501 Stories filter error-control association after #604
+
+CHATGPT_ACTIVE sole writer. Preserve original tested source and regression blobs on current main 3d487e4f6eedc705ae2d4be79cd6396d88d4e627; no publication, programme, privacy, query or route behavior change. Preserve complete coordination histories; exact-head CI, ready-state and SHA-guarded merge required. Canonical 149 unchanged.
+
 ## 2026-10-31 IST — #501 Stories error association recovery
 
 CHATGPT_ACTIVE sole writer. Recover original test-first Stories filter accessible feedback on protected main 9e30b16494d72c2c967855d69a5ccf363cf82794 without source overlap, preserving two tested original blobs and both coordination histories. Keep filter/query, publication and privacy behavior unchanged. Full exact-head CI, separate ready-state and protected SHA-guarded merge required; canonical 149 classifications unchanged.
@@ -9,6 +13,13 @@ CHATGPT_ACTIVE sole writer on `fix/story-filter-error-description-20261027`, bas
 ## 2026-10-27 IST — Stories filter error descriptions
 
 CHATGPT_ACTIVE sole writer on `fix/story-filter-error-description-20261027` from main83044f7. Parallel agents read-only. Link existing invalid filter diagnostic to both search/programme controls; preserve valid help and selection. Regression first. Faith media implementation committed separately at2b789035; GitHub push rejected by automatic approval review, no bypass. No auth/data/media/policy/schema/provider changes. Neon hold retained; no merge/deployment. Rollback revert isolated markup/test. Historical149 unchanged.
+
+## 2026-10-30 IST — route CSS recovery
+
+CHATGPT_ACTIVE sole writer on perf/route-css-recovery-20261030 from main4fa141dc. Recover #539 unused Our Work import, #540 retired Appeals selectors/keyframes, #545 Faith article-only CSS placement with three library rules kept shared. Preserve retained stylesheet files used by audits and all current motion/contrast rules; do not import historical parent Faith motion changes. Source inventories/test-first; independent review and fresh exact-head hosted/browser/build/ready acceptance required. No layout redesign, content/religious approval, data/auth/payment/provider/schema/infrastructure change or149 promotion.
+
+
+Acceptance30 October2026 IST: source reachability/ownership RED4/4 then GREEN4/4; full2357 Vitest PASS/20 opt-in isolated-DB SKIP. Clean optimized production build including TypeScript/pre/postbuild guards, standalone ESLint, globalCSS architecture audit and diff checks PASS. New aggregate uncompressed JS807083/CSS326954 bytes; no baseline savings/transfer/CWV claim. Client-reference assigned CSS: Appeals194617, Faith library175410, Faith article177158, OurWork173961 bytes, including shared assets. Independent actual-diff review confirms retained cascade/focus/motion and article rules unchanged; no unshipped historical Faith motion imported. Governed Stylelint locally unverified (prior unavailable offline dependency); hosted full exact-head/browser/ready checks required. Keep #539/#540/#545 until accepted replacement, no149 promotion or live acceptance.
 
 ## 2026-10-30 IST — #601 reconciliation after #602 release
 

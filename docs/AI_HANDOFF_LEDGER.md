@@ -2117,6 +2117,13 @@ CHATGPT_ACTIVE sole writer. #602 protected merge4fa141dcecd6edbc5086149547e0ca21
 New merged-tree verification30 October2026 IST: full2358 Vitest PASS/20 isolated-DB SKIP, clean optimized production build with TypeScript/pre/postbuild guards and diff hygiene PASS. No source changed beyond normal merge of accepted main and original #601 five label spans. Online lint dependency resolution interrupted; offline validation pending, do not claim lint success yet. Required fresh exact-head hosted/ready acceptance pending; no #601 merge/deploy or public live-verification claim.
 
 
+
+## 2026-10-30 IST — route CSS recovery evidence
+
+Acceptance30 October2026 IST: source reachability/ownership RED4/4 then GREEN4/4; full2357 Vitest PASS/20 opt-in isolated-DB SKIP. Clean optimized production build including TypeScript/pre/postbuild guards, standalone ESLint, globalCSS architecture audit and diff checks PASS. New aggregate uncompressed JS807083/CSS326954 bytes; no baseline savings/transfer/CWV claim. Client-reference assigned CSS: Appeals194617, Faith library175410, Faith article177158, OurWork173961 bytes, including shared assets. Independent actual-diff review confirms retained cascade/focus/motion and article rules unchanged; no unshipped historical Faith motion imported. Governed Stylelint locally unverified (prior unavailable offline dependency); hosted full exact-head/browser/ready checks required. Keep #539/#540/#545 until accepted replacement, no149 promotion or live acceptance.
+
+
+
 ## 2026-10-31 IST — #501 Stories error association recovery
 
 CHATGPT_ACTIVE sole writer. Recover original test-first Stories filter accessible feedback on protected main 9e30b16494d72c2c967855d69a5ccf363cf82794 without source overlap, preserving two tested original blobs and both coordination histories. Keep filter/query, publication and privacy behavior unchanged. Full exact-head CI, separate ready-state and protected SHA-guarded merge required; canonical 149 classifications unchanged.
@@ -2124,4 +2131,9 @@ CHATGPT_ACTIVE sole writer. Recover original test-first Stories filter accessibl
 ## 2026-10-27 IST — Stories filter error descriptions accepted locally
 
 CHATGPT_ACTIVE sole writer on `fix/story-filter-error-description-20261027`, base verified protected main83044f775166be0a3533d807a7ec3e268795530f. Existing invalid query/programme controls referenced only generic privacy help, not the recovery diagnostic. Three actual-page regressions failed before correction; both controls now conditionally describe the uniquely identified existing error. Valid filters preserve help-only descriptions. Four focused cases and full local Vitest2286 PASS/20 isolated DB skips; full ESLint+Stylelint, strict TypeScript as part of Next production build, client-secret guard and independent read-only review PASS. No local browser/screen-reader acceptance claimed; hosted acceptance remains required. Separate Faith media commit2b789035 was tested2289 PASS/20 skips with production build/lint/typecheck and review PASS. Automatic approval review rejected its GitHub push, citing source/history export and unestablished destination trust/authorization; no connector or alternate push bypass attempted. Both fixes remain LOCAL ONLY, unmerged and undeployed. Neon release hold preserved; no canonical149 status promotion. Rollback revert isolated markup/test. Next executable action: publish these exact task branches to owner repository immazhark/amaana-platform once publication rejection is resolved, then exact-head acceptance without merging under compute hold.
+
+
+## 2026-10-31 IST — #501 Stories filter error-control association after #604
+
+CHATGPT_ACTIVE sole writer. Preserve original tested source and regression blobs on current main 3d487e4f6eedc705ae2d4be79cd6396d88d4e627; no publication, programme, privacy, query or route behavior change. Preserve complete coordination histories; exact-head CI, ready-state and SHA-guarded merge required. Canonical 149 unchanged.
 
