@@ -2117,6 +2117,13 @@ CHATGPT_ACTIVE sole writer. #602 protected merge4fa141dcecd6edbc5086149547e0ca21
 New merged-tree verification30 October2026 IST: full2358 Vitest PASS/20 isolated-DB SKIP, clean optimized production build with TypeScript/pre/postbuild guards and diff hygiene PASS. No source changed beyond normal merge of accepted main and original #601 five label spans. Online lint dependency resolution interrupted; offline validation pending, do not claim lint success yet. Required fresh exact-head hosted/ready acceptance pending; no #601 merge/deploy or public live-verification claim.
 
 
+
+## 2026-10-30 IST — route CSS recovery evidence
+
+Acceptance30 October2026 IST: source reachability/ownership RED4/4 then GREEN4/4; full2357 Vitest PASS/20 opt-in isolated-DB SKIP. Clean optimized production build including TypeScript/pre/postbuild guards, standalone ESLint, globalCSS architecture audit and diff checks PASS. New aggregate uncompressed JS807083/CSS326954 bytes; no baseline savings/transfer/CWV claim. Client-reference assigned CSS: Appeals194617, Faith library175410, Faith article177158, OurWork173961 bytes, including shared assets. Independent actual-diff review confirms retained cascade/focus/motion and article rules unchanged; no unshipped historical Faith motion imported. Governed Stylelint locally unverified (prior unavailable offline dependency); hosted full exact-head/browser/ready checks required. Keep #539/#540/#545 until accepted replacement, no149 promotion or live acceptance.
+
+
+
 ## 2026-10-31 IST — #519 public new-tab accessibility recovery
 
 CHATGPT_ACTIVE sole writer. Recover the previously tested synthetic disclosure regression and two JSX label changes from original #519 onto protected main 9e30b16494d72c2c967855d69a5ccf363cf82794; all three source/test blobs preserved. Keep original destinations and form state, current history and review constraints. Full fresh exact-head verification, separate ready-state and guarded merge required; no physical screen-reader certification or canonical 149 promotion.
@@ -2126,4 +2133,9 @@ CHATGPT_ACTIVE sole writer. Recover the previously tested synthetic disclosure r
 CHATGPT_ACTIVE sole implementation writer. Task branch `fix/public-new-tab-announcements-20261028`, base protected main `83044f775166be0a3533d807a7ec3e268795530f`. Prior #518 footer-year task is committed and published draft at remote head `6ee90708f4f57129190cadd7d8bf8f3ac7c01350`; #515–#517 and other open drafts remain under Neon release hold. Next atomic task: test-first nonvisual context warning on `/request-assistance` terms/privacy links and `/recognition` certificate link. Capture SSR anchor semantics; preserve targets, exact URLs, visible copy, legal/award claims and form state. No live infrastructure or privacy data. CI/browser/physical assistive-tech acceptance distinct; after local quality gates publish one draft PR, do not promote/merge/deploy. No historic item-status promotion. Evidence/head to follow.
 
 Local result before commit: two actual-route SSR assertions RED for absent `sr-only` context text, then 2/2 GREEN for both assistance terms/privacy and recognition PDF. Full Vitest 2,284 PASS / 20 isolated-DB opt-in SKIP after a permitted rerun around sandbox `spawnSync EPERM`; strict TypeScript, ESLint, pinned Stylelint, clean Next production build (including curated contract/prebuild edge audit/client secret and image weight guards) PASS. Both prerendered HTML files contain the new announcements. JS 806,077/819,200 B and CSS 328,687/348,160 B. Reviewer PASS; `.sr-only` already global and visible labels, target `_blank`, `rel` and URLs unchanged. Physical screen-reader, browser and public runtime verification not claimed. No 149-class promotion; Neon production compute-budget hold still prevents ready-state promotion/merge/deploy. Rollback: revert three link-name spans and focused test.
+
+
+## 2026-10-31 IST — #519 new-tab public accessibility after #604
+
+CHATGPT_ACTIVE sole writer. Preserve original three tested source blobs on protected main 3d487e4f6eedc705ae2d4be79cd6396d88d4e627; no changes to recognition facts, request submissions, public URLs or accessible labels. Maintain complete coordination histories. Fresh seven-job exact-head CI and separate ready-state required; no full WCAG or 149-item certification.
 
