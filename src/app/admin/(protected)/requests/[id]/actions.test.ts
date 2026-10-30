@@ -67,6 +67,21 @@ describe("assistance admin concurrency guards", () => {
     mocks.requestUpdateMany.mockResolvedValue({ count: 1 });
   });
 
+  it("rejects a retained unavailable assignee before any request mutation or audit", async () => {
+    mocks.userFindFirst.mockResolvedValue(null);
+    await expect(assignRequest(form({
+      id: "synthetic-request", assignedToId: "synthetic-inactive",
+      expectedUpdatedAt: "2026-10-27T00:00:00.000Z",
+    }))).rejects.toThrow("The selected staff member cannot access assistance requests");
+    expect(mocks.userFindFirst).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ id: "synthetic-inactive", status: "ACTIVE" }),
+    }));
+    expect(mocks.requestFind).not.toHaveBeenCalled();
+    expect(mocks.requestUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+    expect(mocks.notificationCreate).not.toHaveBeenCalled();
+  });
+
   it("rejects a stale assignment before mutating or auditing", async () => {
     const renderedAt = new Date("2026-09-23T04:00:00.000Z");
     const newerAt = new Date("2026-09-23T04:01:00.000Z");

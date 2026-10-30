@@ -32,10 +32,10 @@ export default async function AdminMediaPage({ searchParams }: Props) {
   const [totalItems, visibilityGroups, causes, initiatives, stories, faith] = await Promise.all([
     prisma.mediaAsset.count({ where }),
     prisma.mediaAsset.groupBy({ by: ["isPublic"], _count: { _all: true } }),
-    prisma.cause.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }),
-    prisma.initiative.findMany({ orderBy: [{ startYear: "desc" }, { title: "asc" }], select: { id: true, title: true } }),
-    prisma.story.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }),
-    prisma.faithContent.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }),
+    canEdit ? prisma.cause.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }) : Promise.resolve([]),
+    canEdit ? prisma.initiative.findMany({ orderBy: [{ startYear: "desc" }, { title: "asc" }], select: { id: true, title: true } }) : Promise.resolve([]),
+    canEdit ? prisma.story.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }) : Promise.resolve([]),
+    canEdit ? prisma.faithContent.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }) : Promise.resolve([]),
   ]);
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
   const assets = await prisma.mediaAsset.findMany({
