@@ -1,6 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
-import { publicFaithWhere } from "@/lib/faith-publication";
+import { isPublicFaithReviewComplete, publicFaithWhere } from "@/lib/faith-publication";
 import { PUBLIC_DETAIL_MEDIA_PROJECTION } from "@/lib/public-content";
 
 export const PUBLIC_ARCHIVE_PAGE_SIZE = 24;
@@ -15,7 +15,7 @@ export function parsePublicArchivePage(value: string | string[] | undefined): nu
 
 /** Count only eligible rows before accepting an offset; a forged huge page
  * cannot force a deep scan. Repeat parent publication gates in the media read
- * so withdrawal between reads fails closed. No storage/review fields leave SQL.
+ * so withdrawal between reads fails closed. No storage/review fields leave this loader.
  */
 export async function getPublicMediaArchive(kind: string, slug: string, page: number) {
   if (parsePublicArchivePage(String(page)) !== page || !slug || slug.length > 200) return null;
@@ -30,12 +30,17 @@ export async function getPublicMediaArchive(kind: string, slug: string, page: nu
   const initiativeWhere = { slug, status: "PUBLISHED" as const, cause: { status: "PUBLISHED" as const } };
   const storyWhere = { slug, status: "PUBLISHED" as const, privacyApprovedAt: { not: null } };
   const faithWhere = { slug, ...publicFaithWhere };
+  const faithParent = kind === "faith" ? await prisma.faithContent.findFirst({
+    where: faithWhere,
+    select: { ...select, status: true, religiousReviewStatus: true, verifiedAt: true, sourceCitation: true },
+  }) : null;
+  if (kind === "faith" && (!faithParent || !isPublicFaithReviewComplete(faithParent))) return null;
   const parent = kind === "initiative"
     ? await prisma.initiative.findFirst({ where: initiativeWhere, select })
     : kind === "story"
       ? await prisma.story.findFirst({ where: storyWhere, select })
       : kind === "faith"
-        ? await prisma.faithContent.findFirst({ where: faithWhere, select })
+        ? faithParent
         : null;
   if (!parent) return null;
   // The extra offset-page count must exist and be positive. Fail closed if an
@@ -49,7 +54,7 @@ export async function getPublicMediaArchive(kind: string, slug: string, page: nu
   }
   const relation = kind === "initiative" ? { initiative: { id: parent.id, ...initiativeWhere } }
     : kind === "story" ? { story: { id: parent.id, ...storyWhere } }
-      : { faithContent: { id: parent.id, ...faithWhere } };
+      : { faithContent: { id: parent.id, ...faithWhere, sourceCitation: faithParent?.sourceCitation ?? "" } };
   const media = await prisma.mediaAsset.findMany({
     where: { ...mediaWhere, ...relation },
     select: PUBLIC_DETAIL_MEDIA_PROJECTION.select,

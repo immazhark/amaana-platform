@@ -24,7 +24,7 @@ it("bounds media work to the two distinct visible records and repeats review and
   expect(mocks.findMany).toHaveBeenCalledOnce();
   const query = mocks.findMany.mock.calls[0]?.[0];
   expect(query.where).toEqual({ ...publicFaithWhere, id: { in: ["hero", "lead"] } });
-  expect(Object.keys(query.select).sort()).toEqual(["id", "mediaAssets"]);
+  expect(Object.keys(query.select).sort()).toEqual(["id", "mediaAssets", "religiousReviewStatus", "sourceCitation", "status", "verifiedAt"]);
   expect(query.select.mediaAssets).toMatchObject({
     where: { kind: "IMAGE", isPublic: true, privacyApprovedAt: { not: null }, publicUrl: { not: null }, altText: { not: "" } },
     orderBy: { sortOrder: "asc" }, take: 3,
@@ -38,7 +38,7 @@ it("skips an empty library and rejects more than two unique visible IDs before q
 });
 
 it("does not replace a withdrawn visible record with another library image", async () => {
-  mocks.findMany.mockResolvedValue([{ id: "lead", mediaAssets: [] }]);
+  mocks.findMany.mockResolvedValue([{ id: "lead", mediaAssets: [],status:"PUBLISHED",religiousReviewStatus:"VERIFIED",verifiedAt:new Date(),sourceCitation:"Reviewed source" }]);
   expect(await getVisibleFaithMedia(["withdrawn-hero", "lead"])).toEqual([{ id: "lead", mediaAssets: [] }]);
   expect(mocks.findMany.mock.calls[0]?.[0].where).toEqual({ ...publicFaithWhere, id: { in: ["withdrawn-hero", "lead"] } });
 });
@@ -48,4 +48,10 @@ it("excludes incomplete religious review records before library counts and cards
  mocks.findMany.mockResolvedValue([reviewed,...["", "   ", null].map(sourceCitation=>({...reviewed,id:"incomplete",sourceCitation})),{...reviewed,id:"unverified",religiousReviewStatus:"PENDING"}]);
  expect(await getFaithDiscoveryData()).toEqual([reviewed]);
  expect(mocks.findMany.mock.calls[0]?.[0].select).toMatchObject({status:true,religiousReviewStatus:true});
+});
+
+it("does not return media for a Faith record invalidated after discovery", async () => {
+ const record={id:"reviewed",mediaAssets:[],status:"PUBLISHED",religiousReviewStatus:"VERIFIED",verifiedAt:new Date(),sourceCitation:"Reviewed source"};
+ mocks.findMany.mockResolvedValue([record,{...record,id:"invalid",sourceCitation:"   "}]);
+ expect(await getVisibleFaithMedia(["reviewed","invalid"])).toEqual([{id:"reviewed",mediaAssets:[]}]);
 });
