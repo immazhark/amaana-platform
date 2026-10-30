@@ -128,3 +128,17 @@ test("public assets cannot substitute for the required build directory",()=>{
   assert.equal(result.status,1);assert.match(result.stderr,/completed Next.js build/);
  } finally {rmSync(root,{recursive:true,force:true});}
 });
+
+test("directly served plaintext assets cannot bypass server-secret scanning", () => {
+  for (const extension of ["md", "markdown", "csv", "tsv", "yaml", "yml", "htm", "ini", "toml"]) {
+    const filename = `docs/export.${extension}`;
+    const leaked = runScanner(`synthetic asset ${canary}`, {}, filename, "public");
+    assert.equal(leaked.status, 1, `Scanner missed directly served ${filename}`);
+    assert.match(leaked.stderr, /REDACTED SECRET VALUE/);
+    assert.doesNotMatch(leaked.stderr + leaked.stdout, new RegExp(canary));
+  }
+  for (const extension of ["md", "csv", "yaml", "htm", "toml"]) {
+    const clean = runScanner("Reviewed public information", {}, `docs/approved.${extension}`, "public");
+    assert.equal(clean.status, 0, clean.stderr);
+  }
+});
