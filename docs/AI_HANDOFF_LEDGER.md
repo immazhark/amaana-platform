@@ -2122,3 +2122,20 @@ New merged-tree verification30 October2026 IST: full2358 Vitest PASS/20 isolated
 
 Acceptance30 October2026 IST: source reachability/ownership RED4/4 then GREEN4/4; full2357 Vitest PASS/20 opt-in isolated-DB SKIP. Clean optimized production build including TypeScript/pre/postbuild guards, standalone ESLint, globalCSS architecture audit and diff checks PASS. New aggregate uncompressed JS807083/CSS326954 bytes; no baseline savings/transfer/CWV claim. Client-reference assigned CSS: Appeals194617, Faith library175410, Faith article177158, OurWork173961 bytes, including shared assets. Independent actual-diff review confirms retained cascade/focus/motion and article rules unchanged; no unshipped historical Faith motion imported. Governed Stylelint locally unverified (prior unavailable offline dependency); hosted full exact-head/browser/ready checks required. Keep #539/#540/#545 until accepted replacement, no149 promotion or live acceptance.
 
+
+
+## 2026-10-31 IST — #520 reporter input guard recovery
+
+CHATGPT_ACTIVE sole writer. Recover previously test-first audited integer/overflow guards from #520 onto current protected main 9e30b16494d72c2c967855d69a5ccf363cf82794; original two source/test blobs preserved. Old exact-head local evidence does not certify this new integration. Full exact-head CI, separate ready-state and protected guarded merge required. No runtime, database, donor, payment or infrastructure change; canonical 149 unchanged.
+
+## 2026-10-28 IST — AF-R047 route-size validation, single-writer source lane
+
+CHATGPT_ACTIVE sole writer; task branch `fix/route-bundle-invalid-size-20261028`, protected-main parent `83044f775166be0a3533d807a7ec3e268795530f`. Verified current Next16 route report has all 61 page JS and CSS assignments and its original 13 reporter-native tests pass. Selected a separate remaining integrity defect: `summarizeAppRouteBundles` accepts missing/invalid `byteSize` results; `summarizeUnattributedAppAssets` accepts invalid aggregate asset sizes. Synthetic negative tests must fail before a minimal pure-helper correction. No change to production component/network performance, per-route measurement definitions or existing report budget thresholds. Draft-only under the Neon hold; preserve unrelated PRs, donor privacy and historical backlog counts. Final red/green evidence and remote head to follow.
+
+Test-first evidence: two invalid-size assertions failed on source before the correction, then integer-overflow total assertions failed until the safe-sum guard was added; final **15/15 native reporter cases PASS**. Full Vitest **2,282 PASS, 20 opt-in DB SKIP**; strict TypeScript, complete ESLint+Stylelint, production build, seven proposed-edge tests, curated contract, client-secret and artwork-weight guards PASS. Exact generated build has 61 JS/CSS route assignment sets; aggregate build JS 806,077 B, CSS 328,687 B uncompressed, not transfer or field performance. No app/dependency/schema/provider/secret change. Publish only as low-risk draft PR while the Neon hold persists; no source/runtime SHA parity, merge, deployment, or 149-item classification claim.
+
+
+## 2026-10-31 IST — #520 merge-ready input-guard after #604
+
+CHATGPT_ACTIVE sole implementation writer. Reconcile scripts-only candidate with current protected main 3d487e4f6eedc705ae2d4be79cd6396d88d4e627. Both tested original source/test blobs remain unchanged, current coordination history preserved. New exact-head browser/database/production and separate ready-state checks required; this is not a live change or 149 promotion.
+
