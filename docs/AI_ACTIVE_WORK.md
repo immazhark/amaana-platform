@@ -1,3 +1,9 @@
+## 2026-10-30 IST — CODEX_ACTIVE — Faith full-record public loaders
+
+Sole writer from #574486bd8e; scope extends existing completeness predicate to full-record public list/detail/featured loaders. Blank citations currently pass SQL non-null checks. Reuse unchanged helper; no religious text/criteria or DB mutation. Narrow homepage/initiative projections remain outside this task. Regression first; parallel review read-only; preserve Neon/draft acceptance gates. Rollback isolated loaders/test;149 unchanged.
+
+Acceptance: RED3/3 before correction, GREEN3/3; full Vitest2680 PASS/24 opt-in isolated-DB SKIP. Strict TypeScript, full lint/Stylelint, clean optimized Next production build with guards and diff hygiene PASS. Initial build failed before compilation loading generated Turbopack persistence; preserved cache at /tmp/amaana-faith-build.xtAM3A/next and clean build passed. Two read-only reviews found no regression. Initiative-linked Faith cards remain a confirmed pre-existing follow-up; homepage/media archive remain outside scope. No live database, merge or deployment. Hosted/browser/disposable-DB/separate-ready gates and Neon hold remain.
+
 ## 2026-10-30 IST — CODEX_ACTIVE — Faith discovery citation completeness
 
 Sole writer starts fix/faith-discovery-citation-gate-20261030 from #573 e7b99009937a1c80d4ffbbfa611c32cb1f08e6cb. Scope: reuse existing review-completeness helper after library query; select review status fields so invalid/blank citations cannot enter cards, topics or counts. No new religious criteria/text, provider/data mutation or media activation. Synthetic regression first; parallel review read-only. Preserve held release gates and Neon hold. Rollback isolated discovery/test changes;149 unchanged.
