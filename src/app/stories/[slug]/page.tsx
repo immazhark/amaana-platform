@@ -33,7 +33,7 @@ export default async function StoryPage({ params }: Props) {
   const { slug } = await params;
   const story = await getStoryPageData(slug);
   if (!story) notFound();
-  const publishedDate = story.publishedAt ? new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "long", year: "numeric" }).format(story.publishedAt) : null;
+  const publishedDate = story.publishedAt ? new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Kolkata" }).format(story.publishedAt) : null;
   const publicMedia = story.mediaAssets.filter(canRenderPublicMedia);
   const leadMedia = selectIdentityPublicImage(publicMedia);
   const remainingMedia = publicMedia.filter(asset => asset.id !== leadMedia?.id);
