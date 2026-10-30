@@ -2100,3 +2100,8 @@ Acceptance checkpoint30 October2026 IST: tests committed before source; focused 
 
 Acceptance checkpoint30 October2026 IST: new-main test-first run RED3/11 admin and RED1/7 native contrast; source restored GREEN14 focused Vitest (including motion) and GREEN7/7 native. Full2335 Vitest PASS/20 isolated-DB SKIP; clean optimized Next build with strict TypeScript/pre/postbuild guards PASS; full lint PASS. Historical #598/#599 source tests retained, #597 Stories motion additions preserved. Exact combined-head hosted/ready acceptance pending; no release/live claim or149 promotion.
 
+
+## 2026-10-30 IST — admin new-tab labels
+
+Acceptance30 October2026 IST: five new label regressions RED5/25 before source, GREEN25/25 after. Full2340 Vitest PASS/20 opt-in isolated-DB SKIP; clean optimized production build including strict TypeScript/pre/postbuild guards PASS. Independent actual-diff review confirms exactly five added spans; URLs, target/rel, permission/query/privacy/retention controls preserved. Full lint finishing; new exact-head hosted/browser/DB and separate-ready still required. #600 merge e2b25813 full41072327256 and ready41078502101 accepted; Railway f8505215 SUCCESS at exact SHA. Originals #598/#599/#522/#537/#533 closed as superseded, branches retained. No149 promotion or public live verification claim.
+
