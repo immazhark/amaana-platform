@@ -129,6 +129,10 @@ jobs:
         run: node --test scripts/test-client-secret-boundary.mjs
       - name: Enforce audited muted text contrast
         run: node --test scripts/test-audited-muted-contrast.mjs
+      - name: Guard public CSS minimum type size
+        run: |
+          node --test scripts/test-public-font-floor.mjs
+          node scripts/public-font-floor.mjs
       - name: Guard Companion text scaling under 200% root font size
         run: node --test scripts/test-companion-text-scaling.mjs
       - name: Enforce accessible public-media link names
@@ -136,7 +140,7 @@ jobs:
       - name: Enforce appeal and faith link action names
         run: node --test scripts/test-appeal-faith-link-labels.mjs
       - name: Enforce impact tile accessible action names
-        run: node --test scripts/test-impact-link-label.mjs
+        run: node --test scripts/test-impact-link-label.mjs scripts/test-impact-metric-leading.mjs
       - name: Enforce participation card accessible action names
         run: node --test scripts/test-participation-link-label.mjs
       - name: Enforce story archive link action names
