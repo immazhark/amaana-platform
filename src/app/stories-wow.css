@@ -26,3 +26,9 @@
 @keyframes v2-stories-drift{from{transform:translateY(0) rotate(-.3deg)}to{transform:translateY(-.65rem) rotate(.3deg)}}
 @media(max-width:900px){.v2-stories-grid .v2-stories-card:nth-child(3n+2){transform:none}.v2-stories-feature-media{box-shadow:0 24px 60px rgb(47 76 122 / 13%)}}
 @media(prefers-reduced-motion:reduce){.v2-stories-feature-media,.v2-stories-card,.v2-stories-grid .v2-stories-card:nth-child(3n+2){animation:none;transform:none;transition:none}.v2-stories-card::after{transition:none}}
+
+/* Keep interaction transforms off when visitors request reduced motion. */
+@media(prefers-reduced-motion:reduce){
+.v2-stories-feature-media:is(:hover,:focus-visible),.v2-stories-card:is(:hover,:focus-visible){transform:none}
+.v2-stories-feature-media:is(:hover,:focus-visible) .v2-media-item img,.v2-stories-card:is(:hover,:focus-visible) .v2-stories-card-media img{transform:none;transition:none}
+}
