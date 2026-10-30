@@ -1,3 +1,4 @@
+import "../../faith-detail.css";
 import { PUBLIC_DETAIL_MEDIA_LIMIT } from "@/lib/public-content";
 import { SectionHeading } from "@/components/section-heading";
 import type { Metadata } from "next";
