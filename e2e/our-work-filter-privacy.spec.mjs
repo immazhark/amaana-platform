@@ -1,5 +1,44 @@
 import { expect, test } from "@playwright/test";
 
+function focusContrast(color, background) {
+  const components = color.match(/^rgba?\(([^)]+)\)$/)?.[1].split(/[\s,/]+/).map(Number);
+  if (!components || components.length < 3 || components.some(value => !Number.isFinite(value))) {
+    throw new Error(`Unsupported computed focus color: ${color}`);
+  }
+  const alpha = components[3] ?? 1;
+  if (alpha < 0 || alpha > 1) throw new Error(`Invalid focus opacity: ${color}`);
+  const rgb = components.slice(0, 3).map((channel, i) => channel * alpha + background[i] * (1 - alpha));
+  const luminance = values => values.reduce((total, channel, i) => {
+    const srgb = channel / 255;
+    const linear = srgb <= 0.04045 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4;
+    return total + linear * [0.2126, 0.7152, 0.0722][i];
+  }, 0);
+  const [light, dark] = [luminance(rgb), luminance(background)].sort((a, b) => b - a);
+  return (light + 0.05) / (dark + 0.05);
+}
+
+test("Our Work search and selectors expose a contrast-safe keyboard focus ring", async ({ page }) => {
+  await page.goto("/our-work", { waitUntil: "domcontentloaded" });
+  const search = page.locator("#work-search");
+  await search.focus();
+  await page.keyboard.press("Shift+Tab");
+  await page.keyboard.press("Tab");
+  for (const id of ["work-search", "work-programme", "work-year"]) {
+    const control = page.locator(`#${id}`);
+    await expect(control).toBeFocused();
+    const outline = await control.evaluate(node => {
+      const style = getComputedStyle(node);
+      return { color: style.outlineColor, width: parseFloat(style.outlineWidth), style: style.outlineStyle };
+    });
+    expect(outline.style, `${id} focus outline`).toBe("solid");
+    expect(outline.width, `${id} focus outline width`).toBeGreaterThanOrEqual(3);
+    for (const background of [[255, 255, 255], [255, 253, 248]]) {
+      expect(focusContrast(outline.color, background), `${id} focus contrast`).toBeGreaterThanOrEqual(3);
+    }
+    await page.keyboard.press("Tab");
+  }
+});
+
 test("unknown Our Work URL values are rejected without echoing private input", async ({ page }) => {
   await page.goto("/our-work?programme=PRIVATE_PHONE&year=2026&email=PRIVATE_PERSON#work-results");
   const section = page.locator("#work-results");

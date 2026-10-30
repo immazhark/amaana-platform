@@ -19,7 +19,7 @@ function fixture({ now = null as Date | null } = {}) {
   vi.stubGlobal("HTMLButtonElement", Tab);
   const onPanelChange = vi.fn();
   const onClose = vi.fn();
-  const documentEvents = Object.assign(new EventTarget(), { querySelector: vi.fn<() => object | null>(() => null) });
+  const documentEvents = Object.assign(new EventTarget(), { querySelector: vi.fn<(selector: string) => object | null>(() => null) });
   vi.stubGlobal("document", documentEvents);
   const root = IslamicCompanionPanel({ panel: "readings", date: now ? "2026-10-23" : "", now,
     onClose, onPanelChange, onMoonChange: vi.fn() });
@@ -60,6 +60,16 @@ describe("Companion panel date formatting", () => {
 });
 
 describe("Companion tab keyboard boundaries", () => {
+  it("leaves Escape to open visible mobile navigation before closing the Companion", () => {
+    const panel = fixture();
+    panel.activeDialog.mockImplementation(selector => selector.includes('.mobile-menu.open:not([hidden])') ? {} : null);
+    panel.escape();
+    expect(panel.onClose).not.toHaveBeenCalled();
+    panel.activeDialog.mockReturnValue(null);
+    panel.escape();
+    expect(panel.onClose).toHaveBeenCalledOnce();
+  });
+
   it("leaves Escape to an open dialog above the nonmodal Companion", () => {
     const panel = fixture();
     panel.activeDialog.mockReturnValue({});
