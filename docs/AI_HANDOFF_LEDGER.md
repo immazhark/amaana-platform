@@ -2117,7 +2117,19 @@ CHATGPT_ACTIVE sole writer. #602 protected merge4fa141dcecd6edbc5086149547e0ca21
 New merged-tree verification30 October2026 IST: full2358 Vitest PASS/20 isolated-DB SKIP, clean optimized production build with TypeScript/pre/postbuild guards and diff hygiene PASS. No source changed beyond normal merge of accepted main and original #601 five label spans. Online lint dependency resolution interrupted; offline validation pending, do not claim lint success yet. Required fresh exact-head hosted/ready acceptance pending; no #601 merge/deploy or public live-verification claim.
 
 
+
+## 2026-10-30 IST — route CSS recovery evidence
+
+Acceptance30 October2026 IST: source reachability/ownership RED4/4 then GREEN4/4; full2357 Vitest PASS/20 opt-in isolated-DB SKIP. Clean optimized production build including TypeScript/pre/postbuild guards, standalone ESLint, globalCSS architecture audit and diff checks PASS. New aggregate uncompressed JS807083/CSS326954 bytes; no baseline savings/transfer/CWV claim. Client-reference assigned CSS: Appeals194617, Faith library175410, Faith article177158, OurWork173961 bytes, including shared assets. Independent actual-diff review confirms retained cascade/focus/motion and article rules unchanged; no unshipped historical Faith motion imported. Governed Stylelint locally unverified (prior unavailable offline dependency); hosted full exact-head/browser/ready checks required. Keep #539/#540/#545 until accepted replacement, no149 promotion or live acceptance.
+
+
+
 ## 2026-10-27 — AF-R047/R057 browser CSS evidence correction — prepared
 
 CHATGPT_ACTIVE sole writer on `perf/browser-css-transfer-evidence-20261027`, base main `83044f7`. Defect: browser E2E summed independently fetched decoded CSS, then called it delivery. Navigation timing now separately records decoded/encoded/transfer bytes; all-zero/cache/opaque/missing timing remains unavailable, full transfer null with partial observation explicit. Prior route-selector assertions remain. Three new synthetic regressions red for absent API and green; native CSS11/11, bundle reporter13/13, full Vitest2282 PASS/20 isolated DB skips; strict TypeScript, full ESLint, governed Stylelint and Next build/postbuild client-secret PASS. First hosted run `40481765478` had fast/database/production PASS, browser FAIL due importing from excluded `scripts/` workspace. Subsequent test red for absent local E2E helper; pure helper moved under `e2e/` copied by hosted browser harness, with native test importing the same module. New exact-head Chromium required before ready. Independent read-only review no math blocker. No app runtime/DB/payment/privacy/infra change, no 149-item classification change.
+
+
+## 2026-10-31 IST — #492 browser CSS transfer evidence recovery after #604
+
+CHATGPT_ACTIVE sole writer. Tested original three source/test blobs preserved from 51aed29ff2c3d926c20643e20477098491c38b14 on protected 3d487e4f6eedc705ae2d4be79cd6396d88d4e627, full coordination history retained. Synthetic browser linked CSS Resource Timing does not represent production transfer or field CWV. Fresh exact-head seven-job CI, separate ready-state and guarded merge required; no 149-item promotion.
 

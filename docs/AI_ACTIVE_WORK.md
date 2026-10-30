@@ -1,6 +1,17 @@
+## 2026-10-31 IST — #492 browser CSS transfer evidence recovery after #604
+
+CHATGPT_ACTIVE sole writer. Tested original three source/test blobs preserved from 51aed29ff2c3d926c20643e20477098491c38b14 on protected 3d487e4f6eedc705ae2d4be79cd6396d88d4e627, full coordination history retained. Synthetic browser linked CSS Resource Timing does not represent production transfer or field CWV. Fresh exact-head seven-job CI, separate ready-state and guarded merge required; no 149-item promotion.
+
 ## 2026-10-27 IST — AF-R047/R057 browser CSS transfer evidence
 
 CHATGPT_ACTIVE sole writer on `perf/browser-css-transfer-evidence-20261027`, based on protected main `83044f775166be0a3533d807a7ec3e268795530f`. Bounded test-first audit correction: the existing browser test mislabeled decoded stylesheet bytes from separate requests as network delivery. The updated test distinguishes navigation-timing decoded response body, encoded body and transfer with headers; missing/zero transfer is unavailable, with partial observations explicit. Existing CSS route-scope assertions remain. Source checks: 11 CSS native and 13 reporter cases PASS; full Vitest 2,282 PASS/20 isolated-DB skips; TypeScript, ESLint, governed Stylelint, Next production build and 84-file client-secret check PASS. First hosted run `40481765478` failed browser-only at a module-resolution boundary: CI copies `e2e/` but not `scripts/` into its isolated browser workspace. Red regression reproduced missing `e2e/css-resource-timing.mjs`; moved the pure browser helper into that copied tree and updated native import, requiring a new exact-head hosted run. Independent review found no math/code blocker. No app runtime/DB/payment/media/privacy/secrets/infra change. Earlier PR #491 remains separate/draft. Historical 149 totals unchanged. Rollback: revert this audit-only PR.
+
+## 2026-10-30 IST — route CSS recovery
+
+CHATGPT_ACTIVE sole writer on perf/route-css-recovery-20261030 from main4fa141dc. Recover #539 unused Our Work import, #540 retired Appeals selectors/keyframes, #545 Faith article-only CSS placement with three library rules kept shared. Preserve retained stylesheet files used by audits and all current motion/contrast rules; do not import historical parent Faith motion changes. Source inventories/test-first; independent review and fresh exact-head hosted/browser/build/ready acceptance required. No layout redesign, content/religious approval, data/auth/payment/provider/schema/infrastructure change or149 promotion.
+
+
+Acceptance30 October2026 IST: source reachability/ownership RED4/4 then GREEN4/4; full2357 Vitest PASS/20 opt-in isolated-DB SKIP. Clean optimized production build including TypeScript/pre/postbuild guards, standalone ESLint, globalCSS architecture audit and diff checks PASS. New aggregate uncompressed JS807083/CSS326954 bytes; no baseline savings/transfer/CWV claim. Client-reference assigned CSS: Appeals194617, Faith library175410, Faith article177158, OurWork173961 bytes, including shared assets. Independent actual-diff review confirms retained cascade/focus/motion and article rules unchanged; no unshipped historical Faith motion imported. Governed Stylelint locally unverified (prior unavailable offline dependency); hosted full exact-head/browser/ready checks required. Keep #539/#540/#545 until accepted replacement, no149 promotion or live acceptance.
 
 ## 2026-10-30 IST — #601 reconciliation after #602 release
 
