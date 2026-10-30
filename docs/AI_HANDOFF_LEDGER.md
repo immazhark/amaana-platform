@@ -2038,3 +2038,10 @@ After source merge #491, historical non-draft #498 and #497 retained passing old
 
 CHATGPT_ACTIVE remains sole writer under owner direction. Protected main `612feaecf11f550d1cebd7347e1737ed8fe15b98` includes successful #586 seven-job exact-head and separate ready-state protected merge; earlier #585 was merged as `1fa8044126cc5e1af8e6757191341627d1e15c3d` and its Railway production deployment was SKIPPED. Reconcile #588 against this protected main with original six exact source/test Git blobs unchanged; old main Faith/Appeals CSS blob IDs match prior #588 base. Preserve the independent #585/#586 history and the #588 original recovery note. Reconciled #588 requires NEW full exact-head CI, separate ready-state, review, SHA-guarded merge and runtime observation; old tests do not certify it. No production configuration, payment, DB/schema, donor records, sensitive media or 149 class updates.
 
+## 2026-10-30 IST — standalone finite Faith review timestamp guard
+
+CHATGPT_ACTIVE sole writer. Current protected main `612feaecf11f550d1cebd7347e1737ed8fe15b98` and held parent #579 contain byte-identical `src/lib/faith-publication.ts` (`2ab8103d41c09533e9cfa868266daa59f66e38b7`) and regression (`72e2a6a4d339298c5823bf254b75e2b74d721c51`). Recover only the #580 bounded invalid-Date guard and single test, preserving exact previously tested target Git blobs `60372c49043b74238b2ff86424caf5a755918a1d` and `b5e22a6cbec3b1d75ed3eb8495438f17a7f575b9`. #580 previously recorded RED1/GREEN54 focused, full local Vitest 2,689 pass/24 opt-in DB skips; this standalone extraction has NOT yet run exact-head hosted suites. The regression is committed first in this new branch. No religious source/review policy change, public content publishing, schema, payment, media, private data or infrastructure mutation. Leave #580 original draft preserved; require fresh hosted full exact-head/ready-state/protected merge; no 149 count promotion. Rollback source one-liner and synthetic test.
+
+
+## 2026-10-30 IST — #589 reconciled after #588 protected merge
+
