@@ -12,7 +12,7 @@
 .v2-assistance-after-flow>div{border-color:rgb(47 76 122/16%);transition:background .26s ease,transform .26s ease}
 .v2-assistance-after-flow>div:hover{background:rgb(255 253 248/45%);transform:translateY(-.2rem)}
 @media(max-width:900px){.v2-assistance-after-flow>div:hover{transform:none}}
-@media(prefers-reduced-motion:reduce){.v2-assistance-after-flow>div{transform:none;transition:none}}
+@media(prefers-reduced-motion:reduce){.v2-assistance-after-flow>div{transform:none;transition:none}.v2-assistance-after-flow>div:hover{transform:none}}
 
 
 /* 2026-09-28 brutal-QA: reduce explanatory scroll around the progressive form. */

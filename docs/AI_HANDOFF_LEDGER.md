@@ -1,3 +1,7 @@
+## 2026-10-27 IST — Feedback note Unicode display-control gap
+
+Single implementation writer CHATGPT_ACTIVE hardens the client-only feedback note preparation helper on current protected main `83044f775166be0a3533d807a7ec3e268795530f`. Synthetic bidi override/isolate note RED1, GREEN18 focused after narrow control removal; full 2,283 local Vitest passed/20 DB skipped, strict TypeScript, full lint, clean Next16 production build, 81-file postbuild client-secret boundary and diff check PASS; independent read-only review PASS. Existing Arabic/Urdu letters, newlines, fixed recipient/subject, privacy footer and note length remain. The current UI **does not collect a free-text note** and calls the helper without one; this hardens a reusable boundary, not a demonstrated current UI attack. Isolate removal has a possible mixed-RTL layout tradeoff, but no text deletion. No mail sent or permission, API, storage, payment, content claim or production config change. Hosted CI/release remain separate and Neon-aware; 149 unchanged.
+
 ## 2026-10-27 IST — Current #472 release gate
 
 CHATGPT_ACTIVE sole writer. Recovered route contrast correction is red/green locally and still draft; new full hosted seven-job CI plus separate promotion/verify required after reconciling with main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd`. No deployment or 149-item promotion claimed. Details appear in the 2026-10-27 recovery entry below.
@@ -2008,6 +2012,114 @@ CHATGPT_ACTIVE corrected only the existing contrast browser assertion/math and n
 ## 2026-10-27 IST — #472 recovery and route-cascade accessibility defect
 
 Single writer CHATGPT_ACTIVE. The earlier unpublished corrected branch was lost when scratch was reset; GitHub retains old draft PR #472 head `88bfd7814a8152148ae159a4ae293092cd2b57e9` and failed browser CI `40369616477`. Recovered from remote, reproduced red exact 3.5415397988993007:1 with synthetic route-declaration regression, and corrected only the later Appeals CSS override; focused five tests and scoped lint/syntax pass. Local source fix `daa8e21d` is merging current main `ff0ef6ccf9ae8707ee7bb5ebb1176c9a9a2bc0fd`. Require new full tests/build and hosted browser before ready/merge. Rollback revert this route color/token and the isolated regression if needed. No changes to eligibility, donation, personal data, tax, religious content, provider or deployment settings. 149-item count unchanged.
+
+## 2026-10-29 IST — AF-R012 standalone permission release candidate
+
+`fix/standalone-appeal-private-view-20261029` starts from protected `83044f7`, independently of existing #528/#529 stack. An actual page regression imported from #529 failed six of seven checks on current main, proving the linked private assistance query/render under appeal-only authorization. Applied the same reviewed private permission gate and narrow query, checked exact original file blob identities, and passed all seven focused cases. Full 2,289 Vitest PASS/20 isolated-DB SKIP, TypeScript, full ESLint/Stylelint, fresh-cache optimized build and client-secret/public-image checks PASS. `appeal.view` no longer implies `assistance.view` for the detail page. No permission seed, data access on live users, schema, database write, media, payment or production deploy. Existing stacked #529 remains draft pending independent branch acceptance and protected reconciliation. Do not inflate 149-item totals or claim merge, deployment, or live verification. Rollback: revert standalone authorization/source-test commit only after validating the private-view boundary.
+
+
+## 2026-10-30 IST — Direct-main AF-R007 security extraction from held draft stack
+
+CHATGPT_ACTIVE sole repository writer continues by owner authorization. Main `31c011c3c9f0a9c0e257fe84e095ed759a4f2bae`, no main mutation. To unblock existing draft #582/#584 security changes from unrelated draft #581/#583 dependencies, independently published only their final two exact scanner/test file blobs on `fix/standalone-public-secret-boundary-20261030`; original drafts remain intact and must not be double-merged. Real Node 22 ten-case synthetic scanner suite passed after fix, nine passed/one failed on older #583 scanner; native JS syntax passed. Main-based full hosted acceptance, separate ready-state, guarded merge and Railway/public verification not yet done. No live secrets or observed leak, production configuration, schema, database, notification or payment action; no historical 149-item promotion. Rollback isolated scanner/test files. Next: main-target PR review and required exact-head checks.
+
+## 2026-10-30 IST — #585 fail-closed public environment file regression
+
+Inherited #585 source scanner allowed `public/.env`, `public/.env.production.local` and nested `.env.local` to bypass supported text-asset checks. Synthetic Node22 process fixture failed on the prior scanner with 10/11 tests passing. New explicit environment filename guard blocks traversal before extension dispatch, including clean files; `.well-known` stays permitted. Unmodified prior cases plus new cases now pass 11/11; exact tested scanner blob `3ba15100cbce3cc973f6cf4c3f987f2b6217b76e`, test blob `20480bf0b27e56da28bc07a032ee6a0376d52bc9`. Previous exact-source ten-test evidence remains valid for its earlier head but not certification of this new one. Hosted exact-head, full suite, build and ready-state still pending; no live secret exposure, production mutation, merge or backlog status promotion.
+
+## 2026-10-30 IST — independent team group/member native length source from draft #583
+
+CHATGPT_ACTIVE alone wrote bounded branch `fix/standalone-team-native-length-20261030` from protected main `31c011c3c9f0a9c0e257fe84e095ed759a4f2bae`. After verifying that main's two team UI files are byte-equivalent to #583 after removing only `minLength={2}`, copied the exact previously tested #583 source files and new SSR regression (blob IDs recorded in current active work). Earlier #583 has red four and green 17 focused tests and full local suites, but no new full suite was run on the extracted standalone head. Separate direct-main scanner #585 is held for hosted acceptance; no competing file overlaps. This candidate requires fresh full exact-head checks, independent review, separate ready-state and protected SHA guard. Server authorization/validation unchanged; no live recipient/payment/data operation or historical 149-item change.
+
+## 2026-10-30 IST — two currently unmergeable approved a11y fixes reconciled (#498/#497)
+
+After source merge #491, historical non-draft #498 and #497 retained passing old-head CI/ready-state but GitHub refused protected merge (405 conflict). No bypass. CHATGPT_ACTIVE isolated exact old approved CSS and four E2E/Vitest regression blobs on a single current-main branch `fix/reconcile-faith-appeals-contrast-20261030`, main base `c697617b31a549be4e9b1e0a7cb29802dbcea9b2`. Tests committed first, source-level predicates red on main and green on historical intended source, exact copied blobs verified. Hosted full impact-selected CI/review/separate ready-state and protected merge still required; no source effect on donations, sensitive administrative records, schema or live infrastructure. Preserve original PRs until source acceptance and document supersession; do not bulk close. Other two direct-main drafts #585/#586 continue independently in browser CI.
+
+## 2026-10-30 IST — #588 reconciliation after #586 guarded release
+
+CHATGPT_ACTIVE remains sole writer under owner direction. Protected main `612feaecf11f550d1cebd7347e1737ed8fe15b98` includes successful #586 seven-job exact-head and separate ready-state protected merge; earlier #585 was merged as `1fa8044126cc5e1af8e6757191341627d1e15c3d` and its Railway production deployment was SKIPPED. Reconcile #588 against this protected main with original six exact source/test Git blobs unchanged; old main Faith/Appeals CSS blob IDs match prior #588 base. Preserve the independent #585/#586 history and the #588 original recovery note. Reconciled #588 requires NEW full exact-head CI, separate ready-state, review, SHA-guarded merge and runtime observation; old tests do not certify it. No production configuration, payment, DB/schema, donor records, sensitive media or 149 class updates.
+
+## 2026-10-30 IST — standalone finite Faith review timestamp guard
+
+CHATGPT_ACTIVE sole writer. Current protected main `612feaecf11f550d1cebd7347e1737ed8fe15b98` and held parent #579 contain byte-identical `src/lib/faith-publication.ts` (`2ab8103d41c09533e9cfa868266daa59f66e38b7`) and regression (`72e2a6a4d339298c5823bf254b75e2b74d721c51`). Recover only the #580 bounded invalid-Date guard and single test, preserving exact previously tested target Git blobs `60372c49043b74238b2ff86424caf5a755918a1d` and `b5e22a6cbec3b1d75ed3eb8495438f17a7f575b9`. #580 previously recorded RED1/GREEN54 focused, full local Vitest 2,689 pass/24 opt-in DB skips; this standalone extraction has NOT yet run exact-head hosted suites. The regression is committed first in this new branch. No religious source/review policy change, public content publishing, schema, payment, media, private data or infrastructure mutation. Leave #580 original draft preserved; require fresh hosted full exact-head/ready-state/protected merge; no 149 count promotion. Rollback source one-liner and synthetic test.
+
+
+## 2026-10-30 IST — #589 reconciled after #588 protected merge
+
+## 2026-10-30 IST — recovered PageHero fallback specificity (#471)
+
+CHATGPT_ACTIVE sole writer. Protected main `faf51683ca6f1177d92a2e20185575391d427097` still has the same `src/app/page-hero.css` Git blob as historical pre-change base `83044f775166be0a3533d807a7ec3e268795530f`. Original independent source-reviewed ready-state PR #471 changes only one fallback CSS specificity rule, replacing `height:auto!important` with a scoped ordinary selector and preserving identical PageHero geometry on Partner, Contact and Recognition at mobile/desktop/reduced-motion. Its two synthetic SSR/hosted browser tests do not exist on main. New direct-main branch `fix/reconcile-pagehero-fallback-cascade-20261030`, test-first commit `184dc511d34840622abe1e12b718a03b8a70f4f6`, restore exact original tested three source/test blobs; no visual redesign, page content, donor, religious, tax, payment, auth, schema, media or infrastructure change. Old local green and hosted CI evidence is provenance, not a new head pass. Require fresh full exact-head seven-job CI, separate ready-state verify, expected-head protected merge and Railway/public observation. Preserve historical #471 until accepted replacement released, 149 historical categories unchanged. Rollback one PageHero CSS correction and two regressions.
+## 2026-10-30 IST — five-candidate public-accessibility release consolidation
+
+CHATGPT_ACTIVE single writer; source main `faf51683ca6f1177d92a2e20185575391d427097` contains guarded #588/#589 merges; earlier production status separately observed. Original candidate heads #590 `1c3e4de4d80baf85b5f99e282cf11b12d87f8007`, #591 `a75b25010119a2d06b2c99a75a8f6bf7ec456592`, #592 `8f617a93e085acf655a5ad55aacc572d50ff43e4`, #593 `5e3c78dd9df1320ed5b81610248ba1e4913255c8`, #594 `869e3230e43d0533701c2eca3cf35a4b70f66b08` each independently source reviewed, with exact 38 disjoint source/test Git blob entries (23 tests, 15 source) and no overlapping paths. Five original PRs include historical red/green, prior full seven-job exact-head SUCCESS for #590/#591/#592/#594, and #593 browser was still in progress when consolidated; old checks do NOT certify combined tree. Test-first commit `b444ba23d3f5d3755c6f36c40b4dabe780b92aa8` holds the 23 exact test blobs before source integration. Restore reviewed source unchanged; combine #590 and #594 additive `.github/workflows/ci.yml` checks without replacing existing gates; preserve prior coordination note subjects and historical PRs until accepted direct-main replacement. Scope public contrast, IST display-only dates, mobile/menu/gallery keyboard focus, no-JS navigation, Impact wrapped metric leading, source CSS minimum-font floor. No factual claim, religious approval, payment, secret, auth, publication/privacy gate, schema, provider, notification or infrastructure mutation. Require full new exact-head seven-job CI, independent review, separate ready-state and guarded merge, then Railway/public identity. Canonical 149 totals unchanged. Rollback only this bounded release train; branches preserved.
+
+### Original PR #590 coordination note
+
+## 2026-10-30 IST — #590 browser-fixture race resolved after #588 source merge
+
+CHATGPT_ACTIVE sole writer. Browser run `41023355840`, job `123956051552`, proved a real RED failure: `e2e/appeal-update-contrast.spec.mjs:46` timed out twice waiting for `#synthetic-appeal-update-contrast` after the test inserted it in `<main>` before async hydration. This does NOT prove public contrast fails; fixture was removed by hydration. Preserve the original contrast assertions, source CSS, all other eleven restored source/test files. Move only the synthetic section mount to `document.body`, outside React-managed main, consistent with existing passing Media contrast test. Reconcile with protected main after #588 merge `264099b3b7c1db43218634628400225ebb85b2c9` via two-parent non-force commit, retaining prior #590 head `1adf3d91905b03c42c784a4ab1aacbfd01a19eb9` and its complete history plus #588 integration. Require fresh seven-job exact-head hosted green (including browser) and distinct ready-state before SHA-guarded merge. No checkout/payment/auth, public copy, impact, media assets, schema/DB or production config changed; no 149 class promotion. Rollback the single fixture mount change, keep old branches.
+
+
+### Original PR #591 coordination note
+
+## 2026-10-30 IST — #591 reconciled after #588 production acceptance
+
+CHATGPT_ACTIVE sole writer. Full seven-job CI for old #591 head `2ed9106086b10fa8fcddf4ed6c89858ba20e273a` passed (run `41024266312`), including responsive/browser and isolated database. Since #588 merged to protected main `264099b3b7c1db43218634628400225ebb85b2c9`, old #591 was no longer mergeable due shared coordination records, not the disjoint IST detail page code. Two-parent non-force branch reconciliation retains original test-first/production source Git blobs for Stories/Faith/Appeals, both complete histories and newly merged #588 source. New exact-head full and separate ready-state gates required on reconciled candidate. No timestamps stored, religious approval/wording, financial claims/payment, schema, sensitive records, or 149 totals modified. Rollback three display formatters and synthetic tests.
+
+
+### Original PR #592 coordination note
+
+## 2026-10-30 IST — #592 reconciled with protected #588 main
+
+CHATGPT_ACTIVE sole writer. Old tested-before-source candidate #592 head `78db491ba3c32ab2a624e8a63d233e5eaa78993b` contains byte-identical nine original source/test Git blobs from historical accepted PRs #479/#483/#486 (mobile menu wheel, campaign gallery opener focus, Companion Escape layer priority). Protected main moved to `264099b3b7c1db43218634628400225ebb85b2c9` after fully accepted live #588 release. Non-force two-parent branch reconciliation retains both original candidate and merged main history, merges coordination notes without dropping prior records, preserves exactly three source + six test blobs, and triggers FRESH exact-head full and separate ready-state verification. Old pending browser checks do not certify this new integration. No payment, religion, media content, data/schema, notification, infrastructure or 149 totals change. Rollback three source and six regression files.
+
+
+### Original PR #593 coordination note
+
+## 2026-10-30 IST — standalone no-JavaScript mobile navigation recovery (#516/#517)
+
+CHATGPT_ACTIVE sole writer; source base protected main `264099b3b7c1db43218634628400225ebb85b2c9`. Historical combined draft #516 includes the original #517 header and footer accessible no-script fallbacks. Its five existing changed source/test Git blobs were independently verified byte-identical at historical old base `83044f775166be0a3533d807a7ec3e268795530f` and current protected main; the new e2e file did not exist on main. Recover exact six tested/independently reviewed Git blobs onto bounded `fix/standalone-mobile-nojs-navigation-20261030`, test-only commit `9061ed5213c33df1706ced8cd7456eb229bf2449` before source. Preserve CSS responsive boundaries and existing primary/secondary navigation, semantics and normal JavaScript menu. Acceptance: #516's historical local Vitest, strict TypeScript/production build/isolated 2-of-2 Chromium no-JS browser evidence is provenance only; require fresh exact-head seven-job hosted CI and independent review, separate ready-state promotion/verify, SHA-guarded protected merge and Railway/runtime verification. No auth/payment/privacy/media publication/religious content/data/notifications/infra config or 149 totals changed. Keep #516 and explicit superseded #517 history until replacement accepted. Rollback three source files and three regressions.
+
+
+### Original PR #594 coordination note
+
+## 2026-10-30 IST — AF-R024/AF-R025 direct-main text-legibility cluster
+
+CHATGPT_ACTIVE sole writer. On protected main `264099b3b7c1db43218634628400225ebb85b2c9`, exact original baseline blobs for Impact CSS and the current CI workflow matched historical #531/#532 pre-change `83044f775166be0a3533d807a7ec3e268795530f`. Recover exact tested three new synthetic/unit/browser regression blobs in test-first commit `582419f38f672965d7dea9a748284dbb0fd33ae7`, then one-value Impact metric line-height .88 to 1.08 and public CSS font-size literal floor scanner source. CI retains all existing gates; exactly additive two Node checks. No impact values/cases, content, media, religious copy, auth/RBAC, payment, database, schema, delivery or infrastructure changed. Prior red/green and local 2,282 Vitest pass/20 isolated DB skips is historical provenance, not current acceptance. Require fresh seven-job exact-head CI, separate ready-state and guarded merge. Keep original #531/#532 PRs until source accepted/merged. Avoid claims this CSS declaration scan measures computed browser text/zoom/field accessibility. Canonical 149 historical classes unchanged. Rollback isolated CSS/scanner/tests and two CI additions.
+
+
+## 2026-10-30 IST — public UX release and PageHero reconciliation
+
+#595 protected merge `0087ca8de3e97082bfb32f2fea21ac98312aacc4` after independent review, full exact-head run41034750610 and separate ready-state41040347015. Includes exact recovered source from #590–#594. Railway508d6efe BUILDING; public version403, no live acceptance claim. #596 prior full and ready checks passed; normal two-parent reconciliation preserves both histories and production blobs, requires fresh head acceptance. CHATGPT_ACTIVE sole writer; parallel agents read-only. Historical149 counts unchanged.
+
+## 2026-10-30 IST — public motion recovery
+
+Acceptance checkpoint30 October2026 IST: tests committed before source; focused RED18/19 then GREEN19/19; full2331 Vitest PASS/20 opt-in isolated-DB SKIP. Independent actual-diff review found no blocker and confirmed Impact leading1.08 preserved. Production build retry after generated Turbopack cache panic is pending; hosted browser/production/disposable-DB exact-head and separate-ready remain required. Original #559–#561 preserved until acceptance. #596 merged02bb083 after full41040706353 and separate-ready41045009941; original #471 and13 #595-superseded PRs closed with branches preserved. No149 promotion.
+
+
+## 2026-10-30 IST — record/Stories presentation integration
+
+Acceptance checkpoint30 October2026 IST: new-main test-first run RED3/11 admin and RED1/7 native contrast; source restored GREEN14 focused Vitest (including motion) and GREEN7/7 native. Full2335 Vitest PASS/20 isolated-DB SKIP; clean optimized Next build with strict TypeScript/pre/postbuild guards PASS; full lint PASS. Historical #598/#599 source tests retained, #597 Stories motion additions preserved. Exact combined-head hosted/ready acceptance pending; no release/live claim or149 promotion.
+
+
+## 2026-10-30 IST — admin new-tab labels
+
+Acceptance30 October2026 IST: five new label regressions RED5/25 before source, GREEN25/25 after. Full2340 Vitest PASS/20 opt-in isolated-DB SKIP; clean optimized production build including strict TypeScript/pre/postbuild guards PASS. Independent actual-diff review confirms exactly five added spans; URLs, target/rel, permission/query/privacy/retention controls preserved. Full lint finishing; new exact-head hosted/browser/DB and separate-ready still required. #600 merge e2b25813 full41072327256 and ready41078502101 accepted; Railway f8505215 SUCCESS at exact SHA. Originals #598/#599/#522/#537/#533 closed as superseded, branches retained. No149 promotion or public live verification claim.
+## 2026-10-30 IST — admin query/selection recovery
+
+Acceptance30 October2026 IST: focused RED9/21 then GREEN21/21; full2353 Vitest PASS/20 opt-in isolated-DB SKIP. Clean optimized Next production build with TypeScript/pre/postbuild guards and diff checks PASS. Independent actual-diff review found no blocker, confirmed actions/eligibility unchanged and no inherited behavior. Added inactive-assignee action case is coverage of existing denial only. Full lint final status pending; exact new-head hosted/browser/DB/ready checks required. #508 closed as semantic supersession by safer shipped #529 permission-guarded query, not exact-source identity. Keep #504/#507/#484 until replacement accepted. Preserve #601 label additions during eventual main reconciliation. No149 promotion or measured latency/CWV claim.
+
+
+## 2026-10-30 IST — #601 reconciliation after #602 release
+
+CHATGPT_ACTIVE sole writer. #602 protected merge4fa141dcecd6edbc5086149547e0ca21818bbc09 after full41082259595 and separate-ready41105178583 PASS. Reconcile existing #601 head1e2b94d949d78af068b45df56a81be4c46c63994 through a normal two-parent merge; both source files merged automatically, no changes to five labels or new query/selection behavior. Preserve both coordination histories. Old #601 full41079383542 PASS is provenance, not acceptance of new head. Fresh local/hosted and separate-ready required; no149 promotion, payment/auth/schema/provider/data changes or live verification claim.
+
+
+New merged-tree verification30 October2026 IST: full2358 Vitest PASS/20 isolated-DB SKIP, clean optimized production build with TypeScript/pre/postbuild guards and diff hygiene PASS. No source changed beyond normal merge of accepted main and original #601 five label spans. Online lint dependency resolution interrupted; offline validation pending, do not claim lint success yet. Required fresh exact-head hosted/ready acceptance pending; no #601 merge/deploy or public live-verification claim.
+
+
+## 2026-10-31 IST — #519 public new-tab accessibility recovery
+
+CHATGPT_ACTIVE sole writer. Recover the previously tested synthetic disclosure regression and two JSX label changes from original #519 onto protected main 9e30b16494d72c2c967855d69a5ccf363cf82794; all three source/test blobs preserved. Keep original destinations and form state, current history and review constraints. Full fresh exact-head verification, separate ready-state and guarded merge required; no physical screen-reader certification or canonical 149 promotion.
 
 ## 2026-10-28 IST — AF-R069 public new-tab link announcement source lane
 
