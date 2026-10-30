@@ -137,3 +137,24 @@ test('optional malformed moon and tomorrow data retain the current timetable', a
   await expect(page.getByText('Calculated estimate · Hyderabad moon-sighting not yet confirmed.', { exact: true })).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+
+test('Escape dismisses mobile navigation before the underlying Companion panel', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.route('**/api/public/islamic-companion?*', route => route.fulfill({ status: 503, json: { error: 'Timings are temporarily unavailable.' } }));
+  await page.goto('/browser-acceptance/home-hero');
+  const dock = page.locator('.amaana-companion-dock button');
+  await dock.click();
+  const panel = page.getByRole('region', { name: 'Today’s reflection', exact: true });
+  await expect(panel).toBeVisible();
+  const toggle = page.getByRole('button', { name: 'Open navigation menu', exact: true });
+  await toggle.click();
+  await expect(page.getByRole('navigation', { name: 'Mobile navigation', exact: true })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('navigation', { name: 'Mobile navigation', exact: true })).toBeHidden();
+  await expect(panel).toBeVisible();
+  await expect(toggle).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(panel).toHaveCount(0);
+  await expect(dock).toBeFocused();
+});
