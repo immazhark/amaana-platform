@@ -2117,6 +2117,13 @@ CHATGPT_ACTIVE sole writer. #602 protected merge4fa141dcecd6edbc5086149547e0ca21
 New merged-tree verification30 October2026 IST: full2358 Vitest PASS/20 isolated-DB SKIP, clean optimized production build with TypeScript/pre/postbuild guards and diff hygiene PASS. No source changed beyond normal merge of accepted main and original #601 five label spans. Online lint dependency resolution interrupted; offline validation pending, do not claim lint success yet. Required fresh exact-head hosted/ready acceptance pending; no #601 merge/deploy or public live-verification claim.
 
 
+
+## 2026-10-30 IST — route CSS recovery evidence
+
+Acceptance30 October2026 IST: source reachability/ownership RED4/4 then GREEN4/4; full2357 Vitest PASS/20 opt-in isolated-DB SKIP. Clean optimized production build including TypeScript/pre/postbuild guards, standalone ESLint, globalCSS architecture audit and diff checks PASS. New aggregate uncompressed JS807083/CSS326954 bytes; no baseline savings/transfer/CWV claim. Client-reference assigned CSS: Appeals194617, Faith library175410, Faith article177158, OurWork173961 bytes, including shared assets. Independent actual-diff review confirms retained cascade/focus/motion and article rules unchanged; no unshipped historical Faith motion imported. Governed Stylelint locally unverified (prior unavailable offline dependency); hosted full exact-head/browser/ready checks required. Keep #539/#540/#545 until accepted replacement, no149 promotion or live acceptance.
+
+
+
 ## 2026-10-31 IST — #499 Transparency unused stylesheet recovery
 
 CHATGPT_ACTIVE sole implementation writer. Reconcile isolated #499 CSS import correction from 4d407be9a16ff3d9e5e1dc6b1ffbe6b055be7ef2 onto 9e30b16494d72c2c967855d69a5ccf363cf82794 preserving original three tested source files and historical coordination records. No content edits or new CSS declarations. New exact-head full CI, review and separate ready-state checks required, no deployment or 149-item status promotion.
@@ -2124,4 +2131,9 @@ CHATGPT_ACTIVE sole implementation writer. Reconcile isolated #499 CSS import co
 ## 2026-10-27 IST — Transparency unused route CSS investigation
 
 CHATGPT_ACTIVE sole writer on `perf/drop-orphaned-transparency-folio-css-20261027`, main base `83044f775166be0a3533d807a7ec3e268795530f`. #497 revised head `dba2bd4411c57f8285001d04cb942eb0d0bc47e0` full exact-head CI `40504720016` all seven SUCCESS and separate READY checks `40514626849` plan/promotion/verify SUCCESS; remains OPEN/UNMERGED under Neon hold. New independently verified orphan: `/transparency` layout imports route-only folio CSS but no live app component uses those classes. Native fail-first regression RED1/GREEN1; local full 2,283 Vitest PASS/20 isolated DB skips, strict TypeScript/full lint/build/client secret check PASS. Source keeps CSS archived but drops unused route import; new real-page browser spec awaits hosted run. `/transparency` assigned uncompressed CSS reduced **191,363/five to 187,975/four**, 3,388 bytes/one stylesheet saved; not transfer/CWV. Publish new bounded PR with exact-head hosted and separate ready-state checks. No source conflict with #494–#498, no production data, schema, financial or provider action, and canonical 149 state remains unchanged.
+
+
+## 2026-10-31 IST — #499 Transparency orphan CSS cleanup after #604
+
+CHATGPT_ACTIVE sole implementation writer. Preserve exact original three tested source/test blobs from cc7116bd3acb6ed7c61c7648ffde92885a6bc0a3 onto 3d487e4f6eedc705ae2d4be79cd6396d88d4e627 with current coordination history. No Transparency content or appearance changes claimed beyond safe removal of unused styles. Fresh exact-head full CI, separate ready and SHA-guarded merge required. Historical 149 unchanged.
 
