@@ -2090,3 +2090,7 @@ CHATGPT_ACTIVE sole writer. On protected main `264099b3b7c1db43218634628400225eb
 ## 2026-10-30 IST — public UX release and PageHero reconciliation
 
 #595 protected merge `0087ca8de3e97082bfb32f2fea21ac98312aacc4` after independent review, full exact-head run41034750610 and separate ready-state41040347015. Includes exact recovered source from #590–#594. Railway508d6efe BUILDING; public version403, no live acceptance claim. #596 prior full and ready checks passed; normal two-parent reconciliation preserves both histories and production blobs, requires fresh head acceptance. CHATGPT_ACTIVE sole writer; parallel agents read-only. Historical149 counts unchanged.
+
+## 2026-10-30 IST — Stories label contrast recovery evidence
+
+CHATGPT_ACTIVE sole writer. Recovered exact #533 one-selector deep-gold light-surface correction and native regression. Current main RED1/7, corrected GREEN7/7; diff check PASS. Source-only contrast evidence across canonical light backgrounds; not computed browser/human accessibility certification. Fresh hosted build/browser/selected database, review, separate-ready and SHA-guarded acceptance remain required. Preserve #533 until replacement accepted. No149 promotion.
