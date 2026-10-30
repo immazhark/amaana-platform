@@ -1,3 +1,7 @@
+## 2026-10-30 IST — route CSS recovery
+
+CHATGPT_ACTIVE sole writer on perf/route-css-recovery-20261030 from main4fa141dc. Recover #539 unused Our Work import, #540 retired Appeals selectors/keyframes, #545 Faith article-only CSS placement with three library rules kept shared. Preserve retained stylesheet files used by audits and all current motion/contrast rules; do not import historical parent Faith motion changes. Source inventories/test-first; independent review and fresh exact-head hosted/browser/build/ready acceptance required. No layout redesign, content/religious approval, data/auth/payment/provider/schema/infrastructure change or149 promotion.
+
 ## 2026-10-30 IST — admin query and selection recovery
 
 CHATGPT_ACTIVE sole writer on perf/admin-query-and-selection-recovery-20261030 from main e2b25813. Recover bounded #504 four non-editor option-query skips, #507 staff/reviewer/audit projections (retain narrow assignee name for #484), and #484 current-status/current-assignee selection preservation. Synthetic focused RED9/21 before source; one added action guard is regression coverage of existing denial, not a new runtime fix. Preserve permissions/server eligibility, query scope/order, IDs, original #601 labels when later reconciled, privacy/retention controls. No live records/DB/schema/provider/payment changes; fresh exact-head/ready acceptance required, no149 promotion.
