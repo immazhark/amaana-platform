@@ -52,6 +52,17 @@ describe("media card accessible labels", () => {
 });
 
 
+it("announces each media asset tab without changing its URL", async () => {
+  mocks.assets.mockResolvedValue(assets.map(asset => ({ ...asset, publicUrl: `https://example.invalid/${asset.id}.webp` })));
+  const html = renderToStaticMarkup(await AdminMediaPage({ searchParams: Promise.resolve({}) }));
+  for (const asset of assets) {
+    const anchor = [...html.matchAll(/<a\b[^>]*>[\s\S]*?<\/a>/g)].map(match => match[0]).find(link => link.includes(`href="https://example.invalid/${asset.id}.webp"`));
+    expect(anchor).toContain('target="_blank"');
+    expect(anchor).toContain('rel="noreferrer"');
+    expect(anchor).toContain('Open public asset ↗<span class="sr-only"> (opens in a new tab)</span>');
+  }
+});
+
 it.each([
   ["2026-10-26T17:00:00Z", "26/10/2026"],
   ["2026-10-26T22:00:00Z", "27/10/2026"],

@@ -2101,9 +2101,21 @@ Acceptance checkpoint30 October2026 IST: tests committed before source; focused 
 Acceptance checkpoint30 October2026 IST: new-main test-first run RED3/11 admin and RED1/7 native contrast; source restored GREEN14 focused Vitest (including motion) and GREEN7/7 native. Full2335 Vitest PASS/20 isolated-DB SKIP; clean optimized Next build with strict TypeScript/pre/postbuild guards PASS; full lint PASS. Historical #598/#599 source tests retained, #597 Stories motion additions preserved. Exact combined-head hosted/ready acceptance pending; no release/live claim or149 promotion.
 
 
+## 2026-10-30 IST — admin new-tab labels
+
+Acceptance30 October2026 IST: five new label regressions RED5/25 before source, GREEN25/25 after. Full2340 Vitest PASS/20 opt-in isolated-DB SKIP; clean optimized production build including strict TypeScript/pre/postbuild guards PASS. Independent actual-diff review confirms exactly five added spans; URLs, target/rel, permission/query/privacy/retention controls preserved. Full lint finishing; new exact-head hosted/browser/DB and separate-ready still required. #600 merge e2b25813 full41072327256 and ready41078502101 accepted; Railway f8505215 SUCCESS at exact SHA. Originals #598/#599/#522/#537/#533 closed as superseded, branches retained. No149 promotion or public live verification claim.
 ## 2026-10-30 IST — admin query/selection recovery
 
 Acceptance30 October2026 IST: focused RED9/21 then GREEN21/21; full2353 Vitest PASS/20 opt-in isolated-DB SKIP. Clean optimized Next production build with TypeScript/pre/postbuild guards and diff checks PASS. Independent actual-diff review found no blocker, confirmed actions/eligibility unchanged and no inherited behavior. Added inactive-assignee action case is coverage of existing denial only. Full lint final status pending; exact new-head hosted/browser/DB/ready checks required. #508 closed as semantic supersession by safer shipped #529 permission-guarded query, not exact-source identity. Keep #504/#507/#484 until replacement accepted. Preserve #601 label additions during eventual main reconciliation. No149 promotion or measured latency/CWV claim.
+
+
+## 2026-10-30 IST — #601 reconciliation after #602 release
+
+CHATGPT_ACTIVE sole writer. #602 protected merge4fa141dcecd6edbc5086149547e0ca21818bbc09 after full41082259595 and separate-ready41105178583 PASS. Reconcile existing #601 head1e2b94d949d78af068b45df56a81be4c46c63994 through a normal two-parent merge; both source files merged automatically, no changes to five labels or new query/selection behavior. Preserve both coordination histories. Old #601 full41079383542 PASS is provenance, not acceptance of new head. Fresh local/hosted and separate-ready required; no149 promotion, payment/auth/schema/provider/data changes or live verification claim.
+
+
+New merged-tree verification30 October2026 IST: full2358 Vitest PASS/20 isolated-DB SKIP, clean optimized production build with TypeScript/pre/postbuild guards and diff hygiene PASS. No source changed beyond normal merge of accepted main and original #601 five label spans. Online lint dependency resolution interrupted; offline validation pending, do not claim lint success yet. Required fresh exact-head hosted/ready acceptance pending; no #601 merge/deploy or public live-verification claim.
+
 
 
 ## 2026-10-30 IST — remaining IST display recovery
