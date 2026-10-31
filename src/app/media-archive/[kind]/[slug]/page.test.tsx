@@ -40,3 +40,17 @@ it("returns not found for withheld media and keeps archive pages out of search i
   await expect(Page({ params: Promise.resolve({ kind: "story", slug: "withheld" }), searchParams: Promise.resolve({}) })).rejects.toThrow("NOT_FOUND");
   expect(metadata.robots).toEqual({ index: false, follow: true });
 });
+
+
+it.each([true, false])("shows empty-but-continuable archive with next=%s", async hasNext => {
+  mocks.archive.mockResolvedValue({ slug: "reviewed-story", title: "Reviewed story", media: [], hasNext });
+  const html = renderToStaticMarkup(await Page({
+    params: Promise.resolve({ kind: "story", slug: "reviewed-story" }),
+    searchParams: Promise.resolve({ page: "2" }),
+  }));
+  expect(html).toContain('role="status"');
+  expect(html).toContain("No media can currently be displayed on this page.");
+  expect(html).toContain("Previous page");
+  expect(html.includes("Next page")).toBe(hasNext);
+  expect(html).not.toContain('class="v2-media-grid"');
+});
