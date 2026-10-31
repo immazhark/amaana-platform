@@ -53,13 +53,13 @@ export default async function StoriesPage({ searchParams }: { searchParams: Prom
 
       <section className="v2-section paper" id="story-results" aria-label="Find published stories"><div className="v2-shell">
         <form key={`${selection.q}:${selection.programme}`} className="form-grid" method="get" action="/stories#story-results" aria-label="Filter published stories">
-          <label className="field" htmlFor="story-search">Search public stories<input id="story-search" name="q" type="search" maxLength={80} defaultValue={selection.q} aria-invalid={selection.invalid || undefined} aria-describedby="story-search-help" /></label>
-          <label className="field" htmlFor="story-programme">Programme<select id="story-programme" name="programme" aria-label="Programme" defaultValue={selection.programme} aria-invalid={selection.invalid || undefined} aria-describedby="story-search-help"><option value="">All programmes</option>{selection.programmes.map(programme => <option key={programme} value={programme}>{programme}</option>)}</select></label>
+          <label className="field" htmlFor="story-search">Search public stories<input id="story-search" name="q" type="search" maxLength={80} defaultValue={selection.q} aria-invalid={selection.invalid || undefined} aria-describedby={selection.invalid ? "story-search-help story-search-error" : "story-search-help"} /></label>
+          <label className="field" htmlFor="story-programme">Programme<select id="story-programme" name="programme" aria-label="Programme" defaultValue={selection.programme} aria-invalid={selection.invalid || undefined} aria-describedby={selection.invalid ? "story-search-help story-search-error" : "story-search-help"}><option value="">All programmes</option>{selection.programmes.map(programme => <option key={programme} value={programme}>{programme}</option>)}</select></label>
           <button className="v2-button" type="submit">Find stories</button>
           {selection.active && <Link className="v2-text-link" href="/stories#story-results">Clear story filters</Link>}
         </form>
         <p id="story-search-help">Search reviewed public titles and summaries. Do not enter personal or case details.</p>
-        {selection.invalid && <p role="status">These filters could not be read. Clear the filters or use a search of up to 80 characters and a published programme.</p>}
+        {selection.invalid && <p id="story-search-error" role="status">These filters could not be read. Clear the filters or use a search of up to 80 characters and a published programme.</p>}
         <p>{selection.count} published {selection.count === 1 ? "story" : "stories"} found.</p>
         {selection.totalPages > 1 && <nav aria-label="Story result pages">{selection.page > 1 && <Link className="v2-button" href={pageHref(selection.page - 1)}>Previous stories</Link>}<span> Page {selection.page} of {selection.totalPages} </span>{selection.page < selection.totalPages && <Link className="v2-button" href={pageHref(selection.page + 1)}>Next stories</Link>}</nav>}
       </div></section>

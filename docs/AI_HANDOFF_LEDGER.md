@@ -2163,3 +2163,13 @@ CHATGPT_ACTIVE retained original #578 source regression and sitemap correction o
 ## 2026-10-31 IST — #606 post-#603 source reconciliation
 
 Preserve accepted #603 main and exact original sitemap application/regression Git blobs from #606; append both coordination histories without truncation. New exact-head CI and separate ready-state gate must pass before guarded protected merge. No live publication/media/content/provider/data change or 149 promotion.
+
+
+## 2026-10-31 IST — recovered public accessibility three-piece release
+
+Single writer CHATGPT_ACTIVE, main base `2e369addd4bebce84c0565a9fe4f55b9686cac51`. Original source and synthetic regression Git blobs retained exactly from reviewed #519/#501/#502, separated from their stale coordination branches. Tests-first `b3bc7c91add9c1fcc04e25dc24c3621ebe8a1e14`; full exact-head CI/browser/database/security and separate ready-state remain needed. Original PRs preserved until release acceptance; no canonical 149 status promotion.
+
+
+## 2026-10-31 IST — #607 post-#606 source reconciliation
+
+Single writer CHATGPT_ACTIVE preserves accepted #606 and original seven reviewed #607 application/test Git blobs exactly; both coordination histories append. Re-run full exact-head acceptance and separate ready-state before merge. No full 149 acceptance.
