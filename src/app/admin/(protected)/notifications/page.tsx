@@ -22,7 +22,7 @@ const statusOrder = [
 ];
 
 function formatDateTime(value: Date | null) {
-  return value ? value.toLocaleString("en-IN") : "—";
+  return value ? value.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) : "—";
 }
 
 function deliveryScheduleLabel(status: NotificationStatus, scheduledFor: Date, sentAt: Date | null) {
@@ -169,7 +169,7 @@ export default async function NotificationOperationsPage({ searchParams }: Props
             <th>Message</th>
             <th>Related record</th>
             <th>Attempts</th>
-            <th>Next / sent</th>
+            <th>Next / sent (IST)</th>
             <th>Provider ID</th>
             <th>Failure</th>
           </tr>

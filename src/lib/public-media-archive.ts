@@ -1,4 +1,5 @@
 import "server-only";
+import { canRenderPublicMedia } from "@/lib/public-media";
 import { prisma } from "@/lib/prisma";
 import { publicFaithWhere } from "@/lib/faith-publication";
 import { PUBLIC_DETAIL_MEDIA_PROJECTION } from "@/lib/public-content";
@@ -61,7 +62,7 @@ export async function getPublicMediaArchive(kind: string, slug: string, page: nu
   if (!media.length) return null;
   return {
     slug: parent.slug, title: parent.title,
-    media: media.slice(0, PUBLIC_ARCHIVE_PAGE_SIZE),
+    media: media.slice(0, PUBLIC_ARCHIVE_PAGE_SIZE).filter(canRenderPublicMedia),
     hasNext: media.length > PUBLIC_ARCHIVE_PAGE_SIZE,
   };
 }
