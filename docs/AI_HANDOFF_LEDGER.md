@@ -2173,3 +2173,8 @@ Single writer CHATGPT_ACTIVE, main base `2e369addd4bebce84c0565a9fe4f55b9686cac5
 ## 2026-10-31 IST — #607 post-#606 source reconciliation
 
 Single writer CHATGPT_ACTIVE preserves accepted #606 and original seven reviewed #607 application/test Git blobs exactly; both coordination histories append. Re-run full exact-head acceptance and separate ready-state before merge. No full 149 acceptance.
+
+
+## 2026-10-31 IST — #575 public Faith record loaders
+
+Single writer CHATGPT_ACTIVE recovered exact existing synthetic RED3 original tests into test-first current-main branch. Only existing completeness predicate used after SQL read; incomplete records cannot render full public list/slug/featured output. Fresh full exact-head CI and separate ready-state required; do not import historical stacked PR. Preserve 149 state and all publication/review controls.

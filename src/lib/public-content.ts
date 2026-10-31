@@ -3,7 +3,7 @@ import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { isAppealOpenForDonations } from "@/lib/appeals";
-import { publicFaithWhere } from "@/lib/faith-publication";
+import { isPublicFaithReviewComplete, publicFaithWhere } from "@/lib/faith-publication";
 import { canExposePublicAppeal, isSyntheticStagingAppeal } from "@/lib/public-environment";
 
 const publishedWhere = {
@@ -143,7 +143,7 @@ export async function getPublishedStoryBySlug(slug: string) {
 }
 
 export async function getPublishedFaithContent() {
-  return prisma.faithContent.findMany({
+  const result = await prisma.faithContent.findMany({
     where: publicFaithWhere,
     include: {
       topics: { include: { topic: true } },
@@ -156,10 +156,11 @@ export async function getPublishedFaithContent() {
     },
     orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }],
   });
+  return result.filter(isPublicFaithReviewComplete);
 }
 
 export async function getPublishedFaithContentBySlug(slug: string) {
-  return prisma.faithContent.findFirst({
+  const result = await prisma.faithContent.findFirst({
     where: {
       slug,
       ...publicFaithWhere,
@@ -178,10 +179,11 @@ export async function getPublishedFaithContentBySlug(slug: string) {
       mediaAssets: PUBLIC_DETAIL_MEDIA_PROJECTION,
     },
   });
+  return result && isPublicFaithReviewComplete(result) ? result : null;
 }
 
 export async function getFeaturedFaithContent() {
-  return prisma.faithContent.findFirst({
+  const result = await prisma.faithContent.findFirst({
     where: {
       ...publicFaithWhere,
       isFeatured: true,
@@ -195,6 +197,7 @@ export async function getFeaturedFaithContent() {
     },
     orderBy: { publishedAt: "desc" },
   });
+  return result && isPublicFaithReviewComplete(result) ? result : null;
 }
 
 /**
