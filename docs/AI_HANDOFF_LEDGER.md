@@ -2183,3 +2183,8 @@ Bounded two final unique `id asc` query orders only, test-first from accepted ma
 ## 2026-10-31 IST — #608 reconciliation following #607 source release
 
 Single writer CHATGPT_ACTIVE preserves source and evidence from both parents. Four original order-fix source/regression blobs and current-main #607 source retained. This non-force two-parent reconciliation needs new exact-head full and separate ready-state CI. No canonical 149 promotion.
+
+
+## 2026-10-31 IST — #570 standalone public route loading recovery
+
+CHATGPT_ACTIVE sole writer. Test-first `77c1578379844613d0e7158d5b26cce594951c25`, reviewed route-loading source/tests recovered from stacked historical #570 on protected main #608. Five public discovery routes only, accessible status, responsive cream/blue/gold placeholders with reduced-motion. No simulated public data, client JS, provider calls or DB writes. Full hosted seven-job exact-head + separate ready-state and public deployed SHA required, then evidence close original #570 only when verified. Canonical 149 unchanged.
