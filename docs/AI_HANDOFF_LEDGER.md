@@ -2173,3 +2173,13 @@ Single writer CHATGPT_ACTIVE, main base `2e369addd4bebce84c0565a9fe4f55b9686cac5
 ## 2026-10-31 IST — #607 post-#606 source reconciliation
 
 Single writer CHATGPT_ACTIVE preserves accepted #606 and original seven reviewed #607 application/test Git blobs exactly; both coordination histories append. Re-run full exact-head acceptance and separate ready-state before merge. No full 149 acceptance.
+
+
+## 2026-10-31 IST — isolated #579 order-key recovery
+
+Bounded two final unique `id asc` query orders only, test-first from accepted main with distinct Faith synthetic test and updated Appeals existing query contract. #579 historical branch retained and not bulk imported. New exact-head full CI and separate ready-state remain mandatory; no 149 promotion or live timing claim.
+
+
+## 2026-10-31 IST — #608 reconciliation following #607 source release
+
+Single writer CHATGPT_ACTIVE preserves source and evidence from both parents. Four original order-fix source/regression blobs and current-main #607 source retained. This non-force two-parent reconciliation needs new exact-head full and separate ready-state CI. No canonical 149 promotion.

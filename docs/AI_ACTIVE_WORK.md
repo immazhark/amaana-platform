@@ -1,3 +1,11 @@
+## 2026-10-31 IST — #608 order recovery after accepted #607
+
+CHATGPT_ACTIVE sole writer. Protected #607 merged SHA 61c4170e2597dff9cfe5f618f9d665385c117483 after full exact-head and ready-state success. Reconcile #608 by a normal two-parent merge commit, preserving current-main code and all four previously tested stable-order app/test blobs, plus both coordination histories. Fresh exact-head hosted CI, independent review, separate ready-state and guarded merge required. No faith review/public claim, data/DB schema, payment/auth, public media, notifications or infra change. Canonical 149 unchanged.
+
+## 2026-10-31 IST — isolated discovery stable-order repair
+
+CHATGPT_ACTIVE sole writer on `fix/reconcile-discovery-stable-order-20261031` from protected main `2e369addd4bebce84c0565a9fe4f55b9686cac51`. Recover only #579's two unique final SQL ordering keys on Faith discovery and eligible public Appeals query, preserving all other eligibility predicates, projection fields and prior accepted source changes. New focused synthetic Faith regression and updated current-main Appeals regression committed before implementation at `1adc27d6cd0b37e624e5a513ea66c427f1b1f767`; historical #579 RED2/GREEN19 is provenance, not exact new-head execution. Fresh full exact-head CI/browser/database/security, independent review, separate ready-state, SHA-guarded merge and public verification required. No snapshot-pagination promise, religious approval/content, auth/payment/schema/data/provider/public-media/infrastructure change or 149 promotion.
+
 ## 2026-10-31 IST — #607 public accessibility reconciliation after accepted #606
 
 CHATGPT_ACTIVE sole writer. Protected #606 merged SHA 23b739803b0ac36daaf5c16e0c8a7f498d4d4733. Reconcile #607 three bounded accessibility recoveries by a normal two-parent commit, retaining exact seven app/test Git blobs from original full-seven-job accepted #607 and every current-main blob; both coordination histories are preserved. Fresh exact-head hosted CI, independent review, separate ready-state and guarded merge mandatory. No content/tax/auth/payment/private data/notification/schema/provider/infra change, and no canonical 149 promotion.
