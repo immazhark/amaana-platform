@@ -2173,3 +2173,8 @@ Single writer CHATGPT_ACTIVE, main base `2e369addd4bebce84c0565a9fe4f55b9686cac5
 ## 2026-10-31 IST — #607 post-#606 source reconciliation
 
 Single writer CHATGPT_ACTIVE preserves accepted #606 and original seven reviewed #607 application/test Git blobs exactly; both coordination histories append. Re-run full exact-head acceptance and separate ready-state before merge. No full 149 acceptance.
+
+
+## 2026-10-31 IST — #581 independent public media candidate recovery
+
+Single writer CHATGPT_ACTIVE. Tests-first `7249ece092905f1f97dac5eca37c2d063e22ed5f` on accepted #607 protected main, then source filters only eligible page slots and avoids an empty media grid. Preserve privacy/publication route and fixed page offsets. Fresh full hosted and separate-ready acceptance required. No 149 status change, public media transformation, or production-data action.
