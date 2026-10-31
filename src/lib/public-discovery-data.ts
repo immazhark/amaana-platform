@@ -65,7 +65,7 @@ export async function getVisibleStoryCards(ids: readonly string[]) {
 export async function getFaithDiscoveryData() {
   return prisma.faithContent.findMany({
     where: publicFaithWhere,
-    orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }],
+    orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }, { id: "asc" }],
     select: {
       id: true,
       slug: true,

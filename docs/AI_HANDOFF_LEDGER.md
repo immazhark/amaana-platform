@@ -2153,3 +2153,8 @@ CHATGPT_ACTIVE sole writer. Current main 3d487e4f6eedc705ae2d4be79cd6396d88d4e62
 ## 2026-10-31 IST — #603 reconciled after #605 protected merge
 
 CHATGPT_ACTIVE sole writer. Retained all twelve original tested application/test blobs from #603, all current-main #605 code and both appended coordination histories via ordinary two-parent merge commit. Candidate must pass new exact-head full CI plus separate ready-state after promotion; no direct main push, source/runtime/149 acceptance claimed.
+
+
+## 2026-10-31 IST — isolated #579 order-key recovery
+
+Bounded two final unique `id asc` query orders only, test-first from accepted main with distinct Faith synthetic test and updated Appeals existing query contract. #579 historical branch retained and not bulk imported. New exact-head full CI and separate ready-state remain mandatory; no 149 promotion or live timing claim.
