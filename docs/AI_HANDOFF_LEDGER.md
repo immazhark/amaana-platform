@@ -2185,6 +2185,11 @@ Bounded two final unique `id asc` query orders only, test-first from accepted ma
 Single writer CHATGPT_ACTIVE preserves source and evidence from both parents. Four original order-fix source/regression blobs and current-main #607 source retained. This non-force two-parent reconciliation needs new exact-head full and separate ready-state CI. No canonical 149 promotion.
 
 
+## 2026-10-31 IST — #574 isolated Faith discovery gate
+
+CHATGPT_ACTIVE single writer, synthetic tests-first `863e123ce63b44e27ec0cc4aa63b05fffffeee14`, narrow existing review completeness check in Faith library. Preserve original public output shape, SQL publication predicate and id tie-breaker. Pending exact-head full hosted CI, separate ready-state, protected guarded merge, Railway/public release identity. No 149 classification change.
+
+
 ## 2026-10-31 IST — #581 independent public media candidate recovery
 
 Single writer CHATGPT_ACTIVE. Tests-first `7249ece092905f1f97dac5eca37c2d063e22ed5f` on accepted #607 protected main, then source filters only eligible page slots and avoids an empty media grid. Preserve privacy/publication route and fixed page offsets. Fresh full hosted and separate-ready acceptance required. No 149 status change, public media transformation, or production-data action.
