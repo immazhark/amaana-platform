@@ -1,3 +1,7 @@
+## 2026-10-31 IST — #574 Faith discovery citation gate independent recovery
+
+Single writer CHATGPT_ACTIVE. Protected main bdb4d330a815f014bf3e595a153359a113dde1f3. Independent bounded current-main branch `fix/reconcile-faith-discovery-citation-20261031` corrects a SQL non-null vs blank-citation gap only in the public Faith discovery projection. Synthetic two-case regression committed first `863e123ce63b44e27ec0cc4aa63b05fffffeee14`; not claiming a newly executed RED. Keep original public record projection and unique ordering, select review metadata only to use unchanged `isPublicFaithReviewComplete`, strip status metadata from final public result. Requires full exact-head CI, independent review, ready-state run, expected-head guarded merge, Railway/public SHA. No religious content/review criterion, tax, donor, payment/auth, schema, media/private data, notification, infrastructure changes or canonical 149 promotion. Historical #574 stacked PR preserved.
+
 ## 2026-10-31 IST — #608 order recovery after accepted #607
 
 CHATGPT_ACTIVE sole writer. Protected #607 merged SHA 61c4170e2597dff9cfe5f618f9d665385c117483 after full exact-head and ready-state success. Reconcile #608 by a normal two-parent merge commit, preserving current-main code and all four previously tested stable-order app/test blobs, plus both coordination histories. Fresh exact-head hosted CI, independent review, separate ready-state and guarded merge required. No faith review/public claim, data/DB schema, payment/auth, public media, notifications or infra change. Canonical 149 unchanged.
