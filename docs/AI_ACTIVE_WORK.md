@@ -1,6 +1,18 @@
+## 2026-10-31 IST — #609 media archive recovery after protected #608
+
+CHATGPT_ACTIVE sole writer. Protected #608 merged main bdb4d330a815f014bf3e595a153359a113dde1f3 after seven exact-head and ready-state successful checks. Reconcile #609 current-media archive candidate filtering using normal two-parent merge preserving exact two source/two synthetic regression Git blobs and all accepted new main source, plus both coordination histories. Historical #581 not bulk imported. Fresh full seven-job exact-head hosted acceptance, independent review, separate ready-state, expected-head guarded merge and independent Railway/public identity required; no canonical 149 promotion. No public identity/media transformation, religious text/review policy, private records, payments/auth/schema, notifications, infra changes.
+
 ## 2026-10-31 IST — #581 bounded media archive display recovery
 
 CHATGPT_ACTIVE sole implementation writer on `fix/reconcile-media-archive-unavailable-pages-20261031` from protected main `61c4170e2597dff9cfe5f618f9d665385c117483`. Historical #581 is stacked on outdated review branches, not merged wholesale. Reproduce unavailable candidate media and empty-but-navigable paginated public archive by a synthetic test-first commit `7249ece092905f1f97dac5eca37c2d063e22ed5f`. Narrow source change filters candidate page media through existing `canRenderPublicMedia` and renders generic non-identifying `role=status` text when no usable assets remain; retains original public media DB query scope, candidate page offsets and `hasNext` so safe subsequent pages remain reachable. Exact-head tests, responsive browser/database/build/security CI and separate ready-state required. No real media edits, new beneficiary image, reviewed identity/publication/consent change, payments, schema, provider, worker or 149 promotion. Keep #581 historical branch until accepted and verified replacement.
+
+## 2026-10-31 IST — #608 order recovery after accepted #607
+
+CHATGPT_ACTIVE sole writer. Protected #607 merged SHA 61c4170e2597dff9cfe5f618f9d665385c117483 after full exact-head and ready-state success. Reconcile #608 by a normal two-parent merge commit, preserving current-main code and all four previously tested stable-order app/test blobs, plus both coordination histories. Fresh exact-head hosted CI, independent review, separate ready-state and guarded merge required. No faith review/public claim, data/DB schema, payment/auth, public media, notifications or infra change. Canonical 149 unchanged.
+
+## 2026-10-31 IST — isolated discovery stable-order repair
+
+CHATGPT_ACTIVE sole writer on `fix/reconcile-discovery-stable-order-20261031` from protected main `2e369addd4bebce84c0565a9fe4f55b9686cac51`. Recover only #579's two unique final SQL ordering keys on Faith discovery and eligible public Appeals query, preserving all other eligibility predicates, projection fields and prior accepted source changes. New focused synthetic Faith regression and updated current-main Appeals regression committed before implementation at `1adc27d6cd0b37e624e5a513ea66c427f1b1f767`; historical #579 RED2/GREEN19 is provenance, not exact new-head execution. Fresh full exact-head CI/browser/database/security, independent review, separate ready-state, SHA-guarded merge and public verification required. No snapshot-pagination promise, religious approval/content, auth/payment/schema/data/provider/public-media/infrastructure change or 149 promotion.
 
 ## 2026-10-31 IST — #607 public accessibility reconciliation after accepted #606
 
