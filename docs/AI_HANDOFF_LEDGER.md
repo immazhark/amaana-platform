@@ -2138,6 +2138,28 @@ CHATGPT_ACTIVE sole writer. Current protected main 3d487e4f6eedc705ae2d4be79cd63
 
 
 
+
+## 2026-10-30 IST — remaining IST display recovery
+
+Acceptance30 October2026 IST: UTC focused RED9/19 before source, corrected GREEN19/19 in UTC and America/Los_Angeles (explicit host-zone assertion). Full2364 Vitest PASS/20 opt-in isolated-DB SKIP; clean optimized build with TypeScript/pre/postbuild guards, standalone zero-warning ESLint and diff checks PASS. Independent actual-diff review proves5production paths change only formatting/text; notification SENT/null/year9999 sentinel and private hooks/token/API/auth/payment logic byte-preserved. Added UTC browser cases are not locally executed; fresh hosted browser/build/database/lint and separate-ready required. Governed Stylelint still locally unverified due prior missing offline dependency; no CSS changes. Keep originals505506488489 until accepted replacement; no149 promotion, deployment or private-data access claim. Preserve601 labels in later main reconciliation.
+
+
+## 2026-10-31 IST — #603 date-display recovery after protected #604 merge
+
+CHATGPT_ACTIVE sole writer. Current main 3d487e4f6eedc705ae2d4be79cd6396d88d4e627 contains released CSS cleanups. Preserve exactly twelve tested source/regression Git blobs from old candidate bcfff55c95178f81599a629f649707db293349d5, including #601 Media Library tab disclosure and the IST date-case tests. Reconcile coordination histories without overwriting current main. Fresh exact-head CI and ready-state checks required; no scheduled notification activation, financial behavior, or 149 status changes.
+
+
+
+## 2026-10-31 IST — #603 reconciled after #605 protected merge
+
+CHATGPT_ACTIVE sole writer. Retained all twelve original tested application/test blobs from #603, all current-main #605 code and both appended coordination histories via ordinary two-parent merge commit. Candidate must pass new exact-head full CI plus separate ready-state after promotion; no direct main push, source/runtime/149 acceptance claimed.
+
+
 ## 2026-10-31 IST — #578 Faith sitemap direct-main recovery
 
 CHATGPT_ACTIVE retained original #578 source regression and sitemap correction only, based on current main pre-fix blob equality; test-first branch commit f05d9015bd432325753c8463882bf82c23a7975e. Full fresh head CI/browser/database and separate ready-state required before merge. Historical #578 preserved until accepted release, no 149 item promotion.
+
+
+## 2026-10-31 IST — #606 post-#603 source reconciliation
+
+Preserve accepted #603 main and exact original sitemap application/regression Git blobs from #606; append both coordination histories without truncation. New exact-head CI and separate ready-state gate must pass before guarded protected merge. No live publication/media/content/provider/data change or 149 promotion.
