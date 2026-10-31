@@ -2173,3 +2173,8 @@ Single writer CHATGPT_ACTIVE, main base `2e369addd4bebce84c0565a9fe4f55b9686cac5
 ## 2026-10-31 IST — #607 post-#606 source reconciliation
 
 Single writer CHATGPT_ACTIVE preserves accepted #606 and original seven reviewed #607 application/test Git blobs exactly; both coordination histories append. Re-run full exact-head acceptance and separate ready-state before merge. No full 149 acceptance.
+
+
+## 2026-10-31 IST — #564 blank Stories programme fallback independent recovery
+
+Test-first `0caf13d58dd072975eaa9f920f35a32695dee61a` + minimal source repair on protected #607 main. Original historical stacked #564 is preserved, not bulk imported. Four synthetic fallback/publication/title regressions require fresh hosted exact-head full CI, post-ready workflow and expected-head merge. No canonical 149 status promotion.
