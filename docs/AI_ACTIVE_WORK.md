@@ -1,3 +1,11 @@
+## 2026-10-31 IST — #606 Faith sitemap recovery after #603 acceptance
+
+CHATGPT_ACTIVE sole writer. #603 accepted protected main 2e369addd4bebce84c0565a9fe4f55b9686cac51. Reconcile standalone #606 `2309299e45ef91b0bde080b0a0b22f167e5937ff` by a normal two-parent commit, preserving its original exactly tested source/test blobs and all current main source and coordination histories. Historical #578 test-first RED1/GREEN9 evidence is not exact-head validation of the reconciled tree. Require fresh full exact-head hosted acceptance, separate ready-state and expected-head guarded merge, plus deployed/public verification. No new religious claims, content approval, tax/auth/payment/schema/data/media/notification/infrastructure change; canonical149 unchanged.
+
+## 2026-10-31 IST — #578 current-main Faith sitemap citation recovery
+
+CHATGPT_ACTIVE sole writer on `fix/reconcile-faith-sitemap-citation-20261031` from protected main `4a8b15adaed33033077f4e44a2279a0dbd7e21a3`. Original PR #578 sitemap source Git blob and current main pre-fix blob match exactly. Reuse reviewed fixed source and deterministic synthetic regression as exact tested blobs without importing parent #577 or its dependent branch. Test-first commit `f05d9015bd432325753c8463882bf82c23a7975e`; original RED1/GREEN9 is historical evidence, not new local execution. New exact-head CI, independent review, separate ready-state and SHA-guarded merge required. No religious review/content edit, provider, data, schema, auth/payment, privacy, infrastructure change, 149 promotion or automatic public indexing claim.
+
 ## 2026-10-31 IST — #603 reconciliation after accepted #605
 
 CHATGPT_ACTIVE sole implementation writer. #605 merged protected main at 4a8b15adaed33033077f4e44a2279a0dbd7e21a3 after seven exact-head and separate ready-state checks. #603 original tested twelve application/regression blobs are preserved verbatim with current main by a normal two-parent commit; #605's source and both coordination histories are preserved. Fresh exact-head CI, independent review, separate ready-state and SHA-guarded protected merge remain required. No notification activation, tax/public claims, financial behavior, schema, production data, infrastructure change or 149-item promotion.

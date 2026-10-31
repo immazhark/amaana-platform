@@ -2153,3 +2153,13 @@ CHATGPT_ACTIVE sole writer. Current main 3d487e4f6eedc705ae2d4be79cd6396d88d4e62
 ## 2026-10-31 IST — #603 reconciled after #605 protected merge
 
 CHATGPT_ACTIVE sole writer. Retained all twelve original tested application/test blobs from #603, all current-main #605 code and both appended coordination histories via ordinary two-parent merge commit. Candidate must pass new exact-head full CI plus separate ready-state after promotion; no direct main push, source/runtime/149 acceptance claimed.
+
+
+## 2026-10-31 IST — #578 Faith sitemap direct-main recovery
+
+CHATGPT_ACTIVE retained original #578 source regression and sitemap correction only, based on current main pre-fix blob equality; test-first branch commit f05d9015bd432325753c8463882bf82c23a7975e. Full fresh head CI/browser/database and separate ready-state required before merge. Historical #578 preserved until accepted release, no 149 item promotion.
+
+
+## 2026-10-31 IST — #606 post-#603 source reconciliation
+
+Preserve accepted #603 main and exact original sitemap application/regression Git blobs from #606; append both coordination histories without truncation. New exact-head CI and separate ready-state gate must pass before guarded protected merge. No live publication/media/content/provider/data change or 149 promotion.
