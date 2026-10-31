@@ -2208,3 +2208,42 @@ Single CHATGPT_ACTIVE writer. Keep exact app/test Git blobs from #609 and accept
 
 CHATGPT_ACTIVE preserved original #609 application/test blobs and base accepted #614. New two-parent SHA-guarded branch update, exact-head CI + separate ready-state required. Old canceled CI not reused. No data/schema/payment/auth/runtime or donation changes; production fixtures remain retained behind Historical tests.
 
+
+
+## 2026-10-31 IST — #564 blank Stories programme fallback independent recovery
+
+Test-first `0caf13d58dd072975eaa9f920f35a32695dee61a` + minimal source repair on protected #607 main. Original historical stacked #564 is preserved, not bulk imported. Four synthetic fallback/publication/title regressions require fresh hosted exact-head full CI, post-ready workflow and expected-head merge. No canonical 149 status promotion.
+
+## 2026-11-01 IST — #611 Stories filter recovered against accepted #609
+
+CHATGPT_ACTIVE on fix/reconcile-story-programme-blank-options-20261031; exact two-blob source/test recovery of pre-reviewed #611, refresh hosted full CI and ready-state before protected merge. No public-claim/data/auth/payment/schema/cron changes. Main 825c85ba9ac1a07864a6be38c325d15b8b11f10d; canonical 149 unchanged.
+
+
+
+## 2026-10-31 IST — #575 public Faith record loaders
+
+Single writer CHATGPT_ACTIVE recovered exact existing synthetic RED3 original tests into test-first current-main branch. Only existing completeness predicate used after SQL read; incomplete records cannot render full public list/slug/featured output. Fresh full exact-head CI and separate ready-state required; do not import historical stacked PR. Preserve 149 state and all publication/review controls.
+
+## 2026-11-01 IST — #610 source-only Faith loader recovered on #611 candidate
+
+CHATGPT_ACTIVE recovered exact old #610 two app/test blobs using normal two-parent commit after #611 candidate 331c9eb768975f564a15b47936e5c7f9ea490bf8. Keep #610 draft until full exact-head/ready CI, accepted main includes #611, no private record writes. Canonical 149 unchanged.
+
+
+
+## 2026-10-31 IST — #499 Transparency unused stylesheet recovery
+
+CHATGPT_ACTIVE sole implementation writer. Reconcile isolated #499 CSS import correction from 4d407be9a16ff3d9e5e1dc6b1ffbe6b055be7ef2 onto 9e30b16494d72c2c967855d69a5ccf363cf82794 preserving original three tested source files and historical coordination records. No content edits or new CSS declarations. New exact-head full CI, review and separate ready-state checks required, no deployment or 149-item status promotion.
+
+## 2026-10-27 IST — Transparency unused route CSS investigation
+
+CHATGPT_ACTIVE sole writer on `perf/drop-orphaned-transparency-folio-css-20261027`, main base `83044f775166be0a3533d807a7ec3e268795530f`. #497 revised head `dba2bd4411c57f8285001d04cb942eb0d0bc47e0` full exact-head CI `40504720016` all seven SUCCESS and separate READY checks `40514626849` plan/promotion/verify SUCCESS; remains OPEN/UNMERGED under Neon hold. New independently verified orphan: `/transparency` layout imports route-only folio CSS but no live app component uses those classes. Native fail-first regression RED1/GREEN1; local full 2,283 Vitest PASS/20 isolated DB skips, strict TypeScript/full lint/build/client secret check PASS. Source keeps CSS archived but drops unused route import; new real-page browser spec awaits hosted run. `/transparency` assigned uncompressed CSS reduced **191,363/five to 187,975/four**, 3,388 bytes/one stylesheet saved; not transfer/CWV. Publish new bounded PR with exact-head hosted and separate ready-state checks. No source conflict with #494–#498, no production data, schema, financial or provider action, and canonical 149 state remains unchanged.
+
+
+## 2026-10-31 IST — #499 Transparency orphan CSS cleanup after #604
+
+CHATGPT_ACTIVE sole implementation writer. Preserve exact original three tested source/test blobs from cc7116bd3acb6ed7c61c7648ffde92885a6bc0a3 onto 3d487e4f6eedc705ae2d4be79cd6396d88d4e627 with current coordination history. No Transparency content or appearance changes claimed beyond safe removal of unused styles. Fresh exact-head full CI, separate ready and SHA-guarded merge required. Historical 149 unchanged.
+
+## 2026-11-01 IST — #499 CSS cleanup recovered behind #610
+
+CHATGPT_ACTIVE single writer. Recover tested Transparency stylesheet import removal plus original two source/browser regressions, preserving #610 candidate and accepted #609 source using normal two-parent commit. New full exact-head and separate ready-state required. Nothing deployed or live-accepted yet. Canonical 149 unchanged.
+
