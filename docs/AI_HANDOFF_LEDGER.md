@@ -2153,3 +2153,8 @@ CHATGPT_ACTIVE sole writer. Current main 3d487e4f6eedc705ae2d4be79cd6396d88d4e62
 ## 2026-10-31 IST — #603 reconciled after #605 protected merge
 
 CHATGPT_ACTIVE sole writer. Retained all twelve original tested application/test blobs from #603, all current-main #605 code and both appended coordination histories via ordinary two-parent merge commit. Candidate must pass new exact-head full CI plus separate ready-state after promotion; no direct main push, source/runtime/149 acceptance claimed.
+
+
+## 2026-10-31 IST — recovered public accessibility three-piece release
+
+Single writer CHATGPT_ACTIVE, main base `2e369addd4bebce84c0565a9fe4f55b9686cac51`. Original source and synthetic regression Git blobs retained exactly from reviewed #519/#501/#502, separated from their stale coordination branches. Tests-first `b3bc7c91add9c1fcc04e25dc24c3621ebe8a1e14`; full exact-head CI/browser/database/security and separate ready-state remain needed. Original PRs preserved until release acceptance; no canonical 149 status promotion.
