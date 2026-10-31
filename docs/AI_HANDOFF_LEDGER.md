@@ -2188,3 +2188,8 @@ Single writer CHATGPT_ACTIVE preserves source and evidence from both parents. Fo
 ## 2026-10-31 IST — #574 isolated Faith discovery gate
 
 CHATGPT_ACTIVE single writer, synthetic tests-first `863e123ce63b44e27ec0cc4aa63b05fffffeee14`, narrow existing review completeness check in Faith library. Preserve original public output shape, SQL publication predicate and id tie-breaker. Pending exact-head full hosted CI, separate ready-state, protected guarded merge, Railway/public release identity. No 149 classification change.
+
+## 2026-10-31 IST — retain staging payment audit while cleaning admin queues
+
+CHATGPT_ACTIVE on fix/hide-staging-acceptance-admin-records-20261031 from main 198cfb0471fa8f325cd08511e6df2fd482db1cd4. User expressly approved bounded cleanup of old test records. Source-only historical-view filtering, exact synthetic identifiers, no production deletion. Preserve connected fixture donation/refund rows and direct admin detail access. Test-first spec; hosted exact-head and ready-state gates before merge; do not override other PR branches. Unrelated #609 remains open; 149 unchanged.
+
