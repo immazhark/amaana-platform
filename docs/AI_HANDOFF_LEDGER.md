@@ -2189,6 +2189,11 @@ Single writer CHATGPT_ACTIVE preserves source and evidence from both parents. Fo
 
 CHATGPT_ACTIVE single writer, synthetic tests-first `863e123ce63b44e27ec0cc4aa63b05fffffeee14`, narrow existing review completeness check in Faith library. Preserve original public output shape, SQL publication predicate and id tie-breaker. Pending exact-head full hosted CI, separate ready-state, protected guarded merge, Railway/public release identity. No 149 classification change.
 
+## 2026-10-31 IST — retain staging payment audit while cleaning admin queues
+
+CHATGPT_ACTIVE on fix/hide-staging-acceptance-admin-records-20261031 from main 198cfb0471fa8f325cd08511e6df2fd482db1cd4. User expressly approved bounded cleanup of old test records. Source-only historical-view filtering, exact synthetic identifiers, no production deletion. Preserve connected fixture donation/refund rows and direct admin detail access. Test-first spec; hosted exact-head and ready-state gates before merge; do not override other PR branches. Unrelated #609 remains open; 149 unchanged.
+
+
 
 ## 2026-10-31 IST — #581 independent public media candidate recovery
 
@@ -2198,3 +2203,8 @@ Single writer CHATGPT_ACTIVE. Tests-first `7249ece092905f1f97dac5eca37c2d063e22e
 ## 2026-10-31 IST — #609 post-#608 source reconciliation
 
 Single CHATGPT_ACTIVE writer. Keep exact app/test Git blobs from #609 and accepted #608 query-order changes; merge coordination histories without truncation. Full exact-head and separate ready-state tests required again; no media or donor data writes.
+
+## 2026-10-31 IST — #609 current-main refresh after merged #614
+
+CHATGPT_ACTIVE preserved original #609 application/test blobs and base accepted #614. New two-parent SHA-guarded branch update, exact-head CI + separate ready-state required. Old canceled CI not reused. No data/schema/payment/auth/runtime or donation changes; production fixtures remain retained behind Historical tests.
+
