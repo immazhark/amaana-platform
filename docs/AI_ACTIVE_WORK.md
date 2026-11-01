@@ -1,18 +1,6 @@
-## 2026-11-01 IST — #499 staged behind refreshed #610 exact head
+## 2026-11-01 IST — #499 independent Transparency CSS scope after CI browser failure
 
-CHATGPT_ACTIVE sole writer. Reviewed exact #499 CSS source/test blobs reconciled on #610 candidate 29abcf5a89420824c5befb552784b99b1815b250 (which includes accepted #611 source). This is staging only; #610 must complete full refreshed acceptance and merge before #499 promotion. Fresh exact-head all-seven CI and separate READY required for #499. Preserve older source histories and CSS import-only scope; no approved media/data/auth/payment/schema/notifications/provider/infra or canonical 149 mutation.
-
-## 2026-11-01 IST — #499 Transparency unused CSS recovery, queued behind #610
-
-CHATGPT_ACTIVE sole repository writer. Preserve current #611 and #610 candidate source/regressions at `fb384af09b4414b94f861ddb3e9c2d3657083298`, then restore only exact originally reviewed #499 Transparency import and two regression blobs. Scope: remove orphan CSS import only; retain all content, facts, layout, and accessible controls. Original #499 CI 41124846365 SUCCESS but not new exact-head acceptance. New full exact-head CI, independent review, separate ready-state and expected-head guarded merge after predecessors accepted; any predecessor failure requires re-evaluation/retest. No production/data/payment/notification/schema/asset deletion, and no 149-item classification change.
-
-## 2026-10-31 IST — #499 Transparency orphan CSS cleanup after #604
-
-CHATGPT_ACTIVE sole implementation writer. Preserve exact original three tested source/test blobs from cc7116bd3acb6ed7c61c7648ffde92885a6bc0a3 onto 3d487e4f6eedc705ae2d4be79cd6396d88d4e627 with current coordination history. No Transparency content or appearance changes claimed beyond safe removal of unused styles. Fresh exact-head full CI, separate ready and SHA-guarded merge required. Historical 149 unchanged.
-
-## 2026-10-31 IST — #499 Transparency unused stylesheet recovery
-
-CHATGPT_ACTIVE sole implementation writer. Reconcile isolated #499 CSS import correction from 4d407be9a16ff3d9e5e1dc6b1ffbe6b055be7ef2 onto 9e30b16494d72c2c967855d69a5ccf363cf82794 preserving original three tested source files and historical coordination records. No content edits or new CSS declarations. New exact-head full CI, review and separate ready-state checks required, no deployment or 149-item status promotion.
+CHATGPT_ACTIVE sole writer. Original #499 prior exact-head CI 41289705785 FAILED in unrelated site-motion-scroll.spec.mjs compact menu Home keyboard scroll expectation, observed scrollY=180 vs expected zero on both attempts. Do not waive/skip/retry as success. Recover only three reviewed #499 code/browser-regression files on current accepted #610 main 32eed690cc20c63edcb4c11e67faae80c7633936, with no inherited pending Faith/performance source; preserve original branch history via ordinary two-parent commit. Require fresh exact-head seven-job CI and browser-focused investigation; independent reviewer/ready-state/expected-SHA merge. No claim of CSS transfer savings without measured evidence. No donor/applicant/private media/religious text/payments/schema/notifications or production infrastructure mutation. Canonical 149 unchanged.
 
 ## 2026-11-01 IST — #610 Faith loader recovery after accepted #611
 

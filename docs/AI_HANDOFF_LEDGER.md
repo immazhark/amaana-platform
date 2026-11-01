@@ -2222,6 +2222,6 @@ CHATGPT_ACTIVE on fix/reconcile-story-programme-blank-options-20261031; exact tw
 
 #611 accepted at ecba1a485596d0c3cc2760b35d2e8322fd7be133. Reconcile original two reviewed #610 code/test blobs with current main and both histories by two-parent commit; fresh exact-head hosted seven-job CI and separate ready-state required before protected guarded merge. Source versus runtime separate; no 149 promotion.
 
-## 2026-11-01 IST — #499 second candidate reconciliation
+## 2026-11-01 IST — #499 first browser regression unresolved, independent retest baseline
 
-Single writer CHATGPT_ACTIVE. Preserve #499 exact original 3 reviewed code/test blobs with #610 refreshed head 29abcf5a89420824c5befb552784b99b1815b250 by a normal two-parent SHA-guarded branch advance. Fresh seven-job exact-head CI and separately triggered ready-state before accepting. No deployment or 149-promotion claim.
+Original #499 head 7b08dc236cd99dacff00d0e7c23d003009e4144f failed full browser CI 41289705785 (site-motion-scroll Home key retained 180px, retry same). Isolated the same scoped CSS import/test blobs on protected #610 main 32eed690cc20c63edcb4c11e67faae80c7633936 to distinguish stacking conflicts. Fresh exact-head full CI mandatory; failure must be diagnosed and fixed, not waived. All live data, funds, approvals and infra untouched.
