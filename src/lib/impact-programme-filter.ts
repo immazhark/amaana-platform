@@ -11,11 +11,18 @@ export function filterImpactByProgramme<T>(
   areas: readonly ImpactArea[],
   causeFor: (initiative: T) => string | undefined,
 ) {
+  // Build each public initiative's programme classification once, then reuse
+  // it for both filter options and results. Avoid an areas × initiatives scan.
+  const causeSlugs = initiatives.map(item => causeFor(item));
+  const counts = new Map<string, number>();
+  for (const slug of causeSlugs) {
+    if (slug !== undefined) counts.set(slug, (counts.get(slug) ?? 0) + 1);
+  }
   const options = areas
     .map(area => ({
       slug: area.slug,
       title: area.title,
-      count: initiatives.filter(item => causeFor(item) === area.slug).length,
+      count: counts.get(area.slug) ?? 0,
     }))
     .filter(area => area.count > 0);
 
@@ -27,7 +34,7 @@ export function filterImpactByProgramme<T>(
 
   const active = invalid || Boolean(programme);
   const results = invalid ? [] : programme
-    ? initiatives.filter(item => causeFor(item) === programme)
+    ? initiatives.filter((_, index) => causeSlugs[index] === programme)
     : [...initiatives];
 
   return {
