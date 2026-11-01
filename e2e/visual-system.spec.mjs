@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { waitForPublicOverview } from './helpers/public-overview-ready.mjs';
 
 const routes = ['/about', '/governance', '/donate', '/request-assistance'];
 const widths = [1440, 720, 390];
@@ -42,6 +43,7 @@ async function open(page, path, width = 1440) {
   const response = await page.goto(path, { waitUntil: 'domcontentloaded' });
   expect(response?.ok(), `${path} should render`).toBeTruthy();
   await expect(page.locator('main#main')).toBeVisible();
+  await waitForPublicOverview(page, path);
 }
 
 function near(actual, expected, tolerance = 2) {

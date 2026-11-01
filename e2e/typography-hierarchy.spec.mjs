@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { waitForPublicOverview } from './helpers/public-overview-ready.mjs';
 
 for (const width of [320, 390, 768, 1024, 1440, 1920]) {
   test(`banner hierarchy and grouped evidence headings at ${width}px`, async ({ page }) => {
@@ -424,6 +425,7 @@ for (const width of [390, 1280]) {
       // A DOMContentLoaded-only wait can race a late document navigation
       // after the test sets an inline root font-size; wait for the full load.
       expect((await page.goto(path, { waitUntil: 'load' }))?.ok()).toBeTruthy();
+      await waitForPublicOverview(page, path);
       const labels = page.locator(selector);
       expect(await labels.count(), `${path} must expose real metadata`).toBeGreaterThan(0);
       const read = () => labels.evaluateAll(nodes => nodes.filter(node =>
@@ -449,6 +451,7 @@ for (const width of [390, 1280]) {
         }
       });
       expect((await page.reload({ waitUntil: 'load' }))?.ok()).toBeTruthy();
+      await waitForPublicOverview(page, path);
       const scaled = await page.evaluate(selector => ({
         root: parseFloat(getComputedStyle(document.documentElement).fontSize),
         labels: [...document.querySelectorAll(selector)]

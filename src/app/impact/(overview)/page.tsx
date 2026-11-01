@@ -13,7 +13,7 @@ import { filterImpactByProgramme, type ImpactProgrammeSearch } from "@/lib/impac
 import { getImpactPageData } from "@/lib/public-page-data";
 import { selectIdentityPublicImage } from "@/lib/public-media";
 import { selectImpactWitnessMedia } from "@/lib/impact-witness-media";
-import "./impact-refinement.module.css";
+import "../impact-refinement.module.css";
 
 export const dynamic = "force-dynamic";
 

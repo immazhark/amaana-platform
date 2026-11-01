@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { waitForPublicOverview } from './helpers/public-overview-ready.mjs';
 
 const pages = ['/', '/stories', '/contact', '/get-involved', '/compliance', '/recognition', '/transparency', '/how-we-verify', '/our-work', '/appeals', '/impact', '/faith-and-reflections', '/our-work/emergency-neonatal-medical-aid'];
 for (const width of [320, 390, 768, 1024, 1440, 1920]) {
@@ -8,6 +9,7 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
     for (const path of pages) {
       const response = await page.goto(path);
       expect(response.ok(), path).toBe(true);
+      await waitForPublicOverview(page, path);
       const result = await page.evaluate(() => {
         const headings = [...document.querySelectorAll('[data-section-heading="split"]')].map(node => {
           const label = node.querySelector('.v2-section-label');

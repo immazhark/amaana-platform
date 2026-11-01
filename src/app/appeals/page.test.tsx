@@ -6,7 +6,7 @@ vi.mock("@/components/page-hero", () => ({ PageHero: () => null }));
 vi.mock("@/components/verified-impact-strip", () => ({ VerifiedImpactStrip: () => null }));
 vi.mock("@/components/appeal-card", () => ({ AppealCard: ({ appeal }: { appeal: { title: string } }) => <article>{appeal.title}</article> }));
 vi.mock("@/lib/public-environment", () => ({ canExposeSyntheticStagingContent: () => false, isSyntheticStagingAppeal: (appeal: { slug: string }) => appeal.slug.startsWith("synthetic-") }));
-import AppealsPage from "./page";
+import AppealsPage from "./(overview)/page";
 const open = { status: "PUBLISHED", goalAmount: 1000, amountRaised: 0, closesAt: null };
 beforeEach(() => mocks.records.mockResolvedValue([
   { ...open, slug: "winter", title: "Winter support", summary: "Blankets" },
