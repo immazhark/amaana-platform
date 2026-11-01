@@ -3,7 +3,13 @@ export type StorySearch = Record<string, string | string[] | undefined>;
 type PublicStory = { title: string; summary: string; cause?: {title:string;status:string}|null; initiative?: {status:string;cause:{title?:string;status:string}}|null };
 export const STORY_PAGE_SIZE = 12;
 export function selectStoryDiscovery<T extends PublicStory>(records: readonly T[], search: StorySearch) {
- const context = (story: T) => story.initiative?.status === "PUBLISHED" && story.initiative.cause.status === "PUBLISHED" && story.initiative.cause.title ? story.initiative.cause.title : story.cause?.status === "PUBLISHED" ? story.cause.title : null;
+ const context = (story: T) => {
+  const initiativeCause = story.initiative?.status === "PUBLISHED" && story.initiative.cause.status === "PUBLISHED"
+    ? story.initiative.cause.title : null;
+  if (initiativeCause?.trim()) return initiativeCause;
+  const directCause = story.cause?.status === "PUBLISHED" ? story.cause.title : null;
+  return directCause?.trim() ? directCause : null;
+ };
  const programmes = [...new Set(records.flatMap(story => context(story) ? [context(story)!] : []))].sort();
  const q = typeof search.q === "string" ? search.q.trim().replace(/\s+/g," ") : "";
  const programme = typeof search.programme === "string" ? search.programme : "";

@@ -36,3 +36,36 @@ test("malformed private acknowledgement remains retryable without a new payment"
   expect(requests).toEqual([{ reference, token }, { reference, token }]);
   expect(page.url()).not.toContain(token);
 });
+
+test.describe("private acknowledgement record date on a UTC device", () => {
+  test.use({ timezoneId: "UTC" });
+
+  test("shows the India calendar day and scrubs the private URL token", async ({ page }) => {
+    const reference = "AFD-SYNTHETIC-IST";
+    const token = "synthetic-acknowledgement-token-utc";
+    await page.route("**/api/analytics/page-view", route => route.fulfill({ status: 204, body: "" }));
+    await page.route("**/api/donations/acknowledgement", route => route.fulfill({
+      status: 200,
+      json: {
+        found: true,
+        presentation: {
+          tone: "captured", heading: "Donation received",
+          summary: "Synthetic private record", statusLabel: "Payment verified",
+        },
+        donation: {
+          referenceNumber: reference, receiptNumber: "ACK-SYNTHETIC-IST",
+          donorName: "Synthetic Donor", givingIntent: "GENERAL",
+          amount: 500, refundedAmount: 0,
+          recordDate: "2026-10-26T19:00:00.000Z",
+          providerPaymentId: "pay_synthetic",
+          appeal: { title: "Synthetic appeal", slug: "synthetic-appeal" },
+        },
+      },
+    }));
+
+    await page.goto(`/donations/${reference}/acknowledgement#token=${token}`);
+    await expect(page.getByRole("heading", { name: "Donation received" })).toBeVisible();
+    await expect(page.locator("dt").filter({ hasText: "Record date" }).locator("xpath=following-sibling::dd")).toHaveText("27 October 2026");
+    expect(new URL(page.url()).hash).toBe("");
+  });
+});

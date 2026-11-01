@@ -1,4 +1,4 @@
-import { publicFaithWhere } from "@/lib/faith-publication";
+import { isPublicFaithReviewComplete, publicFaithWhere } from "@/lib/faith-publication";
 import { prisma } from "@/lib/prisma";
 import { STORY_PAGE_SIZE } from "@/lib/story-discovery";
 
@@ -63,9 +63,9 @@ export async function getVisibleStoryCards(ids: readonly string[]) {
 }
 
 export async function getFaithDiscoveryData() {
-  return prisma.faithContent.findMany({
+  const records = await prisma.faithContent.findMany({
     where: publicFaithWhere,
-    orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }],
+    orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }, { id: "asc" }],
     select: {
       id: true,
       slug: true,
@@ -74,6 +74,8 @@ export async function getFaithDiscoveryData() {
       excerpt: true,
       sourceCitation: true,
       verifiedAt: true,
+      status: true,
+      religiousReviewStatus: true,
       topics: {
         select: {
           topic: { select: { slug: true, name: true } },
@@ -93,4 +95,11 @@ export async function getFaithDiscoveryData() {
       },
     },
   });
+  // Review status is needed only for the final eligibility check; do not serialize it.
+  return records.filter(isPublicFaithReviewComplete).map(record => ({
+    id: record.id, slug: record.slug, type: record.type, title: record.title,
+    excerpt: record.excerpt, sourceCitation: record.sourceCitation,
+    verifiedAt: record.verifiedAt, topics: record.topics,
+    mediaAssets: record.mediaAssets,
+  }));
 }

@@ -30,3 +30,30 @@ test("malformed successful private-tracking data remains retryable without showi
   expect(requests).toEqual([{ reference, token }, { reference, token }]);
   expect(page.url()).not.toContain(token);
 });
+
+test.describe("private tracking dates", () => {
+  test.use({ timezoneId: "UTC" });
+
+  test("shows India calendar dates on a UTC browser", async ({ page }) => {
+    const reference = "AFR-SYNTHETIC-IST-001";
+    const token = "synthetic-private-tracking-token-1234567890";
+
+    await page.route("**/api/analytics/page-view", route => route.fulfill({ status: 204, body: "" }));
+    await page.route("**/api/assistance/status", route => route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        found: true,
+        status: "UNDER_VERIFICATION",
+        createdAt: "2026-10-26T19:00:00.000Z",
+        updatedAt: "2026-10-26T20:00:00.000Z",
+      }),
+    }));
+
+    await page.goto(`/request-assistance/status#reference=${reference}&token=${token}`);
+    await expect(page.getByRole("heading", { name: "Under verification" })).toBeVisible();
+    await expect(page.locator(".v2-reference-block small"))
+      .toHaveText("Submitted 27 October 2026 · Last updated 27 October 2026");
+    expect(new URL(page.url()).hash).toBe("");
+  });
+});

@@ -50,6 +50,19 @@ test("ignores unsafe paths and rejects malformed or empty manifests", () => {
   assert.equal(data[0].totalBytes, 42);
 });
 
+test("legacy route assignments reject missing and invalid measured bytes", () => {
+  const pages = { '/page': ['static/chunks/page.js'] };
+  for (const bytes of [undefined, null, NaN, Infinity, -1, 1.5]) {
+    assert.throws(() => summarizeAppRouteBundles(pages, () => bytes), /Invalid bundle size/);
+  }
+  assert.deepEqual(summarizeAppRouteBundles(pages, () => 0), [{
+    route: '/', entries: 1, jsBytes: 0, cssBytes: 0, totalBytes: 0,
+  }]);
+  assert.throws(() => summarizeAppRouteBundles({
+    '/page': ['static/chunks/huge.js', 'static/css/small.css'],
+  }, asset => asset.endsWith('.js') ? Number.MAX_SAFE_INTEGER : 1), /Invalid route total size/);
+});
+
 test("Next 16 without an app build manifest reports aggregate-only figures", () => {
   const report = summarizeUnattributedAppAssets({
     "/page": "/", "/about/page": "/about", "/about/layout": "/about",
@@ -69,6 +82,19 @@ test("Next 16 without an app build manifest reports aggregate-only figures", () 
 test("Next 16 fallback rejects missing or empty route inventories", () => {
   assert.throws(() => summarizeUnattributedAppAssets(null, []), /path manifest/);
   assert.throws(() => summarizeUnattributedAppAssets({ "/layout": "/" }, []), /No App Router pages/);
+});
+
+test("unattributed aggregate rejects unmeasured asset sizes instead of producing NaN", () => {
+  const routes = { '/page': '/' };
+  for (const bytes of [undefined, null, NaN, Infinity, -1, 1.5]) {
+    assert.throws(() => summarizeUnattributedAppAssets(routes, [{ path: 'chunks/a.js', bytes }]), /Invalid aggregate asset size/);
+  }
+  assert.deepEqual(summarizeUnattributedAppAssets(routes, [
+    { path: 'chunks/empty.js', bytes: 0 }, { path: 'css/empty.css', bytes: 0 },
+  ]).aggregate, { jsBytes: 0, cssBytes: 0, totalBytes: 0, assetCount: 2 });
+  assert.throws(() => summarizeUnattributedAppAssets(routes, [
+    { path: 'chunks/huge.js', bytes: Number.MAX_SAFE_INTEGER }, { path: 'css/small.css', bytes: 1 },
+  ]), /Invalid aggregate total size/);
 });
 
 test("parses the Next 16 JSON assignment without executing JavaScript", () => {

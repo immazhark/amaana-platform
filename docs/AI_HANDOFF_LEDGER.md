@@ -2124,6 +2124,131 @@ Acceptance30 October2026 IST: source reachability/ownership RED4/4 then GREEN4/4
 
 
 
+
+## 2026-10-31 IST — enquiry/copy feedback recovery
+
+Acceptance31 October2026 IST: focused RED17/33 then GREEN33/33. Full2375 Vitest PASS/20 opt-in isolated-DB SKIP; clean optimized production build including strict TypeScript/pre/postbuild, standalone zero-warning ESLint and diff checks PASS. Two independent reviews prove5source paths limited to detection/year/copy feedback; native email handoff, no-JS footer, mobile Escape, reading text and payment submit/lock/provider/value logic byte-preserved. Added completed-then-pending copy case closes #509 coverage gap and verifies zero fetch/router/lock calls. Companion E2E appended2 ordering cases without replacing existing Escape coverage; not locally executed. Governed Stylelint remains locally unverified due prior offline dependency gap; hosted exact-head/browser/DB/lint/ready required. Keep513514518487509 until accepted replacement, no149 or live release claim.
+
+
+Parallel read-only queue findings: #530 is complementary to shipped artifact scanner; recover names-only preflight with synthetic lower/mixed-case/digit/underscore suffix regressions (Next inlines exact NEXT_PUBLIC_ prefix without uppercase suffix restriction). No actual env values read or guard source modified. #525 acknowledgement reference-keyed snapshot/abort guards remain unshipped; adapt #603 date fixture if recovering that state shape. #527 duplicate/file-valued manual recovery validation remains a bounded lead; #528 durable retention claims/hold synchronization requires isolated concurrency acceptance. #525/#526/#527/#528/#374 are not proven wholly superseded and must not be bulk-merged/closed. Discovery cluster552556562563564569 has verified selector baselines; use dedicated Stories programme-context test without inherited501 assertions. No live data/provider action was performed.
+
+## 2026-10-31 IST — #605 re-reconciliation after protected #604 merge
+
+CHATGPT_ACTIVE sole writer. Current protected main 3d487e4f6eedc705ae2d4be79cd6396d88d4e627 includes accepted #604 CSS scope. Source and regression content of #605 remains byte-identical to tested previous head e23d334b50af1a8aa2edbc7de54b600dd4095e21; only current coordination histories are reconciled. All source paths are disjoint from intervening main changes. Require fresh exact-head full CI, separate ready-state and guarded merge. Historical 149 unchanged.
+
+
+
+
+## 2026-10-30 IST — remaining IST display recovery
+
+Acceptance30 October2026 IST: UTC focused RED9/19 before source, corrected GREEN19/19 in UTC and America/Los_Angeles (explicit host-zone assertion). Full2364 Vitest PASS/20 opt-in isolated-DB SKIP; clean optimized build with TypeScript/pre/postbuild guards, standalone zero-warning ESLint and diff checks PASS. Independent actual-diff review proves5production paths change only formatting/text; notification SENT/null/year9999 sentinel and private hooks/token/API/auth/payment logic byte-preserved. Added UTC browser cases are not locally executed; fresh hosted browser/build/database/lint and separate-ready required. Governed Stylelint still locally unverified due prior missing offline dependency; no CSS changes. Keep originals505506488489 until accepted replacement; no149 promotion, deployment or private-data access claim. Preserve601 labels in later main reconciliation.
+
+
+## 2026-10-31 IST — #603 date-display recovery after protected #604 merge
+
+CHATGPT_ACTIVE sole writer. Current main 3d487e4f6eedc705ae2d4be79cd6396d88d4e627 contains released CSS cleanups. Preserve exactly twelve tested source/regression Git blobs from old candidate bcfff55c95178f81599a629f649707db293349d5, including #601 Media Library tab disclosure and the IST date-case tests. Reconcile coordination histories without overwriting current main. Fresh exact-head CI and ready-state checks required; no scheduled notification activation, financial behavior, or 149 status changes.
+
+
+
+## 2026-10-31 IST — #603 reconciled after #605 protected merge
+
+CHATGPT_ACTIVE sole writer. Retained all twelve original tested application/test blobs from #603, all current-main #605 code and both appended coordination histories via ordinary two-parent merge commit. Candidate must pass new exact-head full CI plus separate ready-state after promotion; no direct main push, source/runtime/149 acceptance claimed.
+
+
+## 2026-10-31 IST — #578 Faith sitemap direct-main recovery
+
+CHATGPT_ACTIVE retained original #578 source regression and sitemap correction only, based on current main pre-fix blob equality; test-first branch commit f05d9015bd432325753c8463882bf82c23a7975e. Full fresh head CI/browser/database and separate ready-state required before merge. Historical #578 preserved until accepted release, no 149 item promotion.
+
+
+## 2026-10-31 IST — #606 post-#603 source reconciliation
+
+Preserve accepted #603 main and exact original sitemap application/regression Git blobs from #606; append both coordination histories without truncation. New exact-head CI and separate ready-state gate must pass before guarded protected merge. No live publication/media/content/provider/data change or 149 promotion.
+
+
+## 2026-10-31 IST — recovered public accessibility three-piece release
+
+Single writer CHATGPT_ACTIVE, main base `2e369addd4bebce84c0565a9fe4f55b9686cac51`. Original source and synthetic regression Git blobs retained exactly from reviewed #519/#501/#502, separated from their stale coordination branches. Tests-first `b3bc7c91add9c1fcc04e25dc24c3621ebe8a1e14`; full exact-head CI/browser/database/security and separate ready-state remain needed. Original PRs preserved until release acceptance; no canonical 149 status promotion.
+
+
+## 2026-10-31 IST — #607 post-#606 source reconciliation
+
+Single writer CHATGPT_ACTIVE preserves accepted #606 and original seven reviewed #607 application/test Git blobs exactly; both coordination histories append. Re-run full exact-head acceptance and separate ready-state before merge. No full 149 acceptance.
+
+
+## 2026-10-31 IST — isolated #579 order-key recovery
+
+Bounded two final unique `id asc` query orders only, test-first from accepted main with distinct Faith synthetic test and updated Appeals existing query contract. #579 historical branch retained and not bulk imported. New exact-head full CI and separate ready-state remain mandatory; no 149 promotion or live timing claim.
+
+
+## 2026-10-31 IST — #608 reconciliation following #607 source release
+
+Single writer CHATGPT_ACTIVE preserves source and evidence from both parents. Four original order-fix source/regression blobs and current-main #607 source retained. This non-force two-parent reconciliation needs new exact-head full and separate ready-state CI. No canonical 149 promotion.
+
+
+## 2026-10-31 IST — #574 isolated Faith discovery gate
+
+CHATGPT_ACTIVE single writer, synthetic tests-first `863e123ce63b44e27ec0cc4aa63b05fffffeee14`, narrow existing review completeness check in Faith library. Preserve original public output shape, SQL publication predicate and id tie-breaker. Pending exact-head full hosted CI, separate ready-state, protected guarded merge, Railway/public release identity. No 149 classification change.
+
+## 2026-10-31 IST — retain staging payment audit while cleaning admin queues
+
+CHATGPT_ACTIVE on fix/hide-staging-acceptance-admin-records-20261031 from main 198cfb0471fa8f325cd08511e6df2fd482db1cd4. User expressly approved bounded cleanup of old test records. Source-only historical-view filtering, exact synthetic identifiers, no production deletion. Preserve connected fixture donation/refund rows and direct admin detail access. Test-first spec; hosted exact-head and ready-state gates before merge; do not override other PR branches. Unrelated #609 remains open; 149 unchanged.
+
+
+
+## 2026-10-31 IST — #581 independent public media candidate recovery
+
+Single writer CHATGPT_ACTIVE. Tests-first `7249ece092905f1f97dac5eca37c2d063e22ed5f` on accepted #607 protected main, then source filters only eligible page slots and avoids an empty media grid. Preserve privacy/publication route and fixed page offsets. Fresh full hosted and separate-ready acceptance required. No 149 status change, public media transformation, or production-data action.
+
+
+## 2026-10-31 IST — #609 post-#608 source reconciliation
+
+Single CHATGPT_ACTIVE writer. Keep exact app/test Git blobs from #609 and accepted #608 query-order changes; merge coordination histories without truncation. Full exact-head and separate ready-state tests required again; no media or donor data writes.
+
+## 2026-10-31 IST — #609 current-main refresh after merged #614
+
+CHATGPT_ACTIVE preserved original #609 application/test blobs and base accepted #614. New two-parent SHA-guarded branch update, exact-head CI + separate ready-state required. Old canceled CI not reused. No data/schema/payment/auth/runtime or donation changes; production fixtures remain retained behind Historical tests.
+
+
+
+## 2026-10-31 IST — #564 blank Stories programme fallback independent recovery
+
+Test-first `0caf13d58dd072975eaa9f920f35a32695dee61a` + minimal source repair on protected #607 main. Original historical stacked #564 is preserved, not bulk imported. Four synthetic fallback/publication/title regressions require fresh hosted exact-head full CI, post-ready workflow and expected-head merge. No canonical 149 status promotion.
+
+## 2026-11-01 IST — #611 Stories filter recovered against accepted #609
+
+CHATGPT_ACTIVE on fix/reconcile-story-programme-blank-options-20261031; exact two-blob source/test recovery of pre-reviewed #611, refresh hosted full CI and ready-state before protected merge. No public-claim/data/auth/payment/schema/cron changes. Main 825c85ba9ac1a07864a6be38c325d15b8b11f10d; canonical 149 unchanged.
+
+## 2026-11-01 IST — #610 accepted-main reconciliation
+
+#611 accepted at ecba1a485596d0c3cc2760b35d2e8322fd7be133. Reconcile original two reviewed #610 code/test blobs with current main and both histories by two-parent commit; fresh exact-head hosted seven-job CI and separate ready-state required before protected guarded merge. Source versus runtime separate; no 149 promotion.
+
+## 2026-11-01 IST — #499 second candidate reconciliation
+
+Single writer CHATGPT_ACTIVE. Preserve #499 exact original 3 reviewed code/test blobs with #610 refreshed head 29abcf5a89420824c5befb552784b99b1815b250 by a normal two-parent SHA-guarded branch advance. Fresh seven-job exact-head CI and separately triggered ready-state before accepting. No deployment or 149-promotion claim.
+
+
+
+## 2026-10-31 IST — #520 reporter input guard recovery
+
+CHATGPT_ACTIVE sole writer. Recover previously test-first audited integer/overflow guards from #520 onto current protected main 9e30b16494d72c2c967855d69a5ccf363cf82794; original two source/test blobs preserved. Old exact-head local evidence does not certify this new integration. Full exact-head CI, separate ready-state and protected guarded merge required. No runtime, database, donor, payment or infrastructure change; canonical 149 unchanged.
+
+## 2026-10-28 IST — AF-R047 route-size validation, single-writer source lane
+
+CHATGPT_ACTIVE sole writer; task branch `fix/route-bundle-invalid-size-20261028`, protected-main parent `83044f775166be0a3533d807a7ec3e268795530f`. Verified current Next16 route report has all 61 page JS and CSS assignments and its original 13 reporter-native tests pass. Selected a separate remaining integrity defect: `summarizeAppRouteBundles` accepts missing/invalid `byteSize` results; `summarizeUnattributedAppAssets` accepts invalid aggregate asset sizes. Synthetic negative tests must fail before a minimal pure-helper correction. No change to production component/network performance, per-route measurement definitions or existing report budget thresholds. Draft-only under the Neon hold; preserve unrelated PRs, donor privacy and historical backlog counts. Final red/green evidence and remote head to follow.
+
+Test-first evidence: two invalid-size assertions failed on source before the correction, then integer-overflow total assertions failed until the safe-sum guard was added; final **15/15 native reporter cases PASS**. Full Vitest **2,282 PASS, 20 opt-in DB SKIP**; strict TypeScript, complete ESLint+Stylelint, production build, seven proposed-edge tests, curated contract, client-secret and artwork-weight guards PASS. Exact generated build has 61 JS/CSS route assignment sets; aggregate build JS 806,077 B, CSS 328,687 B uncompressed, not transfer or field performance. No app/dependency/schema/provider/secret change. Publish only as low-risk draft PR while the Neon hold persists; no source/runtime SHA parity, merge, deployment, or 149-item classification claim.
+
+
+## 2026-10-31 IST — #520 merge-ready input-guard after #604
+
+CHATGPT_ACTIVE sole implementation writer. Reconcile scripts-only candidate with current protected main 3d487e4f6eedc705ae2d4be79cd6396d88d4e627. Both tested original source/test blobs remain unchanged, current coordination history preserved. New exact-head browser/database/production and separate ready-state checks required; this is not a live change or 149 promotion.
+
+## 2026-11-01 IST — #520 source-only byte reporting recovery
+
+CHATGPT_ACTIVE reused original tested route-bundle source/test blobs on candidate #499 7b08dc236cd99dacff00d0e7c23d003009e4144f; fresh full exact-head and ready-state acceptance required. Do not equate uncompressed build totals to real transfer or CWV. No release/149 promotion until merged and verified.
+
+
+
 ## 2026-10-27 — AF-R047/R057 browser CSS evidence correction — prepared
 
 CHATGPT_ACTIVE sole writer on `perf/browser-css-transfer-evidence-20261027`, base main `83044f7`. Defect: browser E2E summed independently fetched decoded CSS, then called it delivery. Navigation timing now separately records decoded/encoded/transfer bytes; all-zero/cache/opaque/missing timing remains unavailable, full transfer null with partial observation explicit. Prior route-selector assertions remain. Three new synthetic regressions red for absent API and green; native CSS11/11, bundle reporter13/13, full Vitest2282 PASS/20 isolated DB skips; strict TypeScript, full ESLint, governed Stylelint and Next build/postbuild client-secret PASS. First hosted run `40481765478` had fast/database/production PASS, browser FAIL due importing from excluded `scripts/` workspace. Subsequent test red for absent local E2E helper; pure helper moved under `e2e/` copied by hosted browser harness, with native test importing the same module. New exact-head Chromium required before ready. Independent read-only review no math blocker. No app runtime/DB/payment/privacy/infra change, no 149-item classification change.
@@ -2132,4 +2257,8 @@ CHATGPT_ACTIVE sole writer on `perf/browser-css-transfer-evidence-20261027`, bas
 ## 2026-10-31 IST — #492 browser CSS transfer evidence recovery after #604
 
 CHATGPT_ACTIVE sole writer. Tested original three source/test blobs preserved from 51aed29ff2c3d926c20643e20477098491c38b14 on protected 3d487e4f6eedc705ae2d4be79cd6396d88d4e627, full coordination history retained. Synthetic browser linked CSS Resource Timing does not represent production transfer or field CWV. Fresh exact-head seven-job CI, separate ready-state and guarded merge required; no 149-item promotion.
+
+## 2026-11-01 IST — #492 synthetic browser transfer provenance
+
+CHATGPT_ACTIVE staged #492 three already reviewed source/test blobs above #520 candidate b636e040f420155d791569b5fdc5e16ff3b8fee0, preserving all predecessor source/coordination. Must pass fresh CI/browser/ready, protected main expected-head merge; do not call synthetic navigation Resource Timing field CWV. No canonical149 promotion.
 
