@@ -118,7 +118,8 @@ test('shared AppealCard hover and focus stay still under reduced motion on Home 
   await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
 
   for (const route of ['/', '/appeals']) {
-    const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
+    // Allow Next.js hydration to finish before inserting a DOM-only fixture.
+    const response = await page.goto(route, { waitUntil: 'networkidle' });
     expect(response?.ok()).toBe(true);
     await page.evaluate(() => {
       const main = document.querySelector('main');
@@ -139,6 +140,7 @@ test('shared AppealCard hover and focus stay still under reduced motion on Home 
 
     const card = page.locator('[data-motion-fixture="true"]');
     const link = card.locator('a');
+    await expect(card).toBeVisible();
     for (const reducedMotion of ['reduce', 'no-preference']) {
       await page.emulateMedia({ reducedMotion });
       await card.hover();
