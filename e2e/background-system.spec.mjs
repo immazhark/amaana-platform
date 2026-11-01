@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { waitForPublicOverview } from './helpers/public-overview-ready.mjs';
 
 const widths = [320, 375, 390, 430, 768, 900, 1024, 1440, 1920];
 
@@ -9,6 +10,7 @@ for (const width of widths) {
       await page.route('**/api/analytics/page-view', r => r.fulfill({ status: 204, body: '' }));
       const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
       expect(response?.ok()).toBeTruthy();
+      await waitForPublicOverview(page, route);
       const marks = page.locator('.amaana-backdrop-emblem');
       await expect(marks).toHaveCount(2);
       const result = await page.evaluate(() => {
