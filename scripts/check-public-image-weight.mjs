@@ -1,4 +1,4 @@
-import { readdirSync, statSync } from "node:fs";
+import { lstatSync, readdirSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -33,7 +33,13 @@ export function evaluateImageWeights(files, limit = MAX_ARTWORK_BYTES) {
 export function readHeroImageInventory(root = process.cwd()) {
   return folders.flatMap(folder => {
     const dir = join(root, folder);
+    if (lstatSync(dir).isSymbolicLink()) {
+      throw new Error("Symlinked artwork folder is forbidden: " + folder);
+    }
     return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+      if (entry.isSymbolicLink()) {
+        throw new Error("Symlinked artwork entry is forbidden: " + join(folder, entry.name));
+      }
       if (!entry.isFile() || !types.test(entry.name)) return [];
       const path = join(dir, entry.name);
       return [{ path: relative(root, path).split(sep).join("/"), bytes: statSync(path).size }];
