@@ -9,36 +9,29 @@ const types = /\.(?:webp|avif|png|jpe?g)$/i;
 /** CI budget for repository hero artwork only, not consent-reviewed S3 galleries. */
 export function evaluateImageWeights(files, limit = MAX_ARTWORK_BYTES) {
   if (!Number.isSafeInteger(limit) || limit <= 0) throw new Error("Invalid image weight budget");
-  if (!Array.isArray(files)) throw new Error("Invalid image inventory");
-  for (const file of files) {
-    if (!file || typeof file.path !== "string" || !file.path.trim() ||
-        !Number.isSafeInteger(file.bytes) || file.bytes < 0) {
+  const sorted = files.slice().sort((a, b) => b.bytes - a.bytes);
+  for (const file of sorted) {
+    if (!file.path || !Number.isSafeInteger(file.bytes) || file.bytes < 0) {
       throw new Error("Invalid image inventory entry");
     }
   }
-  const sorted = files.slice().sort((a, b) => b.bytes - a.bytes);
-  const totalBytes = sorted.reduce((sum, file) => {
-    const next = sum + file.bytes;
-    if (!Number.isSafeInteger(next)) throw new Error("Invalid aggregate image byte size");
-    return next;
-  }, 0);
   return {
     imageCount: sorted.length,
-    totalBytes,
+    totalBytes: sorted.reduce((sum, file) => sum + file.bytes, 0),
     largest: sorted.slice(0, 5),
     violations: sorted.filter(file => file.bytes > limit),
   };
 }
 
 export function readHeroImageInventory(root = process.cwd()) {
-  const visit = dir => readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
-    const path = join(dir, entry.name);
-    if (entry.isDirectory()) return visit(path);
-    // Ignore symlinks and non-raster files; never follow artwork out of scope.
-    if (!entry.isFile() || !types.test(entry.name)) return [];
-    return [{ path: relative(root, path).split(sep).join("/"), bytes: statSync(path).size }];
+  return folders.flatMap(folder => {
+    const dir = join(root, folder);
+    return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+      if (!entry.isFile() || !types.test(entry.name)) return [];
+      const path = join(dir, entry.name);
+      return [{ path: relative(root, path).split(sep).join("/"), bytes: statSync(path).size }];
+    });
   });
-  return folders.flatMap(folder => visit(join(root, folder)));
 }
 
 function run() {

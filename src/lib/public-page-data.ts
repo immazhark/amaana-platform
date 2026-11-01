@@ -6,7 +6,6 @@ import { isAppealOpenForDonations } from "@/lib/appeals";
 import { canExposeAppealArchive } from "@/lib/appeal-update-publication";
 import { canExposePublicAppeal, canExposeSyntheticStagingContent } from "@/lib/public-environment";
 import { IDENTITY_MEDIA_SORT_ORDER } from "@/lib/public-media";
-import { programmes } from "@/lib/master-copy";
 import {
   getPublishedFaithContentBySlug,
   getPublishedInitiativeBySlug,
@@ -50,9 +49,6 @@ export const PUBLIC_GALLERY_MEDIA_PROJECTION = {
   take: 12,
   select: PUBLIC_IMAGE_SELECT,
 };
-
-const CANONICAL_PROGRAMME_SLUGS = programmes.map(programme => programme.slug);
-const CANONICAL_PROGRAMME_SLUG_SET = new Set(CANONICAL_PROGRAMME_SLUGS);
 
 /**
  * React request memoization for dynamic routes whose metadata and page body
@@ -211,7 +207,6 @@ export const getHomepageDiscoveryData = cache(async () => {
       where: {
         status: "PUBLISHED",
         cause: { status: "PUBLISHED" },
-        slug: { in: CANONICAL_PROGRAMME_SLUGS },
       },
       select: { slug: true },
     }),
@@ -261,8 +256,7 @@ export const getOurWorkIndexData = cache(async () => {
           mediaAssets: {
             where: PUBLIC_IDENTITY_IMAGE_WHERE,
             orderBy: [{ sourceYear: "desc" }],
-            // Keep fallback candidates when a newer image fails URL/alt validation.
-            take: 12,
+            take: 1,
             select: PUBLIC_IMAGE_SELECT,
           },
         },
@@ -323,19 +317,14 @@ export const getImpactComparisonPageData = cache(async () => {
 
 /**
  * Completed-case showcase for /appeals. Keep this intentionally narrow: only
- * curated medical/financial programmes can appear in the card strip. Do not
- * load gallery rows for published initiatives that the page cannot display.
+ * published initiatives under the canonical medical/financial relief cause and
+ * a bounded set of approved public images per record is used so the card strip can prefer documentary gallery photography.
  */
-const COMPLETED_AID_PROGRAMME_SLUGS = programmes
-  .filter(programme => programme.causeSlug === "medical-financial-relief")
-  .map(programme => programme.slug);
-
 export const getCompletedAidShowcaseData = cache(async () => {
   return prisma.initiative.findMany({
     where: {
       status: "PUBLISHED",
       cause: { slug: "medical-financial-relief", status: "PUBLISHED" },
-      slug: { in: COMPLETED_AID_PROGRAMME_SLUGS },
     },
     orderBy: [{ displayOrder: "asc" }, { publishedAt: "desc" }],
     select: {
@@ -366,7 +355,7 @@ export const getAppealsIndexData = cache(async () => {
     // before retrieving card records. The page still applies the full balance,
     // staging and time checks as the final public presentation guard.
     where,
-    orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
+    orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }, { id: "asc" }],
     select: {
       slug: true,
       title: true,
@@ -478,7 +467,6 @@ export const getDonationImpactHighlights = cache(async () => {
     where: {
       status: "PUBLISHED",
       cause: { status: "PUBLISHED" },
-      slug: { in: CANONICAL_PROGRAMME_SLUGS },
       primaryMetric: { not: null },
       primaryMetricLabel: { not: null },
     },
@@ -486,8 +474,7 @@ export const getDonationImpactHighlights = cache(async () => {
     take: 8,
     select: { slug: true, title: true, primaryMetric: true, primaryMetricLabel: true },
   });
-  return rows.filter(item => CANONICAL_PROGRAMME_SLUG_SET.has(item.slug)
-    && item.primaryMetric?.trim() && item.primaryMetricLabel?.trim()).slice(0, 3);
+  return rows.filter(item => item.primaryMetric?.trim() && item.primaryMetricLabel?.trim()).slice(0, 3);
 });
 
 /**

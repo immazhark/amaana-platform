@@ -9,12 +9,12 @@ import { test } from "node:test";
 const scanner = fileURLToPath(new URL("./check-client-secret-boundary.mjs", import.meta.url));
 const canary = "amaana-regression-canary-not-a-real-secret-20261010";
 
-function runScanner(contents, environment = {}, filename = "client.js") {
+function runScanner(contents, environment = {}, filename = "client.js", assetRoot = ".next/static") {
   const root = mkdtempSync(path.join(os.tmpdir(), "amaana-secret-boundary-"));
   try {
     const staticDir = path.join(root, ".next", "static");
     mkdirSync(staticDir, { recursive: true });
-    const filePath = path.join(staticDir, filename);
+    const filePath = path.join(root, assetRoot, filename);
     mkdirSync(path.dirname(filePath), { recursive: true });
     writeFileSync(filePath, contents);
     return spawnSync(process.execPath, [scanner], {
@@ -97,4 +97,62 @@ test("client bundle scanner fails closed on symlinked public files and directori
       rmSync(root, { recursive: true, force: true });
     }
   }
+});
+
+test("scanner checks directly served public assets without printing embedded values", () => {
+ for (const filename of ["config.json","nested/metadata.txt","brand/mark.svg"]) {
+  const result=runScanner(`embedded ${canary}`,{},filename,"public");
+  assert.equal(result.status,1,filename);
+  assert.match(result.stderr,/REDACTED SECRET VALUE/);
+  assert.ok(!result.stderr.includes(canary));assert.ok(!result.stdout.includes(canary));
+ }
+ const clean=runScanner('{"title":"Approved metadata"}',{},"config.json","public");
+ assert.equal(clean.status,0,clean.stderr);
+});
+test("scanner rejects a symlinked public root",()=>{
+ const root=mkdtempSync(path.join(os.tmpdir(),"amaana-public-root-"));
+ try {
+  mkdirSync(path.join(root,".next/static"),{recursive:true});
+  mkdirSync(path.join(root,"outside"));
+  symlinkSync(path.join(root,"outside"),path.join(root,"public"),"dir");
+  const result=spawnSync(process.execPath,[scanner],{cwd:root,encoding:"utf8"});
+  assert.equal(result.status,1);assert.match(result.stderr,/Symbolic link/);
+ } finally {rmSync(root,{recursive:true,force:true});}
+});
+
+test("public assets cannot substitute for the required build directory",()=>{
+ const root=mkdtempSync(path.join(os.tmpdir(),"amaana-public-without-build-"));
+ try {
+  mkdirSync(path.join(root,"public"));writeFileSync(path.join(root,"public/config.json"),"{}");
+  const result=spawnSync(process.execPath,[scanner],{cwd:root,encoding:"utf8"});
+  assert.equal(result.status,1);assert.match(result.stderr,/completed Next.js build/);
+ } finally {rmSync(root,{recursive:true,force:true});}
+});
+
+test("directly served plaintext assets cannot bypass server-secret scanning", () => {
+  for (const extension of ["md", "markdown", "csv", "tsv", "yaml", "yml", "htm", "ini", "toml"]) {
+    const filename = `docs/export.${extension}`;
+    const leaked = runScanner(`synthetic asset ${canary}`, {}, filename, "public");
+    assert.equal(leaked.status, 1, `Scanner missed directly served ${filename}`);
+    assert.match(leaked.stderr, /REDACTED SECRET VALUE/);
+    assert.doesNotMatch(leaked.stderr + leaked.stdout, new RegExp(canary));
+  }
+  for (const extension of ["md", "csv", "yaml", "htm", "toml"]) {
+    const clean = runScanner("Reviewed public information", {}, `docs/approved.${extension}`, "public");
+    assert.equal(clean.status, 0, clean.stderr);
+  }
+});
+
+test("scanner rejects public environment files regardless of secret marker contents", () => {
+  for (const filename of [".env", ".env.production.local", "nested/.env.local"]) {
+    const leaked = runScanner(`SYNTHETIC_ENV_VALUE=${canary}`, {}, filename, "public");
+    assert.equal(leaked.status, 1, `Public environment file was accepted: ${filename}`);
+    assert.match(leaked.stderr, /Sensitive environment file/);
+    assert.doesNotMatch(leaked.stderr + leaked.stdout, new RegExp(canary));
+  }
+  const clean = runScanner("SYNTHETIC_ENV_VALUE=placeholder", {}, ".env.example", "public");
+  assert.equal(clean.status, 1, "An unmarked environment file must be rejected");
+  assert.match(clean.stderr, /Sensitive environment file/);
+  const safe = runScanner("Site verification text", {}, ".well-known/verification.txt", "public");
+  assert.equal(safe.status, 0, safe.stderr);
 });

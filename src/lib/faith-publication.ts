@@ -14,5 +14,6 @@ export function isPublicFaithReviewComplete(input: {
   return input.status === "PUBLISHED" &&
     input.religiousReviewStatus === "VERIFIED" &&
     input.verifiedAt instanceof Date &&
+    Number.isFinite(input.verifiedAt.getTime()) &&
     Boolean(input.sourceCitation?.trim());
 }

@@ -80,3 +80,17 @@ it("preserves sequential copied values and actionable failure feedback", async (
   mocks.write.mockRejectedValueOnce(new Error("synthetic denied")); await view().copy("Copy IFSC");
   expect(view().feedback).toBe("Could not copy IFSC. Select the value above and copy it manually."); noTransferSideEffects();
 });
+
+
+it("clears completed feedback while a newer copy remains pending", async () => {
+  await view().copy("Copy account number");
+  expect(view().feedback).toBe("Account number copied.");
+  const pending = deferred();
+  mocks.write.mockReturnValueOnce(pending.promise);
+  const latest = view().copy("Copy IFSC");
+  expect(view().feedback).toBe("");
+  pending.resolve();
+  await latest;
+  expect(view().feedback).toBe("IFSC copied.");
+  noTransferSideEffects();
+});

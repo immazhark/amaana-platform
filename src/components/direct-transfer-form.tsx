@@ -28,6 +28,7 @@ export function DirectTransferForm({ appealId, maxAmount, method, paymentDetails
 
   async function copyPaymentDetail(value: string, label: string) {
     const attempt = ++copyAttemptRef.current;
+    setCopyFeedback(null);
     try {
       await navigator.clipboard.writeText(value);
       if (attempt === copyAttemptRef.current) setCopyFeedback({ method, text: `${label} copied.` });

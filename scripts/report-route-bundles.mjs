@@ -135,7 +135,7 @@ export function summarizeClientReferenceCss(appPaths, readManifest, byteSize) {
         if (!Number.isSafeInteger(bytes) || bytes < 0) throw new Error("Invalid CSS asset size");
         sizes.set(asset, bytes);
       }
-      cssBytes = measuredBytes(cssBytes + sizes.get(asset), "CSS total");
+      cssBytes += sizes.get(asset);
     }
     return { route, appPath: page, cssBytes, stylesheetCount: assets.size };
   }).sort((a, b) => b.cssBytes - a.cssBytes || a.appPath.localeCompare(b.appPath));
@@ -158,22 +158,10 @@ export function summarizeClientReferenceJs(appPaths, readManifest, rootMainFiles
     if (!validAppPage(page)) throw new Error("Unsafe App Router page path");
     const manifest = parseClientReferenceManifest(readManifest(page), page);
     if (!isRecord(manifest.entryJSFiles)) throw new Error("Invalid client-reference JavaScript map");
-    // Inherit the root and ancestor layouts, not unrelated sibling pages.
-    const parts = page.slice(1).split("/");
-    const routeEntries = ["/layout", ...parts.slice(0, -1).map((_, index) =>
-      "/" + parts.slice(0, index + 1).join("/") + "/layout"), page];
-    if (page === "/_global-error/page") routeEntries.push("/global-error");
-    if (page === "/_not-found/page") routeEntries.push("/not-found");
-    const matched = new Set();
     const assets = new Set(shared);
-    for (const [key, scripts] of Object.entries(manifest.entryJSFiles)) {
+    for (const scripts of Object.values(manifest.entryJSFiles)) {
       if (!Array.isArray(scripts)) throw new Error("Invalid client-reference JavaScript entries");
-      const paths = scripts.map(scriptPath); // Check unmatched entries too; malformed manifests fail closed.
-      const entry = routeEntries.find(routeEntry => key.endsWith("/app" + routeEntry));
-      if (!entry) continue;
-      if (matched.has(entry)) throw new Error("Ambiguous client-reference JavaScript entries");
-      matched.add(entry);
-      for (const script of paths) assets.add(script);
+      for (const script of scripts) assets.add(scriptPath(script));
     }
     let jsBytes = 0;
     for (const asset of assets) {
@@ -182,7 +170,7 @@ export function summarizeClientReferenceJs(appPaths, readManifest, rootMainFiles
         if (!Number.isSafeInteger(bytes) || bytes < 0) throw new Error("Invalid JavaScript asset size");
         sizes.set(asset, bytes);
       }
-      jsBytes = measuredBytes(jsBytes + sizes.get(asset), "JavaScript total");
+      jsBytes += sizes.get(asset);
     }
     return { route, appPath: page, jsBytes, scriptCount: assets.size };
   }).sort((a, b) => b.jsBytes - a.jsBytes || a.appPath.localeCompare(b.appPath));
@@ -277,13 +265,6 @@ function run() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  // A reader such as head may close its pipe before the report is flushed.
-  // Treat only EPIPE as cancellation; other output errors still fail the CLI.
-  process.stdout.on("error", error => {
-    if (error.code === "EPIPE") return;
-    process.stderr.write(`Unable to write route report: ${error.message}\n`);
-    process.exitCode = 1;
-  });
   try { run(); }
   catch (error) { process.stderr.write(String(error instanceof Error ? error.message : error) + "\n"); process.exitCode = 1; }
 }

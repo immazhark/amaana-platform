@@ -65,10 +65,8 @@ export async function getVisibleStoryCards(ids: readonly string[]) {
 export async function getFaithDiscoveryData() {
   const records = await prisma.faithContent.findMany({
     where: publicFaithWhere,
-    orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }],
+    orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }, { id: "asc" }],
     select: {
-      status: true,
-      religiousReviewStatus: true,
       id: true,
       slug: true,
       type: true,
@@ -76,28 +74,13 @@ export async function getFaithDiscoveryData() {
       excerpt: true,
       sourceCitation: true,
       verifiedAt: true,
+      status: true,
+      religiousReviewStatus: true,
       topics: {
         select: {
           topic: { select: { slug: true, name: true } },
         },
       },
-
-    },
-  });
-  return records.filter(isPublicFaithReviewComplete);
-}
-
-/** Only the library hero and filtered lead render images. Recheck publication
- * when loading their candidates so a withdrawn record supplies no media. */
-export async function getVisibleFaithMedia(ids: readonly string[]) {
-  const visibleIds = [...new Set(ids)];
-  if (visibleIds.length > 2) throw new Error("At most two Faith media records are allowed");
-  if (visibleIds.length === 0) return [];
-
-  return prisma.faithContent.findMany({
-    where: { ...publicFaithWhere, id: { in: visibleIds } },
-    select: {
-      id: true,
       mediaAssets: {
         where: {
           kind: "IMAGE",
@@ -112,4 +95,11 @@ export async function getVisibleFaithMedia(ids: readonly string[]) {
       },
     },
   });
+  // Review status is needed only for the final eligibility check; do not serialize it.
+  return records.filter(isPublicFaithReviewComplete).map(record => ({
+    id: record.id, slug: record.slug, type: record.type, title: record.title,
+    excerpt: record.excerpt, sourceCitation: record.sourceCitation,
+    verifiedAt: record.verifiedAt, topics: record.topics,
+    mediaAssets: record.mediaAssets,
+  }));
 }

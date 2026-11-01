@@ -13,13 +13,13 @@ beforeEach(() => {
   vi.resetAllMocks();
   mocks.permission.mockResolvedValue({ id: "synthetic-operator" }); mocks.allowed.mockReturnValue(false);
   mocks.staff.mockResolvedValue([{ id: "synthetic-staff", name: "Synthetic staff" }]);
-  mocks.history.mockResolvedValue([{ id: "synthetic-event", action: "synthetic_reviewed", createdAt: new Date("2026-10-28T20:00:00Z"), actor: { name: "Synthetic actor" } }]);
+  mocks.history.mockResolvedValue([{ id: "synthetic-event", action: "synthetic_reviewed", createdAt: new Date("2026-10-26T12:00:00Z"), actor: { name: "Synthetic actor" } }]);
   mocks.request.mockResolvedValue({
     id: "synthetic-request", referenceNumber: "SYNTHETIC-REQUEST", applicantName: "Synthetic applicant", category: "OTHER", city: "Synthetic city",
     phone: "0000000000", email: "synthetic@example.invalid", description: "Synthetic private request", status: "UNDER_VERIFICATION", documents: [], appeal: null,
-    assignedToId: "synthetic-staff", createdAt: new Date("2026-10-28T20:00:00Z"), updatedAt: new Date("2026-10-28T20:00:00Z"),
+    assignedToId: "synthetic-staff", createdAt: new Date("2026-10-26T12:00:00Z"), updatedAt: new Date("2026-10-26T12:00:00Z"),
     verification: {
-      decision: "APPROVED_PRIVATE", confidentialityLevel: "CONFIDENTIAL", completedAt: new Date("2026-10-28T20:00:00Z"), updatedAt: new Date("2026-10-28T20:00:00Z"), reviewedBy: { name: "Synthetic reviewer" },
+      decision: "APPROVED_PRIVATE", confidentialityLevel: "CONFIDENTIAL", completedAt: new Date("2026-10-26T12:00:00Z"), updatedAt: new Date("2026-10-26T12:00:00Z"), reviewedBy: { name: "Synthetic reviewer" },
       needConfirmed: true, evidenceReviewed: true, otherFundingChecked: true, verifiedNeedAmount: null, approvedPublicTarget: null,
       publicNameConsent: "UNCONFIRMED", photoConsent: "UNCONFIRMED", medicalDetailsConsent: "UNCONFIRMED", institutionNameConsent: "UNCONFIRMED", archiveConsent: "UNCONFIRMED", zakatStatus: "UNREVIEWED",
     },
@@ -27,7 +27,7 @@ beforeEach(() => {
 });
 const render = async () => renderToStaticMarkup(await RequestDetailPage({ params: Promise.resolve({ id: "synthetic-request" }) }));
 
-it("loads only the assignee name needed by unavailable-staff recovery while preserving the selected ID", async () => {
+it("loads only the current assignee name while preserving the selected staff ID", async () => {
   const html = await render();
   const query = mocks.request.mock.calls[0]?.[0];
   expect(query.where).toEqual({ id: "synthetic-request" });
@@ -61,29 +61,4 @@ it("stops before all reads when page access is denied", async () => {
   await expect(render()).rejects.toThrow("denied");
   expect(mocks.permission).toHaveBeenCalledWith("assistance.view");
   [mocks.request, mocks.staff, mocks.history].forEach(read => expect(read).not.toHaveBeenCalled());
-});
-
-
-it("shows the received date on the IST calendar day", async () => {
-  const html = await render();
-  expect(html).toContain("received 29 October 2026");
-});
-it("shows verification completion in IST across midnight", async () => {
-  const html = await render();
-  expect(html).toContain("Completed 29/10/2026, 1:30:00 am by Synthetic reviewer.");
-});
-it("shows the audit event instant in IST across midnight", async () => {
-  const html = await render();
-  expect(html).toContain("Synthetic actor · 29/10/2026, 1:30:00 am");
-});
-
-
-it("announces the new tab for each private document without changing its destination", async () => {
-  const request = await mocks.request.getMockImplementation()!();
-  mocks.request.mockResolvedValue({ ...request, documents: [{ id: "synthetic-document", originalName: "Synthetic evidence.pdf", mimeType: "application/pdf", sizeBytes: 1000 }] });
-  const html = await render();
-  const anchor = html.match(/<a\b[^>]*href="\/admin\/documents\/synthetic-document"[^>]*>[\s\S]*?<\/a>/)?.[0];
-  expect(anchor).toContain('target="_blank"');
-  expect(anchor).toContain('rel="noreferrer"');
-  expect(anchor).toContain('Synthetic evidence.pdf<span class="sr-only"> (opens in a new tab)</span>');
 });

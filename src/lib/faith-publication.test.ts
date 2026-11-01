@@ -45,3 +45,9 @@ describe("faith publication review gate", () => {
     })).toBe(false);
   });
 });
+
+it("rejects invalid review Date instances without rejecting a valid zero epoch", () => {
+ const record={status:"PUBLISHED",religiousReviewStatus:"VERIFIED",sourceCitation:"Reviewed source"};
+ expect(isPublicFaithReviewComplete({...record,verifiedAt:new Date(NaN)})).toBe(false);
+ expect(isPublicFaithReviewComplete({...record,verifiedAt:new Date(0)})).toBe(true);
+});

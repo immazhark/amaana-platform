@@ -29,7 +29,7 @@ vi.mock("next/link", () => ({
 }));
 vi.mock("react", async importOriginal => ({
   ...await importOriginal<typeof import("react")>(),
-  useState: (initial: unknown) => [initial === undefined ? { reference: fixture.donation.referenceNumber, record: fixture } : initial, vi.fn()],
+  useState: (initial: unknown) => [initial === undefined ? fixture : initial, vi.fn()],
   useEffect: () => {},
 }));
 

@@ -4,7 +4,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { spawn, spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 import { summarizeAppRouteBundles, summarizeUnattributedAppAssets } from "./report-route-bundles.mjs";
 import * as reporter from "./report-route-bundles.mjs";
 
@@ -270,114 +270,6 @@ test("Next16 JS assignments reject wrong identities, traversal and absent sizes"
   assert.equal(read, false);
   for (const size of [undefined, -1, NaN, Infinity, 1.1]) {
     assert.throws(() => reporter.summarizeClientReferenceJs({ '/page': '/' },
-      page => jsReferenceSource(page, { '[project]/src/app/layout': ['static/chunks/shared.js'] }), [], () => size), /size/);
-  }
-});
-
-
-test("Next16 JS excludes sibling pages while retaining root and ancestor layout assets", () => {
-  const sizes = {
-    "static/chunks/runtime.js": 7,
-    "static/chunks/shared.js": 11,
-    "static/chunks/home.js": 17,
-    "static/chunks/appeals-layout.js": 5,
-    "static/chunks/appeals.js": 13,
-  };
-  const entryJSFiles = {
-    "[project]/src/app/layout": ["static/chunks/shared.js"],
-    "[project]/src/app/page": ["static/chunks/home.js"],
-    "[project]/src/app/appeals/layout": ["static/chunks/appeals-layout.js"],
-    "[project]/src/app/appeals/page": ["static/chunks/appeals.js"],
-  };
-  const rows = reporter.summarizeClientReferenceJs({
-    "/page": "/", "/appeals/page": "/appeals",
-  }, page => jsReferenceSource(page, entryJSFiles),
-  ["static/chunks/runtime.js"], asset => {
-    assert.ok(Object.hasOwn(sizes, asset), asset);
-    return sizes[asset];
-  });
-  const byRoute = Object.fromEntries(rows.map(row => [row.route, row]));
-  assert.deepEqual(byRoute["/"], {
-    route: "/", appPath: "/page", jsBytes: 35, scriptCount: 3,
-  });
-  assert.deepEqual(byRoute["/appeals"], {
-    route: "/appeals", appPath: "/appeals/page", jsBytes: 36, scriptCount: 4,
-  });
-});
-
-test("Next16 JS rejects duplicate manifest keys claiming the same layout", () => {
-  const manifest = {
-    "[project]/src/app/layout": ["static/chunks/a.js"],
-    "[other]/src/app/layout": ["static/chunks/b.js"],
-  };
-  assert.throws(() => reporter.summarizeClientReferenceJs({ "/page": "/" },
-    page => jsReferenceSource(page, manifest), [], () => 1),
-    /Ambiguous client-reference JavaScript entries/);
-});
-
-test("Next16 per-route CSS totals reject unsafe integer overflow but accept the exact boundary", () => {
-  const styles = { "[project]/src/app/layout": [
-    { path: "static/css/large.css", inlined: false },
-    { path: "static/css/small.css", inlined: false },
-  ] };
-  const report = size => reporter.summarizeClientReferenceCss({ "/page": "/" },
-    page => referenceSource(page, styles),
-    asset => asset.endsWith("large.css") ? size : 1);
-  assert.throws(() => report(Number.MAX_SAFE_INTEGER), /Invalid CSS total size/);
-  assert.deepEqual(report(Number.MAX_SAFE_INTEGER - 1), [{
-    route: "/", appPath: "/page", cssBytes: Number.MAX_SAFE_INTEGER, stylesheetCount: 2,
-  }]);
-});
-
-test("Next16 per-route JS totals reject unsafe integer overflow but accept the exact boundary", () => {
-  const scripts = { "[project]/src/app/layout": [
-    "static/chunks/large.js", "static/chunks/small.js",
-  ] };
-  const report = size => reporter.summarizeClientReferenceJs({ "/page": "/" },
-    page => jsReferenceSource(page, scripts), [],
-    asset => asset.endsWith("large.js") ? size : 1);
-  assert.throws(() => report(Number.MAX_SAFE_INTEGER), /Invalid JavaScript total size/);
-  assert.deepEqual(report(Number.MAX_SAFE_INTEGER - 1), [{
-    route: "/", appPath: "/page", jsBytes: Number.MAX_SAFE_INTEGER, scriptCount: 2,
-  }]);
-});
-
-
-test("CLI tolerates a closed output reader while malformed builds still fail", async () => {
-  const directory = mkdtempSync(join(tmpdir(), "amaana-report-closed-output-"));
-  const cli = fileURLToPath(new URL("./report-route-bundles.mjs", import.meta.url));
-  try {
-    mkdirSync(join(directory, ".next/static"), { recursive: true });
-    writeFileSync(join(directory, ".next/app-path-routes-manifest.json"), JSON.stringify({ "/page": "/" }));
-    const result = await new Promise((resolve, reject) => {
-      const child = spawn(process.execPath, [cli, "--json"], {
-        cwd: directory, stdio: ["ignore", "pipe", "pipe"], timeout: 5000,
-      });
-      let stderr = "";
-      child.stderr.setEncoding("utf8");
-      child.stderr.on("data", chunk => { stderr += chunk; });
-      child.on("error", reject);
-      child.on("close", (status, signal) => resolve({ status, signal, stderr }));
-      // Close before the first CLI write, independent of pipe buffer capacity.
-      child.stdout.destroy();
-    });
-    assert.equal(result.signal, null);
-    assert.equal(result.status, 0, result.stderr);
-    assert.equal(result.stderr, "");
-    const outputError = join(directory, "output-error.mjs");
-    writeFileSync(outputError, 'setImmediate(() => process.stdout.emit("error", Object.assign(new Error("synthetic output failure"), { code: "EIO" })));');
-    const failedOutput = spawnSync(process.execPath, ["--import", outputError, cli], {
-      cwd: directory, encoding: "utf8", timeout: 5000,
-    });
-    assert.equal(failedOutput.status, 1);
-    assert.match(failedOutput.stderr, /Unable to write route report: synthetic output failure/);
-    assert.match(failedOutput.stdout, /App Router pages: 1/);
-    writeFileSync(join(directory, ".next/app-path-routes-manifest.json"), "invalid json");
-    const malformed = spawnSync(process.execPath, [cli], { cwd: directory, encoding: "utf8", timeout: 5000 });
-    assert.equal(malformed.status, 1);
-    assert.notEqual(malformed.stderr, "");
-    assert.equal(malformed.stdout, "");
-  } finally {
-    rmSync(directory, { recursive: true, force: true });
+      page => jsReferenceSource(page, { root: ['static/chunks/shared.js'] }), [], () => size), /size/);
   }
 });

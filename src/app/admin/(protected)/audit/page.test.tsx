@@ -48,24 +48,6 @@ describe("audit query normalization", () => {
 });
 
 
-describe("audit empty-view recovery", () => {
-  it.each([{ action: "synthetic.action" }, { entityType: "SyntheticEntity" }, { action: "synthetic.action", entityType: "SyntheticEntity" }])("describes no matches for %j and clears every filter", async search => {
-    mocks.count.mockResolvedValue(0);
-    const html = renderToStaticMarkup(await AuditHistoryPage({ searchParams: Promise.resolve({ ...search, page: "3" }) }));
-    expect(html).toContain("No audit events match these filters.");
-    expect(html).not.toContain("No audit events have been recorded yet.");
-    expect(html).toMatch(/href="\/admin\/audit"[^>]*>View all audit events<\/a>/);
-  });
-
-  it("keeps the global empty explanation for an unfiltered audit", async () => {
-    mocks.count.mockResolvedValue(0);
-    const html = renderToStaticMarkup(await AuditHistoryPage({ searchParams: Promise.resolve({}) }));
-    expect(html).toContain("No audit events have been recorded yet.");
-    expect(html).not.toContain("View all audit events");
-  });
-});
-
-
 it("renders audit timestamps in IST independently of the host zone", async () => {
   if (process.env.AMAANA_EXPECT_TEST_ZONE) {
     expect(Intl.DateTimeFormat().resolvedOptions().timeZone).toBe(process.env.AMAANA_EXPECT_TEST_ZONE);

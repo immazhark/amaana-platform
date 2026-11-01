@@ -14,16 +14,14 @@ function yearsFor(item: DatedInitiative): number[] {
 
 export function filterWork<T extends Programme>(programmes: T[], search: WorkSearch) {
   const programme = typeof search.programme === "string" ? search.programme : "";
-  const raw = typeof search.q === "string" ? search.q : "";
-  const query = raw.length > 80 ? "" : raw.trim().replace(/\s+/g, " ");
+  const query = typeof search.q === "string" ? search.q.trim().replace(/\s+/g, " ") : "";
   const year = typeof search.year === "string" ? search.year : "";
   const years = [...new Set(programmes.flatMap(p => p.initiatives.flatMap(yearsFor)))].sort((a, b) => b - a);
   const invalid = hasUnsupportedPublicQueryFields(search, ["programme", "year", "q"])
-    || Array.isArray(search.q) || raw.length > 80 || query.length > 80 || /[\u0000-\u001f\u007f]/.test(raw)
+    || Array.isArray(search.q) || query.length > 80 || /[\u0000-\u001f\u007f]/.test(typeof search.q === "string" ? search.q : "")
     || Array.isArray(search.programme) || Array.isArray(search.year)
     || Boolean(programme && !programmes.some(p => p.slug === programme))
     || Boolean(year && !years.some(value => String(value) === year));
-  const normalizedQuery = invalid || !query ? "" : query.toLocaleLowerCase("en");
   const active = Boolean(programme || year || query || invalid);
   const results = invalid ? [] : programmes
     .filter(p => !programme || p.slug === programme)
@@ -32,10 +30,10 @@ export function filterWork<T extends Programme>(programmes: T[], search: WorkSea
       const matching = p.initiatives.filter(item => year
         ? yearsFor(item).includes(Number(year))
         : Boolean(query) || !item.parentSlug || !publishedSlugs.has(item.parentSlug))
-        .filter(item => !query || `${item.title ?? ""} ${item.summary ?? ""}`.replace(/\s+/g, " ").toLocaleLowerCase("en").includes(normalizedQuery));
+        .filter(item => !query || `${item.title ?? ""} ${item.summary ?? ""}`.toLocaleLowerCase("en").includes(query.toLocaleLowerCase("en")));
       // An annual edition replaces its umbrella only when that edition is
       // published and matches all active filters. Preserve standalone ranges.
-      const representedParents = new Set(matching.map(item => item.parentSlug).filter(Boolean));
+      const representedParents = new Set(year ? matching.map(item => item.parentSlug).filter(Boolean) : []);
       return { ...p, initiatives: matching.filter(item => !item.slug || !representedParents.has(item.slug)) } as T;
     })
     .filter(p => p.initiatives.length > 0);

@@ -132,3 +132,34 @@ describe("bounded published media archives", () => {
     expect(await getPublicMediaArchive("initiative", parent.slug, 1)).toBeNull();
   });
 });
+
+
+it("keeps a later safe candidate reachable after a page of unavailable media", async () => {
+  const unavailable = rows.slice(0, 24).map(row => ({ ...row, altText: "  " }));
+  mocks.media.mockResolvedValueOnce([...unavailable, rows[24]]);
+  const first = await getPublicMediaArchive("initiative", parent.slug, 1);
+  expect(first).toMatchObject({ media: [], hasNext: true });
+  expect(mocks.media.mock.calls[0]?.[0]).toMatchObject({ skip: 0, take: 25 });
+
+  mocks.media.mockResolvedValueOnce([rows[24]]);
+  const second = await getPublicMediaArchive("initiative", parent.slug, 2);
+  expect(second).toMatchObject({ media: [rows[24]], hasNext: false });
+  expect(mocks.media.mock.calls[1]?.[0]).toMatchObject({ skip: 24, take: 25 });
+});
+
+it("omits unsafe and inaccessible candidate media without shifting page slots", async () => {
+  mocks.media.mockResolvedValueOnce([rows[0], { ...rows[1], altText: "  " }, rows[2]]);
+  expect(await getPublicMediaArchive("story", parent.slug, 1)).toMatchObject({
+    media: [rows[0], rows[2]], hasNext: false,
+  });
+
+  mocks.media.mockResolvedValueOnce([{ ...rows[0], publicUrl: "/admin/private" }]);
+  expect(await getPublicMediaArchive("story", parent.slug, 2)).toMatchObject({ media: [], hasNext: false });
+  expect(mocks.media.mock.calls[1]?.[0]).toMatchObject({ skip: 24, take: 25 });
+});
+
+it("does not erase a candidate page when only the next candidate is usable", async () => {
+  mocks.media.mockResolvedValueOnce([...rows.slice(0, 24).map(row => ({ ...row, altText: " " })), rows[24]]);
+  const result = await getPublicMediaArchive("initiative", parent.slug, 1);
+  expect(result).toMatchObject({ media: [], hasNext: true });
+});
