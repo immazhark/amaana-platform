@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
 
-const page = readFileSync(new URL("./page.tsx", import.meta.url), "utf8");
+const page = readFileSync(new URL("./(overview)/page.tsx", import.meta.url), "utf8");
 const css = readFileSync(new URL("../faith.css", import.meta.url), "utf8");
 const surface = readFileSync(new URL("../../components/evidence-pathway.module.css", import.meta.url), "utf8");
 const tokens = readFileSync(new URL("../globals.css", import.meta.url), "utf8");

@@ -22,7 +22,10 @@ describe("public discovery index contract (AF-R075)", () => {
       expect(link.search).toBe("");
       expect(link.hash).toBe("");
       expect(link.pathname).toMatch(/^\/[a-z0-9-]+$/);
-      expect(existsSync(join(process.cwd(), "src/app", link.pathname, "page.tsx"))).toBe(true);
+      const routeDir = join(process.cwd(), "src/app", link.pathname);
+      const hasPublicPage = existsSync(join(routeDir, "page.tsx")) ||
+        existsSync(join(routeDir, "(overview)", "page.tsx"));
+      expect(hasPublicPage, `${link.pathname} must map to a real public page`).toBe(true);
     }
   });
 
