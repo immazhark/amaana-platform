@@ -2265,3 +2265,7 @@ CHATGPT_ACTIVE staged #492 three already reviewed source/test blobs above #520 c
 ## 2026-11-01 IST — #576 public Faith related/featured loaders recovery
 
 CHATGPT_ACTIVE recovered narrowly two reviewed loader gates with original synthetic tests onto source candidate #492 f3ab233903d3e1a07c64d2448211f64fbfacfefe, preserving older ancestry and all approved main. Publication predicate unchanged. Require full exact-head seven-job CI and separate ready-state/guarded merge before status promotion. No private or financial data touched.
+
+## 2026-11-01 IST — #576 corrected target and fresh acceptance boundary
+
+The historical PR #576 base was explicitly updated from obsolete stacked #575 to current protected main `ecba1a485596d0c3cc2760b35d2e8322fd7be133`, reducing the view to bounded current-source differences. Branch head e06bc2e746a228dcfd994435e8dff904494c6fb4 includes reviewed original source/test protections and prepared earlier predecessors. The first branch update did not expose a pull_request CI run; this documentation commit records corrected targeting and triggers new exact-head evaluation. Remain draft until full seven-job acceptance, separate ready-state and guarded merge after predecessor PRs. No donor, beneficiary, Faith text/review acceptance, storage/media, payment/schema, cron or infrastructure mutation. No canonical 149 status change.
