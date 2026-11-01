@@ -314,3 +314,37 @@ test("Next16 JS rejects duplicate manifest keys claiming the same layout", () =>
     page => jsReferenceSource(page, manifest), [], () => 1),
     /Ambiguous client-reference JavaScript entries/);
 });
+
+
+test("Next16 JS attributes pathless overview route layouts without sibling detail page chunks", () => {
+  const sizes = {
+    "static/chunks/runtime.js": 13,
+    "static/chunks/root.js": 2,
+    "static/chunks/stories-layout.js": 3,
+    "static/chunks/overview-layout.js": 5,
+    "static/chunks/overview.js": 7,
+    "static/chunks/detail.js": 11,
+  };
+  const entries = {
+    "[project]/src/app/layout": ["static/chunks/root.js"],
+    "[project]/src/app/stories/layout": ["static/chunks/stories-layout.js"],
+    "[project]/src/app/stories/(overview)/layout": ["static/chunks/overview-layout.js"],
+    "[project]/src/app/stories/(overview)/page": ["static/chunks/overview.js"],
+    "[project]/src/app/stories/[slug]/page": ["static/chunks/detail.js"],
+  };
+  const rows = reporter.summarizeClientReferenceJs(
+    { "/stories/(overview)/page": "/stories" },
+    page => jsReferenceSource(page, entries),
+    ["static/chunks/runtime.js"],
+    asset => {
+      assert.ok(Object.hasOwn(sizes, asset), asset);
+      return sizes[asset];
+    },
+  );
+  assert.deepEqual(rows, [{
+    route: "/stories",
+    appPath: "/stories/(overview)/page",
+    jsBytes: 30,
+    scriptCount: 5,
+  }]);
+});
