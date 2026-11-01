@@ -31,6 +31,9 @@ export function evaluateImageWeights(files, limit = MAX_ARTWORK_BYTES) {
 }
 
 export function readHeroImageInventory(root = process.cwd()) {
+  if (lstatSync(join(root, "public")).isSymbolicLink()) {
+    throw new Error("Symlinked artwork parent is forbidden: public");
+  }
   return folders.flatMap(folder => {
     const dir = join(root, folder);
     if (lstatSync(dir).isSymbolicLink()) {
