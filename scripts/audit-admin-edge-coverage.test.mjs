@@ -89,3 +89,82 @@ test("symlinked route handlers fail closed instead of vanishing from the invento
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("pathless route groups cannot hide admin pages or API handlers from the edge proposal", () => {
+  const root = mkdtempSync(join(tmpdir(), "amaana-grouped-admin-"));
+  try {
+    for (const file of [
+      "admin/page.tsx", "admin/login/page.tsx", "admin/forbidden/page.tsx",
+      "api/admin/start/route.ts", "(staff)/admin/reports/page.tsx",
+      "api/(internal)/admin/review/route.ts", "(staff)/site/page.tsx",
+    ]) {
+      const fullPath = join(root, file);
+      mkdirSync(fullPath.slice(0, fullPath.lastIndexOf("/")), { recursive: true });
+      writeFileSync(fullPath, "export default function SyntheticRoute() { return null; }\n");
+    }
+    const discovered = discoverAdminRoutes(root);
+    assert.deepEqual(discovered, [
+      "/admin", "/admin/forbidden", "/admin/login", "/admin/reports",
+      "/api/admin/review", "/api/admin/start",
+    ]);
+    assert.throws(() => auditAdminEdgeCoverage({
+      discovered, proposed: ["/admin", "/api/admin/start"],
+    }), /Uncovered admin routes.*reports.*review/);
+    const report = auditAdminEdgeCoverage({
+      discovered,
+      proposed: ["/admin", "/admin/reports", "/api/admin/review", "/api/admin/start"],
+    });
+    assert.equal(report.status, "PLAN_ONLY_UNVERIFIED");
+    assert.equal(report.proposedProtectedRouteCount, 4);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("pathless route groups cannot conceal colliding public admin URLs", () => {
+  const root = mkdtempSync(join(tmpdir(), "amaana-group-collision-"));
+  try {
+    for (const file of [
+      "admin/page.tsx", "(staff)/admin/page.tsx", "api/admin/status/route.ts",
+    ]) {
+      const fullPath = join(root, file);
+      mkdirSync(fullPath.slice(0, fullPath.lastIndexOf("/")), { recursive: true });
+      writeFileSync(fullPath, "export default function SyntheticRoute() { return null; }\n");
+    }
+    assert.throws(() => discoverAdminRoutes(root), /duplicate route: \/admin/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("parallel slot segments cannot hide administrative routes from a protected-path proposal", () => {
+  const root = mkdtempSync(join(tmpdir(), "amaana-slot-admin-"));
+  try {
+    for (const file of [
+      "admin/page.tsx", "admin/login/page.tsx", "admin/forbidden/page.tsx",
+      "(internal)/@review/admin/reports/page.tsx",
+      "api/(private)/@policy/admin/status/route.ts",
+      "@review/stories/page.tsx",
+    ]) {
+      const fullPath = join(root, file);
+      mkdirSync(fullPath.slice(0, fullPath.lastIndexOf("/")), { recursive: true });
+      writeFileSync(fullPath, "export default function SyntheticRoute() { return null; }\n");
+    }
+    const discovered = discoverAdminRoutes(root);
+    assert.deepEqual(discovered, [
+      "/admin", "/admin/forbidden", "/admin/login", "/admin/reports", "/api/admin/status",
+    ]);
+    assert.throws(() => auditAdminEdgeCoverage({
+      discovered,
+      proposed: ["/admin"],
+    }), /Uncovered admin routes.*reports.*status/);
+    const report = auditAdminEdgeCoverage({
+      discovered,
+      proposed: ["/admin", "/admin/reports", "/api/admin/status"],
+    });
+    assert.equal(report.status, "PLAN_ONLY_UNVERIFIED");
+    assert.equal(report.proposedProtectedRouteCount, 3);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
