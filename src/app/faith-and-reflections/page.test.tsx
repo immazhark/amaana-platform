@@ -34,14 +34,17 @@ it("distinguishes no matches from an unpublished library and clears rejected val
 
 it("requests image candidates only for the hero and current filtered lead", async () => {
   await FaithPage({ searchParams: Promise.resolve({ q: "gratitude", format: "REMINDER" }) });
-  expect(mocks.visibleMedia).toHaveBeenCalledExactlyOnceWith(["one", "two"]);
+  expect(mocks.visibleMedia).toHaveBeenCalledOnce();
+  expect(mocks.visibleMedia).toHaveBeenCalledWith(["one", "two"]);
 
   mocks.visibleMedia.mockClear();
   await FaithPage({ searchParams: Promise.resolve({ q: "no-match" }) });
-  expect(mocks.visibleMedia).toHaveBeenCalledExactlyOnceWith(["one"]);
+  expect(mocks.visibleMedia).toHaveBeenCalledOnce();
+  expect(mocks.visibleMedia).toHaveBeenCalledWith(["one"]);
 
   mocks.visibleMedia.mockClear();
   mocks.content.mockResolvedValue([]);
   await FaithPage({ searchParams: Promise.resolve({}) });
-  expect(mocks.visibleMedia).toHaveBeenCalledExactlyOnceWith([]);
+  expect(mocks.visibleMedia).toHaveBeenCalledOnce();
+  expect(mocks.visibleMedia).toHaveBeenCalledWith([]);
 });
