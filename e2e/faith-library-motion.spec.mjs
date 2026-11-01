@@ -2,7 +2,9 @@ import { expect, test } from '@playwright/test';
 
 test('Faith library hover and keyboard focus honor reduced motion', async ({ page }) => {
   await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
-  const response = await page.goto('/faith-and-reflections', { waitUntil: 'domcontentloaded' });
+  // Wait for Next.js hydration to settle before inserting a DOM-only fixture.
+  // A fixture inserted during hydration can be discarded by React.
+  const response = await page.goto('/faith-and-reflections', { waitUntil: 'networkidle' });
   expect(response?.ok()).toBe(true);
 
   await page.evaluate(() => {
@@ -20,6 +22,7 @@ test('Faith library hover and keyboard focus honor reduced motion', async ({ pag
   });
 
   const card = page.locator('[data-motion-fixture="true"] .v2-faith-library-item');
+  await expect(card).toBeVisible();
   for (const reducedMotion of ['reduce', 'no-preference']) {
     await page.emulateMedia({ reducedMotion });
     await card.hover();
