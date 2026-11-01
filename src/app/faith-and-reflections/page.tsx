@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
-import { getFaithDiscoveryData } from "@/lib/public-discovery-data";
+import { getFaithDiscoveryData, getVisibleFaithMedia } from "@/lib/public-discovery-data";
 import { selectIdentityPublicImage } from "@/lib/public-media";
 import styles from "./faith-audit.module.css";
 import { selectFaithDiscovery, type FaithSearch } from "@/lib/faith-discovery";
@@ -36,8 +36,13 @@ export default async function FaithAndReflectionsPage({ searchParams }: { search
   const reminders = content.filter(item => item.type === "REMINDER");
   const videos = content.filter(item => item.type === "VIDEO");
   const lead = selection.results[0];
-  const heroMedia = content[0] ? selectIdentityPublicImage(content[0].mediaAssets) : null;
-  const leadMedia = lead ? selectIdentityPublicImage(lead.mediaAssets) : null;
+  // Only the hero and current filtered lead can render library imagery.
+  // Recheck approval before selecting media; never use an unreviewed fallback.
+  const visibleIds = [content[0]?.id, lead?.id].filter((id): id is string => typeof id === "string");
+  const visibleMedia = await getVisibleFaithMedia(visibleIds);
+  const mediaById = new Map(visibleMedia.map(record => [record.id, record.mediaAssets] as const));
+  const heroMedia = content[0] ? selectIdentityPublicImage(mediaById.get(content[0].id) ?? []) : null;
+  const leadMedia = lead ? selectIdentityPublicImage(mediaById.get(lead.id) ?? []) : null;
   const rest = selection.results.slice(1);
 
   return (

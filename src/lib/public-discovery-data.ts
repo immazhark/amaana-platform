@@ -81,18 +81,6 @@ export async function getFaithDiscoveryData() {
           topic: { select: { slug: true, name: true } },
         },
       },
-      mediaAssets: {
-        where: {
-          kind: "IMAGE",
-          isPublic: true,
-          privacyApprovedAt: { not: null },
-          publicUrl: { not: null },
-          altText: { not: "" },
-        },
-        orderBy: { sortOrder: "asc" },
-        take: DISCOVERY_MEDIA_CANDIDATE_LIMIT,
-        select: publicMediaSelect,
-      },
     },
   });
   // Review status is needed only for the final eligibility check; do not serialize it.
@@ -100,6 +88,31 @@ export async function getFaithDiscoveryData() {
     id: record.id, slug: record.slug, type: record.type, title: record.title,
     excerpt: record.excerpt, sourceCitation: record.sourceCitation,
     verifiedAt: record.verifiedAt, topics: record.topics,
-    mediaAssets: record.mediaAssets,
   }));
+}
+
+/**
+ * The Faith index is metadata-only. Recheck publication and complete religious
+ * review for the two images that can actually render (hero and filtered lead).
+ * This protects against a withdrawal between the index and media reads.
+ */
+export async function getVisibleFaithMedia(ids: readonly string[]) {
+  const uniqueIds = [...new Set(ids)];
+  if (uniqueIds.length > 2) throw new RangeError("At most two Faith media records can be loaded");
+  if (uniqueIds.length === 0) return [];
+
+  const records = await prisma.faithContent.findMany({
+    where: { ...publicFaithWhere, id: { in: uniqueIds } },
+    select: {
+      id: true,
+      status: true,
+      religiousReviewStatus: true,
+      verifiedAt: true,
+      sourceCitation: true,
+      mediaAssets: storyMediaCandidates,
+    },
+  });
+  const allowed = new Set(uniqueIds);
+  return records.filter(record => allowed.has(record.id) && isPublicFaithReviewComplete(record))
+    .map(({ id, mediaAssets }) => ({ id, mediaAssets }));
 }

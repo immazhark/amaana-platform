@@ -12,7 +12,7 @@ const approved = {
   excerpt: "Reviewed summary", sourceCitation: "Reviewed reference",
   verifiedAt: new Date("2026-01-01T00:00:00Z"),
   status: "PUBLISHED", religiousReviewStatus: "VERIFIED",
-  topics: [], mediaAssets: [],
+  topics: [],
 };
 
 beforeEach(() => {
@@ -35,7 +35,7 @@ it("excludes blank, invalid, and unreviewed citations before Faith discovery car
     id: approved.id, slug: approved.slug, type: approved.type,
     title: approved.title, excerpt: approved.excerpt,
     sourceCitation: approved.sourceCitation, verifiedAt: approved.verifiedAt,
-    topics: [], mediaAssets: [],
+    topics: [],
   });
 });
 
@@ -54,4 +54,5 @@ it("retains the SQL publication gate and unique ordering without serializing rev
   expect(result[0]).not.toHaveProperty("status");
   expect(result[0]).not.toHaveProperty("religiousReviewStatus");
   expect(query.select).not.toHaveProperty("assistanceRequest");
+  expect(query.select).not.toHaveProperty("mediaAssets");
 });
