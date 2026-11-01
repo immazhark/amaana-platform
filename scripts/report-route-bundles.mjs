@@ -277,6 +277,12 @@ function run() {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  // The consumer may close a pipe before flushing; only EPIPE is cancellation.
+  process.stdout.on("error", error => {
+    if (error.code === "EPIPE") return;
+    process.stderr.write(`Unable to write route report: ${error.message}\n`);
+    process.exitCode = 1;
+  });
   try { run(); }
   catch (error) { process.stderr.write(String(error instanceof Error ? error.message : error) + "\n"); process.exitCode = 1; }
 }
