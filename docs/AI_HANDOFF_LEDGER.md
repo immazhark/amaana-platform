@@ -2218,3 +2218,6 @@ Test-first `0caf13d58dd072975eaa9f920f35a32695dee61a` + minimal source repair on
 
 CHATGPT_ACTIVE on fix/reconcile-story-programme-blank-options-20261031; exact two-blob source/test recovery of pre-reviewed #611, refresh hosted full CI and ready-state before protected merge. No public-claim/data/auth/payment/schema/cron changes. Main 825c85ba9ac1a07864a6be38c325d15b8b11f10d; canonical 149 unchanged.
 
+## 2026-11-01 IST — #610 accepted-main reconciliation
+
+#611 accepted at ecba1a485596d0c3cc2760b35d2e8322fd7be133. Reconcile original two reviewed #610 code/test blobs with current main and both histories by two-parent commit; fresh exact-head hosted seven-job CI and separate ready-state required before protected guarded merge. Source versus runtime separate; no 149 promotion.
