@@ -195,3 +195,24 @@ describe("text-search family deduplication (published initiative cards)", () => 
       .toEqual(["winter-2026"]);
   });
 });
+
+it("keeps family replacement scoped to its programme rather than a shared slug", () => {
+  const results = filterWork([
+    { slug: "relief", initiatives: [
+      { slug: "winter", title: "Winter work", summary: "Public work",
+        year: null, startYear: 2025, endYear: 2026 },
+      { slug: "winter-2026", parentSlug: "winter", title: "Winter work 2026", summary: "Public work",
+        year: 2026, startYear: null, endYear: null },
+    ] },
+    { slug: "education", initiatives: [
+      { slug: "winter", title: "Winter work", summary: "Public lessons",
+        year: 2026, startYear: null, endYear: null },
+    ] },
+  ], { q: "winter work" });
+  expect(results.invalid).toBe(false);
+  expect(results.count).toBe(2);
+  expect(results.results.map(p => [p.slug, p.initiatives.map(i => i.slug)])).toEqual([
+    ["relief", ["winter-2026"]],
+    ["education", ["winter"]],
+  ]);
+});
