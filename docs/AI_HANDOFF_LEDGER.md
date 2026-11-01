@@ -2222,43 +2222,10 @@ CHATGPT_ACTIVE on fix/reconcile-story-programme-blank-options-20261031; exact tw
 
 #611 accepted at ecba1a485596d0c3cc2760b35d2e8322fd7be133. Reconcile original two reviewed #610 code/test blobs with current main and both histories by two-parent commit; fresh exact-head hosted seven-job CI and separate ready-state required before protected guarded merge. Source versus runtime separate; no 149 promotion.
 
-## 2026-11-01 IST — #499 second candidate reconciliation
+## 2026-11-01 IST — #520 source-only recovery after failed #499 browser gate
 
-Single writer CHATGPT_ACTIVE. Preserve #499 exact original 3 reviewed code/test blobs with #610 refreshed head 29abcf5a89420824c5befb552784b99b1815b250 by a normal two-parent SHA-guarded branch advance. Fresh seven-job exact-head CI and separately triggered ready-state before accepting. No deployment or 149-promotion claim.
+Accepted protected main 32eed690cc20c63edcb4c11e67faae80c7633936; #499 browser run 41289705785 failed and is left draft for investigation. Recover only original #520 source/test Git blobs as independent PR on main, preserving old history by two-parent commit and app/current main source untouched. Hosted full CI and ready-state required, no 149 promotion or runtime claim.
 
+## 2026-11-01 IST — #492 independent source-only recovery
 
-
-## 2026-10-31 IST — #520 reporter input guard recovery
-
-CHATGPT_ACTIVE sole writer. Recover previously test-first audited integer/overflow guards from #520 onto current protected main 9e30b16494d72c2c967855d69a5ccf363cf82794; original two source/test blobs preserved. Old exact-head local evidence does not certify this new integration. Full exact-head CI, separate ready-state and protected guarded merge required. No runtime, database, donor, payment or infrastructure change; canonical 149 unchanged.
-
-## 2026-10-28 IST — AF-R047 route-size validation, single-writer source lane
-
-CHATGPT_ACTIVE sole writer; task branch `fix/route-bundle-invalid-size-20261028`, protected-main parent `83044f775166be0a3533d807a7ec3e268795530f`. Verified current Next16 route report has all 61 page JS and CSS assignments and its original 13 reporter-native tests pass. Selected a separate remaining integrity defect: `summarizeAppRouteBundles` accepts missing/invalid `byteSize` results; `summarizeUnattributedAppAssets` accepts invalid aggregate asset sizes. Synthetic negative tests must fail before a minimal pure-helper correction. No change to production component/network performance, per-route measurement definitions or existing report budget thresholds. Draft-only under the Neon hold; preserve unrelated PRs, donor privacy and historical backlog counts. Final red/green evidence and remote head to follow.
-
-Test-first evidence: two invalid-size assertions failed on source before the correction, then integer-overflow total assertions failed until the safe-sum guard was added; final **15/15 native reporter cases PASS**. Full Vitest **2,282 PASS, 20 opt-in DB SKIP**; strict TypeScript, complete ESLint+Stylelint, production build, seven proposed-edge tests, curated contract, client-secret and artwork-weight guards PASS. Exact generated build has 61 JS/CSS route assignment sets; aggregate build JS 806,077 B, CSS 328,687 B uncompressed, not transfer or field performance. No app/dependency/schema/provider/secret change. Publish only as low-risk draft PR while the Neon hold persists; no source/runtime SHA parity, merge, deployment, or 149-item classification claim.
-
-
-## 2026-10-31 IST — #520 merge-ready input-guard after #604
-
-CHATGPT_ACTIVE sole implementation writer. Reconcile scripts-only candidate with current protected main 3d487e4f6eedc705ae2d4be79cd6396d88d4e627. Both tested original source/test blobs remain unchanged, current coordination history preserved. New exact-head browser/database/production and separate ready-state checks required; this is not a live change or 149 promotion.
-
-## 2026-11-01 IST — #520 source-only byte reporting recovery
-
-CHATGPT_ACTIVE reused original tested route-bundle source/test blobs on candidate #499 7b08dc236cd99dacff00d0e7c23d003009e4144f; fresh full exact-head and ready-state acceptance required. Do not equate uncompressed build totals to real transfer or CWV. No release/149 promotion until merged and verified.
-
-
-
-## 2026-10-27 — AF-R047/R057 browser CSS evidence correction — prepared
-
-CHATGPT_ACTIVE sole writer on `perf/browser-css-transfer-evidence-20261027`, base main `83044f7`. Defect: browser E2E summed independently fetched decoded CSS, then called it delivery. Navigation timing now separately records decoded/encoded/transfer bytes; all-zero/cache/opaque/missing timing remains unavailable, full transfer null with partial observation explicit. Prior route-selector assertions remain. Three new synthetic regressions red for absent API and green; native CSS11/11, bundle reporter13/13, full Vitest2282 PASS/20 isolated DB skips; strict TypeScript, full ESLint, governed Stylelint and Next build/postbuild client-secret PASS. First hosted run `40481765478` had fast/database/production PASS, browser FAIL due importing from excluded `scripts/` workspace. Subsequent test red for absent local E2E helper; pure helper moved under `e2e/` copied by hosted browser harness, with native test importing the same module. New exact-head Chromium required before ready. Independent read-only review no math blocker. No app runtime/DB/payment/privacy/infra change, no 149-item classification change.
-
-
-## 2026-10-31 IST — #492 browser CSS transfer evidence recovery after #604
-
-CHATGPT_ACTIVE sole writer. Tested original three source/test blobs preserved from 51aed29ff2c3d926c20643e20477098491c38b14 on protected 3d487e4f6eedc705ae2d4be79cd6396d88d4e627, full coordination history retained. Synthetic browser linked CSS Resource Timing does not represent production transfer or field CWV. Fresh exact-head seven-job CI, separate ready-state and guarded merge required; no 149-item promotion.
-
-## 2026-11-01 IST — #492 synthetic browser transfer provenance
-
-CHATGPT_ACTIVE staged #492 three already reviewed source/test blobs above #520 candidate b636e040f420155d791569b5fdc5e16ff3b8fee0, preserving all predecessor source/coordination. Must pass fresh CI/browser/ready, protected main expected-head merge; do not call synthetic navigation Resource Timing field CWV. No canonical149 promotion.
-
+Prior #499 browser run failed; #520 source isolated on main. Preserve only three original #492 test/helpers on #520 candidate d0ea8161e9d39781d2319b8724c9fbc734a313b0; normal two-parent reconciliation. Require new full seven-job CI, separate ready-state, exact-SHA protected merge. No production data/infrastructure mutation or claim of field CWV.
