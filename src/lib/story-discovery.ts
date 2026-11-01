@@ -15,10 +15,11 @@ export function publishedStoryProgrammeContext(story: PublicStory): string | nul
 export function selectStoryDiscovery<T extends PublicStory>(records: readonly T[], search: StorySearch) {
  const contexts = records.map(publishedStoryProgrammeContext);
  const programmes = [...new Set(contexts.filter((value): value is string => value !== null))].sort();
- const q = typeof search.q === "string" ? search.q.trim().replace(/\s+/g," ") : "";
+ const raw = typeof search.q === "string" ? search.q : "";
+ const q = raw.length > 80 ? "" : raw.trim().replace(/\s+/g," ");
  const programme = typeof search.programme === "string" ? search.programme : "";
  const invalid = hasUnsupportedPublicQueryFields(search,["q","programme","page"]) || Array.isArray(search.q) || Array.isArray(search.programme) || Array.isArray(search.page)
-   || q.length > 80 || /[\u0000-\u001f\u007f]/.test(typeof search.q === "string" ? search.q : "")
+   || raw.length > 80 || q.length > 80 || /[\u0000-\u001f\u007f]/.test(raw)
    || Boolean(programme && !programmes.includes(programme)) || Boolean(search.page && (typeof search.page !== "string" || !/^[1-9]\d*$/.test(search.page) || !Number.isSafeInteger(Number(search.page))));
  const matching = invalid ? [] : records.filter((story, index) => (!programme || contexts[index] === programme) && (!q || `${story.title} ${story.summary}`.toLocaleLowerCase("en").includes(q.toLocaleLowerCase("en"))));
  const totalPages = Math.max(1,Math.ceil(matching.length/STORY_PAGE_SIZE));
