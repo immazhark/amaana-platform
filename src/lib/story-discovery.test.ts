@@ -71,3 +71,12 @@ it("never exposes private programme context even through a visible story label",
   expect(publishedStoryProgrammeContext(story)).toBeNull();
   expect(selectStoryDiscovery([story], {}).programmes).toEqual([]);
 });
+
+it("finds approved stories with irregular internal whitespace without exposing private cause names", () => {
+  const story = { title: "School   field", summary: "Reviewed\t note",
+    cause: { title: "Internal programme", status: "DRAFT" } };
+  const result = selectStoryDiscovery([story], { q: "school field" });
+  expect(result).toMatchObject({ invalid: false, count: 1 });
+  expect(result.programmes).toEqual([]);
+  expect(result.results).toEqual([story]);
+});

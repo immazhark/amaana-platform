@@ -17,3 +17,12 @@ it("ignores only bounded approved attribution fields without returning their val
   expect(selectAppealDiscovery(records, { q: "winter", utm_source: "campaign" })).toMatchObject({ invalid: false, count: 1 });
   expect(selectAppealDiscovery(records, { utm_source: ["one"] }).invalid).toBe(true);
 });
+
+it("matches approved appeal copy despite repeated internal whitespace", () => {
+  const records = [{ title: "Emergency   Relief", summary: "Reviewed support" }];
+  const original = structuredClone(records);
+  const result = selectAppealDiscovery(records, { q: "emergency relief" });
+  expect(result).toMatchObject({ invalid: false, count: 1 });
+  expect(result.results).toEqual(records);
+  expect(records).toEqual(original);
+});
