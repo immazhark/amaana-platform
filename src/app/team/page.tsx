@@ -78,7 +78,7 @@ export default async function TeamPage() {
                       {member.bio ? <p className="team-bio">{member.bio}</p> : null}
                       {member.linkedinUrl || member.email ? (
                         <div className="team-member-links">
-                          {member.linkedinUrl ? <a href={member.linkedinUrl} aria-label={`${member.fullName}, ${member.designation}, on LinkedIn`} target="_blank" rel="noopener noreferrer">LinkedIn ↗</a> : null}
+                          {member.linkedinUrl ? <a href={member.linkedinUrl} aria-label={`${member.fullName}, ${member.designation}, on LinkedIn (opens in a new tab)`} target="_blank" rel="noopener noreferrer">LinkedIn ↗</a> : null}
                           {member.email ? <a href={`mailto:${member.email}`} aria-label={`Email ${member.fullName}, ${member.designation}`}>Email</a> : null}
                         </div>
                       ) : null}
