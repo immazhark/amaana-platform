@@ -285,3 +285,47 @@ test.each(["Home", "End"])(
     }
   },
 );
+
+test.each(["Home", "End"])("%s does not redirect native-scroll navigation to the document", async key => {
+  let cleanup: (() => void) | undefined;
+  const created = vi.fn();
+  const destroyed = vi.fn();
+  const scrollTo = vi.fn();
+  vi.doMock("react", () => ({ useEffect: (effect: () => () => void) => { cleanup = effect(); } }));
+  vi.doMock("lenis", () => ({ default: class {
+    constructor() { created(); }
+    on() {}
+    destroy() { destroyed(); }
+  } }));
+  const target = Object.assign(new EventTarget(), {
+    matchMedia: (query: string) => Object.assign(new EventTarget(), { matches: query === "(pointer: fine)" }),
+    scrollTo,
+  });
+  class NativeScrollLink {
+    closest(selector: string) { return selector.includes("[data-native-scroll]") ? this : null; }
+  }
+  vi.stubGlobal("window", target);
+  vi.stubGlobal("document", Object.assign(new EventTarget(), {
+    hidden: false, body: { matches: () => false }, documentElement: { scrollHeight: 1500 },
+  }));
+  vi.stubGlobal("Element", NativeScrollLink);
+  vi.stubGlobal("requestAnimationFrame", vi.fn(() => 1));
+  vi.stubGlobal("cancelAnimationFrame", vi.fn());
+  const { useSiteScroll } = await import("./site-scroll");
+  useSiteScroll("/privacy");
+  const dispatch = (event: Event) => {
+    Object.defineProperty(event, "target", { value: new NativeScrollLink() });
+    target.dispatchEvent(event);
+  };
+  try {
+    dispatch(new Event("wheel"));
+    await vi.dynamicImportSettled();
+    expect(created).not.toHaveBeenCalled();
+    target.dispatchEvent(new Event("wheel"));
+    await vi.dynamicImportSettled();
+    expect(created).toHaveBeenCalledOnce();
+    dispatch(Object.assign(new Event("keydown"), { key }));
+    expect(destroyed).toHaveBeenCalledOnce();
+    expect(scrollTo).not.toHaveBeenCalled();
+  } finally { cleanup?.(); }
+});

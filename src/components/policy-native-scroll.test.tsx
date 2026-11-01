@@ -13,8 +13,10 @@ test.each([
 ] as const)("%s keeps its independently scrollable table of contents browser-owned", (_route, Page) => {
   const html = renderToStaticMarkup(<Page />);
   const sidebars = [...html.matchAll(/<aside\b([^>]*)>([\s\S]*?)<\/aside>/g)];
-  const navigation = sidebars.filter(([, , body]) => body.includes('aria-label="On this page"'));
+  const navigation = sidebars.filter(([, , body]) => body?.includes('aria-label="On this page"'));
   expect(navigation).toHaveLength(1);
-  expect(navigation[0][1]).toMatch(/\bdata-native-scroll(?:="[^"]*")?(?:\s|$)/);
-  expect(navigation[0][2]).toContain('href="#policy-01"');
+  const sidebar = navigation[0];
+  if (!sidebar) throw new Error("Policy navigation sidebar missing");
+  expect(sidebar[1]).toMatch(/\bdata-native-scroll(?:="[^"]*")?(?:\s|$)/);
+  expect(sidebar[2]).toContain('href="#policy-01"');
 });
