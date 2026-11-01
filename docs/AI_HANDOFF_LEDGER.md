@@ -2218,13 +2218,6 @@ Test-first `0caf13d58dd072975eaa9f920f35a32695dee61a` + minimal source repair on
 
 CHATGPT_ACTIVE on fix/reconcile-story-programme-blank-options-20261031; exact two-blob source/test recovery of pre-reviewed #611, refresh hosted full CI and ready-state before protected merge. No public-claim/data/auth/payment/schema/cron changes. Main 825c85ba9ac1a07864a6be38c325d15b8b11f10d; canonical 149 unchanged.
 
+## 2026-11-01 IST — #610 accepted-main reconciliation
 
-
-## 2026-10-31 IST — #575 public Faith record loaders
-
-Single writer CHATGPT_ACTIVE recovered exact existing synthetic RED3 original tests into test-first current-main branch. Only existing completeness predicate used after SQL read; incomplete records cannot render full public list/slug/featured output. Fresh full exact-head CI and separate ready-state required; do not import historical stacked PR. Preserve 149 state and all publication/review controls.
-
-## 2026-11-01 IST — #610 source-only Faith loader recovered on #611 candidate
-
-CHATGPT_ACTIVE recovered exact old #610 two app/test blobs using normal two-parent commit after #611 candidate 331c9eb768975f564a15b47936e5c7f9ea490bf8. Keep #610 draft until full exact-head/ready CI, accepted main includes #611, no private record writes. Canonical 149 unchanged.
-
+#611 accepted at ecba1a485596d0c3cc2760b35d2e8322fd7be133. Reconcile original two reviewed #610 code/test blobs with current main and both histories by two-parent commit; fresh exact-head hosted seven-job CI and separate ready-state required before protected guarded merge. Source versus runtime separate; no 149 promotion.
