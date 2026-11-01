@@ -47,3 +47,15 @@ it.each([
   expect(html).not.toContain("<strong>25</strong>");
   expect(html).toContain("<span>Synthetic initiative</span>");
 });
+
+it("preserves a fully contextualized published headline without rewriting its value or label", async () => {
+  mocks.data.mockResolvedValueOnce([{
+    id: "synthetic", slug: "synthetic-initiative", title: "Synthetic initiative",
+    summary: "Synthetic outcome", mediaAssets: [], cause: { title: "Synthetic programme" },
+    primaryMetric: "25", primaryMetricLabel: "reviewed kits",
+  }]);
+  const html = renderToStaticMarkup(await ImpactPage({ searchParams: Promise.resolve({}) }));
+  expect(html).toContain("<strong>25</strong>");
+  expect(html).toContain("<span>reviewed kits</span>");
+  expect(html).toContain("<h3>Synthetic initiative</h3>");
+});
