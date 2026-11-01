@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { evaluateImageWeights, MAX_ARTWORK_BYTES } from "./check-public-image-weight.mjs";
+import { mkdtempSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { evaluateImageWeights, MAX_ARTWORK_BYTES, readHeroImageInventory } from "./check-public-image-weight.mjs";
 
 test("accepts assets at or below the per-image cap", () => {
   const report = evaluateImageWeights([
@@ -41,4 +44,31 @@ test("rejects malformed paths and null entries before reporting artwork", () => 
     assert.throws(() => evaluateImageWeights([bad]), /Invalid image inventory entry/);
   }
   assert.throws(() => evaluateImageWeights(null), /Invalid image inventory/);
+});
+
+test("rejects a symlinked artwork image file instead of silently skipping its byte budget", () => {
+  const root = mkdtempSync(join(tmpdir(), "amaana-artwork-file-"));
+  try {
+    mkdirSync(join(root, "public", "hero"), { recursive: true });
+    mkdirSync(join(root, "public", "programme-artwork"), { recursive: true });
+    writeFileSync(join(root, "public", "hero", "approved.webp"), Buffer.alloc(16));
+    symlinkSync(join(root, "public", "hero", "approved.webp"),
+      join(root, "public", "hero", "linked.webp"));
+    assert.throws(() => readHeroImageInventory(root), /Symlinked artwork entry/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("rejects a symlinked artwork source folder before reading outside the repository", () => {
+  const root = mkdtempSync(join(tmpdir(), "amaana-artwork-folder-"));
+  try {
+    mkdirSync(join(root, "public", "programme-artwork"), { recursive: true });
+    mkdirSync(join(root, "outside"), { recursive: true });
+    writeFileSync(join(root, "outside", "approved.webp"), Buffer.alloc(16));
+    symlinkSync(join(root, "outside"), join(root, "public", "hero"), "dir");
+    assert.throws(() => readHeroImageInventory(root), /Symlinked artwork folder/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });
