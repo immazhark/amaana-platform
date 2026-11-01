@@ -270,6 +270,108 @@ test("Next16 JS assignments reject wrong identities, traversal and absent sizes"
   assert.equal(read, false);
   for (const size of [undefined, -1, NaN, Infinity, 1.1]) {
     assert.throws(() => reporter.summarizeClientReferenceJs({ '/page': '/' },
-      page => jsReferenceSource(page, { root: ['static/chunks/shared.js'] }), [], () => size), /size/);
+      page => jsReferenceSource(page, { '[project]/src/app/layout': ['static/chunks/shared.js'] }), [], () => size), /size/);
   }
+});
+
+
+test("Next16 JS excludes sibling pages while retaining root and ancestor layout assets", () => {
+  const sizes = {
+    "static/chunks/runtime.js": 7,
+    "static/chunks/shared.js": 11,
+    "static/chunks/home.js": 17,
+    "static/chunks/appeals-layout.js": 5,
+    "static/chunks/appeals.js": 13,
+  };
+  const entryJSFiles = {
+    "[project]/src/app/layout": ["static/chunks/shared.js"],
+    "[project]/src/app/page": ["static/chunks/home.js"],
+    "[project]/src/app/appeals/layout": ["static/chunks/appeals-layout.js"],
+    "[project]/src/app/appeals/page": ["static/chunks/appeals.js"],
+  };
+  const rows = reporter.summarizeClientReferenceJs({
+    "/page": "/", "/appeals/page": "/appeals",
+  }, page => jsReferenceSource(page, entryJSFiles),
+  ["static/chunks/runtime.js"], asset => {
+    assert.ok(Object.hasOwn(sizes, asset), asset);
+    return sizes[asset];
+  });
+  const byRoute = Object.fromEntries(rows.map(row => [row.route, row]));
+  assert.deepEqual(byRoute["/"], {
+    route: "/", appPath: "/page", jsBytes: 35, scriptCount: 3,
+  });
+  assert.deepEqual(byRoute["/appeals"], {
+    route: "/appeals", appPath: "/appeals/page", jsBytes: 36, scriptCount: 4,
+  });
+});
+
+test("Next16 JS rejects duplicate manifest keys claiming the same layout", () => {
+  const manifest = {
+    "[project]/src/app/layout": ["static/chunks/a.js"],
+    "[other]/src/app/layout": ["static/chunks/b.js"],
+  };
+  assert.throws(() => reporter.summarizeClientReferenceJs({ "/page": "/" },
+    page => jsReferenceSource(page, manifest), [], () => 1),
+    /Ambiguous client-reference JavaScript entries/);
+});
+
+
+test("Next16 JS attributes pathless overview route layouts without sibling detail page chunks", () => {
+  const sizes = {
+    "static/chunks/runtime.js": 13,
+    "static/chunks/root.js": 2,
+    "static/chunks/stories-layout.js": 3,
+    "static/chunks/overview-layout.js": 5,
+    "static/chunks/overview.js": 7,
+    "static/chunks/detail.js": 11,
+  };
+  const entries = {
+    "[project]/src/app/layout": ["static/chunks/root.js"],
+    "[project]/src/app/stories/layout": ["static/chunks/stories-layout.js"],
+    "[project]/src/app/stories/(overview)/layout": ["static/chunks/overview-layout.js"],
+    "[project]/src/app/stories/(overview)/page": ["static/chunks/overview.js"],
+    "[project]/src/app/stories/[slug]/page": ["static/chunks/detail.js"],
+  };
+  const rows = reporter.summarizeClientReferenceJs(
+    { "/stories/(overview)/page": "/stories" },
+    page => jsReferenceSource(page, entries),
+    ["static/chunks/runtime.js"],
+    asset => {
+      assert.ok(Object.hasOwn(sizes, asset), asset);
+      return sizes[asset];
+    },
+  );
+  assert.deepEqual(rows, [{
+    route: "/stories",
+    appPath: "/stories/(overview)/page",
+    jsBytes: 30,
+    scriptCount: 5,
+  }]);
+});
+
+test("Next16 per-route CSS totals reject unsafe integer overflow but accept the exact boundary", () => {
+  const styles = { "[project]/src/app/layout": [
+    { path: "static/css/large.css", inlined: false },
+    { path: "static/css/small.css", inlined: false },
+  ] };
+  const report = size => reporter.summarizeClientReferenceCss({ "/page": "/" },
+    page => referenceSource(page, styles),
+    asset => asset.endsWith("large.css") ? size : 1);
+  assert.throws(() => report(Number.MAX_SAFE_INTEGER), /Invalid CSS total size/);
+  assert.deepEqual(report(Number.MAX_SAFE_INTEGER - 1), [{
+    route: "/", appPath: "/page", cssBytes: Number.MAX_SAFE_INTEGER, stylesheetCount: 2,
+  }]);
+});
+
+test("Next16 per-route JS totals reject unsafe integer overflow but accept the exact boundary", () => {
+  const scripts = { "[project]/src/app/layout": [
+    "static/chunks/large.js", "static/chunks/small.js",
+  ] };
+  const report = size => reporter.summarizeClientReferenceJs({ "/page": "/" },
+    page => jsReferenceSource(page, scripts), [],
+    asset => asset.endsWith("large.js") ? size : 1);
+  assert.throws(() => report(Number.MAX_SAFE_INTEGER), /Invalid JavaScript total size/);
+  assert.deepEqual(report(Number.MAX_SAFE_INTEGER - 1), [{
+    route: "/", appPath: "/page", jsBytes: Number.MAX_SAFE_INTEGER, scriptCount: 2,
+  }]);
 });
