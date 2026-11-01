@@ -69,23 +69,27 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
   }
 
   if (asset.kind === "VIDEO") {
+    const caption = asset.caption?.trim();
+    const videoLabel = asset.title?.trim() || caption || "Amaana Foundation video";
     return (
       <figure className="v2-media-item">
-        <video controls preload="none" playsInline aria-label={asset.title ?? asset.caption ?? "Amaana Foundation video"}>
+        <video controls preload="none" playsInline aria-label={videoLabel}>
           <source src={url} />
         </video>
-        {(asset.caption || asset.sourceYear) && (
-          <figcaption>{asset.caption}{asset.caption && asset.sourceYear ? " · " : ""}{asset.sourceYear ?? ""}</figcaption>
+        {(caption || asset.sourceYear) && (
+          <figcaption>{caption}{caption && asset.sourceYear ? " · " : ""}{asset.sourceYear ?? ""}</figcaption>
         )}
       </figure>
     );
   }
 
-  const linkTitle = asset.title ?? asset.caption ?? "approved source";
+  // Whitespace-only editorial fields must not suppress accessible source labels.
+  const displayTitle = asset.title?.trim() || asset.caption?.trim();
+  const linkTitle = displayTitle || "approved source";
   return (
     <article className="v2-media-link">
       <small>{asset.kind === "DOCUMENT" ? "Document" : "Video"}{asset.sourceYear ? ` · ${asset.sourceYear}` : ""}</small>
-      <h3>{asset.title ?? asset.caption ?? "View approved source"}</h3>
+      <h3>{displayTitle || "View approved source"}</h3>
       <a href={url} target="_blank" rel="noopener noreferrer" aria-label={`Open approved source: ${linkTitle} (new tab)`}>Open approved source ↗</a>
     </article>
   );
