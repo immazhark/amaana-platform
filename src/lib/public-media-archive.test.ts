@@ -12,7 +12,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   mocks.initiative.mockResolvedValue(parent);
   mocks.story.mockResolvedValue(parent);
-  mocks.faith.mockResolvedValue(parent);
+  mocks.faith.mockResolvedValue({ ...parent, status: "PUBLISHED", religiousReviewStatus: "VERIFIED", verifiedAt: new Date("2026-01-01"), sourceCitation: "Reviewed source" });
   mocks.media.mockResolvedValue(rows);
 });
 
@@ -112,7 +112,7 @@ describe("bounded published media archives", () => {
     await getPublicMediaArchive("faith", parent.slug, 1);
     const gate = { status: "PUBLISHED", religiousReviewStatus: "VERIFIED", verifiedAt: { not: null }, sourceCitation: { not: null } };
     expect(mocks.faith.mock.calls[0]?.[0].where).toMatchObject(gate);
-    expect(mocks.media.mock.calls[0]?.[0].where.faithContent).toMatchObject(gate);
+    expect(mocks.media.mock.calls[0]?.[0].where.faithContent).toMatchObject({ ...gate, sourceCitation: "Reviewed source" });
   });
   it("rejects huge out-of-range offsets before querying media", async () => {
     expect(await getPublicMediaArchive("initiative", parent.slug, 80_000_000)).toBeNull();
@@ -162,4 +162,10 @@ it("does not erase a candidate page when only the next candidate is usable", asy
   mocks.media.mockResolvedValueOnce([...rows.slice(0, 24).map(row => ({ ...row, altText: " " })), rows[24]]);
   const result = await getPublicMediaArchive("initiative", parent.slug, 1);
   expect(result).toMatchObject({ media: [], hasNext: true });
+});
+
+it.each(["", "   ", null])("denies Faith archive media with incomplete citation %j", async sourceCitation => {
+  mocks.faith.mockResolvedValue({ ...parent, status: "PUBLISHED", religiousReviewStatus: "VERIFIED", verifiedAt: new Date("2026-01-01"), sourceCitation });
+  expect(await getPublicMediaArchive("faith", parent.slug, 1)).toBeNull();
+  expect(mocks.media).not.toHaveBeenCalled();
 });
