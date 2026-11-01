@@ -11,7 +11,8 @@ type Preferences = Record<string, string | string[] | undefined>;
 /** Native server-reviewed fixed-choice contact. No client hydration, stored
  * complaint records or automatic email; the visitor decides whether to send. */
 export function FeedbackEnquiryBuilder({ preferences = {} }: { preferences?: Preferences }) {
-  const requested = Object.prototype.hasOwnProperty.call(preferences, "intent");
+  const requested = ["intent", "kind", "topic"].some(field =>
+    Object.prototype.hasOwnProperty.call(preferences, field));
   const selection = requested ? parseFeedbackPreferences(preferences) : null;
   const selectedKind = selection ? FEEDBACK_KINDS.find(kind => kind.id === selection.kind) : null;
   const selectedTopic = selection ? FEEDBACK_TOPICS.find(topic => topic.id === selection.topic) : null;

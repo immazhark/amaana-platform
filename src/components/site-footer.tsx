@@ -14,6 +14,7 @@ const socialLinks: ReadonlyArray<{ network: SocialNetwork; label: string; href: 
 
 export function SiteFooter() {
   const activeSocialLinks = socialLinks.filter((item): item is typeof item & { href: string } => Boolean(item.href));
+  const copyrightYear = new Intl.DateTimeFormat("en", { timeZone: "Asia/Kolkata", year: "numeric" }).format(new Date());
   return (
     <footer className="site-footer">
       <div className="amaana-backdrop-emblem" aria-hidden="true" />
@@ -57,7 +58,7 @@ export function SiteFooter() {
         </div>
 
         <div className="footer-note">
-          <span>© {new Date().getFullYear()} Amaana Foundation · Hyderabad, Telangana</span>
+          <span>© {copyrightYear} Amaana Foundation · Hyderabad, Telangana</span>
           <span><a href="mailto:amaanafoundation24@gmail.com">amaanafoundation24@gmail.com</a></span>
           <span>Domestic donations only. Public appeals and outcomes are shared subject to verification, consent and privacy safeguards.</span>
         </div>

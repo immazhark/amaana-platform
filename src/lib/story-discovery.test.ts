@@ -17,3 +17,34 @@ it("filters initiative-linked stories through published parent programmes", () =
  expect(selectStoryDiscovery(records,{programme:"Education"}).count).toBe(1);
  expect(selectStoryDiscovery(records,{}).programmes).toEqual(["Education"]);
 });
+
+
+it("excludes whitespace-only published programme titles without hiding their stories", () => {
+ const records = [
+  {title:"Blank direct",summary:"Public",cause:{status:"PUBLISHED",title:"  "}},
+  {title:"Valid direct",summary:"Public",cause:{status:"PUBLISHED",title:"Education"}},
+ ];
+ const result = selectStoryDiscovery(records,{});
+ expect(result.programmes).toEqual(["Education"]);
+ expect(result.results).toEqual(records);
+ expect(selectStoryDiscovery(records,{programme:"  "})).toMatchObject({invalid:true,count:0});
+});
+it("uses a valid published direct cause when a published initiative programme title is blank", () => {
+ const story = {title:"Reviewed story",summary:"Public",cause:{status:"PUBLISHED",title:"Relief"},initiative:{status:"PUBLISHED",cause:{status:"PUBLISHED",title:" \t "}}};
+ const result = selectStoryDiscovery([story],{programme:"Relief"});
+ expect(result.programmes).toEqual(["Relief"]);
+ expect(result.results[0]).toBe(story);
+ expect(result.invalid).toBe(false);
+});
+it("preserves original published spelling and preferred initiative context", () => {
+ const story={title:"Reviewed story",summary:"Public",cause:{status:"PUBLISHED",title:"Direct"},initiative:{status:"PUBLISHED",cause:{status:"PUBLISHED",title:" Education "}}};
+ const result=selectStoryDiscovery([story],{programme:" Education "});
+ expect(result.programmes).toEqual([" Education "]);
+ expect(result.results).toEqual([story]);
+});
+it("never falls back to unpublished direct cause after an unusable initiative title", () => {
+ const story={title:"Reviewed story",summary:"Public",cause:{status:"DRAFT",title:"Private"},initiative:{status:"PUBLISHED",cause:{status:"PUBLISHED",title:"   "}}};
+ const result=selectStoryDiscovery([story],{});
+ expect(result.programmes).toEqual([]);
+ expect(selectStoryDiscovery([story],{programme:"Private"}).invalid).toBe(true);
+});

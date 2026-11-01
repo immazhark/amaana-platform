@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { canExposeAppealArchive } from "@/lib/appeal-update-publication";
-import { publicFaithWhere } from "@/lib/faith-publication";
+import { isPublicFaithReviewComplete, publicFaithWhere } from "@/lib/faith-publication";
 import { prisma } from "@/lib/prisma";
 import { canExposePublicAppeal } from "@/lib/public-environment";
 import { PUBLIC_STATIC_ROUTES } from "@/lib/public-routing";
@@ -50,7 +50,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
     prisma.faithContent.findMany({
       where: publicFaithWhere,
-      select: { slug: true, updatedAt: true },
+      select: { slug: true, updatedAt: true, status: true, religiousReviewStatus: true, verifiedAt: true, sourceCitation: true },
     }),
   ]);
 
@@ -80,7 +80,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...staticPages,
     ...canonicalInitiatives.map(item => ({ url: `${base}/our-work/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "monthly" as const, priority: 0.8 })),
     ...stories.map(item => ({ url: `${base}/stories/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "monthly" as const, priority: 0.75 })),
-    ...faithContent.map(item => ({ url: `${base}/faith-and-reflections/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "monthly" as const, priority: 0.7 })),
+    ...faithContent.filter(isPublicFaithReviewComplete).map(item => ({ url: `${base}/faith-and-reflections/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "monthly" as const, priority: 0.7 })),
     ...searchableAppeals.map(item => ({ url: `${base}/appeals/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "weekly" as const, priority: 0.85 })),
   ];
 }
