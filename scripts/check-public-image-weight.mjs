@@ -39,14 +39,28 @@ export function readHeroImageInventory(root = process.cwd()) {
     if (lstatSync(dir).isSymbolicLink()) {
       throw new Error("Symlinked artwork folder is forbidden: " + folder);
     }
-    return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
-      if (entry.isSymbolicLink()) {
-        throw new Error("Symlinked artwork entry is forbidden: " + join(folder, entry.name));
+    // Traverse only the two permitted artwork roots; never follow symbolic links.
+    // An explicit stack avoids a recursive call stack for deeply nested archives.
+    const pending = [dir];
+    const images = [];
+    while (pending.length) {
+      const current = pending.pop();
+      for (const entry of readdirSync(current, { withFileTypes: true })) {
+        const path = join(current, entry.name);
+        if (entry.isSymbolicLink()) {
+          throw new Error("Symlinked artwork entry is forbidden: " + relative(root, path));
+        }
+        if (entry.isDirectory()) {
+          pending.push(path);
+        } else if (entry.isFile() && types.test(entry.name)) {
+          images.push({
+            path: relative(root, path).split(sep).join("/"),
+            bytes: statSync(path).size,
+          });
+        }
       }
-      if (!entry.isFile() || !types.test(entry.name)) return [];
-      const path = join(dir, entry.name);
-      return [{ path: relative(root, path).split(sep).join("/"), bytes: statSync(path).size }];
-    });
+    }
+    return images;
   });
 }
 
