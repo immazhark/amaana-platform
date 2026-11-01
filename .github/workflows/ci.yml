@@ -77,6 +77,8 @@ jobs:
 
       - name: Audit global CSS architecture
         run: node scripts/audit-global-css.mjs
+      - name: Enforce public Compliance hold text contrast
+        run: node --test scripts/test-compliance-hold-contrast.mjs
       - name: Validate App Router bundle reporting
         run: node --test scripts/test-route-bundle-report.mjs scripts/test-live-route-css.mjs
       - name: Guard responsive hero/artwork image weight
@@ -129,6 +131,12 @@ jobs:
         run: node --test scripts/test-client-secret-boundary.mjs
       - name: Enforce audited muted text contrast
         run: node --test scripts/test-audited-muted-contrast.mjs
+      - name: Guard public CSS minimum type size
+        run: |
+          node --test scripts/test-public-font-floor.mjs
+          node scripts/public-font-floor.mjs
+      - name: Enforce light/dark Media source-label contrast
+        run: node --test scripts/test-public-contrast-boundaries.mjs
       - name: Guard Companion text scaling under 200% root font size
         run: node --test scripts/test-companion-text-scaling.mjs
       - name: Enforce accessible public-media link names
@@ -136,7 +144,7 @@ jobs:
       - name: Enforce appeal and faith link action names
         run: node --test scripts/test-appeal-faith-link-labels.mjs
       - name: Enforce impact tile accessible action names
-        run: node --test scripts/test-impact-link-label.mjs
+        run: node --test scripts/test-impact-link-label.mjs scripts/test-impact-metric-leading.mjs
       - name: Enforce participation card accessible action names
         run: node --test scripts/test-participation-link-label.mjs
       - name: Enforce story archive link action names
@@ -145,6 +153,8 @@ jobs:
         run: node --test scripts/test-donation-error-focus-race.mjs
       - name: Enforce admin eyebrow contrast by surface
         run: node --test scripts/test-admin-eyebrow-contrast.mjs
+      - name: Enforce Appeals update text contrast on dark surfaces
+        run: node --test scripts/test-appeal-update-contrast.mjs
       - name: Verify archive filters
         run: node --experimental-strip-types --test scripts/test-work-filters.mjs
       - name: Validate local-only mobile profiling contracts

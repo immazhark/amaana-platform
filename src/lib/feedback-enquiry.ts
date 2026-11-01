@@ -25,8 +25,8 @@ export const FEEDBACK_CONTACT_EMAIL = "amaanafoundation24@gmail.com";
 export function sanitizeFeedbackNote(input: unknown): string {
   if (typeof input !== "string") return "";
   // Email body only. Never interpolate user text into the recipient or
-  // subject; bound the URI and remove non-printing control characters.
-  return [...input.replace(/\r\n?/g, "\n").replace(/[\u0000-\u0008\u000B-\u001F\u007F]/g, "")]
+  // subject; bound the URI and remove controls that can hide or reorder references.
+  return [...input.replace(/\r\n?/g, "\n").replace(/[\u0000-\u0008\u000B-\u001F\u007F\u202A-\u202E\u2066-\u2069]/g, "")]
     .slice(0, MAX_FEEDBACK_NOTE_LENGTH).join("").trim();
 }
 

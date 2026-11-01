@@ -105,3 +105,36 @@ describe("appeal breadcrumb privacy parity", () => {
     expect(await breadcrumbName()).toBe(metadata.title);
   });
 });
+
+
+describe("appeal field-update display dates", () => {
+  it("shows the India calendar day even when the server default is UTC", async () => {
+    const original = Date.prototype.toLocaleDateString;
+    const formatter = vi.spyOn(Date.prototype, "toLocaleDateString").mockImplementation(function (
+      this: Date, locales, options,
+    ) {
+      return original.call(this, locales, { ...options, timeZone: options?.timeZone ?? "UTC" });
+    });
+    try {
+      mocks.appeal.mockResolvedValue({ ...appeal, updates: [{
+        id: "synthetic-update", title: "Synthetic update", content: "Synthetic reviewed update",
+        publishedAt: new Date("2026-10-26T19:00:00Z"),
+      }] });
+      const html = renderToStaticMarkup(await AppealPage(params));
+      expect(html).toContain("<small>27 October 2026</small>");
+      expect(html).not.toContain("<small>26 October 2026</small>");
+    } finally {
+      formatter.mockRestore();
+    }
+  });
+
+  it("keeps an undated update visible without inventing a publication date", async () => {
+    mocks.appeal.mockResolvedValue({ ...appeal, updates: [{
+      id: "synthetic-undated", title: "Synthetic undated update", content: "Synthetic reviewed update",
+      publishedAt: null,
+    }] });
+    const html = renderToStaticMarkup(await AppealPage(params));
+    expect(html).toContain("<small></small><h3>Synthetic undated update</h3>");
+    expect(html).not.toContain("Invalid Date");
+  });
+});

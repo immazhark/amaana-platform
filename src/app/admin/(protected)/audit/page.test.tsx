@@ -46,3 +46,19 @@ describe("audit query normalization", () => {
     expect(target.searchParams.get("entityType")).toBe(entityType ?? null);
   });
 });
+
+
+it("renders audit timestamps in IST independently of the host zone", async () => {
+  if (process.env.AMAANA_EXPECT_TEST_ZONE) {
+    expect(Intl.DateTimeFormat().resolvedOptions().timeZone).toBe(process.env.AMAANA_EXPECT_TEST_ZONE);
+  }
+  mocks.find.mockResolvedValue([{
+    id: "synthetic-audit", createdAt: new Date("2026-10-26T17:00:00Z"),
+    actor: { name: "Synthetic operator", email: "operator@example.invalid" },
+    action: "synthetic.reviewed", entityType: "Synthetic", entityId: "synthetic-record", metadata: null,
+  }]);
+  const html = renderToStaticMarkup(await AuditHistoryPage({ searchParams: Promise.resolve({}) }));
+  expect(html).toContain("26/10/2026, 10:30:00 pm");
+  expect(html).toContain("Time (IST)");
+  expect(mocks.permission).toHaveBeenCalledWith("rbac.manage");
+});

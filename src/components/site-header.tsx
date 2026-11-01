@@ -137,6 +137,25 @@ export function SiteHeader() {
           <Link className="button af-support-cta" href="/donate" onClick={closeMenu} aria-current={pathname === "/donate" ? "page" : isActivePath(pathname, "/donate") ? "location" : undefined}>Donate</Link>
         </div>
       </nav>
+      <noscript>
+        <details className="mobile-nav-noscript">
+          <summary>Site navigation</summary>
+          <nav className="container mobile-menu-inner" aria-label="Site navigation without JavaScript">
+            <div className="mobile-menu-primary">
+              {primaryLinks.map(([label, href]) => {
+                const active = isActivePath(pathname, href);
+                return <Link className={active ? "active" : undefined} href={href} key={href} aria-current={pathname === href ? "page" : active ? "location" : undefined}>{label}</Link>;
+              })}
+            </div>
+            <div className="mobile-menu-secondary">
+              {secondaryLinks.map(([label, href]) => {
+                const active = isActivePath(pathname, href);
+                return <Link className={active ? "active" : undefined} href={href} key={href} aria-current={pathname === href ? "page" : active ? "location" : undefined}>{label}</Link>;
+              })}
+            </div>
+          </nav>
+        </details>
+      </noscript>
       </header>
       {open ? <button type="button" className={`mobile-menu-backdrop ${styles.backdrop}`} tabIndex={-1} aria-label="Close navigation menu" onClick={closeMenuAndRestoreFocus} /> : null}
     </>

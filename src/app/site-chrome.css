@@ -220,3 +220,15 @@
 .site-header .brand-lockup{transform:scale(1.14);transform-origin:left center}
 @media(max-width:1020px){.site-header .brand-lockup{transform:scale(1.1)}}
 @media(prefers-reduced-motion:reduce){.site-header .brand-lockup{transition:none}}
+
+/* Shared controls stay spatially stable when visitors request reduced motion. */
+@media(prefers-reduced-motion:reduce){
+  .menu-toggle:hover,
+  .mobile-menu-primary a:hover,
+  .mobile-menu-secondary a:hover,
+  .af-support-cta:is(:hover,:focus-visible),
+  .site-header .nav-donate:is(:hover,:focus-visible),
+  .amaana-live-cta:hover,
+  .amaana-companion-dock>button:hover,
+  .amaana-companion-dock>button[aria-expanded="true"]{transform:none}
+}

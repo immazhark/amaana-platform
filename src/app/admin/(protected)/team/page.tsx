@@ -39,8 +39,8 @@ export default async function TeamAdminPage({ searchParams }: Props) {
         <h2>Add a group</h2>
         <p>Group keys are unique; the title and descriptor appear on the public page.</p>
         <form action={createTeamGroup} className="form-grid">
-          <div className="field"><label htmlFor="new-group-key">Unique key</label><input id="new-group-key" name="key" required maxLength={64} placeholder="COMMUNITY_PARTNERS" /></div>
-          <div className="field"><label htmlFor="new-group-title">Group title</label><input id="new-group-title" name="title" required maxLength={100} /></div>
+          <div className="field"><label htmlFor="new-group-key">Unique key</label><input id="new-group-key" name="key" required minLength={2} maxLength={64} placeholder="COMMUNITY_PARTNERS" /></div>
+          <div className="field"><label htmlFor="new-group-title">Group title</label><input id="new-group-title" name="title" required minLength={2} maxLength={100} /></div>
           <div className="field full"><label htmlFor="new-group-description">Description</label><textarea id="new-group-description" name="description" maxLength={240} rows={2} /></div>
           <div className="field full"><button className="button" type="submit">Add group</button></div>
         </form>
@@ -62,8 +62,8 @@ export default async function TeamAdminPage({ searchParams }: Props) {
             <form action={updateTeamGroup} className="form-grid">
               <input type="hidden" name="id" value={group.id} />
               <input type="hidden" name="expectedUpdatedAt" value={group.updatedAt.toISOString()} />
-              <div className="field"><label htmlFor={`group-key-${group.id}`}>Group key (fixed after creation)</label><input id={`group-key-${group.id}`} name="key" defaultValue={group.key} readOnly required maxLength={64} /></div>
-              <div className="field"><label htmlFor={`group-title-${group.id}`}>Title</label><input id={`group-title-${group.id}`} name="title" defaultValue={group.title} required maxLength={100} /></div>
+              <div className="field"><label htmlFor={`group-key-${group.id}`}>Group key (fixed after creation)</label><input id={`group-key-${group.id}`} name="key" defaultValue={group.key} readOnly required minLength={2} maxLength={64} /></div>
+              <div className="field"><label htmlFor={`group-title-${group.id}`}>Title</label><input id={`group-title-${group.id}`} name="title" defaultValue={group.title} required minLength={2} maxLength={100} /></div>
               <div className="field full"><label htmlFor={`group-description-${group.id}`}>Description</label><textarea id={`group-description-${group.id}`} name="description" defaultValue={group.description ?? ""} maxLength={240} rows={2} /></div>
               <button className="button" type="submit">Save group</button>
             </form>
