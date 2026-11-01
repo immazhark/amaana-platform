@@ -9,3 +9,13 @@
 .v2-appeal-card-link{min-height:3.5rem;padding:.9rem 1.25rem}
 .v2-appeal-card:is(:hover,:focus-within){transform:translateY(-.25rem);box-shadow:0 20px 52px rgb(18 34 57 / 11%);border-color:rgb(224 179 24 / 42%)}
 @media(max-width:620px){.v2-appeal-card{min-height:23rem}.v2-appeal-card-body{padding:1.2rem}}
+
+@media(prefers-reduced-motion:reduce){
+  main .v2-appeal-card,
+  main .v2-appeal-card:is(:hover, :focus-within),
+  main .v2-appeal-card-link strong,
+  main .v2-appeal-card:hover .v2-appeal-card-link strong{
+    transition:none;
+    transform:none;
+  }
+}

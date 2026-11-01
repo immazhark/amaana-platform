@@ -113,3 +113,66 @@ test('real appeal-card CSS retains readable metadata at mobile and desktop width
     }
   }
 });
+
+test('shared AppealCard hover and focus stay still under reduced motion on Home and Appeals', async ({ page }) => {
+  await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+
+  for (const route of ['/', '/appeals']) {
+    const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
+    expect(response?.ok()).toBe(true);
+    await page.evaluate(() => {
+      const main = document.querySelector('main');
+      if (!main) throw new Error('Main content target is missing');
+      const card = document.createElement('article');
+      card.className = 'v2-appeal-card';
+      card.dataset.motionFixture = 'true';
+      const link = document.createElement('a');
+      link.className = 'v2-appeal-card-link';
+      link.href = '#motion-fixture';
+      link.textContent = 'Synthetic appeal';
+      const arrow = document.createElement('strong');
+      arrow.textContent = '→';
+      link.append(arrow);
+      card.append(link);
+      main.append(card);
+    });
+
+    const card = page.locator('[data-motion-fixture="true"]');
+    const link = card.locator('a');
+    for (const reducedMotion of ['reduce', 'no-preference']) {
+      await page.emulateMedia({ reducedMotion });
+      await card.hover();
+      const hover = await card.evaluate(element => ({
+        transform: getComputedStyle(element).transform,
+        transition: getComputedStyle(element).transitionProperty,
+        arrowTransform: getComputedStyle(element.querySelector('strong')).transform,
+        arrowTransition: getComputedStyle(element.querySelector('strong')).transitionProperty,
+      }));
+
+      if (reducedMotion === 'reduce') {
+        expect(hover.transform, `${route} reduced-motion hover card`).toBe('none');
+        expect(hover.arrowTransform, `${route} reduced-motion hover arrow`).toBe('none');
+        expect(hover.transition, `${route} reduced-motion card transition`).toBe('none');
+        expect(hover.arrowTransition, `${route} reduced-motion arrow transition`).toBe('none');
+      } else {
+        await expect.poll(
+          () => card.evaluate(element => getComputedStyle(element).transform),
+          { message: `${route} normal-motion hover remains visible` },
+        ).not.toBe('none');
+      }
+
+      await page.mouse.move(0, 0);
+      await link.focus();
+      const focusedTransform = await card.evaluate(element => getComputedStyle(element).transform);
+      if (reducedMotion === 'reduce') {
+        expect(focusedTransform, `${route} reduced-motion focus-within`).toBe('none');
+      } else {
+        await expect.poll(
+          () => card.evaluate(element => getComputedStyle(element).transform),
+          { message: `${route} normal-motion focus-within remains visible` },
+        ).not.toBe('none');
+      }
+    }
+    await card.evaluate(element => element.remove());
+  }
+});
