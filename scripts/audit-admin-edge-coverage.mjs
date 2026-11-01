@@ -100,7 +100,7 @@ function routePathsUnder(directory, relativeSegments) {
     if (entry.isDirectory()) {
       paths.push(...routePathsUnder(join(directory, entry.name), [...relativeSegments, entry.name]));
     } else if (entry.isFile() && /^(page\.(tsx|ts|jsx|js)|route\.(tsx|ts|jsx|js))$/.test(entry.name)) {
-      const segments = relativeSegments.filter(segment => !/^\(.*\)$/.test(segment));
+      const segments = relativeSegments.filter(segment => !/^\(.*\)$/.test(segment) && !/^@[^/]+$/.test(segment));
       paths.push("/" + segments.join("/"));
     }
   }
@@ -111,9 +111,11 @@ export function discoverAdminRoutes(root = appRoot) {
   if (typeof root !== "string" || !isAbsolute(root)) {
     throw new Error("A local absolute app directory is required");
   }
-  const adminPages = routePathsUnder(join(root, "admin"), ["admin"]);
-  const adminApi = routePathsUnder(join(root, "api", "admin"), ["api", "admin"]);
-  const paths = [...adminPages, ...adminApi].sort();
+  // Next.js pathless route groups can precede /admin or /api/admin.
+  // Walk all App Router route files, then select their effective admin URLs.
+  const paths = routePathsUnder(root, [])
+    .filter(path => /^\/(?:admin|api\/admin)(?:\/|$)/.test(path))
+    .sort();
   assertRoutes("Repository inventory", paths);
   return paths;
 }
