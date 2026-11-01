@@ -69,15 +69,13 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
   }
 
   if (asset.kind === "VIDEO") {
-    const caption = asset.caption?.trim();
-    const videoLabel = asset.title?.trim() || caption || "Amaana Foundation video";
     return (
       <figure className="v2-media-item">
-        <video controls preload="none" playsInline aria-label={videoLabel}>
+        <video controls preload="none" playsInline aria-label={asset.title ?? asset.caption ?? "Amaana Foundation video"}>
           <source src={url} />
         </video>
-        {(caption || asset.sourceYear) && (
-          <figcaption>{caption}{caption && asset.sourceYear ? " · " : ""}{asset.sourceYear ?? ""}</figcaption>
+        {(asset.caption || asset.sourceYear) && (
+          <figcaption>{asset.caption}{asset.caption && asset.sourceYear ? " · " : ""}{asset.sourceYear ?? ""}</figcaption>
         )}
       </figure>
     );

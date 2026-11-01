@@ -73,25 +73,24 @@ describe("public media image optimization", () => {
     expect(html).toContain('aria-label="Open approved source: Reviewed document summary (new tab)"');
   });
 
-  it("keeps local video accessible when reviewed title and caption are blank", () => {
+  it("keeps native VIDEO blocked until verified synchronized captions are available", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
     const html = renderToStaticMarkup(PublicMedia({
       asset: { ...asset, kind: "VIDEO", publicUrl: "/media/reviewed-video.mp4",
-        title: "  ", caption: " \t ", sourceYear: 2026, altText: null },
+        title: "Reviewed video", caption: "Recorded service", altText: null },
     }));
-    expect(html).toContain('aria-label="Amaana Foundation video"');
-    expect(html).toContain("<figcaption>2026</figcaption>");
-    expect(html).not.toContain(" · 2026");
+    expect(html).toBe("");
   });
 
-  it("uses a trimmed reviewed title for accessible video labels", () => {
+  it("uses readable source fallback for a reviewed external video link", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
     const html = renderToStaticMarkup(PublicMedia({
-      asset: { ...asset, kind: "VIDEO", publicUrl: "/media/reviewed-video.mp4",
-        title: " Reviewed video ", caption: " Approved recording  ", sourceYear: 2026, altText: null },
+      asset: { ...asset, kind: "EXTERNAL_VIDEO", publicUrl: null,
+        externalUrl: "https://media.amaana.example/approved-video",
+        title: "  ", caption: "\t", altText: null },
     }));
-    expect(html).toContain('aria-label="Reviewed video"');
-    expect(html).toContain("<figcaption>Approved recording · 2026</figcaption>");
+    expect(html).toContain("<h3>View approved source</h3>");
+    expect(html).toContain('aria-label="Open approved source: approved source (new tab)"');
   });
 
   it("keeps reviewed CDN media direct and lazy without authorizing remote optimization", () => {
