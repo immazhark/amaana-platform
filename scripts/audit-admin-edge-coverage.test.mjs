@@ -168,3 +168,15 @@ test("parallel slot segments cannot hide administrative routes from a protected-
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("a symbolic link hidden inside a route group or parallel slot fails closed", () => {
+  const root = mkdtempSync(join(tmpdir(), "amaana-edge-slot-symlink-"));
+  try {
+    mkdirSync(join(root, "(internal)", "@review", "admin"), { recursive: true });
+    writeFileSync(join(root, "target.tsx"), "export default function Page() { return null; }\n");
+    symlinkSync(join(root, "target.tsx"), join(root, "(internal)", "@review", "admin", "page.tsx"));
+    assert.throws(() => discoverAdminRoutes(root), /Symlink in admin route inventory/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
