@@ -135,7 +135,7 @@ export function summarizeClientReferenceCss(appPaths, readManifest, byteSize) {
         if (!Number.isSafeInteger(bytes) || bytes < 0) throw new Error("Invalid CSS asset size");
         sizes.set(asset, bytes);
       }
-      cssBytes += sizes.get(asset);
+      cssBytes = measuredBytes(cssBytes + sizes.get(asset), "CSS total");
     }
     return { route, appPath: page, cssBytes, stylesheetCount: assets.size };
   }).sort((a, b) => b.cssBytes - a.cssBytes || a.appPath.localeCompare(b.appPath));
@@ -182,7 +182,7 @@ export function summarizeClientReferenceJs(appPaths, readManifest, rootMainFiles
         if (!Number.isSafeInteger(bytes) || bytes < 0) throw new Error("Invalid JavaScript asset size");
         sizes.set(asset, bytes);
       }
-      jsBytes += sizes.get(asset);
+      jsBytes = measuredBytes(jsBytes + sizes.get(asset), "JavaScript total");
     }
     return { route, appPath: page, jsBytes, scriptCount: assets.size };
   }).sort((a, b) => b.jsBytes - a.jsBytes || a.appPath.localeCompare(b.appPath));
