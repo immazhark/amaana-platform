@@ -48,3 +48,22 @@ it("uses the same approved programme labels in visible feature and archive cards
   expect(html).not.toContain("<small>Annual edition</small>");
   expect(html).not.toContain("<small>Unrelated edition</small>");
 });
+
+it("does not display draft cause names or whitespace-only labels on published story cards", async () => {
+  const records = [
+    { id: "a", slug: "reviewed-a", title: "Reviewed field note", summary: "Published summary",
+      cause: { title: "Internal cause", status: "DRAFT" },
+      initiative: { title: "Internal initiative", status: "DRAFT",
+        cause: { title: "Private programme", status: "PUBLISHED" } }, mediaAssets: [] },
+    { id: "b", slug: "reviewed-b", title: "Another field note", summary: "Published summary",
+      cause: { title: "  ", status: "PUBLISHED" }, mediaAssets: [] },
+  ];
+  mocks.index.mockResolvedValue(records);
+  mocks.cards.mockResolvedValue(records);
+  const html = renderToStaticMarkup(await StoriesPage({ searchParams: Promise.resolve({}) }));
+  expect(html.match(/<small>Story of Amanah<\/small>/g)).toHaveLength(2);
+  expect(html).not.toContain("Internal cause");
+  expect(html).not.toContain("Internal initiative");
+  expect(html).not.toContain("Private programme");
+  expect(html).not.toContain("<small>  </small>");
+});
