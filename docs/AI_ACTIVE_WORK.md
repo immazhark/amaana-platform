@@ -1,3 +1,7 @@
+## 2026-11-01 IST — #520 independently recovered on protected #610 main
+
+CHATGPT_ACTIVE sole implementation writer. Accepted PR #610 merged 32eed690cc20c63edcb4c11e67faae80c7633936 after exact-head full selected CI 41289429855 and separate ready-state plan/promotion/verify 41291797004. Prior staged #499 browser run 41289705785 FAILED in unrelated site-motion-scroll Home-key test; no acceptance or override. Detach #520 from #499's failed browser dependency by restoring only original #520 two narrow script/test blobs onto protected main with original branch history retained through normal two-parent reconciliation. The independent #520 build-byte input guard rejects missing/noninteger/negative/overflow measurements. New exact-head CI, reviewer, separate ready-state and protected SHA-guarded merge mandatory. No live donation/applicant/media/religious claim, auth/payment/schema, Railway infrastructure, cron, or notification mutation; canonical 149 unchanged.
+
 ## 2026-11-01 IST — #520 route measurement fail-closed input guard
 
 CHATGPT_ACTIVE sole implementation writer. Recover only exact tested original two #520 route-bundle source/test Git blobs onto current candidate #499 7b08dc236cd99dacff00d0e7c23d003009e4144f, retaining protected accepted #611 and candidate #610/#499 histories and app source. #520 rejects invalid missing, NaN, negative, fractional and overflowing byte measurements rather than emitting false totals. Existing green #520 historical CI is not fresh exact-head acceptance. Require fresh CI, independent review, separate ready-state and SHA-guarded merge only after predecessor PRs accepted. This is build-byte reporting, not network transfer/Core Web Vitals. No production data, Razorpay/auth, media claims, schema, notifications, external infrastructure or 149-row promotion.
@@ -7,30 +11,6 @@ CHATGPT_ACTIVE sole implementation writer. Recover only exact tested original tw
 CHATGPT_ACTIVE sole implementation writer. Reconcile scripts-only candidate with current protected main 3d487e4f6eedc705ae2d4be79cd6396d88d4e627. Both tested original source/test blobs remain unchanged, current coordination history preserved. New exact-head browser/database/production and separate ready-state checks required; this is not a live change or 149 promotion.
 
 ## 2026-10-31 IST — #520 reporter input guard recovery
-
-CHATGPT_ACTIVE sole writer. Recover previously test-first audited integer/overflow guards from #520 onto current protected main 9e30b16494d72c2c967855d69a5ccf363cf82794; original two source/test blobs preserved. Old exact-head local evidence does not certify this new integration. Full exact-head CI, separate ready-state and protected guarded merge required. No runtime, database, donor, payment or infrastructure change; canonical 149 unchanged.
-
-## 2026-10-28 IST — AF-R047 fail-closed route bundle byte accounting
-
-CHATGPT_ACTIVE is the sole repository implementation writer on `fix/route-bundle-invalid-size-20261028`, based on protected main `83044f775166be0a3533d807a7ec3e268795530f`. Current Next16 per-page JS/CSS attribution already exists and independently produced 61/61 populated routes with 13/13 reporter-native tests PASS; do not recreate it. Read-only inspection found that the legacy app-manifest summary can propagate undefined/NaN, fractional or negative byte sizes into apparently numeric per-route reports. The explicit aggregate fallback has the same unchecked input boundary. Add fail-first synthetic native tests for invalid byte sizes and zero-byte acceptance, then reject invalid measured sizes in those two pure summary helpers. No runtime application, build limits, auth, payment, DB, media, provider or infrastructure changes. Separate draft #492 concerns browser Resource Timing and does not overlap this reporter input correction. Keep Neon production compute-budget release hold, one bounded draft PR, exact-head checks, and all 149 historical classifications unchanged. Rollback: revert the isolated reporter/test change.
-
-Accepted local evidence: both new native tests RED on missing/invalid byte sizes; after the initial correction, two overflow assertions RED on totals beyond `Number.MAX_SAFE_INTEGER`; all 15 reporter tests GREEN after exact-input and sum validation. Legitimate zero-byte assets remain accepted. Full Vitest **2,282 PASS / 20 isolated-DB opt-in SKIP**, full ESLint plus governed Stylelint, strict TypeScript, clean Next production build with curated-contract/admin-edge/client-secret/image-weight guards PASS. Real built Next16 reporter yields JS and CSS assignments for **61/61** routes, aggregate uncompressed JS 806,077 B and CSS 328,687 B (not transfer or CWV). `node --check` and `git diff --check` PASS. Only two scripts and two required coordination records changed; no production code, runtime merge, deployment or backlog promotion.
-
-## 2026-11-01 IST — #499 staged behind refreshed #610 exact head
-
-CHATGPT_ACTIVE sole writer. Reviewed exact #499 CSS source/test blobs reconciled on #610 candidate 29abcf5a89420824c5befb552784b99b1815b250 (which includes accepted #611 source). This is staging only; #610 must complete full refreshed acceptance and merge before #499 promotion. Fresh exact-head all-seven CI and separate READY required for #499. Preserve older source histories and CSS import-only scope; no approved media/data/auth/payment/schema/notifications/provider/infra or canonical 149 mutation.
-
-## 2026-11-01 IST — #499 Transparency unused CSS recovery, queued behind #610
-
-CHATGPT_ACTIVE sole repository writer. Preserve current #611 and #610 candidate source/regressions at `fb384af09b4414b94f861ddb3e9c2d3657083298`, then restore only exact originally reviewed #499 Transparency import and two regression blobs. Scope: remove orphan CSS import only; retain all content, facts, layout, and accessible controls. Original #499 CI 41124846365 SUCCESS but not new exact-head acceptance. New full exact-head CI, independent review, separate ready-state and expected-head guarded merge after predecessors accepted; any predecessor failure requires re-evaluation/retest. No production/data/payment/notification/schema/asset deletion, and no 149-item classification change.
-
-## 2026-10-31 IST — #499 Transparency orphan CSS cleanup after #604
-
-CHATGPT_ACTIVE sole implementation writer. Preserve exact original three tested source/test blobs from cc7116bd3acb6ed7c61c7648ffde92885a6bc0a3 onto 3d487e4f6eedc705ae2d4be79cd6396d88d4e627 with current coordination history. No Transparency content or appearance changes claimed beyond safe removal of unused styles. Fresh exact-head full CI, separate ready and SHA-guarded merge required. Historical 149 unchanged.
-
-## 2026-10-31 IST — #499 Transparency unused stylesheet recovery
-
-CHATGPT_ACTIVE sole implementation writer. Reconcile isolated #499 CSS import correction from 4d407be9a16ff3d9e5e1dc6b1ffbe6b055be7ef2 onto 9e30b16494d72c2c967855d69a5ccf363cf82794 preserving original three tested source files and historical coordination records. No content edits or new CSS declarations. New exact-head full CI, review and separate ready-state checks required, no deployment or 149-item status promotion.
 
 ## 2026-11-01 IST — #610 Faith loader recovery after accepted #611
 
