@@ -29,3 +29,41 @@ it("keeps only privacy help associated with valid filters", async () => {
   expect(html).not.toContain('aria-invalid="true"');
   expect(html.match(/aria-describedby="story-search-help"/g)).toHaveLength(2);
 });
+
+it("uses the same approved programme labels in visible feature and archive cards", async () => {
+  const records = [
+    { id: "a", slug: "field-note-a", title: "School field note", summary: "Public summary",
+      cause: null, initiative: { title: "Annual edition", status: "PUBLISHED",
+        cause: { title: "Education", status: "PUBLISHED" } }, mediaAssets: [] },
+    { id: "b", slug: "field-note-b", title: "Relief field note", summary: "Public summary",
+      cause: { title: "Relief", status: "PUBLISHED" },
+      initiative: { title: "Unrelated edition", status: "PUBLISHED",
+        cause: { title: "   ", status: "PUBLISHED" } }, mediaAssets: [] },
+  ];
+  mocks.index.mockResolvedValue(records);
+  mocks.cards.mockResolvedValue(records);
+  const html = renderToStaticMarkup(await StoriesPage({ searchParams: Promise.resolve({}) }));
+  expect(html).toContain("<small>Education</small>");
+  expect(html).toContain("<small>Relief</small>");
+  expect(html).not.toContain("<small>Annual edition</small>");
+  expect(html).not.toContain("<small>Unrelated edition</small>");
+});
+
+it("does not display draft cause names or whitespace-only labels on published story cards", async () => {
+  const records = [
+    { id: "a", slug: "reviewed-a", title: "Reviewed field note", summary: "Published summary",
+      cause: { title: "Internal cause", status: "DRAFT" },
+      initiative: { title: "Internal initiative", status: "DRAFT",
+        cause: { title: "Private programme", status: "PUBLISHED" } }, mediaAssets: [] },
+    { id: "b", slug: "reviewed-b", title: "Another field note", summary: "Published summary",
+      cause: { title: "  ", status: "PUBLISHED" }, mediaAssets: [] },
+  ];
+  mocks.index.mockResolvedValue(records);
+  mocks.cards.mockResolvedValue(records);
+  const html = renderToStaticMarkup(await StoriesPage({ searchParams: Promise.resolve({}) }));
+  expect(html.match(/<small>Story of Amanah<\/small>/g)).toHaveLength(2);
+  expect(html).not.toContain("Internal cause");
+  expect(html).not.toContain("Internal initiative");
+  expect(html).not.toContain("Private programme");
+  expect(html).not.toContain("<small>  </small>");
+});
