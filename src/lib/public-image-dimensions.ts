@@ -8,14 +8,15 @@ const MAX_PUBLIC_IMAGE_PIXELS = 40_000_000;
 
 type PublicImageDimensions = { width?: number | null; height?: number | null };
 
-export function hasValidPublicImageDimensions(value: PublicImageDimensions): value is { width: number; height: number } {
-  const { width, height } = value;
+export function hasValidPublicImageDimensions(value: unknown): value is { width: number; height: number } {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const { width, height } = value as PublicImageDimensions;
   return typeof width === "number" && Number.isSafeInteger(width) && width > 0 && width <= MAX_DIMENSION
     && typeof height === "number" && Number.isSafeInteger(height) && height > 0 && height <= MAX_DIMENSION
     && width <= MAX_PUBLIC_IMAGE_PIXELS / height;
 }
 
-export function getPublicImageDimensions(value: PublicImageDimensions): { width: number; height: number } {
+export function getPublicImageDimensions(value: unknown): { width: number; height: number } {
   return hasValidPublicImageDimensions(value)
     ? { width: value.width, height: value.height }
     : { ...FALLBACK };
