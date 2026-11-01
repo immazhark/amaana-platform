@@ -1,4 +1,4 @@
-import { readdirSync, statSync } from "node:fs";
+import { lstatSync, readdirSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -9,28 +9,58 @@ const types = /\.(?:webp|avif|png|jpe?g)$/i;
 /** CI budget for repository hero artwork only, not consent-reviewed S3 galleries. */
 export function evaluateImageWeights(files, limit = MAX_ARTWORK_BYTES) {
   if (!Number.isSafeInteger(limit) || limit <= 0) throw new Error("Invalid image weight budget");
-  const sorted = files.slice().sort((a, b) => b.bytes - a.bytes);
-  for (const file of sorted) {
-    if (!file.path || !Number.isSafeInteger(file.bytes) || file.bytes < 0) {
+  if (!Array.isArray(files)) throw new Error("Invalid image inventory");
+  for (const file of files) {
+    if (!file || typeof file.path !== "string" || !file.path.trim() ||
+        !Number.isSafeInteger(file.bytes) || file.bytes < 0) {
       throw new Error("Invalid image inventory entry");
     }
   }
+  const sorted = files.slice().sort((a, b) => b.bytes - a.bytes);
+  const totalBytes = sorted.reduce((sum, file) => {
+    const next = sum + file.bytes;
+    if (!Number.isSafeInteger(next)) throw new Error("Invalid aggregate image byte size");
+    return next;
+  }, 0);
   return {
     imageCount: sorted.length,
-    totalBytes: sorted.reduce((sum, file) => sum + file.bytes, 0),
+    totalBytes,
     largest: sorted.slice(0, 5),
     violations: sorted.filter(file => file.bytes > limit),
   };
 }
 
 export function readHeroImageInventory(root = process.cwd()) {
+  if (lstatSync(join(root, "public")).isSymbolicLink()) {
+    throw new Error("Symlinked artwork parent is forbidden: public");
+  }
   return folders.flatMap(folder => {
     const dir = join(root, folder);
-    return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
-      if (!entry.isFile() || !types.test(entry.name)) return [];
-      const path = join(dir, entry.name);
-      return [{ path: relative(root, path).split(sep).join("/"), bytes: statSync(path).size }];
-    });
+    if (lstatSync(dir).isSymbolicLink()) {
+      throw new Error("Symlinked artwork folder is forbidden: " + folder);
+    }
+    // Traverse only the two permitted artwork roots; never follow symbolic links.
+    // An explicit stack avoids a recursive call stack for deeply nested archives.
+    const pending = [dir];
+    const images = [];
+    while (pending.length) {
+      const current = pending.pop();
+      for (const entry of readdirSync(current, { withFileTypes: true })) {
+        const path = join(current, entry.name);
+        if (entry.isSymbolicLink()) {
+          throw new Error("Symlinked artwork entry is forbidden: " + relative(root, path));
+        }
+        if (entry.isDirectory()) {
+          pending.push(path);
+        } else if (entry.isFile() && types.test(entry.name)) {
+          images.push({
+            path: relative(root, path).split(sep).join("/"),
+            bytes: statSync(path).size,
+          });
+        }
+      }
+    }
+    return images;
   });
 }
 
