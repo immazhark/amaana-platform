@@ -327,7 +327,7 @@ export function CuratedGalleryImporter() {
                     <tr key={item.slug}>
                       <td>
                         <a href={`/our-work/${item.slug}`} target="_blank" rel="noreferrer">
-                          {item.slug}
+                          {item.slug}<span className="sr-only"> (opens in a new tab)</span>
                         </a>
                       </td>
                       <td>{item.expected}</td>
