@@ -72,3 +72,16 @@ test("rejects a symlinked artwork source folder before reading outside the repos
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("rejects a symlink at the public parent before following either artwork folder", () => {
+  const root = mkdtempSync(join(tmpdir(), "amaana-artwork-public-"));
+  try {
+    mkdirSync(join(root, "outside", "hero"), { recursive: true });
+    mkdirSync(join(root, "outside", "programme-artwork"), { recursive: true });
+    writeFileSync(join(root, "outside", "hero", "approved.webp"), Buffer.alloc(16));
+    symlinkSync(join(root, "outside"), join(root, "public"), "dir");
+    assert.throws(() => readHeroImageInventory(root), /Symlinked artwork parent/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
