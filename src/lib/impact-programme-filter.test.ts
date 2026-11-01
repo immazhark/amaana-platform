@@ -73,4 +73,43 @@ describe("impact programme discovery", () => {
     const result = filterImpactByProgramme(initiatives.slice(0, 1), {}, areas, item => item.causeSlug);
     expect(result.options).toEqual([{ slug: "ramadan-eid", title: "Ramadan & Eid", count: 1 }]);
   });
+
+  it("classifies each published initiative only once when building programme options", () => {
+    const causeLookups: string[] = [];
+    const result = filterImpactByProgramme(initiatives, {}, areas, item => {
+      causeLookups.push(item.slug);
+      return item.causeSlug;
+    });
+    expect(causeLookups).toEqual(initiatives.map(item => item.slug));
+    expect(result.results).toEqual(initiatives);
+    expect(result.results).not.toBe(initiatives);
+    expect(result.options.map(option => [option.slug, option.count])).toEqual([
+      ["ramadan-eid", 2], ["amaana-taleem", 1],
+    ]);
+  });
+
+  it("reuses each classification for selected or invalid public filters", () => {
+    for (const search of [
+      { programme: "ramadan-eid" },
+      { programme: "ramadan-eid", email: "PRIVATE" },
+    ]) {
+      let causeLookups = 0;
+      const result = filterImpactByProgramme(initiatives, search, areas, item => {
+        causeLookups++;
+        return item.causeSlug;
+      });
+      expect(causeLookups).toBe(initiatives.length);
+      expect(result.options.map(option => option.count)).toEqual([2, 1]);
+      if ("email" in search) {
+        expect(result).toMatchObject({ invalid: true, programme: "", count: 0, results: [] });
+        expect(JSON.stringify(result)).not.toContain("PRIVATE");
+      } else {
+        expect(result).toMatchObject({ invalid: false, programme: "ramadan-eid", count: 2 });
+        expect(result.results.map(item => item.slug)).toEqual([
+          "eid-gift-kits", "qurbani-meat-distribution",
+        ]);
+      }
+    }
+  });
+
 });
