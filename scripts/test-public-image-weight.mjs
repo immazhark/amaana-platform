@@ -85,3 +85,40 @@ test("rejects a symlink at the public parent before following either artwork fol
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("includes nested checked-in raster artwork in the same 400 KiB budget", () => {
+  const root = mkdtempSync(join(tmpdir(), "amaana-artwork-nested-"));
+  try {
+    mkdirSync(join(root, "public", "hero", "seasonal"), { recursive: true });
+    mkdirSync(join(root, "public", "programme-artwork", "2026"), { recursive: true });
+    mkdirSync(join(root, "public", "unreviewed"), { recursive: true });
+    writeFileSync(join(root, "public", "hero", "seasonal", "safe.webp"), Buffer.alloc(7));
+    writeFileSync(join(root, "public", "programme-artwork", "2026", "large.PNG"),
+      Buffer.alloc(MAX_ARTWORK_BYTES + 1));
+    writeFileSync(join(root, "public", "programme-artwork", "2026", "provenance.json"), "{}");
+    writeFileSync(join(root, "public", "unreviewed", "excluded.webp"),
+      Buffer.alloc(MAX_ARTWORK_BYTES + 3));
+    const report = evaluateImageWeights(readHeroImageInventory(root));
+    assert.equal(report.imageCount, 2);
+    assert.equal(report.totalBytes, MAX_ARTWORK_BYTES + 8);
+    assert.deepEqual(report.violations.map(file => file.path),
+      ["public/programme-artwork/2026/large.PNG"]);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("rejects nested artwork symlinks instead of skipping linked subtrees", () => {
+  const root = mkdtempSync(join(tmpdir(), "amaana-artwork-nested-link-"));
+  try {
+    mkdirSync(join(root, "public", "hero", "seasonal"), { recursive: true });
+    mkdirSync(join(root, "public", "programme-artwork"), { recursive: true });
+    mkdirSync(join(root, "elsewhere"), { recursive: true });
+    writeFileSync(join(root, "elsewhere", "linked.webp"), Buffer.alloc(16));
+    symlinkSync(join(root, "elsewhere"),
+      join(root, "public", "hero", "seasonal", "linked-folder"), "dir");
+    assert.throws(() => readHeroImageInventory(root), /Symlinked artwork entry/);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
