@@ -20,3 +20,11 @@ it("ignores bounded tracking and rejects repeated or oversized tracking", () => 
   expect(selectFaithDiscovery(records, { utm_source: ["one"] }).invalid).toBe(true);
   expect(selectFaithDiscovery(records, { utm_source: "x".repeat(257) }).invalid).toBe(true);
 });
+
+it("matches reviewed Faith text separated by tabs while preserving format constraints", () => {
+  const rows = [{ title: "Synthetic\t  service", excerpt: "Reviewed source", type: "ARTICLE" }];
+  const result = selectFaithDiscovery(rows, { q: "synthetic service", format: "ARTICLE" });
+  expect(result).toMatchObject({ invalid: false, count: 1 });
+  expect(result.results).toEqual(rows);
+  expect(selectFaithDiscovery(rows, { q: "synthetic service", format: "REMINDER" }).results).toEqual([]);
+});

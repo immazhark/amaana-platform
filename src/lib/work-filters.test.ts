@@ -216,3 +216,14 @@ it("keeps family replacement scoped to its programme rather than a shared slug",
     ["education", ["winter"]],
   ]);
 });
+
+it("matches published initiative copy with collapsed whitespace without changing year options", () => {
+  const programmes = [{ slug: "relief", initiatives: [{
+    slug: "winter", title: "Winter\t  support", summary: "Approved work",
+    year: 2026, startYear: null, endYear: null,
+  }] }];
+  const result = filterWork(programmes, { q: "winter support", year: "2026" });
+  expect(result).toMatchObject({ invalid: false, count: 1 });
+  expect(result.results[0]?.initiatives[0]?.slug).toBe("winter");
+  expect(programmes[0]?.initiatives[0]?.title).toBe("Winter\t  support");
+});
