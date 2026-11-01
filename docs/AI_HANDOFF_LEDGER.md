@@ -2233,3 +2233,8 @@ Prior #499 browser run failed; #520 source isolated on main. Preserve only three
 ## 2026-11-01 IST — #576 source-only review guard recovered without failed #499 CSS
 
 Two Faith loader/test Git blobs from b2693fabb0f6c2b7defc119b1613ce3c723cdbba grafted onto #492 candidate 0e088b9de416491d51fadde84e8be7380d9fd57f while preserving current main/source history. Full exact-head new CI and ready-state required before any protected merge. No religious/review approval, private/financial data or infrastructure change.
+
+
+## 2026-11-02 IST — policy sidebar native scrolling
+
+CHATGPT_ACTIVE single writer. #548 merged at 2fdbd72ef55ffda5733cf35b1988429de6f30dba after full CI 41349760768, separate ready-state 41354752621 and independent review. Railway exact-SHA SUCCESS; independent public requests blocked HTTP403. New four-page data-native-scroll fix on fix/policy-sidebar-native-scroll-20261102: four fail-first rendered-sidebar cases, final 25 focused checks, strict TS, ESLint, build/secret guards pass; final full 2502 PASS/20 opt-in DB SKIP. Independent source review approved; hosted browser/full exact-head and separate ready-state required. No 149 promotion, unique branch deletion, live data, auth/payment/schema or infra modification.
