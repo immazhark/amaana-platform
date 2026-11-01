@@ -76,7 +76,7 @@ export async function getPublishedInitiatives() {
 }
 
 export const getPublishedInitiativeBySlug = cache(async (slug: string) => {
-  return prisma.initiative.findFirst({
+  const result = await prisma.initiative.findFirst({
     where: { slug, status: "PUBLISHED", cause: { status: "PUBLISHED" } },
     include: {
       cause: { select: { title: true } },
@@ -99,10 +99,13 @@ export const getPublishedInitiativeBySlug = cache(async (slug: string) => {
       faithContent: {
         where: publicFaithWhere,
         orderBy: { publishedAt: "desc" },
-        select: { id: true, slug: true, title: true, excerpt: true },
+        select: { id: true, slug: true, title: true, excerpt: true, status: true, religiousReviewStatus: true, verifiedAt: true, sourceCitation: true },
       },
     },
   });
+  if (!result) return null;
+  return { ...result, faithContent: result.faithContent.filter(isPublicFaithReviewComplete)
+    .map(({ id, slug, title, excerpt }) => ({ id, slug, title, excerpt })) };
 });
 
 export async function getPublishedStories() {
@@ -273,6 +276,10 @@ export async function getHomepagePublicContent() {
       },
       orderBy: { publishedAt: "desc" },
       select: {
+        status: true,
+        religiousReviewStatus: true,
+        verifiedAt: true,
+        sourceCitation: true,
         type: true,
         title: true,
         excerpt: true,
@@ -295,7 +302,8 @@ export async function getHomepagePublicContent() {
   return {
     appeals,
     initiatives,
-    featuredFaith,
+    featuredFaith: featuredFaith && isPublicFaithReviewComplete(featuredFaith)
+      ? { type: featuredFaith.type, title: featuredFaith.title, excerpt: featuredFaith.excerpt } : null,
     stories,
   };
 }

@@ -1,6 +1,54 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { stylesheetsInHtml, summarizeRouteCssBytes, auditPublicRouteCss } from "./audit-live-route-css.mjs";
+import { summarizeLinkedCssResourceTiming } from "../e2e/css-resource-timing.mjs";
+
+test("browser timing separates decoded CSS, encoded CSS and navigation transfer", () => {
+  const css = ["https://amaanafoundation.org/_next/static/a.css", "https://amaanafoundation.org/_next/static/b.css"];
+  const summary = summarizeLinkedCssResourceTiming(css, [
+    { name: css[0], decodedBodySize: 600, encodedBodySize: 200, transferSize: 350 },
+    { name: css[1], decodedBodySize: 300, encodedBodySize: 100, transferSize: 180 },
+  ]);
+  assert.equal(summary.metric, "browser-linked-css-resource-timing");
+  assert.equal(summary.stylesheetCount, 2);
+  assert.equal(summary.decodedBodyBytes, 900);
+  assert.equal(summary.encodedBodyBytes, 300);
+  assert.equal(summary.transferBytes, 530);
+  assert.equal(summary.observedTransferBytes, 530);
+  assert.deepEqual(summary.unavailableTransferStylesheets, []);
+  assert.match(summary.disclaimer, /not field Web Vitals/i);
+});
+
+test("cached CSS makes full transfer unavailable without concealing partial observations", () => {
+  const a = "https://amaanafoundation.org/_next/static/a.css";
+  const b = "https://amaanafoundation.org/_next/static/b.css";
+  const summary = summarizeLinkedCssResourceTiming([a, b, a], [
+    { name: a, decodedBodySize: 600, encodedBodySize: 200, transferSize: 0 },
+    { name: b, decodedBodySize: 300, encodedBodySize: 100, transferSize: 180 },
+    { name: b, decodedBodySize: 300, encodedBodySize: 100, transferSize: 180 },
+  ]);
+  assert.equal(summary.stylesheetCount, 2);
+  assert.equal(summary.decodedBodyBytes, 900);
+  assert.equal(summary.encodedBodyBytes, 300);
+  assert.equal(summary.transferBytes, null);
+  assert.equal(summary.observedTransferBytes, 180);
+  assert.deepEqual(summary.unavailableTransferStylesheets, [a]);
+});
+
+test("missing and opaque timings never become false zero-byte CSS evidence", () => {
+  const missing = "https://amaanafoundation.org/_next/static/missing.css";
+  const opaque = "https://amaanafoundation.org/_next/static/opaque.css";
+  const summary = summarizeLinkedCssResourceTiming([missing, opaque], [
+    { name: opaque, decodedBodySize: 0, encodedBodySize: 0, transferSize: 0 },
+  ]);
+  assert.equal(summary.decodedBodyBytes, null);
+  assert.equal(summary.encodedBodyBytes, null);
+  assert.equal(summary.transferBytes, null);
+  assert.equal(summary.observedTransferBytes, 0);
+  assert.deepEqual(summary.missingTimingStylesheets, [missing]);
+  assert.deepEqual(summary.unavailableTransferStylesheets, [missing, opaque]);
+  assert.throws(() => summarizeLinkedCssResourceTiming([missing], [{ name: missing, decodedBodySize: -1, encodedBodySize: 1, transferSize: 1 }]), /Invalid browser CSS timing/);
+});
 
 test("counts same-origin built CSS links, independent of attribute order", () => {
   const html = [

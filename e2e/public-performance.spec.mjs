@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { summarizeLinkedCssResourceTiming } from './css-resource-timing.mjs';
 
 async function cssPayload(page, path) {
   const response = await page.goto(path, { waitUntil: 'load' });
@@ -9,17 +10,37 @@ async function cssPayload(page, path) {
     [...new Set(nodes.map(node => node.href).filter(Boolean))],
   );
 
+  // Snapshot the navigation before separate stylesheet reads used for selector assertions.
+  const resourceTimings = await page.evaluate(linkedUrls => {
+    const urls = new Set(linkedUrls);
+    return performance.getEntriesByType('resource')
+      .filter(entry => urls.has(entry.name))
+      .map(entry => ({
+        name: entry.name,
+        decodedBodySize: entry.decodedBodySize,
+        encodedBodySize: entry.encodedBodySize,
+        transferSize: entry.transferSize,
+      }));
+  }, hrefs);
+  const timing = summarizeLinkedCssResourceTiming(hrefs, resourceTimings);
+
   const bodies = [];
-  let bytes = 0;
   for (const href of hrefs) {
     const stylesheet = await page.context().request.get(href);
     expect(stylesheet.ok(), `Expected stylesheet ${href} to load`).toBeTruthy();
     const body = await stylesheet.text();
     bodies.push(body);
-    bytes += Buffer.byteLength(body);
   }
 
-  return { hrefs, bytes, css: bodies.join('\n') };
+  return { hrefs, timing, css: bodies.join('\n') };
+}
+
+function describeCssTiming({ timing }) {
+  const value = bytes => bytes === null ? 'unavailable' : `${bytes} B`;
+  const transfer = timing.transferBytes === null
+    ? `unavailable (partial observed=${timing.observedTransferBytes} B; ${timing.unavailableTransferStylesheets.length} cached/opaque/missing)`
+    : `${timing.transferBytes} B`;
+  return `${timing.stylesheetCount} linked CSS; decoded body=${value(timing.decodedBodyBytes)}; encoded body=${value(timing.encodedBodyBytes)}; browser transfer=${transfer}`;
 }
 
 test('homepage masthead CSS stays route-scoped', async ({ page }) => {
@@ -31,7 +52,7 @@ test('homepage masthead CSS stays route-scoped', async ({ page }) => {
   expect(about.css, 'Non-home routes must not receive homepage masthead media CSS').not.toContain('.v3-home-banner-media');
   expect(about.css, 'Non-home routes must not receive retired documentary field CSS').not.toContain('.v3-field-grid');
 
-  console.log(`CSS delivery: home=${home.bytes} bytes/${home.hrefs.length} stylesheets; about=${about.bytes} bytes/${about.hrefs.length} stylesheets`);
+  console.log(`Synthetic browser navigation CSS resource timing (not production/field CWV): home: ${describeCssTiming(home)}; about: ${describeCssTiming(about)}`);
 });
 
 

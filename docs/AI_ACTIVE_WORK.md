@@ -1,3 +1,39 @@
+## 2026-11-01 IST — #576 isolated related-Faith review guards on #492
+
+CHATGPT_ACTIVE sole writer. Accepted #610 production/live SHA 32eed690cc20c63edcb4c11e67faae80c7633936. The older #576 candidate inherited #499 CSS from an obsolete staged chain; #499 original browser run 41289705785 failed. Recover only original #576 public Faith-related/homepage card review completeness source and synthetic regression Git blobs on independent #492 candidate 0e088b9de416491d51fadde84e8be7380d9fd57f, preserving original branch history by a two-parent commit. Do not import #499 CSS. Fresh seven-job exact-head hosted tests, separate ready-state, SHA-guarded merge after predecessor #520/#492 accepted. Citation-completeness predicate and reviewer decisions unchanged, no published religious text/claims, private media, applicants/donors, auth/payments/schema, notifications/cron or live infrastructure mutation. 149 totals unchanged.
+
+## 2026-11-01 IST — #492 independent browser Resource Timing evidence on #520
+
+CHATGPT_ACTIVE one repository writer. Accepted #610 live at SHA 32eed690cc20c63edcb4c11e67faae80c7633936; #499 browser 41289705785 failed site-motion-scroll key navigation and remains unmerged. Preserve only three already reviewed original #492 CSS Resource Timing/helper/browser/synthetic-test Git blobs above isolated #520 candidate d0ea8161e9d39781d2319b8724c9fbc734a313b0, without #499 stylesheet change. CSS network transfer, encoded, decoded sizes are distinct from uncompressed build bytes and field CWV; no claim of performance improvement. New exact-head full CI, separate ready-state and SHA guard required after #520 accepted. All public/private claims, donor/applicant, payment, schema, notification/cron and infrastructure controls unchanged; 149 backlog denominator unchanged.
+
+## 2026-11-01 IST — #492 browser CSS Resource Timing evidence queued after #520
+
+CHATGPT_ACTIVE sole writer. Recover exact existing three original reviewed #492 browser CSS timing/source/regression Git blobs onto predecessor candidate #520 b636e040f420155d791569b5fdc5e16ff3b8fee0 via normal two-parent merge, keeping all accepted and pending history. Distinguish browser observed transfer/encoded/decoded bytes and explicitly mark opaque/cached/unavailable timing as incomplete, not zero; these synthetic browser values are not field Web Vitals or production traffic. Original historical CI not new exact-head acceptance. Require fresh seven-job CI, separate ready-state and SHA-guarded merge only after #610/#499/#520 accepted. No production data, donation, claimant identity, media, schema, payment/auth, notifications, infrastructure or canonical 149 promotion.
+
+## 2026-10-31 IST — #492 browser CSS transfer evidence recovery after #604
+
+CHATGPT_ACTIVE sole writer. Tested original three source/test blobs preserved from 51aed29ff2c3d926c20643e20477098491c38b14 on protected 3d487e4f6eedc705ae2d4be79cd6396d88d4e627, full coordination history retained. Synthetic browser linked CSS Resource Timing does not represent production transfer or field CWV. Fresh exact-head seven-job CI, separate ready-state and guarded merge required; no 149-item promotion.
+
+## 2026-10-27 IST — AF-R047/R057 browser CSS transfer evidence
+
+CHATGPT_ACTIVE sole writer on `perf/browser-css-transfer-evidence-20261027`, based on protected main `83044f775166be0a3533d807a7ec3e268795530f`. Bounded test-first audit correction: the existing browser test mislabeled decoded stylesheet bytes from separate requests as network delivery. The updated test distinguishes navigation-timing decoded response body, encoded body and transfer with headers; missing/zero transfer is unavailable, with partial observations explicit. Existing CSS route-scope assertions remain. Source checks: 11 CSS native and 13 reporter cases PASS; full Vitest 2,282 PASS/20 isolated-DB skips; TypeScript, ESLint, governed Stylelint, Next production build and 84-file client-secret check PASS. First hosted run `40481765478` failed browser-only at a module-resolution boundary: CI copies `e2e/` but not `scripts/` into its isolated browser workspace. Red regression reproduced missing `e2e/css-resource-timing.mjs`; moved the pure browser helper into that copied tree and updated native import, requiring a new exact-head hosted run. Independent review found no math/code blocker. No app runtime/DB/payment/media/privacy/secrets/infra change. Earlier PR #491 remains separate/draft. Historical 149 totals unchanged. Rollback: revert this audit-only PR.
+
+## 2026-11-01 IST — #520 route measurement fail-closed input guard
+
+## 2026-11-01 IST — #520 independently recovered on protected #610 main
+
+CHATGPT_ACTIVE sole implementation writer. Accepted PR #610 merged 32eed690cc20c63edcb4c11e67faae80c7633936 after exact-head full selected CI 41289429855 and separate ready-state plan/promotion/verify 41291797004. Prior staged #499 browser run 41289705785 FAILED in unrelated site-motion-scroll Home-key test; no acceptance or override. Detach #520 from #499's failed browser dependency by restoring only original #520 two narrow script/test blobs onto protected main with original branch history retained through normal two-parent reconciliation. The independent #520 build-byte input guard rejects missing/noninteger/negative/overflow measurements. New exact-head CI, reviewer, separate ready-state and protected SHA-guarded merge mandatory. No live donation/applicant/media/religious claim, auth/payment/schema, Railway infrastructure, cron, or notification mutation; canonical 149 unchanged.
+
+## 2026-11-01 IST — #520 route measurement fail-closed input guard
+
+CHATGPT_ACTIVE sole implementation writer. Recover only exact tested original two #520 route-bundle source/test Git blobs onto current candidate #499 7b08dc236cd99dacff00d0e7c23d003009e4144f, retaining protected accepted #611 and candidate #610/#499 histories and app source. #520 rejects invalid missing, NaN, negative, fractional and overflowing byte measurements rather than emitting false totals. Existing green #520 historical CI is not fresh exact-head acceptance. Require fresh CI, independent review, separate ready-state and SHA-guarded merge only after predecessor PRs accepted. This is build-byte reporting, not network transfer/Core Web Vitals. No production data, Razorpay/auth, media claims, schema, notifications, external infrastructure or 149-row promotion.
+
+## 2026-10-31 IST — #520 merge-ready input-guard after #604
+
+CHATGPT_ACTIVE sole implementation writer. Reconcile scripts-only candidate with current protected main 3d487e4f6eedc705ae2d4be79cd6396d88d4e627. Both tested original source/test blobs remain unchanged, current coordination history preserved. New exact-head browser/database/production and separate ready-state checks required; this is not a live change or 149 promotion.
+
+## 2026-10-31 IST — #520 reporter input guard recovery
+
 ## 2026-11-01 IST — #610 Faith loader recovery after accepted #611
 
 CHATGPT_ACTIVE single writer. #611 accepted merge SHA ecba1a485596d0c3cc2760b35d2e8322fd7be133; full exact-head CI 41233386848 all seven jobs SUCCESS and separate READY 41289277447 plan/promotion/verify SUCCESS. Preserve existing two #610 code/test blobs and accepted #611 source by normal two-parent commit; no duplicate implementation or public Faith review decision change. #610 prior full green CI 41233665303 validates old head only; refreshed head requires full CI/browser/database/production, independent review, separate ready-state and guarded merge. Synthetic-only tests. No tax, religion content, applicant/donor data, payment, schema, cron or production infrastructure changes. Canonical 149 unchanged.

@@ -2221,3 +2221,15 @@ CHATGPT_ACTIVE on fix/reconcile-story-programme-blank-options-20261031; exact tw
 ## 2026-11-01 IST — #610 accepted-main reconciliation
 
 #611 accepted at ecba1a485596d0c3cc2760b35d2e8322fd7be133. Reconcile original two reviewed #610 code/test blobs with current main and both histories by two-parent commit; fresh exact-head hosted seven-job CI and separate ready-state required before protected guarded merge. Source versus runtime separate; no 149 promotion.
+
+## 2026-11-01 IST — #520 source-only recovery after failed #499 browser gate
+
+Accepted protected main 32eed690cc20c63edcb4c11e67faae80c7633936; #499 browser run 41289705785 failed and is left draft for investigation. Recover only original #520 source/test Git blobs as independent PR on main, preserving old history by two-parent commit and app/current main source untouched. Hosted full CI and ready-state required, no 149 promotion or runtime claim.
+
+## 2026-11-01 IST — #492 independent source-only recovery
+
+Prior #499 browser run failed; #520 source isolated on main. Preserve only three original #492 test/helpers on #520 candidate d0ea8161e9d39781d2319b8724c9fbc734a313b0; normal two-parent reconciliation. Require new full seven-job CI, separate ready-state, exact-SHA protected merge. No production data/infrastructure mutation or claim of field CWV.
+
+## 2026-11-01 IST — #576 source-only review guard recovered without failed #499 CSS
+
+Two Faith loader/test Git blobs from b2693fabb0f6c2b7defc119b1613ce3c723cdbba grafted onto #492 candidate 0e088b9de416491d51fadde84e8be7380d9fd57f while preserving current main/source history. Full exact-head new CI and ready-state required before any protected merge. No religious/review approval, private/financial data or infrastructure change.
