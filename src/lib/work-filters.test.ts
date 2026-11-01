@@ -161,3 +161,37 @@ describe("combined text and year family selection", () => {
     expect(filterWork(matching, { year: "2026", q: "blankets" }).results[0]?.initiatives.map(i => i.slug)).toEqual(["winter-2026"]);
   });
 });
+
+describe("text-search family deduplication (published initiative cards)", () => {
+  const programmes = [{ slug: "seasonal", initiatives: [
+    { slug: "winter", title: "Winter Relief", summary: "Public overview",
+      year: null, startYear: 2024, endYear: 2026 },
+    { slug: "winter-2026", parentSlug: "winter", title: "Winter Relief 2026", summary: "Reviewed kits",
+      year: 2026, startYear: null, endYear: null },
+  ] }];
+
+  it("shows one matching published annual edition rather than its umbrella twice", () => {
+    const snapshot = structuredClone(programmes);
+    const result = filterWork(programmes, { q: "winter relief" });
+    expect(result.invalid).toBe(false);
+    expect(result.count).toBe(1);
+    expect(result.results.flatMap(p => p.initiatives.map(i => i.slug))).toEqual(["winter-2026"]);
+    expect(programmes).toEqual(snapshot);
+  });
+
+  it("keeps the sole matching parent or edition, default grouping and year behavior", () => {
+    const slugs = (query: Record<string, string>) =>
+      filterWork(programmes, query).results.flatMap(p => p.initiatives.map(i => i.slug));
+    expect(slugs({ q: "public overview" })).toEqual(["winter"]);
+    expect(slugs({ q: "reviewed kits" })).toEqual(["winter-2026"]);
+    expect(slugs({})).toEqual(["winter"]);
+    expect(slugs({ q: "winter relief", year: "2026" })).toEqual(["winter-2026"]);
+    expect(slugs({ q: "missing" })).toEqual([]);
+  });
+
+  it("retains a published edition when its referenced umbrella is absent", () => {
+    const onlyEdition = [{ slug: "seasonal", initiatives: [programmes[0]!.initiatives[1]!] }];
+    expect(filterWork(onlyEdition, { q: "winter relief" }).results[0]?.initiatives.map(i => i.slug))
+      .toEqual(["winter-2026"]);
+  });
+});
