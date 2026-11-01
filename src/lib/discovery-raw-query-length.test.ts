@@ -40,3 +40,13 @@ it.each(selectors)("%s keeps valid exact-boundary, nonoversized and matching tex
   expect(blank.invalid).toBe(false);
   expect(blank.count).toBe(1);
 });
+
+it.each(selectors)("%s respects the browser UTF-16 maxLength boundary for astral characters", (_, select) => {
+  const exact = select("🔒".repeat(40));
+  expect(exact.invalid).toBe(false);
+  const overflow = select("🔒".repeat(41));
+  expect(overflow.invalid).toBe(true);
+  expect(overflow.count).toBe(0);
+  expect(overflow.results).toEqual([]);
+  expect(overflow.q ?? overflow.query ?? "").toBe("");
+});
