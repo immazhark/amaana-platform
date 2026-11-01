@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-const page = readFileSync(new URL("./page.tsx", import.meta.url), "utf8");
+const page = readFileSync(new URL("./(overview)/page.tsx", import.meta.url), "utf8");
 const moduleCss = readFileSync(new URL("./appeals-audit.module.css", import.meta.url), "utf8");
 const sharedCss = readFileSync(new URL("../appeals.css", import.meta.url), "utf8");
 const motionCss = readFileSync(new URL("../appeals-wow.css", import.meta.url), "utf8");

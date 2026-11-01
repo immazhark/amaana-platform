@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { waitForPublicOverview } from './helpers/public-overview-ready.mjs';
 import AxeBuilder from '@axe-core/playwright';
 
 test('contact card actions preserve native email, phone, internal and secure external destinations', async ({ page }) => {
@@ -70,6 +71,7 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
       }
     }
     expect((await page.goto('/appeals')).ok()).toBe(true);
+    await waitForPublicOverview(page, '/appeals');
     for (const selector of ['#completed-causes', '.v2-appeal-method', '.v2-appeals-boundary']) {
       const surface = page.locator(selector);
       expect(await surface.evaluate(node => getComputedStyle(node).backgroundImage)).toContain('amaana-lattice-tile');

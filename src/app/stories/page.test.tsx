@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 const mocks = vi.hoisted(() => ({ index: vi.fn(), cards: vi.fn() }));
 vi.mock("@/lib/public-discovery-data", () => ({ getStoriesDiscoveryIndexData: mocks.index, getVisibleStoryCards: mocks.cards }));
 vi.mock("@/components/page-hero", () => ({ PageHero: () => null }));
-import StoriesPage from "./page";
+import StoriesPage from "./(overview)/page";
 
 beforeEach(() => {
   vi.resetAllMocks();

@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+import { waitForPublicOverview } from './helpers/public-overview-ready.mjs';
 
 const representativeRoutes = [
   { path: '/', family: 'Home' },
@@ -41,6 +42,7 @@ async function openPublicPage(page, path) {
   expect(response, `Expected a document response for ${path}`).not.toBeNull();
   expect(response?.ok(), `Expected ${path} to render successfully`).toBeTruthy();
   await expect(page.locator('main#main')).toBeVisible();
+  await waitForPublicOverview(page, path);
 }
 
 function rectanglesOverlap(first, second) {
