@@ -26,6 +26,73 @@ describe("public media image optimization", () => {
     expect(html).toContain('alt="Approved community outreach photo"');
   });
 
+  it("omits empty figcaption when reviewed image caption is whitespace-only", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const html = renderToStaticMarkup(PublicMedia({
+      asset: { ...asset, caption: "   ", sourceYear: null },
+    }));
+    expect(html).not.toContain("<figcaption>");
+  });
+
+  it("does not precede the year with an orphaned caption delimiter", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const html = renderToStaticMarkup(PublicMedia({
+      asset: { ...asset, caption: " \t ", sourceYear: 2026 },
+    }));
+    expect(html).toContain("<figcaption>2026</figcaption>");
+    expect(html).not.toContain(" · 2026");
+  });
+
+  it("trims the approved caption before rendering it with source year", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const html = renderToStaticMarkup(PublicMedia({
+      asset: { ...asset, caption: " Reviewed scene  ", sourceYear: 2026 },
+    }));
+    expect(html).toContain("<figcaption>Reviewed scene · 2026</figcaption>");
+  });
+
+
+  it("uses an accessible document fallback when title and caption contain only whitespace", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const html = renderToStaticMarkup(PublicMedia({
+      asset: { ...asset, kind: "DOCUMENT", publicUrl: "/media/reviewed-document.pdf",
+        title: "  ", caption: "\t  ", altText: null },
+    }));
+    expect(html).toContain("<h3>View approved source</h3>");
+    expect(html).toContain('aria-label="Open approved source: approved source (new tab)"');
+    expect(html).not.toContain("<h3>  </h3>");
+  });
+
+  it("prefers a trimmed approved document caption when title is blank", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const html = renderToStaticMarkup(PublicMedia({
+      asset: { ...asset, kind: "DOCUMENT", publicUrl: "/media/reviewed-document.pdf",
+        title: "  ", caption: " Reviewed document summary  ", altText: null },
+    }));
+    expect(html).toContain("<h3>Reviewed document summary</h3>");
+    expect(html).toContain('aria-label="Open approved source: Reviewed document summary (new tab)"');
+  });
+
+  it("keeps native VIDEO blocked until verified synchronized captions are available", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const html = renderToStaticMarkup(PublicMedia({
+      asset: { ...asset, kind: "VIDEO", publicUrl: "/media/reviewed-video.mp4",
+        title: "Reviewed video", caption: "Recorded service", altText: null },
+    }));
+    expect(html).toBe("");
+  });
+
+  it("uses readable source fallback for a reviewed external video link", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const html = renderToStaticMarkup(PublicMedia({
+      asset: { ...asset, kind: "EXTERNAL_VIDEO", publicUrl: null,
+        externalUrl: "https://media.amaana.example/approved-video",
+        title: "  ", caption: "\t", altText: null },
+    }));
+    expect(html).toContain("<h3>View approved source</h3>");
+    expect(html).toContain('aria-label="Open approved source: approved source (new tab)"');
+  });
+
   it("keeps reviewed CDN media direct and lazy without authorizing remote optimization", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
     vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "https://cdn.amaana.example");

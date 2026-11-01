@@ -56,12 +56,13 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
       />
     );
 
+    const caption = asset.caption?.trim();
     return (
       <figure className="v2-media-item">
         {/* Local approved campaign media uses Next's responsive optimizer. External approved HTTPS media stays direct until hosts are explicitly allowlisted. */}
         {image}
-        {(asset.caption || asset.sourceYear) && (
-          <figcaption>{asset.caption}{asset.caption && asset.sourceYear ? " · " : ""}{asset.sourceYear ?? ""}</figcaption>
+        {(caption || asset.sourceYear) && (
+          <figcaption>{caption}{caption && asset.sourceYear ? " · " : ""}{asset.sourceYear ?? ""}</figcaption>
         )}
       </figure>
     );
@@ -80,11 +81,13 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
     );
   }
 
-  const linkTitle = asset.title ?? asset.caption ?? "approved source";
+  // Whitespace-only editorial fields must not suppress accessible source labels.
+  const displayTitle = asset.title?.trim() || asset.caption?.trim();
+  const linkTitle = displayTitle || "approved source";
   return (
     <article className="v2-media-link">
       <small>{asset.kind === "DOCUMENT" ? "Document" : "Video"}{asset.sourceYear ? ` · ${asset.sourceYear}` : ""}</small>
-      <h3>{asset.title ?? asset.caption ?? "View approved source"}</h3>
+      <h3>{displayTitle || "View approved source"}</h3>
       <a href={url} target="_blank" rel="noopener noreferrer" aria-label={`Open approved source: ${linkTitle} (new tab)`}>Open approved source ↗</a>
     </article>
   );
