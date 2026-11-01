@@ -9,8 +9,8 @@ import { VerifiedImpactStrip } from "@/components/verified-impact-strip";
 import { getOurWorkIndexData } from "@/lib/public-page-data";
 import { selectIdentityPublicImage } from "@/lib/public-media";
 import { filterWork, type WorkSearch } from "@/lib/work-filters";
-import "./work-filters.css";
-import auditStyles from "./work-filter-audit.module.css";
+import "../work-filters.css";
+import auditStyles from "../work-filter-audit.module.css";
 import { programmeBySlug, programmeCategories } from '@/lib/master-copy';
 
 export const dynamic = "force-dynamic";

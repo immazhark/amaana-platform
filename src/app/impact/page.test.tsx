@@ -9,7 +9,7 @@ vi.mock("@/lib/master-copy", () => ({
   programmeBySlug: (slug: string) => slug === "synthetic-initiative" ? { causeSlug: "synthetic-programme" } : undefined,
   programmeCategories: [{ slug: "synthetic-programme", title: "Synthetic programme" }],
 }));
-import ImpactPage from "./page";
+import ImpactPage from "./(overview)/page";
 
 beforeEach(() => mocks.data.mockResolvedValue([{
   id: "synthetic", slug: "synthetic-initiative", title: "Synthetic initiative", summary: "Synthetic outcome", mediaAssets: [], cause: { title: "Synthetic programme" },

@@ -8,7 +8,7 @@ vi.mock("@/components/page-hero", () => ({ PageHero: ({ visual }: { visual: Reac
 vi.mock("@/components/verified-impact-strip", () => ({ VerifiedImpactStrip: () => null }));
 vi.mock("@/components/public-media", () => ({ PublicMedia: () => null }));
 
-import OurWorkPage from "./page";
+import OurWorkPage from "./(overview)/page";
 
 function initiative(slug: string, year: number | null, startYear: number | null = null, endYear: number | null = null) {
   return { id: slug, slug, title: slug, summary: "Reviewed programme", year, startYear, endYear,

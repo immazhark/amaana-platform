@@ -9,7 +9,7 @@ import { describe, expect, it } from "vitest";
 describe("live fundraising index rendering", () => {
   it.each([
     ["homepage", "src/app/page.tsx"],
-    ["appeals index", "src/app/appeals/page.tsx"],
+    ["appeals index", "src/app/appeals/(overview)/page.tsx"],
   ])("renders the %s per request instead of serving a cached appeal snapshot", (_route, path) => {
     const pageSource = readFileSync(path, "utf8");
     expect(pageSource).toMatch(/export const dynamic\s*=\s*["']force-dynamic["']/);

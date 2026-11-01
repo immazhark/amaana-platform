@@ -6,7 +6,7 @@ import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { getFaithDiscoveryData, getVisibleFaithMedia } from "@/lib/public-discovery-data";
 import { selectIdentityPublicImage } from "@/lib/public-media";
-import styles from "./faith-audit.module.css";
+import styles from "../faith-audit.module.css";
 import { selectFaithDiscovery, type FaithSearch } from "@/lib/faith-discovery";
 
 export const dynamic = "force-dynamic";

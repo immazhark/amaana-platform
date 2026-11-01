@@ -11,7 +11,7 @@ import { BodyCarousel, BodyCard } from "@/components/body-carousel";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { isAppealOpenForDonations } from "@/lib/appeals";
 import { getAppealsIndexData, getCompletedAidShowcaseData, getDonationImpactHighlights } from "@/lib/public-page-data";
-import styles from "./appeals-audit.module.css";
+import styles from "../appeals-audit.module.css";
 import { canExposeSyntheticStagingContent, isSyntheticStagingAppeal } from "@/lib/public-environment";
 import { selectGalleryPublicImage } from "@/lib/public-media";
 import { selectAppealDiscovery, type AppealSearch } from "@/lib/appeal-discovery";

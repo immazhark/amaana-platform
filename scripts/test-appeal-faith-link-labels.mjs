@@ -9,7 +9,7 @@ test("appeal card accessible action begins with visible action", () => {
 });
 
 test("faith library accessible action begins with visible action", () => {
-  const source = readFileSync(new URL("../src/app/faith-and-reflections/page.tsx", import.meta.url), "utf8");
+  const source = readFileSync(new URL("../src/app/faith-and-reflections/(overview)/page.tsx", import.meta.url), "utf8");
   assert.ok(source.includes('aria-label={`Open reflection: ${item.title}`}'));
   assert.ok(source.includes('className="v2-faith-library-action">Open reflection ↗'));
 });

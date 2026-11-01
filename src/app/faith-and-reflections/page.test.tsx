@@ -7,7 +7,7 @@ vi.mock("@/lib/public-discovery-data", () => ({
 }));
 vi.mock("@/components/page-hero", () => ({ PageHero: () => null }));
 vi.mock("@/components/public-media", () => ({ PublicMedia: () => null }));
-import FaithPage from "./page";
+import FaithPage from "./(overview)/page";
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.visibleMedia.mockResolvedValue([]);

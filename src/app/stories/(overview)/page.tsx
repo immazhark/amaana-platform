@@ -7,7 +7,7 @@ import { PublicMedia } from "@/components/public-media";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { getStoriesDiscoveryIndexData, getVisibleStoryCards } from "@/lib/public-discovery-data";
 import { selectIdentityPublicImage } from "@/lib/public-media";
-import styles from "./stories-audit.module.css";
+import styles from "../stories-audit.module.css";
 import { selectStoryDiscovery, type StorySearch } from "@/lib/story-discovery";
 
 export const dynamic = "force-dynamic";
