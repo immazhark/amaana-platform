@@ -2242,3 +2242,7 @@ Two Faith loader/test Git blobs from b2693fabb0f6c2b7defc119b1613ce3c723cdbba gr
 ## 2026-11-02 IST — policy sidebar native scrolling
 
 CHATGPT_ACTIVE single writer. #548 merged at 2fdbd72ef55ffda5733cf35b1988429de6f30dba after full CI 41349760768, separate ready-state 41354752621 and independent review. Railway exact-SHA SUCCESS; independent public requests blocked HTTP403. New four-page data-native-scroll fix on fix/policy-sidebar-native-scroll-20261102: four fail-first rendered-sidebar cases, final 25 focused checks, strict TS, ESLint, build/secret guards pass; final full 2502 PASS/20 opt-in DB SKIP. Independent source review approved; hosted browser/full exact-head and separate ready-state required. No 149 promotion, unique branch deletion, live data, auth/payment/schema or infra modification.
+
+## 2026-11-02 IST — isolated AF-R050 fail-closed optional scrolling cleanup
+
+CHATGPT_ACTIVE writer on fix/lenis-destroy-fail-closed-20261102 base 1818f8543ee68e2a041152a40736b069d82638de. Existing src/components/site-scroll.tsx destroy() invokes optional Lenis.destroy() before nulling instance/removing CSS classes; a thrown destroy could bypass mandatory native cleanup. Test-first adds three synthetic native navigation cases (click, popstate, hashchange) asserting swallowed optional engine failure, immediate root removal and fresh wheel recovery. No assertion that this explains PR #631's intermittent browser failure. Full CI, independent review, ready-state and protected guarded merge required; 149 unchanged.
