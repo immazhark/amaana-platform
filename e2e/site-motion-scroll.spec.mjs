@@ -281,6 +281,24 @@ test('route navigation destroys old scrolling and leaves the new page readable',
   await expect(page.locator('.amaana-navigation-loading')).toHaveCount(0);
 });
 
+test('a stopped bubbling link click still releases wheel-only Lenis before target handling', async ({ page }) => {
+  await open(page);
+  await page.mouse.move(700, 500);
+  await page.mouse.wheel(0, 200);
+  await expect(page.locator('html')).toHaveClass(/lenis/);
+  // A route, widget or user handler can stop click bubbling at the target.
+  // The native navigation handoff must run in capture phase regardless.
+  await page.locator('.nav-links').getByRole('link', { name: 'Our Work', exact: true }).evaluate(node => {
+    node.addEventListener('click', event => {
+      event.preventDefault();
+      event.stopPropagation();
+    }, { once: true });
+    node.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+  });
+  await expect(page).toHaveURL(/\/about$/);
+  await expect(page.locator('html')).not.toHaveClass(/lenis/);
+});
+
 test('nested carousel controls retain horizontal navigation while Lenis is active', async ({ page }) => {
   await open(page, '/browser-acceptance/body-carousel');
   await page.mouse.move(10, 20);

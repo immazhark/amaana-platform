@@ -373,3 +373,52 @@ test("native route handoff clears stale Lenis root classes when destroy leaves C
     expect(remove).toHaveBeenCalledWith("lenis", "lenis-smooth", "lenis-scrolling", "lenis-stopped");
   } finally { cleanup?.(); }
 });
+
+test("native link click listener uses capture phase so stopped bubbling cannot retain Lenis", async () => {
+  let cleanup: (() => void) | undefined;
+  const installed: Array<{ type: string; capture: boolean; callback: EventListenerOrEventListenerObject }> = [];
+  const destroyed = vi.fn();
+  vi.doMock("react", () => ({
+    useEffect: (effect: () => () => void) => { cleanup = effect(); },
+  }));
+  vi.doMock("lenis", () => ({ default: class {
+    on() {}
+    destroy() { destroyed(); }
+  } }));
+  const target = Object.assign(new EventTarget(), {
+    matchMedia: (query: string) => Object.assign(new EventTarget(), {
+      matches: query === "(pointer: fine)",
+    }),
+  });
+  const originalAdd = target.addEventListener.bind(target);
+  target.addEventListener = ((type: string, callback: EventListenerOrEventListenerObject | null, options?: boolean | AddEventListenerOptions) => {
+    if (type === "click" && callback) {
+      installed.push({ type, capture: options === true || (typeof options === "object" && options?.capture === true), callback });
+    }
+    originalAdd(type, callback, options);
+  }) as typeof target.addEventListener;
+  vi.stubGlobal("window", target);
+  vi.stubGlobal("document", Object.assign(new EventTarget(), {
+    hidden: false,
+    body: { matches: () => false },
+    documentElement: { classList: { remove: vi.fn() } },
+  }));
+  vi.stubGlobal("Element", class {
+    closest(selector: string) { return selector.includes("a[href]") ? this : null; }
+  });
+  const { useSiteScroll } = await import("./site-scroll");
+  useSiteScroll("/about");
+  try {
+    target.dispatchEvent(new Event("wheel"));
+    await vi.dynamicImportSettled();
+    // This is the capture-path contract, not a synthetic browser routing claim.
+    expect(installed).toHaveLength(1);
+    expect(installed[0].capture).toBe(true);
+    const click = new Event("click");
+    Object.defineProperty(click, "target", { value: new Element() });
+    const callback = installed[0].callback;
+    if (typeof callback === "function") callback(click);
+    else callback.handleEvent(click);
+    expect(destroyed).toHaveBeenCalledOnce();
+  } finally { cleanup?.(); }
+});
