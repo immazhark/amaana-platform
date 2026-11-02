@@ -373,3 +373,63 @@ test("native route handoff clears stale Lenis root classes when destroy leaves C
     expect(remove).toHaveBeenCalledWith("lenis", "lenis-smooth", "lenis-scrolling", "lenis-stopped");
   } finally { cleanup?.(); }
 });
+
+test.each(["click", "popstate", "hashchange"])(
+  "%s preserves native navigation when optional Lenis teardown throws",
+  async eventName => {
+    let cleanup: (() => void) | undefined;
+    const instances = vi.fn();
+    const destroyed = vi.fn();
+    const handlers = new Map<string, EventListenerOrEventListenerObject>();
+    const classes = new Set(["lenis", "lenis-smooth", "lenis-scrolling", "lenis-stopped"]);
+    const removeClasses = vi.fn((...tokens: string[]) => { tokens.forEach(token => classes.delete(token)); });
+    vi.doMock("react", () => ({
+      useEffect: (effect: () => () => void) => { cleanup = effect(); },
+    }));
+    vi.doMock("lenis", () => ({ default: class {
+      constructor() { instances(); }
+      on() {}
+      destroy() { destroyed(); throw new Error("synthetic optional engine teardown failure"); }
+    } }));
+    const target = Object.assign(new EventTarget(), {
+      matchMedia: (query: string) => Object.assign(new EventTarget(), {
+        matches: query === "(pointer: fine)",
+      }),
+    });
+    const add = target.addEventListener.bind(target);
+    target.addEventListener = ((type: string, listener: EventListenerOrEventListenerObject | null, options?: boolean | AddEventListenerOptions) => {
+      if (listener && ["click", "popstate", "hashchange"].includes(type)) handlers.set(type, listener);
+      add(type, listener, options);
+    }) as typeof target.addEventListener;
+    vi.stubGlobal("window", target);
+    vi.stubGlobal("document", Object.assign(new EventTarget(), {
+      hidden: false, body: { matches: () => false },
+      documentElement: { classList: { remove: removeClasses } },
+    }));
+    vi.stubGlobal("Element", class {
+      closest(selector: string) { return selector.includes("a[href]") ? this : null; }
+    });
+    const { useSiteScroll } = await import("./site-scroll");
+    useSiteScroll("/about");
+    try {
+      target.dispatchEvent(new Event("wheel"));
+      await vi.waitFor(() => expect(instances).toHaveBeenCalledOnce());
+      const event = new Event(eventName);
+      if (eventName === "click") Object.defineProperty(event, "target", { value: new Element() });
+      const listener = handlers.get(eventName);
+      expect(listener).toBeDefined();
+      expect(() => {
+        if (typeof listener === "function") listener(event);
+        else listener?.handleEvent(event);
+      }).not.toThrow();
+      expect(destroyed).toHaveBeenCalledOnce();
+      expect(classes.size).toBe(0);
+      expect(removeClasses).toHaveBeenCalledWith("lenis", "lenis-smooth", "lenis-scrolling", "lenis-stopped");
+      // A thrown teardown may have left vendor event handlers attached; do not
+      // start a second engine in this tab. Native wheel scrolling remains usable.
+      target.dispatchEvent(new Event("wheel"));
+      await vi.dynamicImportSettled();
+      expect(instances).toHaveBeenCalledOnce();
+    } finally { cleanup?.(); }
+  },
+);
