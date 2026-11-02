@@ -5,7 +5,7 @@ import { UIIcon } from "./ui-icon";
 
 import Image from "next/image";
 import { getPublicImageDimensions } from "@/lib/public-image-dimensions";
-import { isCspCompatiblePublicImageUrl, normalizeSafePublicMediaUrl } from "@/lib/public-media";
+import { isCspCompatiblePublicImageUrl, isPrivateAppMediaUrl, normalizeSafePublicMediaUrl } from "@/lib/public-media";
 import { adjacentGalleryId } from "@/lib/gallery-selection";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import styles from "./campaign-media-gallery.module.css";
@@ -16,6 +16,8 @@ export type CampaignGalleryItem = {
   alt: string | null;
   caption?: string | null;
   graphicArtwork?: boolean;
+  /** Set only by the server public-gallery projection after publication and origin checks. */
+  serverApprovedExternal?: true;
   width?: number | null;
   height?: number | null;
 };
@@ -30,7 +32,11 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
     const seenIds = new Set<string>();
     return items.flatMap(item => {
       const url = normalizeSafePublicMediaUrl(item.url);
-      if (!url || !isCspCompatiblePublicImageUrl(url) || !item.alt?.trim() || seenUrls.has(url) || seenIds.has(item.id)) return [];
+      // Browser code cannot read server-only PUBLIC_MEDIA_BASE_URL. Retain reviewed
+      // external images explicitly approved by the server projection, not raw props.
+      const approvedOrigin = url && (isCspCompatiblePublicImageUrl(url) ||
+        (item.serverApprovedExternal === true && url.startsWith("https://")));
+      if (!url || !approvedOrigin || isPrivateAppMediaUrl(url) || !item.alt?.trim() || seenUrls.has(url) || seenIds.has(item.id)) return [];
       seenUrls.add(url);
       seenIds.add(item.id);
       return [{ ...item, url }];

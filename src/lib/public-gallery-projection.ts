@@ -21,6 +21,9 @@ export function toPublicGalleryItems<T extends PublicMediaCandidate & {
     return [{
       id: asset.id,
       url: displayUrl,
+      // Already passed server publication and CSP-origin validation above.
+      // This public boolean preserves reviewed CDN media during browser hydration.
+      ...(displayUrl.startsWith("https://") ? { serverApprovedExternal: true as const } : {}),
       alt: asset.altText ?? null,
       caption: asset.caption,
       // Compute styling from reviewed metadata on the server; never serialize
