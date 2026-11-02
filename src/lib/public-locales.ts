@@ -28,6 +28,7 @@ export function buildPublishedLanguageAlternates(
   const result: Partial<Record<PublicLocale, string>> = { en: canonicalPath };
   const seen = new Set<PublicLocale>();
   for (const translation of translations) {
+    if (translation === null || typeof translation !== "object") continue;
     const { locale, path, status, reviewed } = translation;
     if ((locale !== "ur" && locale !== "te" && locale !== "hi") || seen.has(locale)) continue;
     if (status !== "PUBLISHED" || reviewed !== true) continue;
