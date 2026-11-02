@@ -67,4 +67,13 @@ await copyFile(
   path.join(imageCacheTarget, "route.ts"),
 );
 
+// Synthetic SVG is served only by the isolated browser fixture; do not grant
+// data: URLs an exception in the production gallery image validator.
+const galleryImageTarget = path.join(appTarget, "gallery-image");
+await mkdir(galleryImageTarget, { recursive: true });
+await copyFile(
+  path.join(sourceRoot, "browser-acceptance", "gallery-image", "route.ts.fixture"),
+  path.join(galleryImageTarget, "route.ts"),
+);
+
 console.log(`Materialized ${routes.length} isolated browser-acceptance pages and the image-cache test source.`);
