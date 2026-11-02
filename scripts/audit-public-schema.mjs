@@ -152,7 +152,10 @@ export function analyzePublicSchemaHtml(path, html) {
     .filter(tag => attribute(tag[1], "rel")?.toLowerCase() === "canonical")
     .map(tag => attribute(tag[1], "href"));
   const expectedCanonical = `${origin}${path}`;
-  if (canonicals.length !== 1 || canonicals[0] !== expectedCanonical) {
+  // The live homepage emits the bare origin; it is equivalent to the root
+  // URL with a trailing slash. All non-root routes retain exact matching.
+  if (canonicals.length !== 1 || (canonicals[0] !== expectedCanonical &&
+      !(path === "/" && canonicals[0] === origin))) {
     throw new Error("Public canonical URL is absent, duplicated or inconsistent");
   }
   const nodes = rootNodes(visibleHtml);
@@ -176,7 +179,7 @@ export function analyzePublicSchemaHtml(path, html) {
   return {
     status: "STRUCTURE_VALID_EXTERNAL_ACCEPTANCE_PENDING",
     path,
-    canonical: expectedCanonical,
+    canonical: canonicals[0],
     indexingDirective: noindex ? "NOINDEX" : "NO_EXPLICIT_NOINDEX",
     verifiedGraphIds: expectedIds,
   };
