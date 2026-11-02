@@ -5,7 +5,7 @@ import { UIIcon } from "./ui-icon";
 
 import Image from "next/image";
 import { getPublicImageDimensions } from "@/lib/public-image-dimensions";
-import { isPrivateAppMediaUrl, normalizeSafePublicMediaUrl } from "@/lib/public-media";
+import { isCspCompatiblePublicImageUrl, normalizeSafePublicMediaUrl } from "@/lib/public-media";
 import { adjacentGalleryId } from "@/lib/gallery-selection";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import styles from "./campaign-media-gallery.module.css";
@@ -30,7 +30,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
     const seenIds = new Set<string>();
     return items.flatMap(item => {
       const url = normalizeSafePublicMediaUrl(item.url);
-      if (!url || isPrivateAppMediaUrl(url) || !item.alt?.trim() || seenUrls.has(url) || seenIds.has(item.id)) return [];
+      if (!url || !isCspCompatiblePublicImageUrl(url) || !item.alt?.trim() || seenUrls.has(url) || seenIds.has(item.id)) return [];
       seenUrls.add(url);
       seenIds.add(item.id);
       return [{ ...item, url }];
