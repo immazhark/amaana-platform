@@ -9,20 +9,25 @@ const MIN_FONT_REM = 0.75;
 // It does not replace computed-style and zoom acceptance in a browser.
 export function auditFontSizes(source, path) {
   const css = source.replace(/\/\*[\s\S]*?\*\//g, "");
-  const declarations = /(?:^|[;{}])\s*font-size\s*:\s*([^;{}]+)/gi;
+  const declarations = /(?:^|[;{}])\s*(font-size|font)\s*:\s*([^;{}]+)/gi;
   const violations = [];
 
   for (const match of css.matchAll(declarations)) {
-    const value = match[1].trim().replace(/\s*!important\s*$/i, "");
+    const shorthand = match[1].toLowerCase() === "font";
+    const value = match[2].trim().replace(/\s*!important\s*$/i, "");
     if (value === "0") continue; // Icon-only controls may hide their text glyph.
 
     // A clamp's first argument is the lower bound. Its middle calc() may
     // legitimately subtract a small length without reducing that bound.
-    const clampFloor = /^clamp\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*,/i.exec(value);
+    const clampFloor = !shorthand && /^clamp\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*,/i.exec(value);
     const measurements = clampFloor
       ? [clampFloor]
       : [...value.matchAll(/(?:^|[^\w.])(-?\d*\.?\d+)\s*(rem|px)\b/gi)];
-    const tooSmall = measurements.some(([, number, unit]) => {
+    // A font shorthand contains a size followed by an optional /line-height.
+    // Check its first literal px/rem size only; a smaller line-height is not
+    // evidence of a sub-12px font. System-font keywords have no literal size.
+    const sizesToCheck = shorthand ? measurements.slice(0, 1) : measurements;
+    const tooSmall = sizesToCheck.some(([, number, unit]) => {
       const minimum = unit.toLowerCase() === "px" ? MIN_FONT_PX : MIN_FONT_REM;
       return Number(number) < minimum;
     });
