@@ -14,6 +14,29 @@ const reviewedItem = {
 };
 
 describe("campaign gallery managed image optimization", () => {
+  it("fails closed for unsafe directly supplied gallery URLs and missing descriptive alt text", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "https://cdn.amaana.example");
+    const html = renderToStaticMarkup(<CampaignMediaGallery items={[
+      { id: "unsafe-js", url: "javascript:alert(1)", alt: "Unsafe scheme" },
+      { id: "unsafe-network", url: "//untrusted.invalid/photo.jpg", alt: "Untrusted network origin" },
+      { id: "unsafe-admin", url: "/admin/donations", alt: "Private admin route" },
+      { id: "unsafe-encoded", url: "/%61pi/admin/media", alt: "Encoded private route" },
+      { id: "unsafe-site", url: "https://www.amaanafoundation.org/admin", alt: "Public host private route" },
+      { id: "missing-alt", url: "/media/approved-without-alt.webp", alt: "  " },
+      { id: "allowed-managed", url: " /media/approved-photo.webp ", alt: "Approved programme photograph" },
+      { id: "allowed-cdn", url: "https://cdn.amaana.example/2026/documentary.webp", alt: "Approved CDN photograph" },
+    ]} />);
+    expect(html).toContain("Enlarge image 1 of 2: Approved programme photograph");
+    expect(html).toContain("Enlarge image 2 of 2: Approved CDN photograph");
+    expect(html).toContain("/_next/image?url=%2Fmedia%2Fapproved-photo.webp");
+    expect(html).toContain('src="https://cdn.amaana.example/2026/documentary.webp"');
+    for (const rejected of [
+      "Unsafe scheme", "Untrusted network origin", "Private admin route",
+      "Encoded private route", "Public host private route", "approved-without-alt",
+    ]) expect(html).not.toContain(rejected);
+  });
+
   afterEach(() => vi.unstubAllEnvs());
 
   it("optimizes approved first-party absolute images with responsive lazy thumbnails", () => {
