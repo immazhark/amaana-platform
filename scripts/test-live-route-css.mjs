@@ -3,6 +3,7 @@ import { test } from "node:test";
 import { stylesheetsInHtml, summarizeRouteCssBytes, auditPublicRouteCss } from "./audit-live-route-css.mjs";
 import { mergeCssRanges, summarizeCssRuleUsage } from "../e2e/css-rule-coverage-core.mjs";
 import { summarizeLinkedCssResourceTiming } from "../e2e/css-resource-timing.mjs";
+import { summarizeNextJsNavigationJsTiming } from "../e2e/js-resource-timing.mjs";
 
 test("browser timing separates decoded CSS, encoded CSS and navigation transfer", () => {
   const css = ["https://amaanafoundation.org/_next/static/a.css", "https://amaanafoundation.org/_next/static/b.css"];
@@ -335,4 +336,79 @@ test("measures distinct same-path CSS query variants at their actual URLs", asyn
   assert.equal(report.routes[0].stylesheetCount, 2);
   assert.equal(report.routes[0].cssBytes, 25);
   assert.deepEqual(seen, ["https://amaanafoundation.org/", cssOne, cssTwo]);
+});
+
+
+const jsBase = "https://amaanafoundation.org/our-work";
+const jsA = "https://amaanafoundation.org/_next/static/chunks/a.js";
+const jsB = "https://amaanafoundation.org/_next/static/chunks/app/b.js";
+const jsTiming = (name, decodedBodySize, encodedBodySize, transferSize) => ({ name, decodedBodySize, encodedBodySize, transferSize });
+
+test("browser JS timing separates linked/dynamic decoded, encoded and transferred bytes", () => {
+  const summary = summarizeNextJsNavigationJsTiming([jsA], [
+    jsTiming(jsA, 900, 300, 410), jsTiming(jsB, 400, 200, 250),
+  ], jsBase);
+  assert.equal(summary.metric, "browser-nextjs-navigation-js-resource-timing");
+  assert.equal(summary.scriptCount, 2);
+  assert.equal(summary.requestCount, 2);
+  assert.equal(summary.decodedBodyBytes, 1300);
+  assert.equal(summary.encodedBodyBytes, 500);
+  assert.equal(summary.transferBytes, 660);
+  assert.equal(summary.observedTransferBytes, 660);
+  assert.deepEqual(summary.missingTimingScripts, []);
+  assert.deepEqual(summary.unavailableTransferScripts, []);
+  assert.match(summary.disclaimer, /not field Web Vitals/i);
+});
+
+test("browser JS cache makes complete transfer unavailable without concealing partial observations", () => {
+  const summary = summarizeNextJsNavigationJsTiming([jsA, jsB], [
+    jsTiming(jsA, 600, 250, 0), jsTiming(jsB, 300, 130, 180),
+  ], jsBase);
+  assert.equal(summary.decodedBodyBytes, 900);
+  assert.equal(summary.encodedBodyBytes, 380);
+  assert.equal(summary.transferBytes, null);
+  assert.equal(summary.observedTransferBytes, 180);
+  assert.deepEqual(summary.unavailableTransferScripts, [jsA]);
+});
+
+test("browser JS missing or opaque timing never becomes false zero bytes", () => {
+  const summary = summarizeNextJsNavigationJsTiming([jsA, jsB], [jsTiming(jsA, 0, 0, 0)], jsBase);
+  assert.equal(summary.decodedBodyBytes, null);
+  assert.equal(summary.encodedBodyBytes, null);
+  assert.equal(summary.transferBytes, null);
+  assert.deepEqual(summary.missingTimingScripts, [jsB]);
+  assert.deepEqual(summary.unavailableTransferScripts, [jsA, jsB]);
+});
+
+test("browser JS reports repeated downloads separately but not repeated script tags", () => {
+  const summary = summarizeNextJsNavigationJsTiming([jsA, jsA], [
+    jsTiming(jsA, 600, 200, 250), jsTiming(jsA, 600, 200, 250),
+  ], jsBase);
+  assert.equal(summary.scriptCount, 1);
+  assert.equal(summary.requestCount, 2);
+  assert.equal(summary.transferBytes, 500);
+});
+
+test("browser JS excludes foreign and unrelated non-Next assets", () => {
+  const foreign = "https://cdn.example.org/_next/static/chunks/foreign.js";
+  const unrelated = "https://amaanafoundation.org/api/metrics.js";
+  const summary = summarizeNextJsNavigationJsTiming([foreign, unrelated, "/_next/static/chunks/a.js"], [
+    jsTiming(foreign, 9000, 9000, 9000), jsTiming(unrelated, 8000, 8000, 8000),
+    jsTiming(jsA, 100, 50, 70),
+  ], jsBase);
+  assert.equal(summary.scriptCount, 1);
+  assert.equal(summary.decodedBodyBytes, 100);
+  assert.equal(summary.transferBytes, 70);
+});
+
+test("browser JS rejects invalid sizes, unsafe totals and invalid navigation inputs", () => {
+  assert.throws(() => summarizeNextJsNavigationJsTiming([jsA], [jsTiming(jsA, -1, 1, 1)], jsBase), /Invalid browser JavaScript timing/);
+  assert.throws(() => summarizeNextJsNavigationJsTiming([jsA], [jsTiming(jsA, NaN, 1, 1)], jsBase), /Invalid browser JavaScript timing/);
+  assert.throws(() => summarizeNextJsNavigationJsTiming([jsA], [jsTiming(jsA, 1.1, 1, 1)], jsBase), /Invalid browser JavaScript timing/);
+  assert.throws(() => summarizeNextJsNavigationJsTiming([jsA], [
+    jsTiming(jsA, Number.MAX_SAFE_INTEGER, 1, 1), jsTiming(jsA, 1, 1, 1),
+  ], jsBase), /Invalid browser JavaScript decoded total/);
+  assert.throws(() => summarizeNextJsNavigationJsTiming([], [], "data:text/plain,test"), /Invalid navigation URL/);
+  assert.throws(() => summarizeNextJsNavigationJsTiming(null, [], jsBase), /arrays/);
+  assert.throws(() => summarizeNextJsNavigationJsTiming([], [{ name: 7 }], jsBase), /Invalid browser JavaScript timing entry/);
 });
