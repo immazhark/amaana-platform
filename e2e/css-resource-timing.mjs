@@ -1,3 +1,9 @@
+function addTimingBytes(total, bytes, metric) {
+  const sum = total + bytes;
+  if (!Number.isSafeInteger(sum)) throw new TypeError(`Invalid browser CSS ${metric} total`);
+  return sum;
+}
+
 /** Browser-linked CSS response sizes. Zero transfer can mean cache or opaque timing. */
 export function summarizeLinkedCssResourceTiming(hrefs, resourceTimings) {
   if (!Array.isArray(hrefs) || !Array.isArray(resourceTimings)) {
@@ -36,11 +42,11 @@ export function summarizeLinkedCssResourceTiming(hrefs, resourceTimings) {
     if (decodedBodySize === 0 && encodedBodySize === 0 && transferSize === 0) {
       incompleteBody = true;
     } else {
-      decodedBodyBytes += decodedBodySize;
-      encodedBodyBytes += encodedBodySize;
+      decodedBodyBytes = addTimingBytes(decodedBodyBytes, decodedBodySize, "decoded");
+      encodedBodyBytes = addTimingBytes(encodedBodyBytes, encodedBodySize, "encoded");
     }
     if (transferSize === 0) unavailableTransferStylesheets.push(href);
-    else observedTransferBytes += transferSize;
+    else observedTransferBytes = addTimingBytes(observedTransferBytes, transferSize, "transfer");
   }
 
   return {
