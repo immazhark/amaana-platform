@@ -139,6 +139,30 @@ describe("manual notification recovery", () => {
     expect(mocks.serializableTransaction).toHaveBeenCalled();
   });
 
+  it.each(["id", "expectedUpdatedAt", "reason"])("rejects repeated %s before notification access", async field => {
+    const data = form();
+    data.append(field, String(data.get(field)));
+
+    await expect(requeueFailedNotification(data)).rejects.toThrow(/Repeated .* fields/);
+    expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+    expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+    expect(mocks.updateNotificationMany).not.toHaveBeenCalled();
+    expect(mocks.createAudit).not.toHaveBeenCalled();
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it.each(["id", "expectedUpdatedAt", "reason"])("rejects file-valued %s before notification access", async field => {
+    const data = form();
+    data.set(field, new File(["synthetic"], "synthetic.txt", { type: "text/plain" }));
+
+    await expect(requeueFailedNotification(data)).rejects.toThrow(/single text .* field/);
+    expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+    expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+    expect(mocks.updateNotificationMany).not.toHaveBeenCalled();
+    expect(mocks.createAudit).not.toHaveBeenCalled();
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
   it("requires a meaningful operator reason", async () => {
     await expect(requeueFailedNotification(form("fixed"))).rejects.toThrow(/operational reason/i);
     expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
