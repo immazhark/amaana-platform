@@ -329,3 +329,47 @@ test.each(["Home", "End"])("%s does not redirect native-scroll navigation to the
     expect(scrollTo).not.toHaveBeenCalled();
   } finally { cleanup?.(); }
 });
+
+test("native route handoff clears stale Lenis root classes when destroy leaves CSS state", async () => {
+  let cleanup: (() => void) | undefined;
+  const created = vi.fn();
+  const destroyed = vi.fn();
+  const classes = new Set(["lenis", "lenis-smooth", "lenis-scrolling", "lenis-stopped"]);
+  const remove = vi.fn((...names: string[]) => { for (const name of names) classes.delete(name); });
+  vi.doMock("react", () => ({
+    useEffect: (effect: () => () => void) => { cleanup = effect(); },
+  }));
+  vi.doMock("lenis", () => ({ default: class {
+    constructor() { created(); }
+    on() {}
+    destroy() { destroyed(); }
+  } }));
+  const target = Object.assign(new EventTarget(), {
+    matchMedia: (query: string) => Object.assign(new EventTarget(), {
+      matches: query === "(pointer: fine)",
+    }),
+  });
+  vi.stubGlobal("window", target);
+  vi.stubGlobal("document", Object.assign(new EventTarget(), {
+    hidden: false,
+    body: { matches: () => false },
+    documentElement: { classList: { remove } },
+  }));
+  vi.stubGlobal("Element", class {
+    closest(selector: string) { return selector.includes("a[href]") ? this : null; }
+  });
+  const { useSiteScroll } = await import("./site-scroll");
+  useSiteScroll("/about");
+  try {
+    target.dispatchEvent(new Event("wheel"));
+    await vi.waitFor(() => expect(created).toHaveBeenCalledOnce());
+    // A navigation click must surrender to native scrolling before the new
+    // route renders, even if Lenis.destroy() fails to remove root CSS tokens.
+    const click = new Event("click");
+    Object.defineProperty(click, "target", { value: new Element() });
+    target.dispatchEvent(click);
+    expect(destroyed).toHaveBeenCalledOnce();
+    expect(classes.size).toBe(0);
+    expect(remove).toHaveBeenCalledWith("lenis", "lenis-smooth", "lenis-scrolling", "lenis-stopped");
+  } finally { cleanup?.(); }
+});
