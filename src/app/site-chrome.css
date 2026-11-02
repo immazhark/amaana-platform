@@ -232,3 +232,33 @@
   .amaana-companion-dock>button:hover,
   .amaana-companion-dock>button[aria-expanded="true"]{transform:none}
 }
+
+/* AF-R024: at 320–359px the reminder/live copy must not share the narrow
+   rail row with badge, citation, or action controls. Keep source text and
+   44px actions visible in normal reading order; 360px+ retains the prior rail. */
+@media(max-width:359px){
+  .amaana-reminder-lane,.amaana-live-lane{
+    grid-template-columns:minmax(0,1fr);
+    align-items:start;
+    gap:.2rem;
+    padding-block:.4rem
+  }
+  .amaana-reminder-content,.amaana-live-content{
+    grid-template-columns:minmax(0,1fr);
+    gap:.2rem
+  }
+  .amaana-reminder-source{
+    grid-column:1;
+    grid-row:auto;
+    justify-self:start;
+    white-space:normal
+  }
+  .amaana-live-actions{
+    grid-column:1;
+    grid-row:auto;
+    justify-content:flex-start;
+    flex-wrap:wrap;
+    white-space:normal
+  }
+  .amaana-live-cta{grid-column:auto;grid-row:auto}
+}
