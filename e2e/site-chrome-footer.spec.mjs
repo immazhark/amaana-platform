@@ -112,6 +112,10 @@ test('shared header, reminder/live rail and footer use one deliberate desktop sy
 
 test('320px reminder and live-update rails place labels, full copy and links on separate readable rows', async ({ page }) => {
   await openFixture(page, 320);
+  // The reminder citation and live item are client-hydrated, not SSR content.
+  // Observe the real synthetic item before measuring the fully populated rail.
+  await expect(page.locator('.amaana-reminder-source')).toBeVisible();
+  await expect(page.locator('.amaana-live-content strong')).toContainText('Verified medical support');
   const geometry = await page.evaluate(() => {
     const bounds = selector => {
       const node = document.querySelector(selector);
