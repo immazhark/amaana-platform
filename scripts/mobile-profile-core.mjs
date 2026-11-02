@@ -22,10 +22,14 @@ export function assertLocalProfileTarget(value) {
   return localOrigin;
 }
 
-export function isAllowedProfileRequest(rawUrl) {
+export function isAllowedProfileRequest(rawUrl, method = "GET") {
   try {
     const url = new URL(rawUrl);
-    return url.protocol === "http:" && url.origin === localOrigin && !url.username && !url.password;
+    // Profiling may fetch local content but must never forward a write method,
+    // even if the target is the approved synthetic localhost origin.
+    return (method === "GET" || method === "HEAD") &&
+      url.protocol === "http:" && url.origin === localOrigin &&
+      !url.username && !url.password;
   } catch {
     return false;
   }
