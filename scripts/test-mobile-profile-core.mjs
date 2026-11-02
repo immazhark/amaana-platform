@@ -42,6 +42,19 @@ test("cross-origin GET assets, scripts, redirects and posts are blocked before n
   ]) assert.equal(isAllowedProfileRequest(uri), false);
 });
 
+test("local-only profiling refuses same-origin write methods before network use", () => {
+  const uri = "http://127.0.0.1:3000/api/donations";
+  // A fixed origin is not a read-only contract: the original allowlist
+  // accepted POST/PATCH/DELETE because its second argument was ignored.
+  for (const method of ["POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE", "get", "", "POST\n"]) {
+    assert.equal(isAllowedProfileRequest(uri, method), false, method);
+  }
+  assert.equal(isAllowedProfileRequest(uri, "GET"), true);
+  assert.equal(isAllowedProfileRequest(uri, "HEAD"), true);
+  assert.equal(isAllowedProfileRequest("http://127.0.0.1:3000/api/analytics/page-view", "POST"), false);
+  assert.equal(isAllowedProfileRequest("https://evil.invalid/path", "GET"), false);
+});
+
 test("CLS uses the largest session window, never an unwindowed sum", () => {
   const shifts = [
     { startTime: 100, value: .02 }, { startTime: 500, value: .03 },
