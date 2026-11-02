@@ -5,6 +5,9 @@ import type Lenis from "lenis";
 
 const nested = "[data-carousel-mode], .mobile-menu, .amaana-companion-panel, [data-native-scroll], [role='dialog'], dialog, textarea, select, input, iframe";
 const nativeKeyboardNavigation = ["Tab", "ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "];
+// A teardown exception may leave library listeners attached. Never add a second
+// smooth-scroll instance in this tab after an incomplete optional teardown.
+let wheelEnhancementDisabled = false;
 
 /** Wheel-only enhancement; native touch, keyboard, anchors, focus and history retain their semantics. */
 export function useSiteScroll(pathname: string) {
@@ -34,12 +37,13 @@ export function useSiteScroll(pathname: string) {
       try {
         previous?.destroy();
       } catch {
+        wheelEnhancementDisabled = true;
         // Optional smooth scrolling must fail closed to browser-native scroll.
       } finally {
         document.documentElement?.classList?.remove("lenis", "lenis-smooth", "lenis-scrolling", "lenis-stopped");
       }
     };
-    const eligible = () => !disposed && !preference.matches && pointer.matches && !document.hidden;
+    const eligible = () => !wheelEnhancementDisabled && !disposed && !preference.matches && pointer.matches && !document.hidden;
     const wake = () => { if (instance && frame === undefined) frame = requestAnimationFrame(tick); };
     const initialize = async (event: WheelEvent) => {
       if (!eligible() || event.ctrlKey || event.defaultPrevented || loading || instance) return;

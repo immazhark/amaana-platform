@@ -425,10 +425,11 @@ test.each(["click", "popstate", "hashchange"])(
       expect(destroyed).toHaveBeenCalledOnce();
       expect(classes.size).toBe(0);
       expect(removeClasses).toHaveBeenCalledWith("lenis", "lenis-smooth", "lenis-scrolling", "lenis-stopped");
-      // Optional engine failures must not strand its old instance or prevent
-      // a later explicit wheel gesture from starting a fresh enhancement.
+      // A thrown teardown may have left vendor event handlers attached; do not
+      // start a second engine in this tab. Native wheel scrolling remains usable.
       target.dispatchEvent(new Event("wheel"));
-      await vi.waitFor(() => expect(instances).toHaveBeenCalledTimes(2));
+      await vi.dynamicImportSettled();
+      expect(instances).toHaveBeenCalledOnce();
     } finally { cleanup?.(); }
   },
 );
