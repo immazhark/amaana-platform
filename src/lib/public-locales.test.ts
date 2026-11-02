@@ -53,6 +53,17 @@ describe("public locale publication", () => {
     })) as unknown as TranslationPublication[];
     expect(buildPublishedLanguageAlternates("/contact", forged)).toEqual({ en: "/contact" });
   });
+  it("ignores malformed runtime translation entries without hiding reviewed published paths", () => {
+    const records = [
+      null, undefined, 0, "invalid",
+      { locale: "ur", path: "/ur/contact", status: "PUBLISHED", reviewed: true },
+    ] as unknown as TranslationPublication[];
+    expect(buildPublishedLanguageAlternates("/contact", records)).toEqual({
+      en: "/contact",
+      ur: "/ur/contact",
+    });
+  });
+
   it("sets RTL only for Urdu", () => {
     expect(publicLocaleDirection("ur")).toBe("rtl");
     expect(publicLocaleDirection("en")).toBe("ltr");
