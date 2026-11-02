@@ -7,6 +7,16 @@ import { PageHero } from "./page-hero";
 const stylesheet = readFileSync(resolve(process.cwd(), "src/app/page-hero.css"), "utf8");
 
 describe("AF-R062 PageHero fallback cascade", () => {
+  it("maintains readable multiline PageHero title leading without changing the display family", () => {
+    const rule = stylesheet.match(/\\.page-hero__title\\{([^}]*)\\}/)?.[1];
+    expect(rule).toBeDefined();
+    const shorthand = rule?.match(/font:\\s*500\\s+var\\(--title\\)\\s*\\/\\s*([\\d.]+)\\s+var\\(--af-font-display\\)/);
+    expect(shorthand).not.toBeNull();
+    const ratio = Number(shorthand?.[1]);
+    expect(ratio).toBeGreaterThanOrEqual(1.12);
+    expect(ratio).toBeLessThanOrEqual(1.35);
+  });
+
   it("uses a more specific ordinary height rule for the direct-child fallback", () => {
     expect(stylesheet).toMatch(/\.page-hero__visual>:is\(figure,div,article\)\{height:100%\}/);
     const fallback = stylesheet.match(/\.page-hero__visual-fallback\{([^}]*)\}/)?.[1];

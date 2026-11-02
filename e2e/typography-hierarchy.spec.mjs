@@ -1,6 +1,31 @@
 import { expect, test } from '@playwright/test';
 import { waitForPublicOverview } from './helpers/public-overview-ready.mjs';
 
+// AF-R025: PageHero headings can wrap on narrow screens and must retain
+// readable line-box separation without increasing public page overflow.
+for (const width of [320, 390]) {
+  test(`PageHero title uses legible multiline leading at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    const response = await page.goto('/get-involved', { waitUntil: 'domcontentloaded' });
+    expect(response?.ok()).toBeTruthy();
+    const result = await page.locator('.page-hero__title').first().evaluate(heading => {
+      const style = getComputedStyle(heading);
+      return {
+        text: heading.textContent?.trim(),
+        fontSize: parseFloat(style.fontSize),
+        lineHeight: parseFloat(style.lineHeight),
+        width: heading.getBoundingClientRect().width,
+      };
+    });
+    expect(result.text?.length).toBeGreaterThan(5);
+    expect(result.fontSize).toBeGreaterThan(20);
+    expect(result.lineHeight / result.fontSize).toBeGreaterThanOrEqual(1.12);
+    expect(result.width).toBeGreaterThan(0);
+  });
+}
+
+
 for (const width of [320, 390, 768, 1024, 1440, 1920]) {
   test(`banner hierarchy and grouped evidence headings at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 1000 });

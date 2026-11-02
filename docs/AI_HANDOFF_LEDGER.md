@@ -2258,3 +2258,7 @@ One CHATGPT_ACTIVE implementation writer on fix/live-home-canonical-schema-audit
 ## 2026-11-03 IST — AF-R048 local profile method containment
 
 One CHATGPT_ACTIVE implementation writer from accepted `6df1d4bcb24cf93979e3f8a01a6772e611da9fe3`. Existing profile URL allowlist accepts a non-read-only HTTP method on local same-origin endpoints; synthetic regression RED first in `scripts/test-mobile-profile-core.mjs`. Fix limited to `scripts/mobile-profile-core.mjs` method gate and `scripts/profile-public-mobile.mjs` intercepted request.method() enforcement, with existing synthetic page-view POST stub maintained. No live route or application change. Exact-head full and separate ready-state CI required; no historical 149 classification change.
+
+## 2026-11-03 IST — AF-R025 PageHero title wrapping task
+
+Single CHATGPT_ACTIVE writer on `fix/page-hero-title-leading-20261103` from main `3db049ac05d2dac52127c6e3e737baf2f43f9385`. Source `src/app/page-hero.css` currently has 0.98 PageHero title font shorthand line-height. RED first adds native CSS-contract and Chromium 320/390px computed-style tests. Planned source correction is only 1.14 line-height; no other CSS/layout/claim changes. CI and reviewed production rollout required; 149 denominator unchanged.
