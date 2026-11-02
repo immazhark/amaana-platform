@@ -24,6 +24,35 @@ test("a valid root public identity is structure-valid, not externally rich-resul
   assert.deepEqual(result.verifiedGraphIds, [`${origin}/#organization`, `${origin}/#website`]);
 });
 
+test("accepts the observed homepage canonical without a trailing slash, not a different route", () => {
+  // Live HTML on 2026-11-03 renders the homepage canonical without '/'.
+  // Both HTTPS URL spellings denote the same origin root; all other routes
+  // remain exact-match only and must not accept a wrong path or origin.
+  const observed = analyzePublicSchemaHtml("/", page(graph, origin));
+  assert.equal(observed.canonical, origin);
+  assert.equal(observed.status, "STRUCTURE_VALID_EXTERNAL_ACCEPTANCE_PENDING");
+  assert.equal(analyzePublicSchemaHtml("/", page(graph, origin + "/")).canonical, origin + "/");
+  assert.throws(() => analyzePublicSchemaHtml("/about", page(graph, origin)));
+  assert.throws(() => analyzePublicSchemaHtml("/", page(graph, origin + "/about")));
+  assert.throws(() => analyzePublicSchemaHtml("/", page(graph, "https://evil.invalid")));
+});
+
+test("five-route transport accepts the exact live root canonical without inflating acceptance", async () => {
+  const fakeFetch = async target => {
+    if (target.endsWith("/api/health/version")) throw new Error("synthetic version unavailable");
+    const canonical = target === origin + "/" ? origin : target;
+    const response = new Response(page(graph, canonical), { status: 200,
+      headers: { "Content-Type": "text/html" } });
+    Object.defineProperty(response, "url", { value: target });
+    return response;
+  };
+  const result = await auditPublicSchema(fakeFetch);
+  assert.equal(result.pages.length, 5);
+  assert.equal(result.pages[0].canonical, origin);
+  assert.equal(result.externalRichResultAccepted, false);
+  assert.equal(result.publicReadinessVerified, false);
+});
+
 test("missing, mismatched or spoofed NGO and Website identity fails closed", () => {
   for (const candidate of [
     [graph[1]],
