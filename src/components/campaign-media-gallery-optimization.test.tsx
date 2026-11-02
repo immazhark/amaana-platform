@@ -20,6 +20,7 @@ describe("campaign gallery managed image optimization", () => {
     const html = renderToStaticMarkup(<CampaignMediaGallery items={[
       { id: "unsafe-js", url: "javascript:alert(1)", alt: "Unsafe scheme" },
       { id: "unsafe-network", url: "//untrusted.invalid/photo.jpg", alt: "Untrusted network origin" },
+      { id: "unsafe-https-host", url: "https://untrusted.invalid/photo.webp", alt: "Untrusted HTTPS origin" },
       { id: "unsafe-admin", url: "/admin/donations", alt: "Private admin route" },
       { id: "unsafe-encoded", url: "/%61pi/admin/media", alt: "Encoded private route" },
       { id: "unsafe-site", url: "https://www.amaanafoundation.org/admin", alt: "Public host private route" },
@@ -32,7 +33,7 @@ describe("campaign gallery managed image optimization", () => {
     expect(html).toContain("/_next/image?url=%2Fmedia%2Fapproved-photo.webp");
     expect(html).toContain('src="https://cdn.amaana.example/2026/documentary.webp"');
     for (const rejected of [
-      "Unsafe scheme", "Untrusted network origin", "Private admin route",
+      "Unsafe scheme", "Untrusted network origin", "Untrusted HTTPS origin", "Private admin route",
       "Encoded private route", "Public host private route", "approved-without-alt",
     ]) expect(html).not.toContain(rejected);
   });
