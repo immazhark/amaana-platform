@@ -72,6 +72,8 @@ describe("public gallery projection", () => {
       ["first-party", "/media/2026/approved.webp"],
       ["external", "https://cdn.amaana.example/2026/approved.webp"],
     ]);
+    assert.equal(items.find(item => item.id === "external")?.serverApprovedExternal, true);
+    assert.equal(Object.hasOwn(items[0] ?? {}, "serverApprovedExternal"), false);
   });
 
   it("projects artwork presentation without forwarding private media titles or server fields", () => {

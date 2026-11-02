@@ -16,7 +16,8 @@ const reviewedItem = {
 describe("campaign gallery managed image optimization", () => {
   it("fails closed for unsafe directly supplied gallery URLs and missing descriptive alt text", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
-    vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "https://cdn.amaana.example");
+    // Client-side rendering has no server-only PUBLIC_MEDIA_BASE_URL variable.
+    vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "");
     const html = renderToStaticMarkup(<CampaignMediaGallery items={[
       { id: "unsafe-js", url: "javascript:alert(1)", alt: "Unsafe scheme" },
       { id: "unsafe-network", url: "//untrusted.invalid/photo.jpg", alt: "Untrusted network origin" },
@@ -26,7 +27,7 @@ describe("campaign gallery managed image optimization", () => {
       { id: "unsafe-site", url: "https://www.amaanafoundation.org/admin", alt: "Public host private route" },
       { id: "missing-alt", url: "/media/approved-without-alt.webp", alt: "  " },
       { id: "allowed-managed", url: " /media/approved-photo.webp ", alt: "Approved programme photograph" },
-      { id: "allowed-cdn", url: "https://cdn.amaana.example/2026/documentary.webp", alt: "Approved CDN photograph" },
+      { id: "allowed-cdn", url: "https://cdn.amaana.example/2026/documentary.webp", alt: "Approved CDN photograph", serverApprovedExternal: true },
     ]} />);
     expect(html).toContain("Enlarge image 1 of 2: Approved programme photograph");
     expect(html).toContain("Enlarge image 2 of 2: Approved CDN photograph");
