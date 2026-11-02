@@ -32,3 +32,26 @@ test("a safe clamp floor is not rejected for a smaller calc subtraction", () => 
 test("all checked public and component CSS preserves the 12px literal floor", async () => {
   assert.deepEqual(await auditPublicStyles(), []);
 });
+
+
+test("font shorthand cannot hide sub-12px literal sizes", () => {
+  const css = [
+    ".tiny{font:600 11px/1.4 system-ui}",
+    ".compact{font:italic .68rem/1.3 serif}",
+    ".fluid{font:700 clamp(.62rem,1vw,.8rem)/1.2 system-ui}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(css, "fixture.css"), [
+    { path: "fixture.css", value: "600 11px/1.4 system-ui" },
+    { path: "fixture.css", value: "italic .68rem/1.3 serif" },
+    { path: "fixture.css", value: "700 clamp(.62rem,1vw,.8rem)/1.2 system-ui" },
+  ]);
+});
+
+test("font shorthand uses font-size, never its smaller line-height, for the minimum", () => {
+  const css = [
+    ".safe{font:600 1rem/10px system-ui}",
+    ".safeClamp{font:500 clamp(.75rem,2vw,1rem)/.5rem system-ui}",
+    ".inherit{font:inherit}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(css, "fixture.css"), []);
+});
