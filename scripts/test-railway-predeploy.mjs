@@ -102,3 +102,19 @@ test("wrapper runs release preparation before declaring pre-deploy completion", 
   assert.ok(releasePrepare >= 0);
   assert.ok(completion > releasePrepare);
 });
+
+
+test("Railway runtime image includes the imported pre-deploy credential-name guard", async () => {
+  const [dockerfile, predeploy] = await Promise.all([
+    readFile("Dockerfile", "utf8"),
+    readFile("prisma/railway-predeploy.mjs", "utf8"),
+  ]);
+  assert.match(predeploy, /from ["']\.\.\/scripts\/check-public-env-secret-names\.mjs["']/);
+  const runner = dockerfile.split(/\nFROM [^\n]+ AS runner\n/)[1];
+  assert.ok(runner, "The Dockerfile must declare a standalone runner stage");
+  assert.match(
+    runner,
+    /^COPY --from=builder --chown=nextjs:nodejs \/app\/scripts\/check-public-env-secret-names\.mjs \.\/scripts\/check-public-env-secret-names\.mjs$/m,
+    "The pre-deploy import must exist inside /app/scripts in the runtime image",
+  );
+});
