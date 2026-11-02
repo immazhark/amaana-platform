@@ -27,10 +27,17 @@ export function useSiteScroll(pathname: string) {
       generation += 1;
       if (frame !== undefined) cancelAnimationFrame(frame);
       frame = undefined;
-      instance?.destroy(); instance = undefined;
-      // Native navigation must not retain Lenis root styling, even when
-      // optional wheel-enhancement teardown leaves stale classes behind.
-      document.documentElement?.classList?.remove("lenis", "lenis-smooth", "lenis-scrolling", "lenis-stopped");
+      const previous = instance;
+      // Sever the optional enhancer first: its teardown can fail, but must
+      // never interrupt native navigation or prevent the next wheel retry.
+      instance = undefined;
+      try {
+        previous?.destroy();
+      } catch {
+        // Optional smooth scrolling must fail closed to browser-native scroll.
+      } finally {
+        document.documentElement?.classList?.remove("lenis", "lenis-smooth", "lenis-scrolling", "lenis-stopped");
+      }
     };
     const eligible = () => !disposed && !preference.matches && pointer.matches && !document.hidden;
     const wake = () => { if (instance && frame === undefined) frame = requestAnimationFrame(tick); };
