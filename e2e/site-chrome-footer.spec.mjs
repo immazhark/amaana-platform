@@ -110,6 +110,45 @@ test('shared header, reminder/live rail and footer use one deliberate desktop sy
   await expect.poll(() => footerLink.evaluate(element => getComputedStyle(element).color)).not.toBe(before);
 });
 
+test('320px reminder and live-update rails place labels, full copy and links on separate readable rows', async ({ page }) => {
+  await openFixture(page, 320);
+  // The reminder citation and live item are client-hydrated, not SSR content.
+  // Observe the real synthetic item before measuring the fully populated rail.
+  await expect(page.locator('.amaana-reminder-source')).toBeVisible();
+  await expect(page.locator('.amaana-live-content strong')).toContainText('Verified medical support');
+  const geometry = await page.evaluate(() => {
+    const bounds = selector => {
+      const node = document.querySelector(selector);
+      if (!node) return null;
+      const rect = node.getBoundingClientRect();
+      return { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right, height: rect.height };
+    };
+    return {
+      viewport: document.documentElement.clientWidth,
+      documentWidth: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
+      reminderLabel: bounds('.amaana-reminder-lane .amaana-rail-label'),
+      reminderTitle: bounds('.amaana-reminder-content strong'),
+      reminderSource: bounds('.amaana-reminder-source'),
+      liveBadge: bounds('.amaana-live-lane .amaana-live-badge'),
+      liveTitle: bounds('.amaana-live-content strong'),
+      liveAction: bounds('.amaana-live-cta'),
+    };
+  });
+
+  expect(geometry.reminderLabel).not.toBeNull();
+  expect(geometry.reminderTitle).not.toBeNull();
+  expect(geometry.reminderSource).not.toBeNull();
+  expect(geometry.liveBadge).not.toBeNull();
+  expect(geometry.liveTitle).not.toBeNull();
+  expect(geometry.liveAction).not.toBeNull();
+  expect(geometry.reminderTitle.top).toBeGreaterThanOrEqual(geometry.reminderLabel.bottom - 1);
+  expect(geometry.reminderSource.top).toBeGreaterThanOrEqual(geometry.reminderTitle.bottom - 1);
+  expect(geometry.liveTitle.top).toBeGreaterThanOrEqual(geometry.liveBadge.bottom - 1);
+  expect(geometry.liveAction.top).toBeGreaterThanOrEqual(geometry.liveTitle.bottom - 1);
+  expect(geometry.liveAction.height).toBeGreaterThanOrEqual(44);
+  expect(geometry.documentWidth).toBeLessThanOrEqual(geometry.viewport + 1);
+});
+
 test('shared chrome and footer remain overflow-free on 390px mobile', async ({ page }) => {
   await openFixture(page, 390);
   const geometry = await page.evaluate(() => ({
