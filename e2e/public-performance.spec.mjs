@@ -1,5 +1,34 @@
 import { expect, test } from '@playwright/test';
 import { summarizeLinkedCssResourceTiming } from './css-resource-timing.mjs';
+import { summarizeNextJsNavigationJsTiming } from './js-resource-timing.mjs';
+
+
+test("home and donate report real browser first-party Next.js navigation JavaScript sizes", async ({ page }) => {
+  await page.route("**/api/analytics/page-view", route => route.fulfill({ status: 204, body: "" }));
+  for (const path of ["/", "/donate"]) {
+    const response = await page.goto(path, { waitUntil: "load" });
+    expect(response?.ok(), "Expected public route to load successfully: " + path).toBeTruthy();
+    const snapshot = await page.evaluate(() => ({
+      url: window.location.href,
+      scripts: [...document.querySelectorAll("script[src]")].map(script => script.src),
+      resources: performance.getEntriesByType("resource").map(entry => ({
+        name: entry.name,
+        decodedBodySize: entry.decodedBodySize,
+        encodedBodySize: entry.encodedBodySize,
+        transferSize: entry.transferSize,
+      })),
+    }));
+    const timing = summarizeNextJsNavigationJsTiming(snapshot.scripts, snapshot.resources, snapshot.url);
+    expect(timing.scriptCount, path + " should reference Next.js static scripts").toBeGreaterThan(0);
+    expect(timing.requestCount, path + " should observe real browser JS resource entries").toBeGreaterThan(0);
+    const bytes = value => value === null ? "unavailable" : value + " B";
+    console.log("Synthetic JS resource timing " + path + ": " + timing.scriptCount +
+      " build scripts; decoded=" + bytes(timing.decodedBodyBytes) +
+      "; encoded=" + bytes(timing.encodedBodyBytes) +
+      "; transfer=" + bytes(timing.transferBytes) +
+      "; observed partial transfer=" + timing.observedTransferBytes + " B");
+  }
+});
 
 async function cssPayload(page, path) {
   const response = await page.goto(path, { waitUntil: 'load' });
