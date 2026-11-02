@@ -39,17 +39,24 @@ async function profileOne(chromium, route, run, artifactDirectory) {
       uploadThroughput: MOBILE_PROFILE.network.uploadBytesPerSecond,
     });
     await cdp.send("Emulation.setCPUThrottlingRate", { rate: MOBILE_PROFILE.cpuSlowdown });
-    const blockedOrigins = new Set();
+    const blockedRequests = new Set();
     await page.route("**/*", async intercepted => {
       const request = intercepted.request();
-      const url = new URL(request.url());
-      if (!isAllowedProfileRequest(request.url())) {
-        blockedOrigins.add(url.origin);
-        await intercepted.abort("blockedbyclient");
+      const requestUrl = request.url();
+      const method = request.method();
+      const url = new URL(requestUrl);
+      // Synthetic page-view telemetry is never forwarded to the server.
+      // Preserve the existing 204 response for safe reads and POST, but do
+      // not exempt any other endpoint or HTTP method from the read-only gate.
+      if (isAllowedProfileRequest(requestUrl, "GET") &&
+          url.pathname === "/api/analytics/page-view" &&
+          (method === "GET" || method === "HEAD" || method === "POST")) {
+        await intercepted.fulfill({ status: 204, body: "" });
         return;
       }
-      if (url.origin === localOrigin && url.pathname === "/api/analytics/page-view") {
-        await intercepted.fulfill({ status: 204, body: "" });
+      if (!isAllowedProfileRequest(requestUrl, method)) {
+        blockedRequests.add(isAllowedProfileRequest(requestUrl, "GET") ? "unsafe-method" : "unapproved-origin");
+        await intercepted.abort("blockedbyclient");
         return;
       }
       await intercepted.continue();
@@ -92,8 +99,8 @@ async function profileOne(chromium, route, run, artifactDirectory) {
       throw new Error("Local route navigation failed or left the fixed local origin: " + route);
     }
     await page.waitForTimeout(MOBILE_PROFILE.settleMs);
-    if (blockedOrigins.size > 0) {
-      throw new Error("Local profile refused intercepted cross-origin HTTP resources; use a reviewed isolated media fixture");
+    if (blockedRequests.size > 0) {
+      throw new Error("Local profile refused an unapproved origin or non-read-only HTTP method; use reviewed isolated synthetic fixtures");
     }
     const metrics = await page.evaluate(() => window.__amaanaMobileProfile);
     const cls = metrics.layoutShifts === null ? null : calculateClsSessionWindows(metrics.layoutShifts);
