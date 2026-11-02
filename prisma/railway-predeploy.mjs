@@ -1,5 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { rejectPublicCredentialNames } from "../scripts/check-public-env-secret-names.mjs";
 
 const MIN_LENGTHS = {
   RAZORPAY_KEY_SECRET: 16,
@@ -32,7 +33,7 @@ function validateHttps(value, name, problems, officialOrigin = null) {
 }
 
 export function validateRailwayDeployEnvironment(env) {
-  const problems = [];
+  const problems = rejectPublicCredentialNames(env);
   const environment = read(env, "APP_ENVIRONMENT", problems);
   if (!["production", "staging"].includes(environment)) {
     problems.push("APP_ENVIRONMENT must be production or staging.");

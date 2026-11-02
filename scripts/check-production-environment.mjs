@@ -1,5 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { rejectPublicCredentialNames } from "./check-public-env-secret-names.mjs";
 
 const REQUIRED_SECRET_LENGTHS = {
   CRON_SECRET: 32,
@@ -52,7 +53,7 @@ function validateBooleanString(env, name, problems, { required = false } = {}) {
 }
 
 export function validateProductionEnvironmentContract(env) {
-  const problems = [];
+  const problems = rejectPublicCredentialNames(env);
 
   if (env.APP_ENVIRONMENT !== "production") {
     problems.push("APP_ENVIRONMENT must be production.");
