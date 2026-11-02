@@ -107,6 +107,8 @@ jobs:
             for (const row of unresolved.slice(0, 25)) console.log("REVIEW ONLY:", row.asset);
             console.log("Unresolved assets are NOT safe to delete without dynamic-reference validation.");
           '
+      - name: Guard cross-browser acceptance concurrency and coverage
+        run: node --test scripts/test-cross-browser-worker-budget.mjs
       - name: Validate launch readiness register
         run: |
           node --test scripts/test-launch-readiness.mjs
