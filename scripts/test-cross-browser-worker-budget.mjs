@@ -6,6 +6,17 @@ const config = readFileSync("playwright.cross-browser.config.mjs", "utf8");
 const smoke = readFileSync("e2e/cross-browser-smoke.spec.mjs", "utf8");
 const workflow = readFileSync(".github/workflows/ci.yml", "utf8");
 
+const chromiumConfig = readFileSync("playwright.config.mjs", "utf8");
+
+test("all Chromium acceptance files retain their assertions with two CI-only workers", () => {
+  assert.match(chromiumConfig, /workers:\s*process\.env\.CI\s*\?\s*2\s*:\s*1,/);
+  assert.match(chromiumConfig, /fullyParallel:\s*false,/);
+  assert.match(chromiumConfig, /retries:\s*process\.env\.CI\s*\?\s*1\s*:\s*0,/);
+  assert.match(chromiumConfig, /testDir:\s*['"]\.\/e2e['"]/);
+  assert.match(chromiumConfig, /name:\s*['"]chromium['"]/);
+  assert.match(workflow, /npx playwright test --config=playwright\.config\.mjs/);
+});
+
 test("CI runs Firefox and WebKit together without omitting either project or retries", () => {
   assert.match(config, /workers:\s*process\.env\.CI\s*\?\s*2\s*:\s*1,/);
   assert.match(config, /fullyParallel:\s*false,/);
