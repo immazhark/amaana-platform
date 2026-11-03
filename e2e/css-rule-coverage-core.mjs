@@ -95,6 +95,6 @@ export function summarizeCssRuleUsage(entries, origin) {
     sampledUnobservedPercent,
     unmeasuredStylesheets,
     excluded,
-    disclaimer: "Sampled, included same-origin Next CSS only. An unobserved fraction is not proved unused CSS, full responsive/interactive coverage, network transfer, or field Web Vitals.",
+    disclaimer: "Not network transfer bytes. Sampled included same-origin Next CSS only; unobserved fractions do not prove safely unused CSS, complete responsive/interactive coverage, or field Web Vitals.",
   };
 }
