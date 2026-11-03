@@ -17,6 +17,14 @@ describe("AF-R062 PageHero fallback cascade", () => {
     expect(ratio).toBeLessThanOrEqual(1.35);
   });
 
+  it("gives the Impact overview a scoped desktop padding budget without reducing title leading", () => {
+    const desktop = stylesheet.match(/@media\(min-width:901px\)\{\.v2-impact-page>\.page-hero--level1\{([^}]*)\}\}/)?.[1];
+    expect(desktop).toBeDefined();
+    expect(desktop).toContain("--pad:clamp(2rem,2.5vw,2.5rem)");
+    expect(desktop).not.toContain("!important");
+    expect(desktop).not.toContain("line-height");
+  });
+
   it("uses a more specific ordinary height rule for the direct-child fallback", () => {
     expect(stylesheet).toMatch(/\.page-hero__visual>:is\(figure,div,article\)\{height:100%\}/);
     const fallback = stylesheet.match(/\.page-hero__visual-fallback\{([^}]*)\}/)?.[1];

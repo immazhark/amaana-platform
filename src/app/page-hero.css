@@ -37,3 +37,8 @@
 
 
 /* 2026-09-29 page-family identity: final canonical hero surfaces remain intentionally distinct. */
+
+/* AF-R025: retain accessible multiline heading leading while keeping the
+   evidence-led Impact hero within the existing 480px desktop height budget.
+   Scoped to the Impact overview; all other hero spacing stays unchanged. */
+@media(min-width:901px){.v2-impact-page>.page-hero--level1{--pad:clamp(2rem,2.5vw,2.5rem)}}
