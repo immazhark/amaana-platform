@@ -173,7 +173,7 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
   font-family:var(--af-font-display);
   font-size:clamp(2.4rem,4.6vw,3.5rem);
   font-weight:500;
-  line-height:1.04;
+  line-height:1.14;
   letter-spacing:-.04em;
   text-wrap:balance;
 }
