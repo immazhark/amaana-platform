@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test';
 
-// AF-R042: this is synthetic 200/400% *root text enlargement* coverage.
-// It is not native browser zoom or physical assistive-technology acceptance.
+// AF-R042: distinguish 200% root-text enlargement from a 400% zoom-equivalent
+// *CSS viewport* reflow (1280px / 4 = 320px). Neither is real browser zoom
+// or physical assistive-technology acceptance.
 // Check priority public routes without submitting forms or loading payments.
 const routes = [
   { path: '/contact', label: 'Contact' },
@@ -9,22 +10,23 @@ const routes = [
   { path: '/request-assistance', label: 'Request Assistance' },
 ];
 
-const textScales = [
-  { width: 390, percent: 200, rootMin: 32 },
-  { width: 1280, percent: 400, rootMin: 64 },
+const reflowScenarios = [
+  { width: 390, rootPercent: 200, rootMin: 32, label: '200% enlarged text' },
+  { width: 320, rootPercent: 100, rootMin: 16, label: '400% zoom-equivalent viewport' },
 ];
 
-for (const { width, percent, rootMin } of textScales) {
+for (const { width, rootPercent, rootMin, label } of reflowScenarios) {
   for (const route of routes) {
-    test(`${route.label} contains page content at ${percent}% enlarged text and ${width}px`, async ({ page }) => {
+    test(`${route.label} contains page content with ${label} at ${width}px`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
       await page.emulateMedia({ reducedMotion: 'reduce' });
       await page.route('**/api/analytics/page-view', request =>
         request.fulfill({ status: 204, body: '' }),
       );
-      // Apply the text scale before React hydration, rather than mutating font
-      // sizes mid-page. This avoids measuring mixed style/layout generations.
-      await page.addInitScript(scale => {
+      // Apply only the 200% text scale before hydration. At 400% zoom,
+      // browser CSS viewport width decreases, while root font-size in CSS
+      // pixels does not become 64px on an unchanged desktop viewport.
+      if (rootPercent > 100) await page.addInitScript(scale => {
         const apply = () => {
           const style = document.createElement('style');
           style.dataset.amaanaSyntheticTextScale = String(scale);
@@ -36,7 +38,7 @@ for (const { width, percent, rootMin } of textScales) {
         } else {
           apply();
         }
-      }, percent);
+      }, rootPercent);
 
       const response = await page.goto(route.path, { waitUntil: 'load' });
       expect(response?.ok(), route.path).toBeTruthy();
@@ -62,7 +64,7 @@ for (const { width, percent, rootMin } of textScales) {
       expect(geometry.headingText.length, route.path).toBeGreaterThan(4);
       expect(geometry.headingLeft, route.path).toBeGreaterThanOrEqual(-1);
       expect(geometry.headingRight, route.path).toBeLessThanOrEqual(width + 1);
-      expect(geometry.documentWidth, `${route.path}: page overflow with ${percent}% root text`)
+      expect(geometry.documentWidth, `${route.path}: page overflow with ${label}`)
         .toBeLessThanOrEqual(geometry.viewportWidth + 1);
     });
   }
