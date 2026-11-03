@@ -156,6 +156,16 @@ test("counts same-origin built CSS links, independent of attribute order", () =>
   ]);
 });
 
+test("AF-R057 excludes HTML comment stylesheet references from measured CSS", () => {
+  const actual = '<link rel="stylesheet" href="/_next/static/chunks/current.css">';
+  const obsolete = '<link rel="stylesheet" href="/_next/static/chunks/obsolete.css">';
+  const expected = ["https://amaanafoundation.org/_next/static/chunks/current.css"];
+
+  assert.deepEqual(stylesheetsInHtml(`<!-- ${obsolete} -->${actual}`), expected);
+  // An unterminated comment consumes the remaining document, not a CSS resource.
+  assert.deepEqual(stylesheetsInHtml(`${actual}<!-- ${obsolete}`), expected);
+});
+
 test("fails on invalid input and handles unquoted hrefs", () => {
   assert.throws(() => stylesheetsInHtml(null, "https://amaanafoundation.org"), /HTML/);
   assert.throws(() => stylesheetsInHtml("", "data:text/plain,a"), /HTTP/);
