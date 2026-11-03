@@ -165,6 +165,36 @@ export async function deleteTeamMember(formData: FormData) {
   }, "Team member removed.");
 }
 
+type TeamSortPosition = { id: string; sortOrder: number };
+
+/**
+ * A unique adjacent pair can exchange positions with two database writes.
+ * If either position is shared, rewrite the deterministic ordered sequence
+ * instead: a two-row swap could otherwise move unrelated tied rows.
+ */
+function adjacentTeamSortWrites(
+  rows: readonly TeamSortPosition[],
+  from: number,
+  to: number,
+): TeamSortPosition[] {
+  const selected = rows[from]!;
+  const neighbor = rows[to]!;
+  const positionsAreExclusive = selected.sortOrder !== neighbor.sortOrder &&
+    rows.every((row, index) => index === from || index === to ||
+      (row.sortOrder !== selected.sortOrder && row.sortOrder !== neighbor.sortOrder));
+
+  if (positionsAreExclusive) {
+    return [
+      { id: selected.id, sortOrder: neighbor.sortOrder },
+      { id: neighbor.id, sortOrder: selected.sortOrder },
+    ];
+  }
+
+  const reorderedIds = rows.map(row => row.id);
+  [reorderedIds[from], reorderedIds[to]] = [reorderedIds[to]!, reorderedIds[from]!];
+  return reorderedIds.map((id, index) => ({ id, sortOrder: (index + 1) * 10 }));
+}
+
 export async function reorderTeamMember(formData: FormData) {
   const user = await requirePermission("content.update");
   await perform(async () => {
@@ -175,17 +205,14 @@ export async function reorderTeamMember(formData: FormData) {
       const siblings = await tx.teamMember.findMany({
         where: { groupId: selected.groupId, deletedAt: null },
         orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
-        select: { id: true },
+        select: { id: true, sortOrder: true },
       });
       const at = siblings.findIndex(item => item.id === id);
       if (at < 0) throw new Error("No such team member.");
       const next = at + (direction === "up" ? -1 : 1);
       if (next < 0 || next >= siblings.length) return;
-      const currentMember = siblings[at]!;
-      siblings[at] = siblings[next]!;
-      siblings[next] = currentMember;
-      for (let index = 0; index < siblings.length; index++) {
-        await tx.teamMember.update({ where: { id: siblings[index]!.id }, data: { sortOrder: (index + 1) * 10 } });
+      for (const position of adjacentTeamSortWrites(siblings, at, next)) {
+        await tx.teamMember.update({ where: { id: position.id }, data: { sortOrder: position.sortOrder } });
       }
       await tx.auditEvent.create({
         data: { actorId: user.id, action: "team.members_reordered", entityType: "TeamGroup", entityId: selected.groupId },
@@ -234,16 +261,16 @@ export async function reorderTeamGroup(formData: FormData) {
   await perform(async () => {
     const { id, direction } = parseTeamCommand(formData);
     await withSerializableTransactionRetry(async tx => {
-      const groups = await tx.teamGroup.findMany({ orderBy: [{ sortOrder: "asc" }, { id: "asc" }], select: { id: true } });
+      const groups = await tx.teamGroup.findMany({
+        orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
+        select: { id: true, sortOrder: true },
+      });
       const at = groups.findIndex(group => group.id === id);
       if (at < 0) throw new Error("No such team group.");
       const next = at + (direction === "up" ? -1 : 1);
       if (next < 0 || next >= groups.length) return;
-      const currentGroup = groups[at]!;
-      groups[at] = groups[next]!;
-      groups[next] = currentGroup;
-      for (let index = 0; index < groups.length; index++) {
-        await tx.teamGroup.update({ where: { id: groups[index]!.id }, data: { sortOrder: (index + 1) * 10 } });
+      for (const position of adjacentTeamSortWrites(groups, at, next)) {
+        await tx.teamGroup.update({ where: { id: position.id }, data: { sortOrder: position.sortOrder } });
       }
       await tx.auditEvent.create({
         data: { actorId: user.id, action: "team.groups_reordered", entityType: "TeamGroup", entityId: id },
