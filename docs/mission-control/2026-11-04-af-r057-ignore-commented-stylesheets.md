@@ -11,3 +11,7 @@
 **Release:** Full exact-head hosted CI and independent diff review; separate ready-state promotion/verify; expected-head guarded merge. Script-only/docs changes may cause a Railway website SKIPPED deployment. No current-route CSS byte baseline, compressed transfer improvement, Core Web Vital claim, or safely removable unused-CSS figure is established. AF-R057/068 historical Partial classification and the 149-item total remain unchanged. Rollback by reverting this PR.
 
 **Single writer, parallel CI:** PR #641 has its corrected browser model on independent `e2e/**` paths. Only CHATGPT_ACTIVE writes either branch; each receives separate exact-head checks and release decisions.
+
+## Merge-lineage reconciliation — 4 November 2026 IST
+
+Accepted main advanced from `4acb5fe255fff915a3e1bffbe05964e373dd5bce` to `230d539d76a44d60d516c7f5862591099bd17692` via accepted PR #641. This branch reconciles by an ordinary two-parent merge commit: parent branch HEAD `3813dad33b0d2b7863124ef0d5da4632b11ef1fa`, second parent accepted main `230d539d76a44d60d516c7f5862591099bd17692`. The merged tree retains the exact previously tested CSS audit source and native test, plus both append-only coordination histories. Previous complete CI `41730605816` passed at old head, but merged-lineage changes require fresh exact-head CI and separate ready-state before SHA-guarded merge. Railway/site rollout may legitimately SKIP scripts/docs paths.
