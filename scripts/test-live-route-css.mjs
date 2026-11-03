@@ -73,6 +73,46 @@ test("summarizes shared build CSS once per URL and accounts for UTF-8 decoded by
   assert.match(report.disclaimer, /Not network transfer|not network transfer/i);
 });
 
+test("AF-R068 reports sampled unobserved CSS decoded bytes and percent only with complete source text", () => {
+  const origin = "http://127.0.0.1:3000";
+  const url = origin + "/_next/static/chunks/hero.css";
+  const summary = summarizeCssRuleUsage([
+    { url, text: "aéb", ranges: [{ start: 0, end: 2 }] },
+    { url, text: "aéb", ranges: [{ start: 1, end: 2 }] },
+  ], origin);
+  assert.equal(summary.measuredTotalDecodedBytes, 4);
+  assert.equal(summary.measuredUsedDecodedBytes, 3);
+  assert.equal(summary.measuredUnobservedDecodedBytes, 1);
+  assert.equal(summary.sampledUnobservedPercent, 25);
+  assert.equal(summary.sampledCssTextComplete, true);
+});
+
+test("AF-R068 refuses to infer sampled unused percent when one sheet lacks text", () => {
+  const origin = "http://127.0.0.1:3000";
+  const summary = summarizeCssRuleUsage([
+    { url: origin + "/_next/static/chunks/a.css", text: "abcd", ranges: [{ start: 0, end: 2 }] },
+    { url: origin + "/_next/static/chunks/b.css", ranges: [] },
+  ], origin);
+  assert.equal(summary.measuredUnobservedDecodedBytes, 2);
+  assert.equal(summary.unmeasuredStylesheets, 1);
+  assert.equal(summary.sampledCssTextComplete, false);
+  assert.equal(summary.sampledUnobservedPercent, null);
+});
+
+test("AF-R068 excluded-only and empty CSS are not measured zero-percent waste", () => {
+  const origin = "http://127.0.0.1:3000";
+  for (const entries of [
+    [],
+    [{ url: origin + "/_next/static/chunks/empty.css", text: "", ranges: [] }],
+    [{ url: "", text: ".x{}", ranges: [] }],
+  ]) {
+    const summary = summarizeCssRuleUsage(entries, origin);
+    assert.equal(summary.measuredTotalDecodedBytes, 0);
+    assert.equal(summary.sampledCssTextComplete, false);
+    assert.equal(summary.sampledUnobservedPercent, null);
+  }
+});
+
 test("marks missing browser stylesheet text as unmeasured, never zero", () => {
   const url = "http://127.0.0.1:3000/_next/static/chunks/missing.css";
   const report = summarizeCssRuleUsage([{ url, ranges: [{ start: 0, end: 2 }] }], "http://127.0.0.1:3000");
