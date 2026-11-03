@@ -7,16 +7,16 @@ import ts from "typescript";
 // Initially mirrors legacy static regex matching; the synthetic negative
 // regression below must fail against comment/quoted guard decoys.
 function sourceHasGuardCall(source, name) {
-  return new RegExp(String.raw\`\b\${name}\s*\(\`).test(source);
+  return new RegExp("\\b" + name + "\\s*\\(").test(source);
 }
 
 test("AF-R012 rejects commented or quoted admin API guard decoys", () => {
-  const source = \`
-    // getCurrentUser()
-    /* hasPermission() */
-    const explanatoryText = "isSameOrigin()";
-    export async function POST() { return Response.json({ public: true }); }
-  \`;
+  const source = [
+    "// getCurrentUser()",
+    "/* hasPermission() */",
+    'const explanatoryText = "isSameOrigin()";',
+    "export async function POST() { return Response.json({ public: true }); }",
+  ].join("\n");
   for (const guard of ["getCurrentUser", "hasPermission", "isSameOrigin"]) {
     assert.equal(sourceHasGuardCall(source, guard), false, guard + " must be an actual call");
   }
