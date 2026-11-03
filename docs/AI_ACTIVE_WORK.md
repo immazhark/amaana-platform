@@ -1,3 +1,7 @@
+## 2026-11-04 IST — AF-R057 script raw-text CSS measurement
+
+CHATGPT_ACTIVE sole writer, draft PR #645, branch fix/css-audit-ignore-script-rawtext-20261104, accepted base 2c1db4e8e526d193291f0f31cdf6bcfc37b60619. Original test fixture escaped quoted HTML attributes and passed without detecting the defect. Corrected test-only SHA 151c187c49ecbbd5e5d4c05086096ecf58674e29 uses valid single-quoted attributes. Independent equivalent scanner RED reported inert script CSS alongside a real stylesheet; smallest raw-script removal locally GREEN. Full hosted exact-head CI, independent review, separate ready-state and SHA-guarded merge required. No application runtime, donor, payment, RBAC, schema, media, secrets or Railway mutations. Historic AF-R057 remains Partial and 149 totals unchanged.
+
 ## 2026-11-04 IST — AF-R057 reconciled onto accepted PR #641
 
 Draft PR #642 continues under one CHATGPT_ACTIVE writer. Accepted main moved to `230d539d76a44d60d516c7f5862591099bd17692` after PR #641 full `41730248691`, ready `41734684572`, guarded merge; Railway website/worker SKIPPED as expected for test/docs-only. Current public runtime remains `4acb5fe255fff915a3e1bffbe05964e373dd5bce` with uncached ready status. Preserve both PRs' append-only history and keep source CSS measurement correction unchanged. New merge-lineage commit must run fresh exact-head CI and separate ready-state before protected merge; no force pushes.
