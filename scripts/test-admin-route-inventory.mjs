@@ -4,10 +4,21 @@ import { join, relative, sep } from "node:path";
 import { test } from "node:test";
 import ts from "typescript";
 
-// Initially mirrors legacy static regex matching; the synthetic negative
-// regression below must fail against comment/quoted guard decoys.
+// Count actual direct guard calls, not identifiers in comments, quoted text,
+// or member access. This is a static inventory contract, not a runtime RBAC proof.
 function sourceHasGuardCall(source, name) {
-  return new RegExp("\\b" + name + "\\s*\\(").test(source);
+  const ast = ts.createSourceFile("synthetic-admin-route.ts", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  let found = false;
+  function visit(node) {
+    if (found) return;
+    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === name) {
+      found = true;
+      return;
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(ast);
+  return found;
 }
 
 test("AF-R012 rejects commented or quoted admin API guard decoys", () => {
