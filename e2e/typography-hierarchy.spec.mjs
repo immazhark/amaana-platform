@@ -1,6 +1,49 @@
 import { expect, test } from '@playwright/test';
 import { waitForPublicOverview } from './helpers/public-overview-ready.mjs';
 
+// AF-R025: verify every actual shared heading is horizontally contained and
+// readable, plus at least one real multiline heading per public overview route.
+// A short title may legitimately occupy one line at 390px.
+for (const width of [320, 390]) {
+  for (const route of ['/our-work', '/stories']) {
+    test(`shared SectionHeading uses readable leading on ${route} at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
+      expect(response?.ok()).toBeTruthy();
+
+      const titles = page.locator('.af-section-heading .v2-section-title');
+      await expect(titles.first()).toBeVisible();
+      const metrics = await titles.evaluateAll(nodes =>
+        nodes.filter(node => node.getClientRects().length > 0).map(node => {
+          const style = getComputedStyle(node);
+          const bounds = node.getBoundingClientRect();
+          const lineHeight = parseFloat(style.lineHeight);
+          return {
+            text: node.textContent?.trim(),
+            leading: lineHeight / parseFloat(style.fontSize),
+            lines: bounds.height / lineHeight,
+            left: bounds.left,
+            right: bounds.right,
+          };
+        }),
+      );
+
+      expect(metrics.length, route).toBeGreaterThan(0);
+      for (const metric of metrics) {
+        expect(metric.text?.length, route).toBeGreaterThan(0);
+        expect(metric.leading, metric.text).toBeGreaterThanOrEqual(1.12);
+        expect(metric.left, metric.text).toBeGreaterThanOrEqual(-1);
+        expect(metric.right, metric.text).toBeLessThanOrEqual(width + 1);
+      }
+      expect(
+        metrics.some(metric => metric.lines >= 1.45),
+        `${route} must contain at least one actual multiline title at ${width}px`,
+      ).toBe(true);
+    });
+  }
+}
+
 // AF-R025: PageHero headings can wrap on narrow screens and must retain
 // readable line-box separation without increasing public page overflow.
 for (const width of [320, 390]) {
