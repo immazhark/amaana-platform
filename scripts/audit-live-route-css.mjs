@@ -14,7 +14,10 @@ export function stylesheetsInHtml(html, origin = ORIGIN) {
   const site = new URL(origin);
   if (!/^https?:$/.test(site.protocol) || site.username || site.password) throw new Error("Origin must use HTTP(S) without credentials");
   const unique = new Set();
-  for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
+  // Commented-out (including unterminated) links are not rendered resources.
+  // Strip inert HTML comments before the existing same-origin CSS checks.
+  const renderedMarkup = html.replace(/<!--[\s\S]*?(?:-->|$)/g, "");
+  for (const match of renderedMarkup.matchAll(/<link\b[^>]*>/gi)) {
     const rel = attr(match[0], "rel");
     const raw = attr(match[0], "href");
     if (!rel?.toLowerCase().split(/\s+/).includes("stylesheet") || !raw) continue;
