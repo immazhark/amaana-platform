@@ -466,7 +466,7 @@ test("browser JS rejects invalid sizes, unsafe totals and invalid navigation inp
 
 test("AF-R057 does not count stylesheet-shaped strings in script raw text", () => {
   const genuine = '<link rel="stylesheet" href="/_next/static/chunks/genuine.css">';
-  const scriptValue = '<link rel="stylesheet" href="/_next/static/chunks/inert.js-string.css">';
+  const scriptValue = "<link rel='stylesheet' href='/_next/static/chunks/inert.js-string.css'>";
   const expected = ["https://amaanafoundation.org/_next/static/chunks/genuine.css"];
   assert.deepEqual(stylesheetsInHtml(`<script>const note = ${JSON.stringify(scriptValue)};</script>${genuine}`), expected);
   // With no closing script tag, the remaining HTML is script text, not a CSS resource.
