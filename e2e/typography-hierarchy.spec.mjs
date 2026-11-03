@@ -1,6 +1,36 @@
 import { expect, test } from '@playwright/test';
 import { waitForPublicOverview } from './helpers/public-overview-ready.mjs';
 
+// AF-R025: shared public SectionHeading mobile line boxes must be readable on
+// real overview routes, without creating a clipped or horizontally shifted title.
+for (const width of [320, 390]) {
+  for (const route of ['/our-work', '/stories']) {
+    test(`shared SectionHeading wraps with readable leading on ${route} at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
+      expect(response?.ok()).toBeTruthy();
+
+      const title = page.locator('.af-section-heading .v2-section-title').first();
+      await expect(title).toBeVisible();
+      const size = await title.evaluate(node => {
+        const styles = getComputedStyle(node);
+        const bounds = node.getBoundingClientRect();
+        return {
+          leading: parseFloat(styles.lineHeight) / parseFloat(styles.fontSize),
+          lines: bounds.height / parseFloat(styles.lineHeight),
+          left: bounds.left,
+          right: bounds.right,
+        };
+      });
+      expect(size.leading).toBeGreaterThanOrEqual(1.12);
+      expect(size.lines).toBeGreaterThanOrEqual(1.45);
+      expect(size.left).toBeGreaterThanOrEqual(-1);
+      expect(size.right).toBeLessThanOrEqual(width + 1);
+    });
+  }
+}
+
 // AF-R025: PageHero headings can wrap on narrow screens and must retain
 // readable line-box separation without increasing public page overflow.
 for (const width of [320, 390]) {
