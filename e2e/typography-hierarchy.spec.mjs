@@ -44,6 +44,47 @@ for (const width of [320, 390]) {
   }
 }
 
+// AF-R025: direct v2/v3 editorial headings are not SectionHeading components.
+// Test the actual Contact, Impact and Faith overview headings at narrow widths.
+const directEditorialHeadings = [
+  { route: '/contact', selector: '.v2-contact-safety h2.v2-section-title' },
+  { route: '/impact', selector: '.v2-impact-trust h2.v2-section-title' },
+  { route: '/faith-and-reflections', selector: '.v2-faith-action h2.v2-section-title' },
+];
+
+for (const width of [320, 390]) {
+  for (const { route, selector } of directEditorialHeadings) {
+    test(`direct editorial heading keeps readable leading at ${width}px on ${route}`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
+      expect(response?.ok(), route).toBeTruthy();
+
+      const heading = page.locator(selector);
+      await expect(heading).toBeVisible();
+      const metrics = await heading.evaluate(node => {
+        const style = getComputedStyle(node);
+        const bounds = node.getBoundingClientRect();
+        const lineHeight = parseFloat(style.lineHeight);
+        return {
+          text: node.textContent?.trim(),
+          fontSize: parseFloat(style.fontSize),
+          leading: lineHeight / parseFloat(style.fontSize),
+          lines: bounds.height / lineHeight,
+          left: bounds.left,
+          right: bounds.right,
+        };
+      });
+      expect(metrics.text?.length, route).toBeGreaterThan(15);
+      expect(metrics.fontSize, route).toBeGreaterThan(20);
+      expect(metrics.leading, route).toBeGreaterThanOrEqual(1.12);
+      expect(metrics.lines, route).toBeGreaterThanOrEqual(1.45);
+      expect(metrics.left, route).toBeGreaterThanOrEqual(-1);
+      expect(metrics.right, route).toBeLessThanOrEqual(width + 1);
+    });
+  }
+}
+
 // AF-R025: PageHero headings can wrap on narrow screens and must retain
 // readable line-box separation without increasing public page overflow.
 for (const width of [320, 390]) {
