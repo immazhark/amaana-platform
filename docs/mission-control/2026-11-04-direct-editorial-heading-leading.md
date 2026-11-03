@@ -1,0 +1,9 @@
+# AF-R025 — direct editorial heading leading (4 November 2026 IST)
+
+**Verified gap:** After accepted PR #639 brought shared SectionHeading leading to 1.14, the separate selector `:is(.v2-section-title,.v3-heading)` in `src/app/experience-finish.css` still used `line-height:1.04`. It applies to direct editorial headings on Contact privacy, Impact trust/evidence and Faith & Reflections action.
+
+**RED-first evidence:** Draft PR #640 on `fix/direct-editorial-heading-leading-20261104` from protected accepted main `b07567af02d73ba59296dcf41a3f98db3fa18e94`. RED head `1e19a73715a2ebb0e894c14c10da228bcdbf0d55`, hosted CI `41717885471`: exactly one new native assertion failed, 1.04 below >=1.12, while 2,602 other Vitest cases passed and 20 isolated DB cases skipped. Six browser tests on three actual routes at 320/390px committed before the behavior change.
+
+**Production correction:** `10d338b457ca14c98cf6255aed85d10762613c90` modifies only one `line-height` property 1.04 to 1.14 in the existing global v2/v3 editorial title block. Preserve selector, font size/family/weight, colors, spacing, responsive breaks, public text/data. Browser checks actual computed leading, font sizes, real multiline wrapping and horizontal viewport containment.
+
+**Release gates:** Full exact-head plan/fast/browser/database/production/verify; independent review, separate ready-for-review promotion CI and protected expected-head SHA merge. If merged, inspect Railway site deployment SHA and independently fetch uncached /api/health/version and /api/health/ready. Tests under src/** trigger Railway. Keep notifications/cron dormant, no infra, payments, media, tax or schema actions. Historical 149 classifications unchanged; full 200/400% zoom and physical assistive technology remain external. Rollback by reverting bounded PR.
