@@ -6,6 +6,14 @@ No generated JavaScript is executed. Unsafe asset paths, invalid lists/maps, mis
 
 # Public route CSS measurement — AF-R057 / AF-R068
 
+## AF-R068 sampled unobserved CSS — conditional audit measure (3 November 2026)
+
+The Chromium rule-coverage report now provides `measuredUnobservedDecodedBytes` (measured decoded source minus observed used ranges), `sampledCssTextComplete` and `sampledUnobservedPercent`. The percentage exists **only** when every included same-origin Next build sheet supplied source text and the decoded measured denominator is nonzero. Missing source text, empty collections and zero-byte samples yield `null`, never false zero-percent evidence. Duplicate ranges are merged and UTF-16 offsets are converted to decoded UTF-8 byte counts.
+
+This is a **sampled-unobserved share of included Next build stylesheets**, not the amount of CSS safely removable. Inline and cross-origin styles are excluded and counted separately. Hidden, hover, focus, error, menu, zoom and responsive states outside the captured browser sample can all use CSS that appears unobserved. No claim that AF-R068's under-10% target is met; review interaction-state traces before pruning selectors. Do not confuse these decoded CSS bytes with network transfer or Core Web Vitals.
+
+
+
 ## Next.js 16 build attribution — AF-R047 bounded extension
 
 When Next.js omits `app-build-manifest.json`, `scripts/report-route-bundles.mjs` can now use per-page `page_client-reference-manifest.js` evidence for **assigned, uncompressed on-disk CSS bytes**. The generated wrapper is parsed as JSON data without executing JavaScript. Page identity must match the expected App Router entry; inherited layouts and the page are deduplicated, while sibling/error-only styles are excluded from ordinary routes. Generated global-error/not-found routes use their own source entries.

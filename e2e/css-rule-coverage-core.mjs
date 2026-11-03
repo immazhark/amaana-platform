@@ -71,13 +71,30 @@ export function summarizeCssRuleUsage(entries, origin) {
     return { url, totalDecodedBytes, usedDecodedBytes };
   });
 
+  // An unobserved-byte proportion is only meaningful when *every included*
+  // same-origin Next build sheet has browser source text. Excluded inline and
+  // third-party styles are deliberately outside this narrow denominator.
+  if (!Number.isSafeInteger(measuredTotalDecodedBytes) ||
+      !Number.isSafeInteger(measuredUsedDecodedBytes) ||
+      measuredUsedDecodedBytes > measuredTotalDecodedBytes) {
+    throw new Error("Invalid measured CSS decoded byte totals");
+  }
+  const measuredUnobservedDecodedBytes = measuredTotalDecodedBytes - measuredUsedDecodedBytes;
+  const sampledCssTextComplete = unmeasuredStylesheets === 0 && measuredTotalDecodedBytes > 0;
+  const sampledUnobservedPercent = sampledCssTextComplete
+    ? (measuredUnobservedDecodedBytes / measuredTotalDecodedBytes) * 100
+    : null;
+
   return {
     metric: "sampled-chromium-css-usage-decoded-bytes",
     stylesheets,
     measuredTotalDecodedBytes,
     measuredUsedDecodedBytes,
+    measuredUnobservedDecodedBytes,
+    sampledCssTextComplete,
+    sampledUnobservedPercent,
     unmeasuredStylesheets,
     excluded,
-    disclaimer: "Used ranges in sampled Chromium route states only. Not network transfer bytes, complete unused-selector coverage, or field Web Vitals.",
+    disclaimer: "Sampled, included same-origin Next CSS only. An unobserved fraction is not proved unused CSS, full responsive/interactive coverage, network transfer, or field Web Vitals.",
   };
 }
