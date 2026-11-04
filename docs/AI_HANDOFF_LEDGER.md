@@ -2315,3 +2315,8 @@ Single CHATGPT_ACTIVE implementation writer. Draft PR #646: RED-first hosted fas
 
 CHATGPT_ACTIVE sole writer, independent P1 source-only test branch fix/af-r047-malformed-layout-assets-20261105 from guarded main df4c5c23b5b4ecaa7c96a3de0036e4bfb70eb874. A malformed inherited /layout or nested layout list is presently iterated as characters (string) or treated as absent (null), producing an incomplete rather than rejected asset attribution. Test-first native regression exercises four invalid shapes for both root and nested layouts. Require hosted RED evidence, narrow fail-closed correction, exact-head full CI, separate ready-state, guarded merge. PR #647/#648 retain independent runtime changes and undergo validation in parallel; reconcile coordination histories after their release. No website, auth, payment, schema, media, secrets, infrastructure or donor changes. AF-R047 and historical 149 classifications remain unchanged.
 
+
+## 2026-11-05 IST — AF-R047 inherited layout fail-closed correction
+
+RED hosted CI 41891766989 on test-only head 8a844cefcfb2673303eb2b87e2e82518e31be60c: native report suite 59 passed, exactly the new malformed inherited layout assertion failed (Missing expected exception), and later jobs skipped. Smallest correction validates an explicitly present inherited /layout or nested /layout asset list is an array before iterating. Absent layout remains permitted, unchanged valid layout assets remain counted, and page-list validation remains intact. Exact-head full GREEN, independent review, separate ready-state and protected merge remain pending. Independent PR #647/#648 validate in parallel; coordination reconciliation required. Canonical 149 remains unchanged.
+
