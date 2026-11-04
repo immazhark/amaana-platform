@@ -5,3 +5,9 @@
 **RED-first focused synthetic contract:** start a wheel-only Lenis enhancement, click a same-origin link to another pathname, observe the expected teardown, then simulate a queued wheel before pathname commit. Old-route wheel events must not reinitialize optional smoothing during an in-flight transition. A fresh wheel after a new pathname effect should be eligible again. Confirm first new test fails on uncorrected source via hosted exact-head CI. Maintain native page scrolling regardless of enhancement.
 
 **Scope controls:** do not relax existing browser assertions, disable smooth scrolling globally, change static budgets, change website design or modify provider/payment/security boundaries. Require full CI on corrected exact head, separate ready-state verification, guarded merge and Railway/public runtime proof before describing as live. Preserve historical 149-item classification. Revert this bounded task if incompatibilities are found.
+
+## Hosted RED and bounded GREEN correction
+
+GitHub Actions `41883686672` at test-only SHA `1f3c98bb620d3c687ebb5bb103371f061b921be3`: 2,603 Vitest tests passed, the one new synthetic route-handoff test failed at `src/components/site-scroll.test.ts:489` because `created` was called twice before pathname commit; 20 isolated DB tests were skipped. Downstream jobs skipped after intended red fast phase are not passes.
+
+Corrected `src/components/site-scroll.tsx` sets a per-effect `routeChangePending` only for same-origin, same-tab, unmodified primary link clicks to another pathname. The existing `destroy()` still removes classes and invalidates deferred imports. While the old effect remains, `eligible()` rejects queued wheel enhancement; after the pathname changes, the new effect accepts a fresh wheel. Native scrolling always remains available. Other anchor types are unchanged. CI/browser and production acceptance pending, 149 unchanged.
