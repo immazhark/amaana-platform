@@ -4,6 +4,36 @@ import { join, relative, sep } from "node:path";
 import { test } from "node:test";
 import ts from "typescript";
 
+// Count actual direct guard calls, not identifiers in comments, quoted text,
+// or member access. This is a static inventory contract, not a runtime RBAC proof.
+function sourceHasGuardCall(source, name) {
+  const ast = ts.createSourceFile("synthetic-admin-route.ts", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  let found = false;
+  function visit(node) {
+    if (found) return;
+    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === name) {
+      found = true;
+      return;
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(ast);
+  return found;
+}
+
+test("AF-R012 rejects commented or quoted admin API guard decoys", () => {
+  const source = [
+    "// getCurrentUser()",
+    "/* hasPermission() */",
+    'const explanatoryText = "isSameOrigin()";',
+    "export async function POST() { return Response.json({ public: true }); }",
+  ].join("\n");
+  for (const guard of ["getCurrentUser", "hasPermission", "isSameOrigin"]) {
+    assert.equal(sourceHasGuardCall(source, guard), false, guard + " must be an actual call");
+  }
+  assert.equal(sourceHasGuardCall("async function GET() { await getCurrentUser(); }", "getCurrentUser"), true);
+});
+
 const root = process.cwd();
 const browserContract = readFileSync(join(root, "e2e/admin-anonymous-boundaries.spec.mjs"), "utf8");
 
@@ -37,11 +67,11 @@ test("every admin API has fail-closed guards and anonymous request coverage", ()
     assert.ok(browserContract.includes(JSON.stringify(url)),
       `Anonymous API browser test does not cover: ${url}`);
     const source = readFileSync(join(root, route), "utf8");
-    assert.match(source, /\bgetCurrentUser\s*\(/, `${route}: explicit authentication required`);
-    assert.match(source, /\bhasPermission\s*\(/, `${route}: explicit permission check required`);
+    assert.ok(sourceHasGuardCall(source, "getCurrentUser"), `${route}: explicit authentication required`);
+    assert.ok(sourceHasGuardCall(source, "hasPermission"), `${route}: explicit permission check required`);
     assert.match(source, /no-store/, `${route}: private cache policy required`);
     if (/export async function POST\s*\(/.test(source)) {
-      assert.match(source, /\bisSameOrigin\s*\(/, `${route}: cross-origin mutations must be rejected`);
+      assert.ok(sourceHasGuardCall(source, "isSameOrigin"), `${route}: cross-origin mutations must be rejected`);
     }
   }
 });
