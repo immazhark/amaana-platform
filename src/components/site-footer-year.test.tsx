@@ -25,3 +25,12 @@ it.each([
   const markup = renderToStaticMarkup(<SiteFooter />);
   expect(markup).toContain(`© ${expectedYear} Amaana Foundation · Hyderabad, Telangana`);
 });
+
+it("renders the five approved official social channels, including LinkedIn and Threads", () => {
+  const markup = renderToStaticMarkup(<SiteFooter />);
+  expect(markup).toContain('href="https://www.linkedin.com/company/amaanafoundation"');
+  expect(markup).toContain('href="https://www.threads.com/@amaanafoundation"');
+  expect(markup).not.toContain('href="https://www.threads.net/@amaanafoundation"');
+  expect(markup.match(/class="footer-social-icon"/g)).toHaveLength(5);
+  expect(markup).toContain('aria-label="LinkedIn — opens in a new tab"');
+});
