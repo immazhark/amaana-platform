@@ -7,8 +7,8 @@ const socialLinks: ReadonlyArray<{ network: SocialNetwork; label: string; href: 
   { network: "instagram", label: "Instagram", href: "https://www.instagram.com/amaanafoundation/" },
   { network: "facebook", label: "Facebook", href: "https://www.facebook.com/amaanafoundation24/" },
   { network: "youtube", label: "YouTube", href: "https://www.youtube.com/@amaanafoundation" },
-  { network: "threads", label: "Threads", href: "https://www.threads.net/@amaanafoundation" },
-  { network: "linkedin", label: "LinkedIn", href: null },
+  { network: "threads", label: "Threads", href: "https://www.threads.com/@amaanafoundation" },
+  { network: "linkedin", label: "LinkedIn", href: "https://www.linkedin.com/company/amaanafoundation" },
 ];
 
 
