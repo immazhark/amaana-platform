@@ -50,6 +50,17 @@ test("ignores unsafe paths and rejects malformed or empty manifests", () => {
   assert.equal(data[0].totalBytes, 42);
 });
 
+test("AF-R047 rejects malformed inherited layout asset lists instead of undercounting bytes", () => {
+  const page = { "/page": ["static/chunks/page.js"] };
+  for (const invalid of [null, "static/css/layout.css", 42, { path: "static/css/layout.css" }]) {
+    assert.throws(() => summarizeAppRouteBundles({ ...page, "/layout": invalid }, () => 10),
+      /Invalid App Router layout asset list/);
+    assert.throws(() => summarizeAppRouteBundles({
+      ...page, "/about/page": ["static/chunks/page.js"], "/about/layout": invalid,
+    }, () => 10), /Invalid App Router layout asset list/);
+  }
+});
+
 test("legacy route assignments reject missing and invalid measured bytes", () => {
   const pages = { '/page': ['static/chunks/page.js'] };
   for (const bytes of [undefined, null, NaN, Infinity, -1, 1.5]) {

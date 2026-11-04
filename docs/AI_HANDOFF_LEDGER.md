@@ -2310,3 +2310,8 @@ Single CHATGPT_ACTIVE implementation writer. Independent PR #645: first fixture 
 ## 2026-11-04 IST — AF-R080 schema scanner scripted-text false positive
 
 Single CHATGPT_ACTIVE implementation writer. Draft PR #646: RED-first hosted fast CI 41744717000 at cd3e115e496a6c4e71bb7202a02b2ad77fc3712b had 18 passing native cases and one new expected failure, `Unclosed public HTML tag`. The correction explicitly skips script raw-text body in neutralizeQuotedMarkup before tag tokenization, while still parsing the surrounding actual script opening/closing tags. No production app, payment, private data, media or infra. Fresh full exact-head CI and ready-state before protected merge. Historic 149 counts unchanged.
+
+## 2026-11-05 IST — AF-R047 invalid inherited layout assets RED-first
+
+CHATGPT_ACTIVE sole writer, independent P1 source-only test branch fix/af-r047-malformed-layout-assets-20261105 from guarded main df4c5c23b5b4ecaa7c96a3de0036e4bfb70eb874. A malformed inherited /layout or nested layout list is presently iterated as characters (string) or treated as absent (null), producing an incomplete rather than rejected asset attribution. Test-first native regression exercises four invalid shapes for both root and nested layouts. Require hosted RED evidence, narrow fail-closed correction, exact-head full CI, separate ready-state, guarded merge. PR #647/#648 retain independent runtime changes and undergo validation in parallel; reconcile coordination histories after their release. No website, auth, payment, schema, media, secrets, infrastructure or donor changes. AF-R047 and historical 149 classifications remain unchanged.
+
