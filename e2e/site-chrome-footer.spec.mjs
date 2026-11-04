@@ -100,9 +100,10 @@ test('shared header, reminder/live rail and footer use one deliberate desktop sy
   });
   expect(Math.abs(footerGeometry.titleLeft - footerGeometry.introLeft)).toBeLessThanOrEqual(2);
 
-  await expect(page.locator('.footer-socials a')).toHaveCount(4);
-  await expect(page.locator('.footer-socials a[href*="threads.net"]')).toHaveCount(1);
-  await expect(page.locator('.footer-social-icon svg')).toHaveCount(4);
+  await expect(page.locator('.footer-socials a')).toHaveCount(5);
+  await expect(page.locator('.footer-socials a[href="https://www.threads.com/@amaanafoundation"]')).toHaveCount(1);
+  await expect(page.locator('.footer-socials a[href="https://www.linkedin.com/company/amaanafoundation"]')).toHaveCount(1);
+  await expect(page.locator('.footer-social-icon svg')).toHaveCount(5);
 
   const footerLink = page.locator('.footer-links a').first();
   const before = await footerLink.evaluate(element => getComputedStyle(element).color);

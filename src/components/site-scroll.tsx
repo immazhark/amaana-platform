@@ -19,6 +19,8 @@ export function useSiteScroll(pathname: string) {
     let loading = false;
     let disposed = false;
     let generation = 0;
+    // Keep queued old-route wheel events native until the next pathname effect.
+    let routeChangePending = false;
     let frame: number | undefined;
     const tick = (time: number) => {
       frame = undefined;
@@ -43,7 +45,7 @@ export function useSiteScroll(pathname: string) {
         document.documentElement?.classList?.remove("lenis", "lenis-smooth", "lenis-scrolling", "lenis-stopped");
       }
     };
-    const eligible = () => !wheelEnhancementDisabled && !disposed && !preference.matches && pointer.matches && !document.hidden;
+    const eligible = () => !wheelEnhancementDisabled && !disposed && !routeChangePending && !preference.matches && pointer.matches && !document.hidden;
     const wake = () => { if (instance && frame === undefined) frame = requestAnimationFrame(tick); };
     const initialize = async (event: WheelEvent) => {
       if (!eligible() || event.ctrlKey || event.defaultPrevented || loading || instance) return;
@@ -111,7 +113,19 @@ export function useSiteScroll(pathname: string) {
       window.scrollTo?.({ top, behavior: "instant" });
     };
     const click = (event: MouseEvent) => {
-      if (event.target instanceof Element && event.target.closest("a[href], button, summary")) native();
+      if (!(event.target instanceof Element)) return;
+      const anchor = event.target.closest<HTMLAnchorElement>("a[href]");
+      // A real same-tab route click may be followed by wheel events that were
+      // already queued on the old page. Do not remount the optional enhancer
+      // until a new pathname effect has installed its own listener.
+      if (anchor && typeof anchor.origin === "string" &&
+          anchor.origin === window.location.origin && anchor.pathname !== pathname &&
+          (!anchor.target || anchor.target === "_self") && !anchor.hasAttribute("download") &&
+          event.button === 0 && !event.defaultPrevented &&
+          !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
+        routeChangePending = true;
+      }
+      if (anchor || event.target.closest("button, summary")) native();
     };
     const sync = () => { if (!eligible()) destroy(); };
     window.addEventListener("wheel", wheel, { passive: false });
