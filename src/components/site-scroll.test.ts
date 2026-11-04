@@ -433,3 +433,64 @@ test.each(["click", "popstate", "hashchange"])(
     } finally { cleanup?.(); }
   },
 );
+
+test("cross-route link handoff ignores a queued wheel until the destination pathname commits", async () => {
+  let cleanup: (() => void) | undefined;
+  const created = vi.fn();
+  const destroyed = vi.fn();
+  vi.doMock("react", () => ({
+    useEffect: (effect: () => () => void) => { cleanup = effect(); },
+  }));
+  vi.doMock("lenis", () => ({
+    default: class {
+      constructor() { created(); }
+      on() {}
+      destroy() { destroyed(); }
+    },
+  }));
+  const windowTarget = Object.assign(new EventTarget(), {
+    location: { origin: "https://amaanafoundation.org" },
+    matchMedia: (query: string) => Object.assign(new EventTarget(), {
+      matches: query === "(pointer: fine)",
+    }),
+  });
+  const link = {
+    origin: "https://amaanafoundation.org", pathname: "/our-work",
+    target: "", hasAttribute: () => false,
+  };
+  class ClickedLinkChild {
+    closest(selector: string) { return selector.includes("a[href]") ? link : null; }
+  }
+  vi.stubGlobal("window", windowTarget);
+  vi.stubGlobal("document", Object.assign(new EventTarget(), {
+    hidden: false,
+    body: { matches: () => false },
+    documentElement: { classList: { remove: vi.fn() } },
+  }));
+  vi.stubGlobal("Element", ClickedLinkChild);
+  vi.stubGlobal("requestAnimationFrame", vi.fn(() => 1));
+  vi.stubGlobal("cancelAnimationFrame", vi.fn());
+  const { useSiteScroll } = await import("./site-scroll");
+  useSiteScroll("/about");
+  try {
+    windowTarget.dispatchEvent(new Event("wheel"));
+    await vi.waitFor(() => expect(created).toHaveBeenCalledOnce());
+    const click = Object.assign(new Event("click"), {
+      button: 0, ctrlKey: false, metaKey: false, shiftKey: false, altKey: false,
+    });
+    Object.defineProperty(click, "target", { value: new ClickedLinkChild() });
+    windowTarget.dispatchEvent(click);
+    expect(destroyed).toHaveBeenCalledOnce();
+
+    // Wheel events already queued in the previous page may not remount Lenis
+    // while a cross-route Link is in flight. Browser-native scroll remains.
+    windowTarget.dispatchEvent(new Event("wheel"));
+    await vi.dynamicImportSettled();
+    expect(created).toHaveBeenCalledOnce();
+
+    cleanup?.();
+    useSiteScroll("/our-work");
+    windowTarget.dispatchEvent(new Event("wheel"));
+    await vi.waitFor(() => expect(created).toHaveBeenCalledTimes(2));
+  } finally { cleanup?.(); }
+});

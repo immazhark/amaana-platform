@@ -2306,3 +2306,7 @@ One CHATGPT_ACTIVE repository writer; third active draft PR #644 at start alongs
 ## 2026-11-04 IST — AF-R057 script CSS scan regression
 
 Single CHATGPT_ACTIVE implementation writer. Independent PR #645: first fixture false green due to escaped HTML attribute quotes. Corrected test-only head 151c187c49ecbbd5e5d4c05086096ecf58674e29 has valid HTML tag syntax. Equivalent isolated Node regression RED for inert CSS tag inside script and GREEN with raw script stripping. Actual production source correction limited to read-only audit script. Browser, database, release acceptance and separate ready-state pending. Previous PRs #643/#644 have nonoverlapping source paths; 149 unchanged.
+
+## 2026-11-04 IST — Lenis navigation queued-wheel test-first candidate
+
+One writer CHATGPT_ACTIVE. Draft branch fix/lenis-route-handoff-wheel-race-20261104 from accepted main 4473ec2dff03c39e4124692a675515ec86a5cdec created test-only with a synthetic cross-path link click, queued wheel before pathname commit, and fresh wheel after new pathname. Motivated by one non-repeatable-by-itself main browser assertion failure, push CI 41844403652; scope AF-R049 motion hydration/route lifecycle but not 149 item completion. Check hosted RED before minimal source adjustment; keep real browser, build, database, separate ready-state and SHA-guarded merge mandatory. Independent #646/#647 remain in CI. No live donors, outbound calls or infra changes.
