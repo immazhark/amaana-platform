@@ -23,8 +23,11 @@ export function summarizeAppRouteBundles(pages, byteSize) {
   if (!pages || typeof pages !== "object" || Array.isArray(pages)) {
     throw new Error("Next.js app build manifest has no valid pages map");
   }
-  const routePages = Object.keys(pages).filter(key => key.endsWith("/page") && Array.isArray(pages[key]));
+  const routePages = Object.keys(pages).filter(key => key.endsWith("/page"));
   if (!routePages.length) throw new Error("No App Router page entries found in the build manifest");
+  if (routePages.some(page => !Array.isArray(pages[page]))) {
+    throw new Error("Invalid App Router page asset list");
+  }
 
   return routePages.map(page => {
     const parts = page.split("/").filter(Boolean);
