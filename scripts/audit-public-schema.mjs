@@ -57,7 +57,7 @@ function neutralizeQuotedMarkup(html) {
       continue;
     }
     // HTML script contents are raw text, even if JavaScript strings look like tags.
-    const scriptRawText = /^<script(?=[\\s/>])/i.test(html.slice(i, i + 16));
+    const scriptRawText = /^<script(?=[\s/>])/i.test(html.slice(i, i + 16));
     let quote = null;
     let closed = false;
     let first = true;
@@ -77,7 +77,7 @@ function neutralizeQuotedMarkup(html) {
     if (!closed) throw new Error("Unclosed public HTML tag");
     if (scriptRawText) {
       const remaining = html.slice(i);
-      const end = /<\\/script\\s*>/i.exec(remaining);
+      const end = /<\/script\s*>/i.exec(remaining);
       if (!end) throw new Error("Unclosed public script raw text");
       output += remaining.slice(0, end.index);
       i += end.index;
