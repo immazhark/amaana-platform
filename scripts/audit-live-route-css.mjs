@@ -16,7 +16,8 @@ export function stylesheetsInHtml(html, origin = ORIGIN) {
   const unique = new Set();
   // Commented-out (including unterminated) links are not rendered resources.
   // Strip inert HTML comments before the existing same-origin CSS checks.
-  const renderedMarkup = html.replace(/<!--[\s\S]*?(?:-->|$)/g, "");
+  const renderedMarkup = html.replace(/<!--[\s\S]*?(?:-->|$)/g, "")
+    .replace(/<script\b[^>]*>[\s\S]*?(?:<\/script\s*>|$)/gi, "");
   for (const match of renderedMarkup.matchAll(/<link\b[^>]*>/gi)) {
     const rel = attr(match[0], "rel");
     const raw = attr(match[0], "href");

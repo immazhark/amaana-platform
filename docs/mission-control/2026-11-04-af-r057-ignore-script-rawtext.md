@@ -1,0 +1,5 @@
+# AF-R057 CSS audit must ignore script raw text — 4 November 2026 IST
+
+The read-only HTML CSS scanner can count a tag-shaped JavaScript string as a rendered stylesheet. The initial test fixture escaped quotes and passed incorrectly; test-only head 151c187c49ecbbd5e5d4c05086096ecf58674e29 corrected this input. An equivalent local scanner regression failed before correction (inert script CSS URL reported along with a real link), and passed after the exact script-exclusion expression. Actual hosted exact-head acceptance remains pending and the first false-green run is not valid defect proof.
+
+Correction: strip both terminated and unterminated HTML script raw-text ranges after preserving existing HTML comment stripping; retain original same-origin, credential, path, query, redirect, MIME and size safeguards. Do not claim actual network savings, performance improvements or field Core Web Vitals. No runtime application source changed. Review and separate ready-state validation are required before expected-head protected merge. Historical 149 classifications unchanged. Rollback is revert of this narrow PR.

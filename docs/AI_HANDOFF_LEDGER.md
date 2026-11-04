@@ -2303,6 +2303,10 @@ One CHATGPT_ACTIVE implementation writer; third bounded draft PR #643 on `test/a
 
 One CHATGPT_ACTIVE repository writer; third active draft PR #644 at start alongside #642/#643. RED head `c3fe36774c6f16cb85f023aa588d6fc710846dd3` on main `230d539d76a44d60d516c7f5862591099bd17692`, CI `41739252156` plan SUCCESS, fast failed exactly one new Node test, 56 route-bundle tests passed; downstream jobs skipped intentionally after fast failed. Corrected `summarizeAppRouteBundles` fail-closed page-list validation and reconciled source onto newly accepted main `2c1db4e8e526d193291f0f31cdf6bcfc37b60619` with normal two-parent commit. Only scripts/report-route-bundles.mjs, its native test, coordination and task evidence changed. No production runtime behavior. Needs full exact-head CI, separate ready-state, protected merge and Railway disposition. 149 historical classifications unchanged.
 
+## 2026-11-04 IST — AF-R057 script CSS scan regression
+
+Single CHATGPT_ACTIVE implementation writer. Independent PR #645: first fixture false green due to escaped HTML attribute quotes. Corrected test-only head 151c187c49ecbbd5e5d4c05086096ecf58674e29 has valid HTML tag syntax. Equivalent isolated Node regression RED for inert CSS tag inside script and GREEN with raw script stripping. Actual production source correction limited to read-only audit script. Browser, database, release acceptance and separate ready-state pending. Previous PRs #643/#644 have nonoverlapping source paths; 149 unchanged.
+
 ## 2026-11-04 IST — AF-R080 schema scanner scripted-text false positive
 
 Single CHATGPT_ACTIVE implementation writer. Draft PR #646: RED-first hosted fast CI 41744717000 at cd3e115e496a6c4e71bb7202a02b2ad77fc3712b had 18 passing native cases and one new expected failure, `Unclosed public HTML tag`. The correction explicitly skips script raw-text body in neutralizeQuotedMarkup before tag tokenization, while still parsing the surrounding actual script opening/closing tags. No production app, payment, private data, media or infra. Fresh full exact-head CI and ready-state before protected merge. Historic 149 counts unchanged.
