@@ -414,3 +414,15 @@ test("CLI tolerates a closed output reader while malformed builds still fail", a
     rmSync(directory, { recursive: true, force: true });
   }
 });
+
+
+test("AF-R047 rejects malformed page asset lists instead of silently omitting routes", () => {
+  const valid = { "/page": [], "/about/page": [] };
+  assert.equal(summarizeAppRouteBundles(valid, () => 0).length, 2);
+  for (const malformed of [null, undefined, {}, "static/chunks/a.js", 0]) {
+    assert.throws(() => summarizeAppRouteBundles({
+      "/page": malformed,
+      "/about/page": [],
+    }, () => 0), /Invalid App Router page asset list/);
+  }
+});
