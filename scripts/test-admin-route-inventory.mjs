@@ -98,7 +98,7 @@ test("AF-R012 detects exported async arrow and function-expression server action
     "export const unguardedArrow = async (id) => id;",
     "export const guardedExpression = async function () { await requirePermission('media.manage'); };",
     "export async function guardedDeclaration() { await requirePermission('team.manage'); }",
-  ].join("\\n");
+  ].join("\n");
   const ast = ts.createSourceFile("synthetic-server-actions.ts", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
   const actions = exportedAsyncProtectedActions(ast);
   assert.deepEqual(actions.map(action => action.name), [
