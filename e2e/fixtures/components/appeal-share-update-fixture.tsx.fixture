@@ -1,0 +1,21 @@
+"use client";
+
+import { useState } from "react";
+import { AppealShare } from "./appeal-share";
+
+const initial = {
+  title: "Verified education appeal",
+  summary: "Help provide essential learning materials.",
+  path: "/appeals/verified-education",
+};
+
+export function AppealShareUpdateFixture() {
+  const [appeal, setAppeal] = useState(initial);
+  return <>
+    <button type="button" onClick={() => setAppeal(current => ({ ...current, path: "/appeals/synthetic-second" }))}>Change appeal path</button>
+    <button type="button" onClick={() => setAppeal(current => ({ ...current, title: "Synthetic updated title" }))}>Change appeal title</button>
+    <button type="button" onClick={() => setAppeal(current => ({ ...current, summary: "Synthetic updated summary." }))}>Change appeal summary</button>
+    <button type="button" onClick={() => setAppeal(initial)}>Restore initial appeal</button>
+    <AppealShare {...appeal} />
+  </>;
+}

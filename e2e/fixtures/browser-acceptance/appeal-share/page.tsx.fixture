@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { AppealShare } from "@/components/appeal-share";
+import { AppealShareUpdateFixture } from "@/components/appeal-share-update-fixture";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
@@ -13,11 +13,7 @@ export default function AppealShareFixture() {
   return (
     <main className="v2-shell" style={{ minHeight: "600px", paddingTop: "3rem" }}>
       <h1>Appeal sharing acceptance</h1>
-      <AppealShare
-        title="Verified education appeal"
-        summary="Help provide essential learning materials."
-        path="/appeals/verified-education"
-      />
+      <AppealShareUpdateFixture />
     </main>
   );
 }
