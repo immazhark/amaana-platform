@@ -28,6 +28,10 @@ export function summarizeAppRouteBundles(pages, byteSize) {
   if (routePages.some(page => !Array.isArray(pages[page]))) {
     throw new Error("Invalid App Router page asset list");
   }
+  if (Object.entries(pages).some(([entry, assets]) =>
+    entry.endsWith("/layout") && !Array.isArray(assets))) {
+    throw new Error("Invalid App Router layout asset list");
+  }
 
   return routePages.map(page => {
     const parts = page.split("/").filter(Boolean);
