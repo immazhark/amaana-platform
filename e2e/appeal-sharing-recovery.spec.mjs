@@ -3,6 +3,34 @@ import { expect, test } from "@playwright/test";
 const url = "https://amaanafoundation.org/appeals/verified-education";
 const fixture = "/browser-acceptance/appeal-share";
 
+for (const field of ["path", "title", "summary"]) {
+  test(`pending copy feedback belongs to its original appeal when ${field} changes`, async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__appealCopies = [];
+      Object.defineProperty(navigator, "clipboard", {
+        configurable: true,
+        value: { writeText: value => new Promise(resolve => window.__appealCopies.push({ value, resolve })) },
+      });
+    });
+    await page.goto(fixture);
+    const status = page.locator(".v2-appeal-share-status");
+    await page.getByRole("button", { name: "Copy link", exact: true }).click();
+    await expect.poll(() => page.evaluate(() => window.__appealCopies.length)).toBe(1);
+    await page.getByRole("button", { name: `Change appeal ${field}`, exact: true }).click();
+    await page.evaluate(async () => {
+      window.__appealCopies[0].resolve();
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    });
+    await expect(status).toBeEmpty();
+    await page.getByRole("button", { name: "Copy link", exact: true }).click();
+    await expect.poll(() => page.evaluate(() => window.__appealCopies.length)).toBe(2);
+    await page.evaluate(() => window.__appealCopies[1].resolve());
+    await expect(status).toHaveText("Link copied.");
+    await page.getByRole("button", { name: "Restore initial appeal", exact: true }).click();
+    await expect(status).toBeEmpty();
+  });
+}
+
 test("native share rejection copies the canonical appeal link", async ({ page }) => {
   await page.addInitScript(() => {
     window.__copiedAppeal = "";

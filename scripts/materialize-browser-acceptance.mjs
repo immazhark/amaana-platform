@@ -7,12 +7,14 @@ const appTarget = path.join(root, "src", "app", "browser-acceptance");
 const componentTarget = path.join(root, "src", "components", "donation-remount-fixture.tsx");
 const galleryTarget = path.join(root, "src", "components", "gallery-update-fixture.tsx");
 const navigationReturnTarget = path.join(root, "src", "components", "navigation-return-fixture.tsx");
+const appealShareTarget = path.join(root, "src", "components", "appeal-share-update-fixture.tsx");
 const enabled = process.env.AMAANA_BROWSER_ACCEPTANCE === "true";
 
 await rm(appTarget, { recursive: true, force: true });
 await rm(componentTarget, { force: true });
 await rm(galleryTarget, { force: true });
 await rm(navigationReturnTarget, { force: true });
+await rm(appealShareTarget, { force: true });
 
 if (!enabled) {
   console.log("Browser-acceptance routes excluded from this build.");
@@ -58,6 +60,10 @@ await copyFile(
 await copyFile(
   path.join(sourceRoot, "components", "navigation-return-fixture.tsx.fixture"),
   navigationReturnTarget,
+);
+await copyFile(
+  path.join(sourceRoot, "components", "appeal-share-update-fixture.tsx.fixture"),
+  appealShareTarget,
 );
 
 const imageCacheTarget = path.join(appTarget, "image-cache-source");
