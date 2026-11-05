@@ -71,6 +71,7 @@ export function calculateClsSessionWindows(shifts) {
     } else {
       value += shift.value;
     }
+    if (!Number.isFinite(value)) throw new Error("Invalid CLS session score");
     previousTime = shift.startTime;
     max = Math.max(max, value);
   }
