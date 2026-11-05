@@ -76,7 +76,9 @@ jobs:
         run: npm run audit:prod
 
       - name: Audit global CSS architecture
-        run: node scripts/audit-global-css.mjs
+        run: |
+          node --test scripts/test-global-appeal-css-scope.mjs
+          node scripts/audit-global-css.mjs
       - name: Enforce public Compliance hold text contrast
         run: node --test scripts/test-compliance-hold-contrast.mjs
       - name: Validate App Router bundle reporting
