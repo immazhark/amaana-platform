@@ -43,7 +43,7 @@ test("AF-R007 scanner detects configured database and administrator password val
     const result = runScanner("const fixture = " + JSON.stringify(syntheticValue), { [name]: syntheticValue });
     assert.equal(result.status, 1, name + ": configured private value must not reach public assets");
     assert.match(result.stderr, /REDACTED SECRET VALUE/);
-    assert.doesNotMatch(result.stderr + result.stdout, new RegExp(syntheticValue.replace(/[.*+?^$()|[\]{}]/g, "\\test("client bundle guard catches forbidden environment variable names", () => {")));
+    assert.equal((result.stderr + result.stdout).includes(syntheticValue), false, name + ": do not echo secret values");
   }
 });
 
