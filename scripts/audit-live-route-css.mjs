@@ -15,9 +15,10 @@ export function stylesheetsInHtml(html, origin = ORIGIN) {
   if (!/^https?:$/.test(site.protocol) || site.username || site.password) throw new Error("Origin must use HTTP(S) without credentials");
   const unique = new Set();
   // Commented-out (including unterminated) links are not rendered resources.
-  // Strip inert HTML comments before the existing same-origin CSS checks.
+  // Raw-text/RCDATA bodies cannot contain active stylesheet links.
+  // Stop at the matching closing element so later genuine links remain visible.
   const renderedMarkup = html.replace(/<!--[\s\S]*?(?:-->|$)/g, "")
-    .replace(/<script\b[^>]*>[\s\S]*?(?:<\/script\s*>|$)/gi, "");
+    .replace(/<(script|style|title|textarea|xmp|noembed|noframes)(?=[\t\n\f\r />])[^>]*>[\s\S]*?(?:<\/\1\s*>|$)/gi, "");
   for (const match of renderedMarkup.matchAll(/<link\b[^>]*>/gi)) {
     const rel = attr(match[0], "rel");
     const raw = attr(match[0], "href");
