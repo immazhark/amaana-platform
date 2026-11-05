@@ -36,6 +36,48 @@ function sourceHasGuardCall(source, name, method) {
   return false;
 }
 
+// Shared synthetic and inventory check; preserve its current behavior for RED.
+function actionHasPermissionGuard(body) {
+  let permissionGuardFound = false;
+  const visit = node => {
+    if (permissionGuardFound) return;
+    if (
+      ts.isCallExpression(node)
+      && ts.isIdentifier(node.expression)
+      && node.expression.text === "requirePermission"
+    ) {
+      permissionGuardFound = true;
+      return;
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(body);
+  return permissionGuardFound;
+}
+
+test("AF-R012 ignores permission calls hidden in never-invoked server-action helpers", () => {
+  const examples = [
+    ["nested function", "function unused() { requirePermission('appeals.update'); }"],
+    ["arrow callback", "const unused = () => requirePermission('appeals.update');"],
+    ["async callback", "const unused = async () => { await requirePermission('appeals.update'); };"],
+    ["object method", "const unused = { check() { return requirePermission('appeals.update'); } };"],
+  ];
+  for (const [label, hidden] of examples) {
+    const source = `export async function save() { ${hidden} return "unguarded"; }`;
+    const ast = ts.createSourceFile("synthetic-action.ts", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    const action = ast.statements.find(statement => ts.isFunctionDeclaration(statement) && statement.name?.text === "save");
+    assert.ok(action?.body, label);
+    assert.equal(actionHasPermissionGuard(action.body), false, `${label} must not satisfy action permission inventory`);
+  }
+
+  const direct = ts.createSourceFile("direct-action.ts",
+    "export async function save() { await requirePermission('appeals.update'); }",
+    ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const action = direct.statements.find(statement => ts.isFunctionDeclaration(statement) && statement.name?.text === "save");
+  assert.ok(action?.body);
+  assert.equal(actionHasPermissionGuard(action.body), true, "An action's direct guard must remain detectable");
+});
+
 test("AF-R012 rejects commented or quoted admin API guard decoys", () => {
   const source = [
     "// getCurrentUser()",
@@ -140,23 +182,8 @@ test("every protected admin server action independently requires permission", ()
       if (!isExported || !isAsync) continue;
 
       exportedActionCount += 1;
-      let permissionGuardFound = false;
-      const visit = node => {
-        if (permissionGuardFound) return;
-        if (
-          ts.isCallExpression(node)
-          && ts.isIdentifier(node.expression)
-          && node.expression.text === "requirePermission"
-        ) {
-          permissionGuardFound = true;
-          return;
-        }
-        ts.forEachChild(node, visit);
-      };
-      visit(statement.body);
-
       assert.ok(
-        permissionGuardFound,
+        actionHasPermissionGuard(statement.body),
         `${path}:${statement.name.text} must independently call requirePermission()`,
       );
     }
