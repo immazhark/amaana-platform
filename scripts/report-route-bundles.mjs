@@ -37,6 +37,9 @@ export function summarizeAppRouteBundles(pages, byteSize) {
     }
     const assets = new Set();
     for (const entry of [...inherited, page]) {
+      if (entry.endsWith("/layout") && Object.hasOwn(pages, entry) && !Array.isArray(pages[entry])) {
+        throw new Error("Invalid App Router layout asset list");
+      }
       for (const raw of pages[entry] ?? []) {
         const normalized = normalizedStaticAsset(raw);
         if (normalized) assets.add(normalized);
