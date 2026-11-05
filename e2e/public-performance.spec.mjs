@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { summarizeLinkedCssResourceTiming } from './css-resource-timing.mjs';
+import { collectCssResourceTimings, summarizeLinkedCssResourceTiming } from './css-resource-timing.mjs';
 import { summarizeNextJsNavigationJsTiming } from './js-resource-timing.mjs';
 
 
@@ -40,17 +40,7 @@ async function cssPayload(page, path) {
   );
 
   // Snapshot the navigation before separate stylesheet reads used for selector assertions.
-  const resourceTimings = await page.evaluate(linkedUrls => {
-    const urls = new Set(linkedUrls);
-    return performance.getEntriesByType('resource')
-      .filter(entry => urls.has(entry.name))
-      .map(entry => ({
-        name: entry.name,
-        decodedBodySize: entry.decodedBodySize,
-        encodedBodySize: entry.encodedBodySize,
-        transferSize: entry.transferSize,
-      }));
-  }, hrefs);
+  const resourceTimings = await page.evaluate(collectCssResourceTimings);
   const timing = summarizeLinkedCssResourceTiming(hrefs, resourceTimings);
 
   const bodies = [];
