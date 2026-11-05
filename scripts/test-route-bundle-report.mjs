@@ -437,3 +437,18 @@ test("AF-R047 rejects malformed page asset lists instead of silently omitting ro
     }, () => 0), /Invalid App Router page asset list/);
   }
 });
+
+for (const [label, invalid] of [["null", null], ["boolean", false], ["number", 7], ["array", []], ["object", {}], ["empty", ""]]) {
+  for (const kind of ["aggregate", "CSS", "JavaScript"]) {
+    test(`AF-R047 rejects ${label} page route values in ${kind} inventory`, () => {
+      const pages = { "/page": "/", "/donate/page": invalid };
+      const readManifest = page => jsReferenceSource(page, { "[project]/src/app/layout": [] })
+        .replace('"entryCSSFiles":{}', '"entryCSSFiles":{"[project]/src/app/layout":[]}');
+      assert.throws(() => {
+        if (kind === "aggregate") return summarizeUnattributedAppAssets(pages, []);
+        if (kind === "CSS") return reporter.summarizeClientReferenceCss(pages, readManifest, () => 0);
+        return reporter.summarizeClientReferenceJs(pages, readManifest, [], () => 0);
+      }, /Invalid App Router page route/);
+    });
+  }
+}
