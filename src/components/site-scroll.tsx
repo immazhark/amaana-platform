@@ -37,7 +37,11 @@ export function useSiteScroll(pathname: string) {
       // never interrupt native navigation or prevent the next wheel retry.
       instance = undefined;
       try {
-        previous?.destroy();
+        // Reset native velocity before removing vendor listeners/classes.
+        // Lenis' pending native-scroll timer survives destroy(); stopping
+        // first makes its later reset a no-op rather than restoring classes.
+        try { previous?.stop(); }
+        finally { previous?.destroy(); }
       } catch {
         wheelEnhancementDisabled = true;
         // Optional smooth scrolling must fail closed to browser-native scroll.
