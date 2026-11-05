@@ -124,6 +124,27 @@ test("AF-R012 detects exported async arrow and function-expression server action
   ], "An unguarded async arrow must fail its own permission check, not vanish from inventory");
 });
 
+test("AF-R012 inventories variable-exported admin API handlers, even if unguarded", () => {
+  const source = [
+    "const privateHelper = () => getCurrentUser();",
+    "export async function GET() { await getCurrentUser(); hasPermission({}, 'content.read'); }",
+    "export const POST = async () => Response.json({ public: true });",
+    "export const PATCH = async function () { await getCurrentUser(); hasPermission({}, 'content.update'); isSameOrigin({}); };",
+    "export const DELETE = () => Response.json({ public: true });",
+    "const privateOPTIONS = async () => Response.json({ public: true });",
+    "export const unknownMETHOD = () => Response.json({ public: true });",
+  ].join("\n");
+  assert.deepEqual(exportedRouteHandlers(source).map(handler => handler.name.text),
+    ["GET", "POST", "PATCH", "DELETE"],
+    "Every exported function-style HTTP handler must be audited; private and unknown methods must not count");
+  assert.equal(sourceHasGuardCall(source, "getCurrentUser", "POST"), false,
+    "An unguarded exported POST must fail its own authentication check");
+  assert.equal(sourceHasGuardCall(source, "isSameOrigin", "PATCH"), true,
+    "A guarded exported function expression must retain its direct origin check");
+  assert.equal(sourceHasGuardCall(source, "isSameOrigin", "DELETE"), false,
+    "An unguarded synchronous DELETE must fail its own origin check");
+});
+
 test("AF-R012 rejects commented or quoted admin API guard decoys", () => {
   const source = [
     "// getCurrentUser()",
