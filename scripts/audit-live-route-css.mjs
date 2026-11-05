@@ -3,9 +3,12 @@ import { pathToFileURL } from "node:url";
 const ORIGIN = "https://amaanafoundation.org";
 const PUBLIC_ROUTES = Object.freeze(["/", "/our-work", "/impact", "/donate", "/request-assistance"]);
 
-function attr(tag, name) {
-  const match = tag.match(new RegExp("(?:^|\\s)" + name + "\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)'|([^\\s>]+))", "i"));
-  return match ? (match[1] ?? match[2] ?? match[3]) : null;
+function attr(attributes, name) {
+  const tokens = /([^\s=/>]+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g;
+  for (const match of attributes.matchAll(tokens)) {
+    if (match[1].toLowerCase() === name) return match[2] ?? match[3] ?? match[4] ?? null;
+  }
+  return null;
 }
 
 /** Resolve same-origin Next CSS referenced by rendered public HTML. */
@@ -19,9 +22,13 @@ export function stylesheetsInHtml(html, origin = ORIGIN) {
   // Stop at the matching closing element so later genuine links remain visible.
   const renderedMarkup = html.replace(/<!--[\s\S]*?(?:-->|$)/g, "")
     .replace(/<(script|style|title|textarea|xmp|noembed|noframes)(?=[\t\n\f\r />])[^>]*>[\s\S]*?(?:<\/\1\s*>|$)/gi, "");
-  for (const match of renderedMarkup.matchAll(/<link\b[^>]*>/gi)) {
-    const rel = attr(match[0], "rel");
-    const raw = attr(match[0], "href");
+  // Consume every complete opening tag, including quoted attributes, so a
+  // link-shaped attribute value cannot become a standalone resource tag.
+  const tags = /<([a-z][a-z0-9:_-]*)(?=[\t\n\f\r />])((?:[^"'<>]|"[^"]*"|'[^']*')*)>/gi;
+  for (const match of renderedMarkup.matchAll(tags)) {
+    if (match[1].toLowerCase() !== "link") continue;
+    const rel = attr(match[2], "rel");
+    const raw = attr(match[2], "href");
     if (!rel?.toLowerCase().split(/\s+/).includes("stylesheet") || !raw) continue;
     let asset;
     try { asset = new URL(raw.replaceAll("&amp;", "&"), site); }
