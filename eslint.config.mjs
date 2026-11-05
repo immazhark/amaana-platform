@@ -10,6 +10,7 @@ const eslintConfig = defineConfig([
     rules: {
       "import/no-cycle": ["error", { ignoreExternal: true }],
       "jsx-a11y/alt-text": "error",
+      "jsx-a11y/label-has-associated-control": "error",
       "jsx-a11y/aria-props": "error",
       "jsx-a11y/aria-proptypes": "error",
       "jsx-a11y/aria-unsupported-elements": "error",
