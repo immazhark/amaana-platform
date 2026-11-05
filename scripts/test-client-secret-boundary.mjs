@@ -32,6 +32,29 @@ test("client bundle guard accepts clean static files", () => {
   assert.equal(result.status, 0, result.stderr);
 });
 
+test("AF-R007 scanner detects configured database and administrator password values without name literals", () => {
+  const protectedSettings = [
+    ["DATABASE_URL", "postgresql://synthetic:private-placeholder@invalid.example:5432/fixture"],
+    ["ADMIN_MAZHAR_PASSWORD", "synthetic-admin-mazhar-password-fixture"],
+    ["ADMIN_ATHER_PASSWORD", "synthetic-admin-ather-password-fixture"],
+    ["ADMIN_ASMA_PASSWORD", "synthetic-admin-asma-password-fixture"],
+  ];
+  for (const [name, syntheticValue] of protectedSettings) {
+    const result = runScanner("const fixture = " + JSON.stringify(syntheticValue), { [name]: syntheticValue });
+    assert.equal(result.status, 1, name + ": configured private value must not reach public assets");
+    assert.match(result.stderr, /REDACTED SECRET VALUE/);
+    assert.equal((result.stderr + result.stdout).includes(syntheticValue), false, name + ": do not echo secret values");
+  }
+});
+
+test("AF-R007 scanner flags database and administrator password variable names in public assets", () => {
+  for (const name of ["DATABASE_URL", "ADMIN_MAZHAR_PASSWORD", "ADMIN_ATHER_PASSWORD", "ADMIN_ASMA_PASSWORD"]) {
+    const result = runScanner("const fixture = " + JSON.stringify(name));
+    assert.equal(result.status, 1, name + ": server credential identifier must not appear in client assets");
+    assert.match(result.stderr, new RegExp(name));
+  }
+});
+
 test("client bundle guard catches forbidden environment variable names", () => {
   const result = runScanner("const suspect = 'RAZORPAY_WEBHOOK_SECRET';");
   assert.equal(result.status, 1);

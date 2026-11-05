@@ -3,6 +3,10 @@ import path from "node:path";
 
 const root = path.resolve(".next/static");
 const forbiddenMarkers = [
+  "DATABASE_URL",
+  "ADMIN_MAZHAR_PASSWORD",
+  "ADMIN_ATHER_PASSWORD",
+  "ADMIN_ASMA_PASSWORD",
   "S3_ACCESS_KEY_ID",
   "S3_SECRET_ACCESS_KEY",
   "MEDIA_S3_SECRET_ACCESS_KEY",
