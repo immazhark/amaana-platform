@@ -118,6 +118,19 @@ export function summarizeClientReferenceCss(appPaths, readManifest, byteSize) {
   return pages.map(([page, route]) => {
     if (!validAppPage(page)) throw new Error("Unsafe App Router page path");
     const manifest = parseClientReferenceManifest(readManifest(page), page);
+    // Validate the complete manifest before attributing a subset of its CSS.
+    // An unrelated malformed entry must not yield a successful audit report.
+    const cssByEntry = new Map();
+    for (const [key, styles] of Object.entries(manifest.entryCSSFiles)) {
+      if (!Array.isArray(styles)) throw new Error("Invalid client-reference CSS entries");
+      const paths = styles.map(style => {
+        if (!isRecord(style) || style.inlined !== false) throw new Error("Unsupported or inline CSS entry");
+        const asset = normalizedStaticAsset(style.path);
+        if (!asset || !asset.endsWith(".css")) throw new Error("Unsafe client-reference CSS asset path");
+        return asset;
+      });
+      cssByEntry.set(key, paths);
+    }
     const parts = page.slice(1).split("/");
     const entries = ["/layout", ...parts.slice(0, -1).map((_, index) =>
       "/" + parts.slice(0, index + 1).join("/") + "/layout"), page];
@@ -126,18 +139,11 @@ export function summarizeClientReferenceCss(appPaths, readManifest, byteSize) {
     const assets = new Set();
     let matchedEntries = 0;
     for (const entry of entries) {
-      const keys = Object.keys(manifest.entryCSSFiles).filter(key => key.endsWith("/app" + entry));
+      const keys = [...cssByEntry.keys()].filter(key => key.endsWith("/app" + entry));
       if (keys.length > 1) throw new Error("Ambiguous client-reference CSS entries");
       if (!keys.length) continue; // Server-only pages need not have their own CSS entry.
       matchedEntries += 1;
-      const styles = manifest.entryCSSFiles[keys[0]];
-      if (!Array.isArray(styles)) throw new Error("Invalid client-reference CSS entries");
-      for (const style of styles) {
-        if (!isRecord(style) || style.inlined !== false) throw new Error("Unsupported or inline CSS entry");
-        const asset = normalizedStaticAsset(style.path);
-        if (!asset || !asset.endsWith(".css")) throw new Error("Unsafe client-reference CSS asset path");
-        assets.add(asset);
-      }
+      for (const asset of cssByEntry.get(keys[0])) assets.add(asset);
     }
     if (!matchedEntries) throw new Error("No matching client-reference CSS entries");
     let cssBytes = 0;
