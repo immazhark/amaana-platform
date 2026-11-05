@@ -79,14 +79,29 @@ test("AF-R012 ignores permission calls hidden in never-invoked server-action hel
   assert.equal(actionHasPermissionGuard(action.body), true, "An action's direct guard must remain detectable");
 });
 
-// RED baseline: preserve the current inventory's exported function declarations
-// before testing whether other valid exported async action forms are detected.
+// Audit every directly exported async server action, not only declarations.
+// Never count unexported helpers or synchronous callbacks as server actions.
 function exportedAsyncProtectedActions(sourceFile) {
-  return sourceFile.statements.filter(statement =>
-    ts.isFunctionDeclaration(statement) && statement.name && statement.body &&
-    statement.modifiers?.some(modifier => modifier.kind === ts.SyntaxKind.ExportKeyword) &&
-    statement.modifiers?.some(modifier => modifier.kind === ts.SyntaxKind.AsyncKeyword))
-    .map(statement => ({ name: statement.name.text, body: statement.body }));
+  const actions = [];
+  const hasModifier = (node, kind) => node.modifiers?.some(modifier => modifier.kind === kind);
+  for (const statement of sourceFile.statements) {
+    if (!hasModifier(statement, ts.SyntaxKind.ExportKeyword)) continue;
+    if (ts.isFunctionDeclaration(statement)) {
+      if (statement.name && statement.body && hasModifier(statement, ts.SyntaxKind.AsyncKeyword)) {
+        actions.push({ name: statement.name.text, body: statement.body });
+      }
+    } else if (ts.isVariableStatement(statement)) {
+      for (const declaration of statement.declarationList.declarations) {
+        const initializer = declaration.initializer;
+        if (ts.isIdentifier(declaration.name) && initializer &&
+            (ts.isArrowFunction(initializer) || ts.isFunctionExpression(initializer)) &&
+            hasModifier(initializer, ts.SyntaxKind.AsyncKeyword)) {
+          actions.push({ name: declaration.name.text, body: initializer.body });
+        }
+      }
+    }
+  }
+  return actions;
 }
 
 test("AF-R012 detects exported async arrow and function-expression server actions", () => {
