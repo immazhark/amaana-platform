@@ -2326,3 +2326,13 @@ One writer CHATGPT_ACTIVE. Draft branch fix/lenis-route-handoff-wheel-race-20261
 ## 2026-11-04 IST — AF-R049 route-handoff RED reproduced
 
 One writer CHATGPT_ACTIVE. PR #648 exact initial head 1f3c98bb620d3c687ebb5bb103371f061b921be3, hosted RED run 41883686672: 2,603 existing tests green, 20 isolated DB skipped, one new synthetic route handoff test red (two Lenis mount operations instead of one on old page). Minimal correction restricts optional wheel enhancer during in-flight same-tab cross-path link navigation until pathname effect changes; native wheel behavior unaffected. Other PR #646/#647 in separate CI, shared append-only coordination must be reconciled after accepted merge. Do not infer full hydration/CWV item closure or live readiness from focused unit test. Require full CI, separate ready-state and protected merge; src/** watched deployment only after acceptance.
+
+## 2026-11-05 IST — AF-R047 invalid inherited layout assets RED-first
+
+CHATGPT_ACTIVE sole writer, independent P1 source-only test branch fix/af-r047-malformed-layout-assets-20261105 from guarded main df4c5c23b5b4ecaa7c96a3de0036e4bfb70eb874. A malformed inherited /layout or nested layout list is presently iterated as characters (string) or treated as absent (null), producing an incomplete rather than rejected asset attribution. Test-first native regression exercises four invalid shapes for both root and nested layouts. Require hosted RED evidence, narrow fail-closed correction, exact-head full CI, separate ready-state, guarded merge. PR #647/#648 retain independent runtime changes and undergo validation in parallel; reconcile coordination histories after their release. No website, auth, payment, schema, media, secrets, infrastructure or donor changes. AF-R047 and historical 149 classifications remain unchanged.
+
+
+## 2026-11-05 IST — AF-R047 inherited layout fail-closed correction
+
+RED hosted CI 41891766989 on test-only head 8a844cefcfb2673303eb2b87e2e82518e31be60c: native report suite 59 passed, exactly the new malformed inherited layout assertion failed (Missing expected exception), and later jobs skipped. Smallest correction validates an explicitly present inherited /layout or nested /layout asset list is an array before iterating. Absent layout remains permitted, unchanged valid layout assets remain counted, and page-list validation remains intact. Exact-head full GREEN, independent review, separate ready-state and protected merge remain pending. Independent PR #647/#648 validate in parallel; coordination reconciliation required. Canonical 149 remains unchanged.
+
