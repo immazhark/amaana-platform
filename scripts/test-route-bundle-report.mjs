@@ -244,6 +244,42 @@ test("CLI reports assigned CSS separately from unattributed JS and preserves mis
 const jsReferenceSource = (page, entryJSFiles) => referenceSource(page, {})
   .replace('"entryCSSFiles":{}', '"entryCSSFiles":{},"entryJSFiles":' + JSON.stringify(entryJSFiles));
 
+test("AF-R047 rejects malformed unselected CSS manifest entries before reporting route totals", () => {
+  // The manifest is trusted as a single measurement artifact, even when the
+  // malformed entry belongs to a sibling page or an unused error boundary.
+  const current = "[project]/src/app/layout";
+  const sibling = "[project]/src/app/about/error";
+  const invalid = [
+    ["null entry", null],
+    ["string entry", "static/css/other.css"],
+    ["numeric entry", 1],
+    ["non-object item", [null]],
+    ["inlined item", [{ path: "static/css/other.css", inlined: true }]],
+    ["untrusted origin", [{ path: "https://invalid.example/other.css", inlined: false }]],
+    ["path traversal", [{ path: "static/../outside.css", inlined: false }]],
+    ["missing path", [{ inlined: false }]],
+  ];
+  for (const [label, value] of invalid) {
+    assert.throws(() => reporter.summarizeClientReferenceCss(
+      { "/page": "/" },
+      page => referenceSource(page, { [current]: [], [sibling]: value }),
+      () => { throw new Error("No stylesheet sizes should be read"); },
+    ), /Invalid client-reference CSS entries|Unsupported or inline CSS entry|Unsafe client-reference CSS asset path/,
+    label);
+  }
+  assert.deepEqual(reporter.summarizeClientReferenceCss(
+    { "/page": "/" },
+    page => referenceSource(page, {
+      [current]: [{ path: "static/css/home.css", inlined: false }],
+      [sibling]: [{ path: "static/css/other.css", inlined: false }],
+    }),
+    asset => {
+      assert.equal(asset, "static/css/home.css", "Sibling CSS must not inflate the measured route");
+      return 9;
+    },
+  ), [{ route: "/", appPath: "/page", cssBytes: 9, stylesheetCount: 1 }]);
+});
+
 test("Next16 JS assignments include shared runtime and deduplicate all manifest segments", () => {
   assert.equal(typeof reporter.summarizeClientReferenceJs, "function");
   const sizes = { 'static/chunks/runtime.js': 7, 'static/chunks/shared.js': 11, 'static/chunks/page.js': 13 };
