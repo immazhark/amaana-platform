@@ -98,6 +98,7 @@ test.each(["Tab", "ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", "
         default: class {
           constructor() { created(); }
           on() {}
+          stop() {}
           destroy() { destroyed(); }
         },
       };
@@ -150,6 +151,7 @@ test.each(["click", "popstate", "hashchange"])(
       default: class {
         constructor() { created(); }
         on() {}
+        stop() {}
         destroy() { destroyed(); }
       },
     }));
@@ -236,6 +238,7 @@ test.each(["Home", "End"])(
     vi.doMock("lenis", () => ({
       default: class {
         on() {}
+        stop() {}
         destroy() { destroyed(); }
       },
     }));
@@ -295,6 +298,7 @@ test.each(["Home", "End"])("%s does not redirect native-scroll navigation to the
   vi.doMock("lenis", () => ({ default: class {
     constructor() { created(); }
     on() {}
+    stop() {}
     destroy() { destroyed(); }
   } }));
   const target = Object.assign(new EventTarget(), {
@@ -342,6 +346,7 @@ test("native route handoff clears stale Lenis root classes when destroy leaves C
   vi.doMock("lenis", () => ({ default: class {
     constructor() { created(); }
     on() {}
+    stop() {}
     destroy() { destroyed(); }
   } }));
   const target = Object.assign(new EventTarget(), {
@@ -389,6 +394,7 @@ test.each(["click", "popstate", "hashchange"])(
     vi.doMock("lenis", () => ({ default: class {
       constructor() { instances(); }
       on() {}
+      stop() {}
       destroy() { destroyed(); throw new Error("synthetic optional engine teardown failure"); }
     } }));
     const target = Object.assign(new EventTarget(), {
@@ -434,6 +440,37 @@ test.each(["click", "popstate", "hashchange"])(
   },
 );
 
+test("a stop exception still destroys Lenis and prevents a replacement instance", async () => {
+  let cleanup: (() => void) | undefined;
+  const created = vi.fn(), destroyed = vi.fn();
+  vi.doMock("react", () => ({ useEffect: (effect: () => () => void) => { cleanup = effect(); } }));
+  vi.doMock("lenis", () => ({ default: class {
+    constructor() { created(); }
+    on() {}
+    stop() { throw new Error("Synthetic stop failure"); }
+    destroy() { destroyed(); }
+  } }));
+  const target = Object.assign(new EventTarget(), {
+    matchMedia: (query: string) => Object.assign(new EventTarget(), { matches: query === "(pointer: fine)" }),
+  });
+  vi.stubGlobal("window", target);
+  vi.stubGlobal("document", Object.assign(new EventTarget(), {
+    hidden: false, body: { matches: () => false }, documentElement: { classList: { remove: vi.fn() } },
+  }));
+  vi.stubGlobal("Element", class {});
+  const { useSiteScroll } = await import("./site-scroll");
+  useSiteScroll("/about");
+  try {
+    target.dispatchEvent(new Event("wheel"));
+    await vi.waitFor(() => expect(created).toHaveBeenCalledOnce());
+    expect(() => target.dispatchEvent(new Event("popstate"))).not.toThrow();
+    expect(destroyed).toHaveBeenCalledOnce();
+    target.dispatchEvent(new Event("wheel"));
+    await vi.dynamicImportSettled();
+    expect(created).toHaveBeenCalledOnce();
+  } finally { cleanup?.(); }
+});
+
 test("cross-route link handoff ignores a queued wheel until the destination pathname commits", async () => {
   let cleanup: (() => void) | undefined;
   const created = vi.fn();
@@ -445,6 +482,7 @@ test("cross-route link handoff ignores a queued wheel until the destination path
     default: class {
       constructor() { created(); }
       on() {}
+      stop() {}
       destroy() { destroyed(); }
     },
   }));
