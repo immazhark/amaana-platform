@@ -79,6 +79,51 @@ test("AF-R012 ignores permission calls hidden in never-invoked server-action hel
   assert.equal(actionHasPermissionGuard(action.body), true, "An action's direct guard must remain detectable");
 });
 
+// Audit every directly exported async server action, not only declarations.
+// Never count unexported helpers or synchronous callbacks as server actions.
+function exportedAsyncProtectedActions(sourceFile) {
+  const actions = [];
+  const hasModifier = (node, kind) => node.modifiers?.some(modifier => modifier.kind === kind);
+  for (const statement of sourceFile.statements) {
+    if (!hasModifier(statement, ts.SyntaxKind.ExportKeyword)) continue;
+    if (ts.isFunctionDeclaration(statement)) {
+      if (statement.name && statement.body && hasModifier(statement, ts.SyntaxKind.AsyncKeyword)) {
+        actions.push({ name: statement.name.text, body: statement.body });
+      }
+    } else if (ts.isVariableStatement(statement)) {
+      for (const declaration of statement.declarationList.declarations) {
+        const initializer = declaration.initializer;
+        if (ts.isIdentifier(declaration.name) && initializer &&
+            (ts.isArrowFunction(initializer) || ts.isFunctionExpression(initializer)) &&
+            hasModifier(initializer, ts.SyntaxKind.AsyncKeyword)) {
+          actions.push({ name: declaration.name.text, body: initializer.body });
+        }
+      }
+    }
+  }
+  return actions;
+}
+
+test("AF-R012 detects exported async arrow and function-expression server actions", () => {
+  const source = [
+    "'use server';",
+    "const privateHelper = async () => { await requirePermission('private'); };",
+    "export const syncValue = () => requirePermission('not-an-action');",
+    "export const guardedArrow = async () => { await requirePermission('team.manage'); };",
+    "export const unguardedArrow = async (id) => id;",
+    "export const guardedExpression = async function () { await requirePermission('media.manage'); };",
+    "export async function guardedDeclaration() { await requirePermission('team.manage'); }",
+  ].join("\n");
+  const ast = ts.createSourceFile("synthetic-server-actions.ts", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const actions = exportedAsyncProtectedActions(ast);
+  assert.deepEqual(actions.map(action => action.name), [
+    "guardedArrow", "unguardedArrow", "guardedExpression", "guardedDeclaration",
+  ], "Every exported async action form must be included in the permission audit");
+  assert.deepEqual(actions.map(action => actionHasPermissionGuard(action.body)), [
+    true, false, true, true,
+  ], "An unguarded async arrow must fail its own permission check, not vanish from inventory");
+});
+
 test("AF-R012 rejects commented or quoted admin API guard decoys", () => {
   const source = [
     "// getCurrentUser()",
@@ -175,17 +220,11 @@ test("every protected admin server action independently requires permission", ()
     const source = readFileSync(join(root, path), "utf8");
     const sourceFile = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
 
-    for (const statement of sourceFile.statements) {
-      if (!ts.isFunctionDeclaration(statement) || !statement.name || !statement.body) continue;
-      const modifiers = statement.modifiers ?? [];
-      const isExported = modifiers.some(modifier => modifier.kind === ts.SyntaxKind.ExportKeyword);
-      const isAsync = modifiers.some(modifier => modifier.kind === ts.SyntaxKind.AsyncKeyword);
-      if (!isExported || !isAsync) continue;
-
+    for (const action of exportedAsyncProtectedActions(sourceFile)) {
       exportedActionCount += 1;
       assert.ok(
-        actionHasPermissionGuard(statement.body),
-        `${path}:${statement.name.text} must independently call requirePermission()`,
+        actionHasPermissionGuard(action.body),
+        `${path}:${action.name} must independently call requirePermission()`,
       );
     }
   }
