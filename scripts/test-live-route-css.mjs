@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { stylesheetsInHtml, summarizeRouteCssBytes, auditPublicRouteCss } from "./audit-live-route-css.mjs";
 import { mergeCssRanges, summarizeCssRuleUsage } from "../e2e/css-rule-coverage-core.mjs";
-import { summarizeLinkedCssResourceTiming } from "../e2e/css-resource-timing.mjs";
+import { collectCssResourceTimings, summarizeLinkedCssResourceTiming } from "../e2e/css-resource-timing.mjs";
 import { summarizeNextJsNavigationJsTiming } from "../e2e/js-resource-timing.mjs";
 
 test("browser timing separates decoded CSS, encoded CSS and navigation transfer", () => {
@@ -527,3 +527,41 @@ for (const [label, sources, names, count, requests] of [
     assert.deepEqual(result.unavailableTransferScripts, []);
   });
 }
+
+const cssRequest = "https://amaanafoundation.org/_next/static/chunks/fragment.css";
+for (const [label, hrefs, names, count] of [
+  ["href fragment", [cssRequest + "#one"], [cssRequest], 1],
+  ["fragment aliases", [cssRequest + "#one", cssRequest + "#two"], [cssRequest], 1],
+  ["timing fragment", [cssRequest], [cssRequest + "#one"], 1],
+  ["distinct queries", [cssRequest + "?v=1#one", cssRequest + "?v=2#two"], [cssRequest + "?v=1", cssRequest + "?v=2"], 2],
+  ["same query aliases", [cssRequest + "?v=1#one", cssRequest + "?v=1#two"], [cssRequest + "?v=1"], 1],
+]) {
+  test(`browser CSS timing matches fragment-free requests: ${label}`, () => {
+    const result = summarizeLinkedCssResourceTiming(hrefs, names.map(name => ({ name, decodedBodySize: 100, encodedBodySize: 50, transferSize: 60 })));
+    assert.equal(result.stylesheetCount, count);
+    assert.equal(result.decodedBodyBytes, count * 100);
+    assert.equal(result.encodedBodyBytes, count * 50);
+    assert.equal(result.transferBytes, count * 60);
+    assert.deepEqual(result.missingTimingStylesheets, []);
+    assert.deepEqual(result.unavailableTransferStylesheets, []);
+  });
+}
+
+test("browser CSS timing rejects a fragment without a resource URL", () => {
+  assert.throws(() => summarizeLinkedCssResourceTiming(["#fragment"], []), /Browser CSS links must be nonempty URLs/);
+});
+
+test("browser CSS snapshot retains fragment-free timing until normalized link matching", t => {
+  t.mock.method(performance, "getEntriesByType", type => {
+    assert.equal(type, "resource");
+    return [
+      { name: cssRequest, decodedBodySize: 100, encodedBodySize: 50, transferSize: 60 },
+      { name: "https://amaanafoundation.org/image.png", decodedBodySize: 9000, encodedBodySize: 8000, transferSize: 8100 },
+    ];
+  });
+  const result = summarizeLinkedCssResourceTiming([cssRequest + "#one"], collectCssResourceTimings());
+  assert.equal(result.stylesheetCount, 1);
+  assert.equal(result.decodedBodyBytes, 100);
+  assert.equal(result.transferBytes, 60);
+  assert.deepEqual(result.missingTimingStylesheets, []);
+});

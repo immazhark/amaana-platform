@@ -4,19 +4,35 @@ function addTimingBytes(total, bytes, metric) {
   return sum;
 }
 
+/** Snapshot before any later selector-audit requests; matching happens below. */
+export function collectCssResourceTimings() {
+  return performance.getEntriesByType("resource").map(entry => ({
+    name: entry.name,
+    decodedBodySize: entry.decodedBodySize,
+    encodedBodySize: entry.encodedBodySize,
+    transferSize: entry.transferSize,
+  }));
+}
+
 /** Browser-linked CSS response sizes. Zero transfer can mean cache or opaque timing. */
 export function summarizeLinkedCssResourceTiming(hrefs, resourceTimings) {
   if (!Array.isArray(hrefs) || !Array.isArray(resourceTimings)) {
     throw new TypeError("Browser CSS links and timings must be arrays");
   }
-  const uniqueHrefs = [...new Set(hrefs)];
-  if (uniqueHrefs.some(href => typeof href !== "string" || !href)) {
+  if (hrefs.some(href => typeof href !== "string" || !href)) {
+    throw new TypeError("Browser CSS links must be nonempty URLs");
+  }
+  // URL fragments do not identify separate HTTP stylesheet requests.
+  const requestKey = value => value.split("#", 1)[0];
+  const uniqueHrefs = [...new Set(hrefs.map(requestKey))];
+  if (uniqueHrefs.some(href => !href)) {
     throw new TypeError("Browser CSS links must be nonempty URLs");
   }
   const byHref = new Map();
   for (const entry of resourceTimings) {
     if (!entry || typeof entry.name !== "string") throw new TypeError("Invalid browser CSS timing entry");
-    if (!byHref.has(entry.name)) byHref.set(entry.name, entry);
+    const key = requestKey(entry.name);
+    if (!byHref.has(key)) byHref.set(key, entry);
   }
 
   let decodedBodyBytes = 0;
