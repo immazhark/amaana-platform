@@ -2336,3 +2336,13 @@ CHATGPT_ACTIVE sole writer, independent P1 source-only test branch fix/af-r047-m
 
 RED hosted CI 41891766989 on test-only head 8a844cefcfb2673303eb2b87e2e82518e31be60c: native report suite 59 passed, exactly the new malformed inherited layout assertion failed (Missing expected exception), and later jobs skipped. Smallest correction validates an explicitly present inherited /layout or nested /layout asset list is an array before iterating. Absent layout remains permitted, unchanged valid layout assets remain counted, and page-list validation remains intact. Exact-head full GREEN, independent review, separate ready-state and protected merge remain pending. Independent PR #647/#648 validate in parallel; coordination reconciliation required. Canonical 149 remains unchanged.
 
+
+## 2026-11-05 IST — AF-R080 inert CSS/title raw-text regression (RED-first)
+
+CHATGPT_ACTIVE sole repo writer, branch test/af-r080-inert-css-title-20261105 from protected accepted main 101782f1196746be4601ffb1eeb1b95994f0560e. Synthetic source-only schema audit regression: syntactically valid CSS `content: "<link"` or title text containing tag-shaped fragments must not be parsed as active HTML. The current neutralizeQuotedMarkup processes those bodies before stripInertMarkup and can throw an unclosed-tag error. First commit adds the failing native regression only. Await hosted RED, smallest scanner repair, exact-head full CI, independent review, separate ready-state and protected merge. No Next public runtime, indexing changes, payments, auth, schema migration, media, secrets or infrastructure actions. Parallel #649 has separate reporting source and coordination reconciliation is required. Historical 149 classifications unchanged.
+
+
+## 2026-11-05 IST — AF-R080 CSS/title raw-text RED and bounded correction
+
+Test-only head 2fc7c8b8fd906e9da34ee45e6d2d7d22bbeae8d5 hosted CI 41912063059: the new style/title regression failed at scripts/test-public-schema-audit.mjs:221, `Unclosed public HTML tag` from neutralizeQuotedMarkup; downstream checks skipped. Correction extends the previously accepted script raw-text handling to the exact inert style/title/xmp/noembed/noframes set already stripped by stripInertMarkup, preserving the actual opening/closing tags, original schema/URL checks and fail-closed missing closure. No Next.js runtime, payments, admin, private data, schema migration, Railway or published content changed. Full exact-head CI, independent review, ready-state and expected-head merge required. Historical 149 classifications unchanged.
+

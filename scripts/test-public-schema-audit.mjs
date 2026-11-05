@@ -213,6 +213,17 @@ test("non-HTML, absent-body and oversized transport responses fail closed", asyn
   }
 });
 
+test("AF-R080 accepts inert CSS and title text containing tag-like fragments", () => {
+  for (const extra of [
+    '<style>body::after { content: "<link"; }</style>',
+    '<title>Information about <link elements</title>',
+  ]) {
+    const result = analyzePublicSchemaHtml("/", page(graph, `${origin}/`, extra));
+    assert.equal(result.status, "STRUCTURE_VALID_EXTERNAL_ACCEPTANCE_PENDING");
+    assert.equal(result.canonical, `${origin}/`);
+  }
+});
+
 test("AF-R080 ignores harmless tag-like text inside ordinary JavaScript", () => {
   const html = page(graph, `${origin}/`, '<script>const documentation = "<link";</script>');
   const result = analyzePublicSchemaHtml("/", html);
