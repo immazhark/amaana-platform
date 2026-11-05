@@ -488,3 +488,25 @@ for (const [label, invalid] of [["null", null], ["boolean", false], ["number", 7
     });
   }
 }
+
+test("AF-R047 rejects malformed unmatched legacy layout manifest entries", () => {
+  const selected = {
+    "/layout": ["static/chunks/root.js"],
+    "/page": ["static/chunks/home.js"],
+    "/about/page": ["static/chunks/about.js"],
+  };
+  const valid = summarizeAppRouteBundles({
+    ...selected,
+    "/unselected/layout": ["static/chunks/unused.js"],
+  }, () => 5);
+  assert.equal(valid.length, 2);
+  assert.equal(valid.find(row => row.route === "/").jsBytes, 10,
+    "Unrelated valid layout resources must not inflate the selected route");
+  for (const value of [null, "static/chunks/unused.js", 1, { path: "static/chunks/unused.js" }]) {
+    assert.throws(() => summarizeAppRouteBundles({
+      ...selected,
+      "/unselected/layout": value,
+    }, () => 5), /Invalid App Router layout asset list/,
+    "Malformed sibling layouts must not silently pass the integrity audit");
+  }
+});
