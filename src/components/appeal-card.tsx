@@ -1,4 +1,5 @@
 import Link from "next/link";
+import "@/app/appeal-card.css";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { amountToNumber, formatINR, type PublicAppeal } from "@/lib/appeals";
 
