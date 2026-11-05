@@ -169,6 +169,8 @@ jobs:
 
       - run: npm run prisma:generate
       - run: npm run prisma:validate
+      - name: Enforce accessible label association with positive and negative JSX
+        run: node --test scripts/test-eslint-governance.mjs
       - run: npm run lint
       - run: npm run typecheck
 
