@@ -130,3 +130,14 @@ test("invalid values, missing/duplicate runs, private paths and trace traversal 
   assert.throws(() => profileTraceName("/", 6));
   assert.equal(profileTraceName("/our-work", 2), "our-work-run-2.zip");
 });
+
+test("AF-R048 refuses overflowed CLS session totals instead of reporting Infinity", () => {
+  assert.throws(() => calculateClsSessionWindows([
+    { startTime: 0, value: Number.MAX_VALUE },
+    { startTime: 100, value: Number.MAX_VALUE },
+  ]), /Invalid CLS session score/);
+  assert.equal(calculateClsSessionWindows([
+    { startTime: 0, value: Number.MAX_VALUE },
+    { startTime: 1_100, value: Number.MAX_VALUE },
+  ]), Number.MAX_VALUE, "Separate windows must not be summed into overflow");
+});
