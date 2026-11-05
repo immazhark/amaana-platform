@@ -12,10 +12,48 @@ const mutatingMethods = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
 function exportedRouteHandlers(source) {
   const ast = ts.createSourceFile("synthetic-admin-route.ts", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-  return ast.statements.filter(statement =>
-    ts.isFunctionDeclaration(statement) && statement.name && statement.body &&
-    routeMethods.has(statement.name.text) &&
-    statement.modifiers?.some(modifier => modifier.kind === ts.SyntaxKind.ExportKeyword));
+  const handlers = [];
+  const isExported = statement => statement.modifiers?.some(
+    modifier => modifier.kind === ts.SyntaxKind.ExportKeyword);
+  for (const statement of ast.statements) {
+    // A named re-export can expose a handler without an inspectable body.
+    if (ts.isExportDeclaration(statement)) {
+      if (!statement.exportClause) throw new Error("Cannot statically audit wildcard admin API export");
+      if (ts.isNamedExports(statement.exportClause)) {
+        for (const name of statement.exportClause.elements) {
+          if (routeMethods.has(name.name.text)) {
+            throw new Error("Cannot statically audit re-exported admin API handler");
+          }
+        }
+      }
+      continue;
+    }
+    if (!isExported(statement)) continue;
+    if (ts.isFunctionDeclaration(statement)) {
+      if (statement.name && statement.body && routeMethods.has(statement.name.text)) {
+        handlers.push(statement);
+      }
+      continue;
+    }
+    if (!ts.isVariableStatement(statement)) continue;
+    for (const declaration of statement.declarationList.declarations) {
+      if (!ts.isIdentifier(declaration.name)) {
+        throw new Error("Cannot statically audit destructured admin API export");
+      }
+      if (!routeMethods.has(declaration.name.text)) continue;
+      let initializer = declaration.initializer;
+      while (initializer && (
+        ts.isParenthesizedExpression(initializer) ||
+        ts.isAsExpression(initializer) ||
+        ts.isSatisfiesExpression(initializer)
+      )) initializer = initializer.expression;
+      if (!initializer || !(ts.isArrowFunction(initializer) || ts.isFunctionExpression(initializer))) {
+        throw new Error("Cannot statically audit exported admin API handler");
+      }
+      handlers.push({ name: declaration.name, body: initializer.body });
+    }
+  }
+  return handlers;
 }
 
 function sourceHasGuardCall(source, name, method) {
@@ -122,6 +160,45 @@ test("AF-R012 detects exported async arrow and function-expression server action
   assert.deepEqual(actions.map(action => actionHasPermissionGuard(action.body)), [
     true, false, true, true,
   ], "An unguarded async arrow must fail its own permission check, not vanish from inventory");
+});
+
+test("AF-R012 inventories variable-exported admin API handlers, even if unguarded", () => {
+  const source = [
+    "const privateHelper = () => getCurrentUser();",
+    "export async function GET() { await getCurrentUser(); hasPermission({}, 'content.read'); }",
+    "export const POST = async () => Response.json({ public: true });",
+    "export const PATCH = async function () { await getCurrentUser(); hasPermission({}, 'content.update'); isSameOrigin({}); };",
+    "export const DELETE = () => Response.json({ public: true });",
+    "const privateOPTIONS = async () => Response.json({ public: true });",
+    "export const unknownMETHOD = () => Response.json({ public: true });",
+  ].join("\n");
+  assert.deepEqual(exportedRouteHandlers(source).map(handler => handler.name.text),
+    ["GET", "POST", "PATCH", "DELETE"],
+    "Every exported function-style HTTP handler must be audited; private and unknown methods must not count");
+  assert.equal(sourceHasGuardCall(source, "getCurrentUser", "POST"), false,
+    "An unguarded exported POST must fail its own authentication check");
+  assert.equal(sourceHasGuardCall(source, "isSameOrigin", "PATCH"), true,
+    "A guarded exported function expression must retain its direct origin check");
+  assert.equal(sourceHasGuardCall(source, "isSameOrigin", "DELETE"), false,
+    "An unguarded synchronous DELETE must fail its own origin check");
+});
+
+test("AF-R012 rejects uninspectable exported admin HTTP aliases and supports wrapped functions", () => {
+  for (const source of [
+    "export const POST = wrapper(async () => Response.json({ ok: true }));",
+    "const POST = async () => Response.json({ ok: true }); export { POST };",
+    "export { POST } from './shared-route';",
+    "export * from './shared-route';",
+    "export const { GET } = helper;",
+  ]) assert.throws(() => exportedRouteHandlers(source), /Cannot statically audit/);
+
+  const wrapped = [
+    "export const POST = ((async () => { await getCurrentUser(); isSameOrigin({}); }))",
+    "  satisfies (...args: unknown[]) => Promise<unknown>;",
+  ].join("\n");
+  assert.deepEqual(exportedRouteHandlers(wrapped).map(handler => handler.name.text), ["POST"]);
+  assert.equal(sourceHasGuardCall(wrapped, "getCurrentUser", "POST"), true);
+  assert.equal(sourceHasGuardCall(wrapped, "isSameOrigin", "POST"), true);
 });
 
 test("AF-R012 rejects commented or quoted admin API guard decoys", () => {
