@@ -34,6 +34,28 @@ test("AF-R012 rejects commented or quoted admin API guard decoys", () => {
   assert.equal(sourceHasGuardCall("async function GET() { await getCurrentUser(); }", "getCurrentUser"), true);
 });
 
+test("AF-R012 requires real guards inside the exported admin handler, not unused helpers", () => {
+  const deceptive = [
+    "async function unusedGuards() {",
+    "  await getCurrentUser(); hasPermission({}, 'content.update'); isSameOrigin({});",
+    "}",
+    "export async function POST() { return Response.json({ public: true }); }",
+  ].join("\n");
+  for (const guard of ["getCurrentUser", "hasPermission", "isSameOrigin"]) {
+    assert.equal(sourceHasGuardCall(deceptive, guard), false,
+      guard + " must be called from an exported route handler");
+  }
+  const wrongMethod = [
+    "export async function GET() { isSameOrigin({}); }",
+    "export async function POST() { return Response.json({ public: true }); }",
+  ].join("\n");
+  assert.equal(sourceHasGuardCall(wrongMethod, "isSameOrigin", "POST"), false,
+    "GET guard must not satisfy the POST mutation contract");
+  assert.equal(sourceHasGuardCall(
+    "export async function POST() { const user = await getCurrentUser(); return user; }",
+    "getCurrentUser", "POST"), true);
+});
+
 const root = process.cwd();
 const browserContract = readFileSync(join(root, "e2e/admin-anonymous-boundaries.spec.mjs"), "utf8");
 
