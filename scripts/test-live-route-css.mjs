@@ -472,3 +472,21 @@ test("AF-R057 does not count stylesheet-shaped strings in script raw text", () =
   // With no closing script tag, the remaining HTML is script text, not a CSS resource.
   assert.deepEqual(stylesheetsInHtml(`${genuine}<script>const note = ${JSON.stringify(scriptValue)};`), expected);
 });
+
+for (const element of ["style", "title", "textarea", "xmp", "noembed", "noframes"]) {
+  test(`AF-R057 excludes stylesheet-shaped ${element} text and resumes after its closing tag`, () => {
+    const fake = '<link rel="stylesheet" href="/_next/static/inert.css">';
+    const real = '<link rel="stylesheet" href="/_next/static/real.css">';
+    const expected = ["https://amaanafoundation.org/_next/static/real.css"];
+    assert.deepEqual(stylesheetsInHtml(`<${element}>${fake}</${element}>${real}`), expected);
+    assert.deepEqual(stylesheetsInHtml(`${real}<${element}>${fake}`), expected);
+    assert.deepEqual(stylesheetsInHtml(`<${element.toUpperCase()}>${fake}</${element.toUpperCase()}>${real}`), expected);
+  });
+}
+
+test("AF-R057 preserves active stylesheets inside custom elements with raw-text prefixes", () => {
+  for (const element of ["script-note", "style-panel", "title-card", "textarea-field", "xmp-view", "noembed-box", "noframes-box"]) {
+    assert.deepEqual(stylesheetsInHtml(`<${element}><link rel="stylesheet" href="/_next/static/real.css"></${element}>`),
+      ["https://amaanafoundation.org/_next/static/real.css"], element);
+  }
+});
