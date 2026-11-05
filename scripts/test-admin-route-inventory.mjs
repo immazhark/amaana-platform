@@ -40,7 +40,8 @@ function sourceHasGuardCall(source, name, method) {
 function actionHasPermissionGuard(body) {
   let permissionGuardFound = false;
   const visit = node => {
-    if (permissionGuardFound) return;
+    // Nested functions and callbacks are not guaranteed to execute.
+    if (permissionGuardFound || ts.isFunctionLike(node)) return;
     if (
       ts.isCallExpression(node)
       && ts.isIdentifier(node.expression)
