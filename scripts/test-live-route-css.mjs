@@ -490,3 +490,20 @@ test("AF-R057 preserves active stylesheets inside custom elements with raw-text 
       ["https://amaanafoundation.org/_next/static/real.css"], element);
   }
 });
+
+test("AF-R057 ignores href-shaped text inside an unrelated quoted attribute", () => {
+  assert.deepEqual(stylesheetsInHtml(`<link data-note=" href='/_next/static/fake.css' " rel="stylesheet">`), []);
+});
+test("AF-R057 ignores rel-shaped text inside an unrelated quoted attribute", () => {
+  assert.deepEqual(stylesheetsInHtml(`<link data-note=" rel='stylesheet' " href="/_next/static/fake.css">`), []);
+});
+test("AF-R057 preserves a real stylesheet after a quoted greater-than delimiter", () => {
+  assert.deepEqual(stylesheetsInHtml('<link data-note="a > b" rel="stylesheet" href="/_next/static/real.css">'),
+    ["https://amaanafoundation.org/_next/static/real.css"]);
+});
+test("AF-R057 ignores link-shaped markup inside another tag attribute", () => {
+  assert.deepEqual(stylesheetsInHtml(`<div data-note="<link rel='stylesheet' href='/_next/static/fake.css'>"></div>`), []);
+});
+test("AF-R057 ignores custom elements whose name starts with link", () => {
+  assert.deepEqual(stylesheetsInHtml('<link-card rel="stylesheet" href="/_next/static/fake.css"></link-card>'), []);
+});
