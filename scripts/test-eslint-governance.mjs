@@ -25,4 +25,13 @@ test("AF-R069 enforces accessible form labels in governed TSX", async () => {
   assert.equal(associated[0].messages.filter(message =>
     message.ruleId === "jsx-a11y/label-has-associated-control").length, 0,
     "An explicitly associated label must remain valid");
+
+  const nested = await eslint.lintText(
+    "export function Nested() { return <label><input type='checkbox' /><span><strong>Consent verified</strong><small>Confirmed by the reviewer</small></span></label>; }",
+    { filePath },
+  );
+  assert.equal(nested[0].messages.filter(message =>
+    message.ruleId === "jsx-a11y/label-has-associated-control").length, 0,
+    "A label wrapping a control with meaningful nested text must remain accessible");
+
 });
