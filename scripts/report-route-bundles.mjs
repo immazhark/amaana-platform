@@ -67,9 +67,7 @@ export function summarizeUnattributedAppAssets(appPaths, assets) {
   if (!appPaths || typeof appPaths !== "object" || Array.isArray(appPaths)) {
     throw new Error("Next.js App Router path manifest is unavailable");
   }
-  const routes = [...new Set(Object.entries(appPaths)
-    .filter(([key, route]) => key.endsWith("/page") && typeof route === "string")
-    .map(([, route]) => route))].sort();
+  const routes = [...new Set(pageRouteEntries(appPaths).map(([, route]) => route))].sort();
   if (!routes.length) throw new Error("No App Router pages found in the path manifest");
   if (!Array.isArray(assets) || assets.some(asset => !asset || typeof asset.path !== "string" ||
       !Number.isSafeInteger(asset.bytes) || asset.bytes < 0)) {
@@ -87,6 +85,14 @@ export function summarizeUnattributedAppAssets(appPaths, assets) {
 }
 
 const isRecord = value => value !== null && typeof value === "object" && !Array.isArray(value);
+
+function pageRouteEntries(appPaths) {
+  const pages = Object.entries(appPaths).filter(([page]) => page.endsWith("/page"));
+  if (pages.some(([, route]) => typeof route !== "string" || route.length === 0)) {
+    throw new Error("Invalid App Router page route");
+  }
+  return pages;
+}
 
 /** Parse the generated JSON assignment as data. Never execute build JavaScript. */
 export function parseClientReferenceManifest(source, appPath) {
@@ -106,7 +112,7 @@ function validAppPage(page) {
 /** Assigned on-disk CSS only: exclude sibling/error entries and unmeasured JS. */
 export function summarizeClientReferenceCss(appPaths, readManifest, byteSize) {
   if (!isRecord(appPaths)) throw new Error("App Router path manifest is unavailable");
-  const pages = Object.entries(appPaths).filter(([page, route]) => page.endsWith("/page") && typeof route === "string");
+  const pages = pageRouteEntries(appPaths);
   if (!pages.length) throw new Error("No App Router page entries");
   const sizes = new Map();
   return pages.map(([page, route]) => {
@@ -151,7 +157,7 @@ export function summarizeClientReferenceCss(appPaths, readManifest, byteSize) {
 export function summarizeClientReferenceJs(appPaths, readManifest, rootMainFiles, byteSize) {
   if (!isRecord(appPaths)) throw new Error("App Router path manifest is unavailable");
   if (!Array.isArray(rootMainFiles)) throw new Error("Invalid shared JavaScript list");
-  const pages = Object.entries(appPaths).filter(([page, route]) => page.endsWith("/page") && typeof route === "string");
+  const pages = pageRouteEntries(appPaths);
   if (!pages.length) throw new Error("No App Router page entries");
   const sizes = new Map();
   const scriptPath = value => {
