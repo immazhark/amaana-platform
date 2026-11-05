@@ -4,21 +4,36 @@ import { join, relative, sep } from "node:path";
 import { test } from "node:test";
 import ts from "typescript";
 
-// Count actual direct guard calls, not identifiers in comments, quoted text,
-// or member access. This is a static inventory contract, not a runtime RBAC proof.
-function sourceHasGuardCall(source, name) {
+// Count direct guard calls inside exported route handlers, never decoys in
+// unrelated helpers, nested function declarations, comments or quoted text.
+// This remains a static inventory contract, not a runtime RBAC proof.
+const routeMethods = new Set(["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]);
+const mutatingMethods = new Set(["POST", "PUT", "PATCH", "DELETE"]);
+
+function exportedRouteHandlers(source) {
   const ast = ts.createSourceFile("synthetic-admin-route.ts", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-  let found = false;
-  function visit(node) {
-    if (found) return;
-    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === name) {
-      found = true;
-      return;
+  return ast.statements.filter(statement =>
+    ts.isFunctionDeclaration(statement) && statement.name && statement.body &&
+    routeMethods.has(statement.name.text) &&
+    statement.modifiers?.some(modifier => modifier.kind === ts.SyntaxKind.ExportKeyword));
+}
+
+function sourceHasGuardCall(source, name, method) {
+  for (const handler of exportedRouteHandlers(source)) {
+    if (method && handler.name.text !== method) continue;
+    let found = false;
+    function visit(node) {
+      if (found || ts.isFunctionLike(node)) return;
+      if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === name) {
+        found = true;
+        return;
+      }
+      ts.forEachChild(node, visit);
     }
-    ts.forEachChild(node, visit);
+    visit(handler.body);
+    if (found) return true;
   }
-  visit(ast);
-  return found;
+  return false;
 }
 
 test("AF-R012 rejects commented or quoted admin API guard decoys", () => {
@@ -31,7 +46,29 @@ test("AF-R012 rejects commented or quoted admin API guard decoys", () => {
   for (const guard of ["getCurrentUser", "hasPermission", "isSameOrigin"]) {
     assert.equal(sourceHasGuardCall(source, guard), false, guard + " must be an actual call");
   }
-  assert.equal(sourceHasGuardCall("async function GET() { await getCurrentUser(); }", "getCurrentUser"), true);
+  assert.equal(sourceHasGuardCall("export async function GET() { await getCurrentUser(); }", "getCurrentUser"), true);
+});
+
+test("AF-R012 requires real guards inside the exported admin handler, not unused helpers", () => {
+  const deceptive = [
+    "async function unusedGuards() {",
+    "  await getCurrentUser(); hasPermission({}, 'content.update'); isSameOrigin({});",
+    "}",
+    "export async function POST() { return Response.json({ public: true }); }",
+  ].join("\n");
+  for (const guard of ["getCurrentUser", "hasPermission", "isSameOrigin"]) {
+    assert.equal(sourceHasGuardCall(deceptive, guard), false,
+      guard + " must be called from an exported route handler");
+  }
+  const wrongMethod = [
+    "export async function GET() { isSameOrigin({}); }",
+    "export async function POST() { return Response.json({ public: true }); }",
+  ].join("\n");
+  assert.equal(sourceHasGuardCall(wrongMethod, "isSameOrigin", "POST"), false,
+    "GET guard must not satisfy the POST mutation contract");
+  assert.equal(sourceHasGuardCall(
+    "export async function POST() { const user = await getCurrentUser(); return user; }",
+    "getCurrentUser", "POST"), true);
 });
 
 const root = process.cwd();
@@ -67,11 +104,19 @@ test("every admin API has fail-closed guards and anonymous request coverage", ()
     assert.ok(browserContract.includes(JSON.stringify(url)),
       `Anonymous API browser test does not cover: ${url}`);
     const source = readFileSync(join(root, route), "utf8");
-    assert.ok(sourceHasGuardCall(source, "getCurrentUser"), `${route}: explicit authentication required`);
-    assert.ok(sourceHasGuardCall(source, "hasPermission"), `${route}: explicit permission check required`);
+    const handlers = exportedRouteHandlers(source);
+    assert.ok(handlers.length > 0, `${route}: an exported HTTP handler is required`);
     assert.match(source, /no-store/, `${route}: private cache policy required`);
-    if (/export async function POST\s*\(/.test(source)) {
-      assert.ok(sourceHasGuardCall(source, "isSameOrigin"), `${route}: cross-origin mutations must be rejected`);
+    for (const handler of handlers) {
+      const method = handler.name.text;
+      assert.ok(sourceHasGuardCall(source, "getCurrentUser", method),
+        `${route}:${method} must independently authenticate`);
+      assert.ok(sourceHasGuardCall(source, "hasPermission", method),
+        `${route}:${method} must independently check permission`);
+      if (mutatingMethods.has(method)) {
+        assert.ok(sourceHasGuardCall(source, "isSameOrigin", method),
+          `${route}:${method} must reject cross-origin mutations`);
+      }
     }
   }
 });
