@@ -507,3 +507,23 @@ test("AF-R057 ignores link-shaped markup inside another tag attribute", () => {
 test("AF-R057 ignores custom elements whose name starts with link", () => {
   assert.deepEqual(stylesheetsInHtml('<link-card rel="stylesheet" href="/_next/static/fake.css"></link-card>'), []);
 });
+
+for (const [label, sources, names, count, requests] of [
+  ["source fragment", [jsA + "#module"], [jsA], 1, 1],
+  ["fragment aliases", [jsA + "#one", jsA + "#two"], [jsA], 1, 1],
+  ["timing fragment", [jsA], [jsA + "#module"], 1, 1],
+  ["query and fragment", [jsA + "?v=1#module"], [jsA + "?v=1"], 1, 1],
+  ["distinct queries", [jsA + "?v=1#one", jsA + "?v=2#two"], [jsA + "?v=1", jsA + "?v=2"], 2, 2],
+  ["repeated requests", [jsA + "#one", jsA + "#two"], [jsA, jsA], 1, 2],
+]) {
+  test(`AF-R047 browser JS request identity excludes fragments: ${label}`, () => {
+    const result = summarizeNextJsNavigationJsTiming(sources, names.map(name => jsTiming(name, 100, 50, 60)), jsBase);
+    assert.equal(result.scriptCount, count);
+    assert.equal(result.requestCount, requests);
+    assert.equal(result.decodedBodyBytes, requests * 100);
+    assert.equal(result.encodedBodyBytes, requests * 50);
+    assert.equal(result.transferBytes, requests * 60);
+    assert.deepEqual(result.missingTimingScripts, []);
+    assert.deepEqual(result.unavailableTransferScripts, []);
+  });
+}

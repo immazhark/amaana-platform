@@ -30,6 +30,8 @@ export function summarizeNextJsNavigationJsTiming(scriptSrcs, resourceTimings, d
     let url;
     try { url = new URL(value, document); } catch { throw new TypeError("Invalid browser JavaScript URL"); }
     if (url.username || url.password || url.origin !== document.origin || !BUILD_SCRIPT_PATH.test(url.pathname)) return null;
+    // Fragments identify positions within a resource, not separate HTTP requests.
+    url.hash = "";
     return url.href;
   }
 
