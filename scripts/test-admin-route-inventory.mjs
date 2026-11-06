@@ -56,42 +56,40 @@ function exportedRouteHandlers(source) {
   return handlers;
 }
 
+// Only statements before a direct unconditional return/throw can satisfy
+// a guard. Nested function bodies do not execute as part of the route/action.
+function bodyHasReachableDirectCall(body, name) {
+  let found = false;
+  function visit(node) {
+    if (found || ts.isFunctionLike(node)) return;
+    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === name) {
+      found = true;
+      return;
+    }
+    ts.forEachChild(node, visit);
+  }
+  if (ts.isBlock(body)) {
+    for (const statement of body.statements) {
+      visit(statement);
+      if (ts.isReturnStatement(statement) || ts.isThrowStatement(statement)) break;
+    }
+  } else {
+    visit(body);
+  }
+  return found;
+}
+
 function sourceHasGuardCall(source, name, method) {
   for (const handler of exportedRouteHandlers(source)) {
     if (method && handler.name.text !== method) continue;
-    let found = false;
-    function visit(node) {
-      if (found || ts.isFunctionLike(node)) return;
-      if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === name) {
-        found = true;
-        return;
-      }
-      ts.forEachChild(node, visit);
-    }
-    visit(handler.body);
-    if (found) return true;
+    if (bodyHasReachableDirectCall(handler.body, name)) return true;
   }
   return false;
 }
 
 // Shared synthetic and inventory check; preserve its current behavior for RED.
 function actionHasPermissionGuard(body) {
-  let permissionGuardFound = false;
-  const visit = node => {
-    // Nested functions and callbacks are not guaranteed to execute.
-    if (permissionGuardFound || ts.isFunctionLike(node)) return;
-    if (
-      ts.isCallExpression(node)
-      && ts.isIdentifier(node.expression)
-      && node.expression.text === "requirePermission"
-    ) {
-      permissionGuardFound = true;
-      return;
-    }
-    ts.forEachChild(node, visit);
-  };
-  visit(body);
-  return permissionGuardFound;
+  return bodyHasReachableDirectCall(body, "requirePermission");
 }
 
 test("AF-R012 ignores permission calls hidden in never-invoked server-action helpers", () => {
@@ -234,6 +232,37 @@ test("AF-R012 requires real guards inside the exported admin handler, not unused
   assert.equal(sourceHasGuardCall(
     "export async function POST() { const user = await getCurrentUser(); return user; }",
     "getCurrentUser", "POST"), true);
+});
+
+test("AF-R012 ignores admin guards after an unconditional exit", () => {
+  for (const method of ["GET", "POST", "PATCH", "DELETE"]) {
+    const unguarded = `export async function ${method}() {
+      return Response.json({ accessible: true });
+      await getCurrentUser();
+      hasPermission({}, 'content.update');
+      isSameOrigin({});
+    }`;
+    for (const name of ["getCurrentUser", "hasPermission", "isSameOrigin"]) {
+      assert.equal(sourceHasGuardCall(unguarded, name, method), false,
+        `${method}: unreachable ${name}() cannot satisfy an admin API guard`);
+    }
+  }
+
+  const action = ts.createSourceFile("unreachable-admin-action.ts", [
+    "'use server';",
+    "export async function unsafeSave() {",
+    "  throw new Error('exit');",
+    "  await requirePermission('team.manage');",
+    "}",
+  ].join("\n"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const unsafeSave = exportedAsyncProtectedActions(action).find(item => item.name === "unsafeSave");
+  assert.ok(unsafeSave, "must find the real exported action");
+  assert.equal(actionHasPermissionGuard(unsafeSave.body), false,
+    "Permission calls after unconditional throw must not pass action inventory");
+
+  assert.equal(sourceHasGuardCall(
+    "export async function PATCH() { await getCurrentUser(); return Response.json({}); }",
+    "getCurrentUser", "PATCH"), true, "A guard before exit must remain detectable");
 });
 
 const root = process.cwd();
