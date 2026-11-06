@@ -5,7 +5,8 @@ type PublicLoadingRoute =
   | "our-work"
   | "impact"
   | "appeals"
-  | "faith-and-reflections";
+  | "faith-and-reflections"
+  | "donate";
 
 const routeCopy: Record<PublicLoadingRoute, { title: string; message: string }> = {
   "stories": { title: "Stories of Amanah", message: "Loading published stories…" },
@@ -13,6 +14,7 @@ const routeCopy: Record<PublicLoadingRoute, { title: string; message: string }> 
   "impact": { title: "Our Impact", message: "Loading documented outcomes…" },
   "appeals": { title: "Verified Appeals", message: "Checking current public appeals…" },
   "faith-and-reflections": { title: "Faith & Reflections", message: "Loading the reviewed library…" },
+  "donate": { title: "Domestic Donations", message: "Checking currently approved giving routes…" },
 };
 
 /** An App Router transition fallback. Never render provisional database facts,
