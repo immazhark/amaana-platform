@@ -33,14 +33,14 @@ describe("donation payment details", () => {
     expect(getDonationPaymentDetails().upi.qrImageUrl).toBe("/media/2026/donation-upi-qr.png");
 
     process.env.NEXT_PUBLIC_DONATION_UPI_QR_URL = "javascript:alert(1)";
-    expect(getDonationPaymentDetails().upi.qrImageUrl).toBeNull();
+    expect(getDonationPaymentDetails().upi.qrImageUrl).toBe("/brand/amaana-upi-qr.png");
   });
 
   it("never describes a third-party QR image as a verified UPI destination", () => {
     process.env.NEXT_PUBLIC_APP_URL = "https://amaanafoundation.org";
     process.env.PUBLIC_MEDIA_BASE_URL = "https://media.amaanafoundation.org";
     process.env.NEXT_PUBLIC_DONATION_UPI_QR_URL = "https://unknown-payment.example/donor-qr.png";
-    expect(getDonationPaymentDetails().upi.qrImageUrl).toBeNull();
+    expect(getDonationPaymentDetails().upi.qrImageUrl).toBe("/brand/amaana-upi-qr.png");
 
     process.env.NEXT_PUBLIC_DONATION_UPI_QR_URL = "https://media.amaanafoundation.org/reviewed/qr.png";
     expect(getDonationPaymentDetails().upi.qrImageUrl).toBe("https://media.amaanafoundation.org/reviewed/qr.png");
