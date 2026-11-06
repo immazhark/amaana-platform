@@ -113,3 +113,18 @@ describe("request current-assignment preservation", () => {
     expect(html).not.toContain("currently unavailable");
   });
 });
+
+describe("request to appeal staff navigation", () => {
+  it("provides a direct editor link for an already converted linked appeal", async () => {
+    mocks.request.mockResolvedValue({
+      ...request("CONVERTED_TO_APPEAL"),
+      appealId: "synthetic-linked-appeal",
+      appeal: { id: "synthetic-linked-appeal", title: "Synthetic medical appeal" },
+    });
+    const html = renderToStaticMarkup(await RequestDetailPage({
+      params: Promise.resolve({ id: "synthetic-request" }),
+    }));
+    expect(html).toContain('href="/admin/appeals/synthetic-linked-appeal"');
+    expect(html).toContain("Open appeal editor");
+  });
+});
