@@ -1,3 +1,15 @@
+## 2026-11-06 IST — AF-R047 merge ancestry after #674
+
+Reconcile #675 against guarded #674 merge `514e7f6d463656f98270d860ebb0a87af206c0de` with normal two-parent Git merge. Preserve #674 admin CSS and contrast test, #675 bundle integrity reporter and regression, both coordination histories. Re-run full hosted acceptance and separate ready-state on resulting head. No skipped test counted as passed, no runtime/finance/provider/secret/infrastructure activation or 149-status promotion.
+
+## 2026-11-06 IST — AF-R047 reconciliation after protected #673
+
+Writer CHATGPT_ACTIVE; noncanonical build resource reporter task branch based on #673 accepted main `3cebdcfae4a7a33665ec7fc1943aa702996f55af`. RED `42198822276` confirmed duplicate path alias overcount. Preserve prior coordination histories, #673 guard scanner and AF-R047 reporter/test. Repeat full exact-head and separate ready-state, SHA-guarded merge only after success, and report Railway SKIPPED when reporter-only. No 149 status promotion.
+
+## 2026-11-06 IST — AF-R047 canonical static build assets task
+
+Writer CHATGPT_ACTIVE, accepted main `0b71d9f5d3d80f8a1838b9bc9a458576b7b7777a`, branch `fix/af-r047-noncanonical-build-asset-alias-20261106`. A bundle manifest can list identical on-disk resources under differing syntactic paths with '.' or empty segments; reporter's Set currently treats them distinct. Add synthetic RED for duplicate attribution and fail-closed handling of noncanonical Next16 paths; then minimal input normalization/validation, exact-head full CI and ready-state, no protected merge until all required checks pass. #673/#674 are independent source scopes; reconcile accepted main by non-force two-parent commit if they merge earlier. No live infrastructure, donor or payment changes. No historical 149 promotion. Rollback scripts only.
+
 ## 2026-11-06 IST — AF-R019 reconciliation handoff after #673
 
 #674 head `db597507fd22a6542a3197e7786fe928f2009960` reconciled against accepted main `3cebdcfae4a7a33665ec7fc1943aa702996f55af`. Preserve AF-R019 contrast regression + scoped admin CSS ink, #673 admin guard audit, both coordination histories. Full exact-head CI and separate ready-state required before protected merge; then Railway/public readiness and SHA verification. No other writer or history rewrite.

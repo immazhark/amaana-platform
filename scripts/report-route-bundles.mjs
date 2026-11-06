@@ -10,7 +10,9 @@ function normalizedStaticAsset(value) {
   if (typeof value !== "string") return null;
   const normalized = value.replace(/^\/?_next\//, "").replace(/^\//, "");
   if (!/^static\/[A-Za-z0-9_./-]+\.(?:js|css)$/.test(normalized)) return null;
-  if (normalized.split("/").includes("..")) return null;
+  // Distinct manifest strings can resolve to the same on-disk file.
+  // Reject dot and empty segments so one resource is never counted twice.
+  if (normalized.split("/").some(segment => !segment || segment === "." || segment === "..")) return null;
   return normalized;
 }
 
