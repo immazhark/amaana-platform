@@ -587,3 +587,26 @@ test("browser CSS snapshot retains fragment-free timing until normalized link ma
   assert.equal(result.transferBytes, 60);
   assert.deepEqual(result.missingTimingStylesheets, []);
 });
+
+
+test("AF-R057 excludes inert template stylesheet links, including nested and unterminated templates", () => {
+  const fake = '<link rel="stylesheet" href="/_next/static/fake.css">';
+  const other = '<link rel="stylesheet" href="/_next/static/other.css">';
+  const real = '<link rel="stylesheet" href="/_next/static/real.css">';
+  const expected = ["https://amaanafoundation.org/_next/static/real.css"];
+  assert.deepEqual(stylesheetsInHtml(`<template>${fake}</template>${real}`), expected);
+  assert.deepEqual(stylesheetsInHtml(`<template data-note="a > b"><template>${fake}</template>${other}</template>${real}`), expected);
+  assert.deepEqual(stylesheetsInHtml(`${real}<template>${fake}`), expected,
+    "An unclosed template must not publish inactive stylesheet references");
+  assert.deepEqual(stylesheetsInHtml(`<div data-note="<template>${fake}</template>"></div>${real}`), expected,
+    "Tag-shaped quoted attributes must not hide active stylesheets");
+  assert.deepEqual(stylesheetsInHtml(`<template-card>${real}</template-card>`), expected,
+    "Template-like custom element names are active containers");
+});
+
+test("AF-R057 excludes noscript fallback stylesheets from a JS-enabled CSS audit", () => {
+  const fake = '<link rel="stylesheet" href="/_next/static/no-js.css">';
+  const real = '<link rel="stylesheet" href="/_next/static/real.css">';
+  assert.deepEqual(stylesheetsInHtml(`<noscript>${fake}</noscript>${real}`),
+    ["https://amaanafoundation.org/_next/static/real.css"]);
+});

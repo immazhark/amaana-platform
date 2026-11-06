@@ -1,3 +1,15 @@
+## 2026-11-06 IST — #681 non-force continuation after protected #680 merge
+
+Protected #680 merged at `1a28cd2f79995e23920589c4ca7480b7e2781915` after complete CI 42233729697 and separate ready-state 42238525138. Preserve both #680 and #681 source/coordination histories without rewriting either; native #681 RED 42234529924, earlier-head all-green CI 42234982514, fresh full acceptance and separate promotion required for new two-parent head. Source-only, no production runtime/infrastructure or 149-count change.
+
+## 2026-11-06 IST — AF-R057 measurable inert resource audit correction
+
+RED CI 42234529924 fast 127948736670: two intended failures on inert template and noscript link counting, no unrelated failure asserted. Minimal CSS audit only guard + existing native regression, full exact-head CI and separate ready-state to follow; #680 unrelated source in browser acceptance. No production CSS/download/Web Vitals claim; historic 149 unchanged.
+
+## 2026-11-06 IST — AF-R057 inert CSS parser task
+
+Source-only route CSS audit can count links in inert templates; synthetic negative and live-link positives in `scripts/test-live-route-css.mjs` from accepted `1cdac63fa7113e1adc79b6263110316417d36e84` and #680 unrelated. Hosted RED before change; update audit parser if proven, full CI and separate ready-state then protected merge. No field CWV or CSS unused percent claim, historical 149 remains unchanged.
+
 ## 2026-11-06 IST — #680 post-#678 merge ancestry
 
 Protected #678 accepted `1cdac63fa7113e1adc79b6263110316417d36e84` after complete exact-head and ready-state checks. Preserve original #680 native route-label integrity fix/test `bd1421177795b64ff0d8fcfaee5568784f3e488a`, #678 AST scanner, other accepted source and both coordination histories. Ordinary non-force two-parent commit, fresh full CI, separate promotion and expected-head protected merge required. RED 42225808531 prior GREEN 42226522879. No 149 item reclassification or live infra/payment.
