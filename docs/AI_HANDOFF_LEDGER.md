@@ -1,3 +1,7 @@
+## 2026-11-06 IST — AF-R057 inert CSS parser task
+
+Source-only route CSS audit can count links in inert templates; synthetic negative and live-link positives in `scripts/test-live-route-css.mjs` from accepted `1cdac63fa7113e1adc79b6263110316417d36e84` and #680 unrelated. Hosted RED before change; update audit parser if proven, full CI and separate ready-state then protected merge. No field CWV or CSS unused percent claim, historical 149 remains unchanged.
+
 ## 2026-11-06 IST — #678 post-#677 non-force reconciliation
 
 Protected #677 accepted at `4d9f5d4ca9606b237fcf6158f4d173317250dfd6`. Preserve reporter code/test, #678 optional control-flow scanner/tests, #676 public heading styles and both coordination histories. Normal two-parent merge, no force or administrative bypass. Repeat full exact-head checks, separate promotion and guarded protected merge. Previous #678 CI 42217501584 passed its older head only. No runtime authorization or live provider/financial operation. 149 unchanged.
