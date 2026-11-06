@@ -19,3 +19,7 @@
     transform:none;
   }
 }
+
+/* Preserve shared finishing-theme parity when the card stylesheet is route-owned. */
+.v2-appeal-card{border-radius:var(--af-card-radius);border:1px solid var(--af-card-border);background:rgb(255 253 248 / 88%);box-shadow:var(--af-card-shadow)}
+.v2-appeal-card h3{font-family:var(--af-font-display);font-weight:500;line-height:1.08;letter-spacing:-.02em}
