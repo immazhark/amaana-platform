@@ -167,7 +167,14 @@ function exportedAsyncProtectedActions(sourceFile) {
       }
     } else if (ts.isVariableStatement(statement)) {
       for (const declaration of statement.declarationList.declarations) {
-        const initializer = declaration.initializer;
+        let initializer = declaration.initializer;
+        // TypeScript type annotations cannot make a protected async export
+        // disappear from the fail-closed static action inventory.
+        while (initializer && (
+          ts.isParenthesizedExpression(initializer) ||
+          ts.isAsExpression(initializer) ||
+          ts.isSatisfiesExpression(initializer)
+        )) initializer = initializer.expression;
         if (ts.isIdentifier(declaration.name) && initializer &&
             (ts.isArrowFunction(initializer) || ts.isFunctionExpression(initializer)) &&
             hasModifier(initializer, ts.SyntaxKind.AsyncKeyword)) {
