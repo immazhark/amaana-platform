@@ -1,3 +1,15 @@
+## 2026-11-06 IST — #680 post-#678 merge ancestry
+
+Protected #678 accepted `1cdac63fa7113e1adc79b6263110316417d36e84` after complete exact-head and ready-state checks. Preserve original #680 native route-label integrity fix/test `bd1421177795b64ff0d8fcfaee5568784f3e488a`, #678 AST scanner, other accepted source and both coordination histories. Ordinary non-force two-parent commit, fresh full CI, separate promotion and expected-head protected merge required. RED 42225808531 prior GREEN 42226522879. No 149 item reclassification or live infra/payment.
+
+## 2026-11-06 IST — AF-R047 public route label integrity RED→GREEN candidate
+
+RED run 42225808531 fast 127918970398 reproduces unvalidated relative route label. GREEN candidate restricts report-only public route strings to canonical path shapes while preserving existing `Invalid App Router page route` test contract and previous accepted reporter code. #678 remains independent in hosted CI. Exact-head complete suite, separate ready-state and guarded merge required, no historical 149 promotion or live payment/infra effect.
+
+## 2026-11-06 IST — AF-R047 public label validation next isolated task
+
+Single writer CHATGPT_ACTIVE. Branch `fix/af-r047-route-label-integrity-20261106` from `4d9f5d4ca9606b237fcf6158f4d173317250dfd6`; independent #678 full CI pending. RED native regression for malformed public route labels across legacy aggregate and Next16 reference CSS/JS before source change. Preserve accepted #677 page path guard, #676 styles, and coordination histories. Require full exact-head, separate ready-state and guarded merge; no live infrastructure/finance/provider impact. Canonical 149 unchanged.
+
 ## 2026-11-06 IST — #678 post-#677 non-force reconciliation
 
 Protected #677 accepted at `4d9f5d4ca9606b237fcf6158f4d173317250dfd6`. Preserve reporter code/test, #678 optional control-flow scanner/tests, #676 public heading styles and both coordination histories. Normal two-parent merge, no force or administrative bypass. Repeat full exact-head checks, separate promotion and guarded protected merge. Previous #678 CI 42217501584 passed its older head only. No runtime authorization or live provider/financial operation. 149 unchanged.
