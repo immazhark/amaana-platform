@@ -5,7 +5,7 @@
 .v3-home-banner-slide{--title:clamp(2.7rem,4.8vw,3.8rem);--title-width:18ch;position:relative;height:100%;min-height:var(--home-banner-height);overflow:hidden;isolation:isolate}
 .v3-home-banner-content{position:relative;z-index:1;width:min(calc(100% - var(--af-public-gutter)*2),var(--af-public-shell));height:auto;min-height:var(--home-banner-height);margin-inline:auto;display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);gap:clamp(2rem,4vw,4rem);align-items:center;padding-block:2.75rem 4.5rem}
 .v3-home-banner-copy{min-width:0;max-width:42rem}
-.v3-home-banner-content .page-hero__title{font-weight:500;line-height:1.04;letter-spacing:-.04em}
+.v3-home-banner-content .page-hero__title{font-weight:500;line-height:1.14;letter-spacing:-.04em}
 .v3-home-banner-content .page-hero__description p{margin:0}
 .v3-home-banner-media{position:absolute;z-index:0;inset:0 var(--af-public-edge) 0 40%;--home-image-mask:linear-gradient(90deg,transparent,rgb(0 0 0 / 18%) 24%,#000 60% 82%,transparent),linear-gradient(0deg,transparent,#000 18%);mask-image:var(--home-image-mask);-webkit-mask-image:var(--home-image-mask);mask-composite:intersect;-webkit-mask-composite:source-in}
 .v3-home-banner-media>.v2-media-item{width:100%;height:100%;margin:0;border:0;border-radius:0;background:transparent}
