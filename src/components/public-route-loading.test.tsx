@@ -34,5 +34,5 @@ it("AF-R071 donation loading is accessible, nontransactional, and wired", () => 
   expect(html).toContain("canonical-body");
   expect(html).toContain('role="status"');
   expect(html).toContain('aria-live="polite"');
-  expect(html).not.toMatch(/<main\\b|<button\\b|<a\\b|<img\\b|<video\\b|\\b₹\\s*\\d/i);
+  expect(html).not.toMatch(/<main\b|<button\b|<a\b|<img\b|<video\b|\b₹\s*\d/i);
 });
