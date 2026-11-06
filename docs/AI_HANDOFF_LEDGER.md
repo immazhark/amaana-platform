@@ -1,3 +1,7 @@
+## 2026-11-06 IST — AF-R025 residual homepage/recognition display titles
+
+Current main `57ae5dae4f428f3b24cbcd61e425247bd5274bbb` after #675, Railway reporter-only website and worker SKIPPED. CHATGPT_ACTIVE sole writer on `fix/af-r025-home-recognition-heading-leading-20261106`. Test-first scope covers only effective homepage banner and recognition certificate multiline leading; 320/390 browser tests and source regression, no production style change until hosted RED proves existing values. Historical backlog 149 unchanged. Need exact-head CI, separate ready state and guarded merge; no live notifications/money/infra actions.
+
 ## 2026-11-06 IST — AF-R047 merge ancestry after #674
 
 Reconcile #675 against guarded #674 merge `514e7f6d463656f98270d860ebb0a87af206c0de` with normal two-parent Git merge. Preserve #674 admin CSS and contrast test, #675 bundle integrity reporter and regression, both coordination histories. Re-run full hosted acceptance and separate ready-state on resulting head. No skipped test counted as passed, no runtime/finance/provider/secret/infrastructure activation or 149-status promotion.

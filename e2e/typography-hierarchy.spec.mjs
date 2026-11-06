@@ -763,3 +763,39 @@ for (const scale of [100, 200]) {
     })));
   });
 }
+
+ 
+// AF-R025 residual: the home carousel and original-recognition headline are
+// independent of the shared SectionHeading selector and must be tested directly.
+for (const width of [320, 390]) {
+  for (const { route, selector } of [
+    { route: '/browser-acceptance/home-hero', selector: '.v3-home-banner-slide--story .page-hero__title' },
+    { route: '/recognition', selector: 'main [class*="document"] > strong' },
+  ]) {
+    test(`independent multiline display leading on ${route} at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
+      expect(response?.ok(), route).toBeTruthy();
+      const heading = page.locator(selector).first();
+      await expect(heading).toBeVisible();
+      const metrics = await heading.evaluate(node => {
+        const style = getComputedStyle(node);
+        const bounds = node.getBoundingClientRect();
+        const lineHeight = parseFloat(style.lineHeight);
+        return {
+          text: node.textContent?.trim(),
+          ratio: lineHeight / parseFloat(style.fontSize),
+          lines: bounds.height / lineHeight,
+          left: bounds.left,
+          right: bounds.right,
+        };
+      });
+      expect(metrics.text?.length, route).toBeGreaterThan(18);
+      expect(metrics.ratio, route).toBeGreaterThanOrEqual(1.12);
+      expect(metrics.lines, route).toBeGreaterThanOrEqual(1.45);
+      expect(metrics.left, route).toBeGreaterThanOrEqual(-1);
+      expect(metrics.right, route).toBeLessThanOrEqual(width + 1);
+    });
+  }
+}
