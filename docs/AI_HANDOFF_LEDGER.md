@@ -1,3 +1,7 @@
+## 2026-11-06 IST — AF-R019 admin text-button light-surface contrast handoff
+
+Single writer CHATGPT_ACTIVE. Task branch `fix/af-r019-admin-text-button-contrast-20261106`, main base `0b71d9f5d3d80f8a1838b9bc9a458576b7b7777a`; #673 awaits exact-head browser/production. Existing admin text-button gold `#e0b318` fails 4.5:1 on light admin `#f4f6f9` but passes on navy sidebar. Add fail-first native contrast test, then smallest `.admin-content .text-button` override with approved `--af-color-gold-ink`. CSS test and direct review; full exact-head browser/database/build checks, ready-state, protected merge only when all green. No production payments/data/schema/auth/infra change, no 149 promotion. Rollback narrow CSS/test.
+
 ## 2026-11-06 IST — AF-R012 conditional-guard static inventory task
 
 Sole writer CHATGPT_ACTIVE; main `499fd1c89f71f6419e30f37603bf1ea6558920e2`, branch `test/af-r012-conditional-guard-failclosed-20261106`. AF-R012 optional-branch guard false positive is independent of draft #671 CSS measurement reconciliation and its CI. First write native synthetic negative regression in scripts/test-admin-route-inventory.mjs, run GitHub hosted RED, then add smallest conservative AST audit correction, exact-head GREEN, separate ready-state promotion and protected SHA-guard merge. Do not amend production auth/RBAC or media/payment/data, no external activation. No canonical 149 status promotion. Rollback isolated script. Read the current GitHub PR and HEAD before continuing.
