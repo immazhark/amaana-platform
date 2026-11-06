@@ -396,6 +396,53 @@ test("AF-R012 rejects unreachable try-block and catch-only admin guards", () => 
   }
 });
 
+test("AF-R012 ignores optional loop bodies and switch-case permission decoys", () => {
+  const guards = [
+    "await getCurrentUser();",
+    "hasPermission({}, 'content.update');",
+    "isSameOrigin({});",
+  ].join(" ");
+  const cases = [
+    ["while body", `while (false) { ${guards} }`],
+    ["for body", `for (let i = 0; i < 0; i++) { ${guards} }`],
+    ["for of body", `for (const item of []) { ${guards} }`],
+    ["for in body", `for (const key in {}) { ${guards} }`],
+    ["switch case", `switch (kind) { case "approved": { ${guards} break; } default: break; }`],
+  ];
+  for (const [label, conditional] of cases) {
+    const source = `export async function POST() { ${conditional} return Response.json({ unguarded: true }); }`;
+    for (const guard of ["getCurrentUser", "hasPermission", "isSameOrigin"]) {
+      assert.equal(sourceHasGuardCall(source, guard, "POST"), false,
+        `${label}: ${guard} inside an optional path is not an unconditional API guard`);
+    }
+  }
+
+  const actionSource = ts.createSourceFile("optional-loop-action.ts", [
+    "'use server';",
+    "export async function update() {",
+    "  for (const item of []) { await requirePermission('team.manage'); }",
+    "  return 'unguarded';",
+    "}",
+  ].join("\n"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const action = exportedAsyncProtectedActions(actionSource).find(item => item.name === "update");
+  assert.ok(action);
+  assert.equal(actionHasPermissionGuard(action.body), false,
+    "Loop-only permission call does not protect a server action");
+
+  const evaluated = [
+    ["while condition", "export async function GET() { while (await getCurrentUser()) { break; } }",
+      "getCurrentUser", "GET"],
+    ["for condition", "export async function POST() { for (; isSameOrigin({});) { break; } }",
+      "isSameOrigin", "POST"],
+    ["switch selector", "export async function GET() { switch (await getCurrentUser()) { default: break; } }",
+      "getCurrentUser", "GET"],
+  ];
+  for (const [label, source, guard, method] of evaluated) {
+    assert.equal(sourceHasGuardCall(source, guard, method), true,
+      `${label}: an evaluated predicate must remain auditable`);
+  }
+});
+
 const root = process.cwd();
 const browserContract = readFileSync(join(root, "e2e/admin-anonymous-boundaries.spec.mjs"), "utf8");
 

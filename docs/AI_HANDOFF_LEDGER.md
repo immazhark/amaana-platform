@@ -1,3 +1,7 @@
+## 2026-11-06 IST — AF-R012 optional loop/case scanner regression first
+
+Based on accepted main `57ae5dae4f428f3b24cbcd61e425247bd5274bbb`; writer CHATGPT_ACTIVE; other #676 and #677 PR source untouched. Synthetic false-positive proof in read-only evaluation for nonexecuting while and for bodies. Task test/af-r012-optional-loop-guard-inventory-20261106 adds native fixture for optional loops and switch bodies, positive predicate controls and server-action check. The first commit is intentional RED with NO implementation correction. Do not merge before GREEN exact-head full CI, separate ready-state and guarded merge; keep auth/finance/runtime/security provider policy unchanged.
+
 ## 2026-11-06 IST — AF-R047 merge ancestry after #674
 
 Reconcile #675 against guarded #674 merge `514e7f6d463656f98270d860ebb0a87af206c0de` with normal two-parent Git merge. Preserve #674 admin CSS and contrast test, #675 bundle integrity reporter and regression, both coordination histories. Re-run full hosted acceptance and separate ready-state on resulting head. No skipped test counted as passed, no runtime/finance/provider/secret/infrastructure activation or 149-status promotion.
