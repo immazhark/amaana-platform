@@ -545,3 +545,40 @@ test("AF-R012 still counts mandatory loop and switch expressions", () => {
       `${name} in a mandatory control expression must remain detectable`);
   }
 });
+
+
+test("AF-R012 inventories TypeScript-wrapped exported async server actions", () => {
+  const source = [
+    "'use server';",
+    "export const direct = async () => { await requirePermission('team.manage'); };",
+    "export const parenthesized = ((async () => { await requirePermission('team.manage'); }));",
+    "export const asserted = (async () => { await requirePermission('team.manage'); }) as () => Promise<void>;",
+    "export const satisfied = (async () => { await requirePermission('team.manage'); }) satisfies () => Promise<void>;",
+    "export const functionExpression = ((async function () { await requirePermission('team.manage'); })) as () => Promise<void>;",
+  ].join("\n");
+  const ast = ts.createSourceFile("wrapped-admin-actions.ts", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const actions = exportedAsyncProtectedActions(ast);
+  assert.deepEqual(actions.map(action => action.name), [
+    "direct", "parenthesized", "asserted", "satisfied", "functionExpression",
+  ], "TypeScript annotations must not hide exported async action bodies");
+  assert.ok(actions.every(action => actionHasPermissionGuard(action.body)),
+    "Every discovered wrapped action retains an inspectable permission call");
+});
+
+test("AF-R012 rejects unguarded TypeScript-wrapped async server actions", () => {
+  const source = [
+    "'use server';",
+    "export const unsafeAs = (async () => 'unguarded') as () => Promise<string>;",
+    "export const unsafeSatisfies = (async () => 'unguarded') satisfies () => Promise<string>;",
+    "export const unsafeNested = (((async function () { return 'unguarded'; }))) as () => Promise<string>;",
+  ].join("\n");
+  const ast = ts.createSourceFile("unsafe-wrapped-actions.ts", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const actions = exportedAsyncProtectedActions(ast);
+  assert.deepEqual(actions.map(action => action.name), [
+    "unsafeAs", "unsafeSatisfies", "unsafeNested",
+  ], "Unguarded wrapped exports must remain in the action inventory");
+  for (const action of actions) {
+    assert.equal(actionHasPermissionGuard(action.body), false,
+      action.name + " must not acquire a synthetic permission guard");
+  }
+});
