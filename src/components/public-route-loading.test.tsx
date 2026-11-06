@@ -28,6 +28,10 @@ it("AF-R071 donation loading is accessible, nontransactional, and wired", () => 
   const html = renderToStaticMarkup(<PublicRouteLoading route="donate" />);
   expect(html).toContain("Domestic Donations");
   expect(html).toContain("Checking currently approved giving routes");
+  // AF-R071 browser RED: loading must preserve the shared hero and body shell
+  // while the per-request donation eligibility projection is unresolved.
+  expect(html).toContain('class="page-hero__shell"');
+  expect(html).toContain("canonical-body");
   expect(html).toContain('role="status"');
   expect(html).toContain('aria-live="polite"');
   expect(html).not.toMatch(/<main\\b|<button\\b|<a\\b|<img\\b|<video\\b|\\b₹\\s*\\d/i);
