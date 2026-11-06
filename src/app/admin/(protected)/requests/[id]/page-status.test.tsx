@@ -115,7 +115,9 @@ describe("request current-assignment preservation", () => {
 });
 
 describe("request to appeal staff navigation", () => {
-  it("provides a direct editor link for an already converted linked appeal", async () => {
+  it("provides a direct editor link for a converted appeal to staff with appeal.view", async () => {
+    mocks.permission.mockImplementation((_user, permission) =>
+      ["assistance.view", "assistance.update", "appeal.view"].includes(permission));
     mocks.request.mockResolvedValue({
       ...request("CONVERTED_TO_APPEAL"),
       appealId: "synthetic-linked-appeal",
@@ -126,5 +128,18 @@ describe("request to appeal staff navigation", () => {
     }));
     expect(html).toContain('href="/admin/appeals/synthetic-linked-appeal"');
     expect(html).toContain("Open appeal editor");
+  });
+  it("does not offer the linked appeal editor to staff without appeal.view", async () => {
+    mocks.request.mockResolvedValue({
+      ...request("CONVERTED_TO_APPEAL"),
+      appealId: "synthetic-linked-appeal",
+      appeal: { id: "synthetic-linked-appeal", title: "Synthetic medical appeal", status: "DRAFT" },
+    });
+    const html = renderToStaticMarkup(await RequestDetailPage({
+      params: Promise.resolve({ id: "synthetic-request" }),
+    }));
+    expect(html).toContain("Linked appeal");
+    expect(html).not.toContain('href="/admin/appeals/synthetic-linked-appeal"');
+    expect(html).not.toContain("Open appeal editor");
   });
 });
