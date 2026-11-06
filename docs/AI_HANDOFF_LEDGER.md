@@ -1,3 +1,7 @@
+## 2026-11-06 IST — AF-R012 try/catch static audit test-first handoff
+
+CHATGPT_ACTIVE sole implementation writer on `test/af-r012-try-exit-guard-inventory-20261106`, based on main `f325569703502a41a945aae2b19ae60769af11f1`. Separate #671 already in hosted exact-head checks. Static guard detector may accept permissions after unconditional return nested inside try or catch-only guard. Isolate failing synthetic script test, correct AST scanner conservatively, verify all required CI and ready-state; do not change production auth, finance, media, donor, schema, secrets or infra. Preserve coordination and historical 149 classification. Next read PR and CI, no blind merge or force push.
+
 ## 2026-11-06 IST — AF-R012 conditional-guard static inventory task
 
 Sole writer CHATGPT_ACTIVE; main `499fd1c89f71f6419e30f37603bf1ea6558920e2`, branch `test/af-r012-conditional-guard-failclosed-20261106`. AF-R012 optional-branch guard false positive is independent of draft #671 CSS measurement reconciliation and its CI. First write native synthetic negative regression in scripts/test-admin-route-inventory.mjs, run GitHub hosted RED, then add smallest conservative AST audit correction, exact-head GREEN, separate ready-state promotion and protected SHA-guard merge. Do not amend production auth/RBAC or media/payment/data, no external activation. No canonical 149 status promotion. Rollback isolated script. Read the current GitHub PR and HEAD before continuing.
