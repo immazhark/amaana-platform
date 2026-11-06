@@ -1,3 +1,7 @@
+## 2026-11-06 IST — AF-R047 public label validation next isolated task
+
+Single writer CHATGPT_ACTIVE. Branch `fix/af-r047-route-label-integrity-20261106` from `4d9f5d4ca9606b237fcf6158f4d173317250dfd6`; independent #678 full CI pending. RED native regression for malformed public route labels across legacy aggregate and Next16 reference CSS/JS before source change. Preserve accepted #677 page path guard, #676 styles, and coordination histories. Require full exact-head, separate ready-state and guarded merge; no live infrastructure/finance/provider impact. Canonical 149 unchanged.
+
 ## 2026-11-06 IST — #677 post-#676 source-preserving reconciliation
 
 Accepted main `9d5fef7477ecc9f4708b74179b9999610f070452` from guarded #676. Preserve #676 home/recognition CSS+e2e, #677 reporter/test and both coordination histories. Ordinary two-parent merge, no rewrite; new exact-head CI + separate promotion required before #677 guarded merge. Original RED 42214722842 and GREEN 42215083804 are prior-head evidence only. No 149 count promotion or live provider action.
