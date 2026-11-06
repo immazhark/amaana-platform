@@ -1,3 +1,7 @@
+## 2026-11-06 IST — AF-R012 native false-positive reproduction and fix
+
+RED 42216023805 fast 127886207736, two intentional new negative failures. Minimal static scanner fix excludes optional loop bodies and switch clauses but retains always-run condition/initializer/discriminant checks, plus positive test. Revalidate exact head in full hosted CI, then separate ready state and SHA guard. No production access-control or live operator change. Historical 149 unchanged.
+
 ## 2026-11-06 IST — AF-R012 optional-control scanner task
 
 Single writer CHATGPT_ACTIVE, branch `test/af-r012-optional-loop-switch-guards-20261106`, base `57ae5dae4f428f3b24cbcd61e425247bd5274bbb`. Independent from #676 and #677. Require hosted native RED to reproduce false-positive API/action guard detection in optional loop bodies/switch cases, then bounded conservative scanner correction; exact-head complete CI, separate ready-state and SHA-guarded merge. No auth runtime or live infrastructure activation; 149 history unchanged.
