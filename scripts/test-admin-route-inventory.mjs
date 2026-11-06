@@ -265,6 +265,57 @@ test("AF-R012 ignores admin guards after an unconditional exit", () => {
     "getCurrentUser", "PATCH"), true, "A guard before exit must remain detectable");
 });
 
+test("AF-R012 rejects optional-branch-only admin guards", () => {
+  const guards = [
+    "await getCurrentUser();",
+    "hasPermission({}, 'content.update');",
+    "isSameOrigin({});",
+  ].join(" ");
+  for (const conditional of [
+    `if (false) { ${guards} }`,
+    `if (allowWithoutGuarantee) { ${guards} }`,
+  ]) {
+    const source = `export async function POST() { ${conditional} return Response.json({ public: true }); }`;
+    for (const guard of ["getCurrentUser", "hasPermission", "isSameOrigin"]) {
+      assert.equal(sourceHasGuardCall(source, guard, "POST"), false,
+        `${guard}: conditional branch guard cannot authorize the whole POST handler`);
+    }
+  }
+
+  const conditionalExpression =
+    "export async function PATCH() { const allowed = flag ? hasPermission({}, 'content.update') : false; return Response.json({ allowed }); }";
+  assert.equal(sourceHasGuardCall(conditionalExpression, "hasPermission", "PATCH"), false,
+    "A ternary branch does not guarantee a permission check");
+
+  const shortCircuit =
+    "export async function DELETE() { flag && isSameOrigin({}); return Response.json({ public: true }); }";
+  assert.equal(sourceHasGuardCall(shortCircuit, "isSameOrigin", "DELETE"), false,
+    "A short-circuited guard cannot authorize the full mutation");
+
+  const actionSource = [
+    "'use server';",
+    "export async function update() { if (flag) { await requirePermission('team.manage'); } return 'unguarded'; }",
+  ].join("\n");
+  const actionAst = ts.createSourceFile("conditional-action.ts", actionSource, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const action = exportedAsyncProtectedActions(actionAst).find(item => item.name === "update");
+  assert.ok(action);
+  assert.equal(actionHasPermissionGuard(action.body), false,
+    "An optional branch's permission call cannot guard an exported server action");
+
+  const predicate = [
+    "export async function POST(request) {",
+    "  if (!isSameOrigin(request)) return Response.json({ error: 'origin' });",
+    "  const user = await getCurrentUser();",
+    "  if (!hasPermission(user, 'content.update')) return Response.json({ error: 'access' });",
+    "  return Response.json({ ok: true });",
+    "}",
+  ].join("\n");
+  for (const guard of ["getCurrentUser", "hasPermission", "isSameOrigin"]) {
+    assert.equal(sourceHasGuardCall(predicate, guard, "POST"), true,
+      `${guard}: direct required predicate or assignment must still count`);
+  }
+});
+
 const root = process.cwd();
 const browserContract = readFileSync(join(root, "e2e/admin-anonymous-boundaries.spec.mjs"), "utf8");
 
