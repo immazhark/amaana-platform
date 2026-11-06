@@ -1,3 +1,19 @@
+## 2026-11-06 IST — #678 post-#677 non-force reconciliation
+
+Protected #677 accepted at `4d9f5d4ca9606b237fcf6158f4d173317250dfd6`. Preserve reporter code/test, #678 optional control-flow scanner/tests, #676 public heading styles and both coordination histories. Normal two-parent merge, no force or administrative bypass. Repeat full exact-head checks, separate promotion and guarded protected merge. Previous #678 CI 42217501584 passed its older head only. No runtime authorization or live provider/financial operation. 149 unchanged.
+
+## 2026-11-06 IST — #678 post-#676 audited branch ancestry
+
+Accepted main `9d5fef7477ecc9f4708b74179b9999610f070452` from #676 preserved with #678 optional-loop/switch audit regression and fix, plus both coordination histories. Non-force two-parent merge. Native RED 42216023805; full new exact-head CI and separate ready-state required. #677 independent. Do not modify production auth or live finance/provider/infra. No 149 reclassification.
+
+## 2026-11-06 IST — AF-R012 native false-positive reproduction and fix
+
+RED 42216023805 fast 127886207736, two intentional new negative failures. Minimal static scanner fix excludes optional loop bodies and switch clauses but retains always-run condition/initializer/discriminant checks, plus positive test. Revalidate exact head in full hosted CI, then separate ready state and SHA guard. No production access-control or live operator change. Historical 149 unchanged.
+
+## 2026-11-06 IST — AF-R012 optional-control scanner task
+
+Single writer CHATGPT_ACTIVE, branch `test/af-r012-optional-loop-switch-guards-20261106`, base `57ae5dae4f428f3b24cbcd61e425247bd5274bbb`. Independent from #676 and #677. Require hosted native RED to reproduce false-positive API/action guard detection in optional loop bodies/switch cases, then bounded conservative scanner correction; exact-head complete CI, separate ready-state and SHA-guarded merge. No auth runtime or live infrastructure activation; 149 history unchanged.
+
 ## 2026-11-06 IST — #677 post-#676 source-preserving reconciliation
 
 Accepted main `9d5fef7477ecc9f4708b74179b9999610f070452` from guarded #676. Preserve #676 home/recognition CSS+e2e, #677 reporter/test and both coordination histories. Ordinary two-parent merge, no rewrite; new exact-head CI + separate promotion required before #677 guarded merge. Original RED 42214722842 and GREEN 42215083804 are prior-head evidence only. No 149 count promotion or live provider action.
