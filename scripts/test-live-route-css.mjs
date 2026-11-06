@@ -73,6 +73,28 @@ test("summarizes shared build CSS once per URL and accounts for UTF-8 decoded by
   assert.match(report.disclaimer, /Not network transfer|not network transfer/i);
 });
 
+test("AF-R068 treats CSS URL fragments as one fetched stylesheet, not extra decoded bytes", () => {
+  const origin = "http://127.0.0.1:3000";
+  const url = origin + "/_next/static/chunks/fragment.css";
+  const report = summarizeCssRuleUsage([
+    { url: url + "#top", text: "abcd", ranges: [{ start: 0, end: 2 }] },
+    { url: url + "#bottom", text: "abcd", ranges: [{ start: 2, end: 4 }] },
+  ], origin);
+  assert.deepEqual(report.stylesheets, [{ url, totalDecodedBytes: 4, usedDecodedBytes: 4 }]);
+  assert.equal(report.measuredTotalDecodedBytes, 4);
+  assert.equal(report.measuredUsedDecodedBytes, 4);
+  assert.equal(report.sampledUnobservedPercent, 0);
+
+  const queries = summarizeCssRuleUsage([
+    { url: url + "?v=1#top", text: "abcd", ranges: [{ start: 0, end: 2 }] },
+    { url: url + "?v=2#bottom", text: "abcd", ranges: [{ start: 2, end: 4 }] },
+  ], origin);
+  assert.deepEqual(queries.stylesheets.map(item => item.url), [
+    url + "?v=1", url + "?v=2",
+  ], "Distinct requested query variants remain separately measurable");
+  assert.equal(queries.measuredTotalDecodedBytes, 8);
+});
+
 test("AF-R068 reports sampled unobserved CSS decoded bytes and percent only with complete source text", () => {
   const origin = "http://127.0.0.1:3000";
   const url = origin + "/_next/static/chunks/hero.css";

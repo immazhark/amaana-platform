@@ -45,6 +45,9 @@ export function summarizeCssRuleUsage(entries, origin) {
       continue;
     }
 
+    // Fragments do not identify distinct downloaded stylesheets; query variants do.
+    url.hash = "";
+
     const hasText = typeof entry.text === "string";
     if (entry.text !== undefined && !hasText) throw new Error("Invalid CSS coverage source text");
     const current = grouped.get(url.href);
