@@ -75,4 +75,28 @@ describe("AF-R019 public appeal-card muted text contrast", () => {
     if (!foreground) throw new Error("The Appeals progress label has no explicit route-level color");
     expect(contrast(foreground, "#fffdf8")).toBeGreaterThanOrEqual(4.5);
   });
+  it("AF-R092 never publishes a funding card with malformed or negative totals", () => {
+    const base = {
+      slug: "synthetic-invalid-funds", title: "Synthetic appeal",
+      summary: "Test-only funding values", category: "EDUCATION", beneficiaryLocation: null,
+      goalAmount: 1000, amountRaised: 100,
+    };
+    const invalid = [
+      { amountRaised: Number.NaN },
+      { amountRaised: Number.POSITIVE_INFINITY },
+      { amountRaised: -1 },
+      { goalAmount: 0 },
+      { goalAmount: -100 },
+      { goalAmount: Number.NaN },
+      { goalAmount: Number.POSITIVE_INFINITY },
+    ];
+    for (const values of invalid) {
+      const html = renderToStaticMarkup(<AppealCard appeal={{ ...base, ...values }} />);
+      expect(html, `Invalid appeal totals must fail closed: ${JSON.stringify(values)}`).toBe("");
+    }
+    const valid = renderToStaticMarkup(<AppealCard appeal={{ ...base, amountRaised: 1400 }} />);
+    expect(valid).toContain("100% supported");
+    expect(valid).toContain('aria-valuenow="100"');
+  });
+
 });
