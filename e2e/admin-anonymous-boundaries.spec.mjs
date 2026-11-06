@@ -11,6 +11,7 @@ const protectedAdminSurfaces = [
   "/admin/media",
   "/admin/team",
   "/admin/notifications",
+  "/admin/requests",
   "/admin/requests/not-a-real-id",
   "/admin/retention",
   "/admin/documents/not-a-real-id",
