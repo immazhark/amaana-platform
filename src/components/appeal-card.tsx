@@ -6,6 +6,7 @@ import { amountToNumber, formatINR, type PublicAppeal } from "@/lib/appeals";
 export function AppealCard({ appeal }: { appeal: PublicAppeal }) {
   const raised = amountToNumber(appeal.amountRaised);
   const goal = amountToNumber(appeal.goalAmount);
+  if (!Number.isFinite(raised) || raised < 0 || !Number.isFinite(goal) || goal <= 0) return null;
   const progress = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
 
   return (
