@@ -1,3 +1,7 @@
+## 2026-11-06 IST — AF-R057 measurable inert resource audit correction
+
+RED CI 42234529924 fast 127948736670: two intended failures on inert template and noscript link counting, no unrelated failure asserted. Minimal CSS audit only guard + existing native regression, full exact-head CI and separate ready-state to follow; #680 unrelated source in browser acceptance. No production CSS/download/Web Vitals claim; historic 149 unchanged.
+
 ## 2026-11-06 IST — AF-R057 inert CSS parser task
 
 Source-only route CSS audit can count links in inert templates; synthetic negative and live-link positives in `scripts/test-live-route-css.mjs` from accepted `1cdac63fa7113e1adc79b6263110316417d36e84` and #680 unrelated. Hosted RED before change; update audit parser if proven, full CI and separate ready-state then protected merge. No field CWV or CSS unused percent claim, historical 149 remains unchanged.

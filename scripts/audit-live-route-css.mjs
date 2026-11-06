@@ -11,6 +11,27 @@ function attr(attributes, name) {
   return null;
 }
 
+/** Links inside HTML template contents are inert until a script adopts them.
+ * Keep a lightweight quote-aware tag scan so nested or unclosed templates do
+ * not inflate initial rendered stylesheet attribution.
+ */
+function withoutInertTemplates(markup) {
+  const tags = /<(\/?)([a-z][a-z0-9:_-]*)(?=[\t\n\f\r />])((?:[^"'<>]|"[^"]*"|'[^']*')*)>/gi;
+  let depth = 0;
+  let from = 0;
+  let visible = "";
+  for (const match of markup.matchAll(tags)) {
+    if (match[2].toLowerCase() !== "template") continue;
+    if (match[1]) {
+      if (depth && --depth === 0) from = match.index + match[0].length;
+    } else {
+      if (depth === 0) visible += markup.slice(from, match.index);
+      depth += 1;
+    }
+  }
+  return depth ? visible : visible + markup.slice(from);
+}
+
 /** Resolve same-origin Next CSS referenced by rendered public HTML. */
 export function stylesheetsInHtml(html, origin = ORIGIN) {
   if (typeof html !== "string") throw new TypeError("HTML must be text");
@@ -20,8 +41,9 @@ export function stylesheetsInHtml(html, origin = ORIGIN) {
   // Commented-out (including unterminated) links are not rendered resources.
   // Raw-text/RCDATA bodies cannot contain active stylesheet links.
   // Stop at the matching closing element so later genuine links remain visible.
-  const renderedMarkup = html.replace(/<!--[\s\S]*?(?:-->|$)/g, "")
-    .replace(/<(script|style|title|textarea|xmp|noembed|noframes)(?=[\t\n\f\r />])[^>]*>[\s\S]*?(?:<\/\1\s*>|$)/gi, "");
+  const renderedMarkup = withoutInertTemplates(html.replace(/<!--[\s\S]*?(?:-->|$)/g, "")
+    // This audit measures the script-enabled page, not no-JS fallbacks.
+    .replace(/<(script|style|title|textarea|xmp|noembed|noframes|noscript)(?=[\t\n\f\r />])[^>]*>[\s\S]*?(?:<\/\1\s*>|$)/gi, ""));
   // Consume every complete opening tag, including quoted attributes, so a
   // link-shaped attribute value cannot become a standalone resource tag.
   const tags = /<([a-z][a-z0-9:_-]*)(?=[\t\n\f\r />])((?:[^"'<>]|"[^"]*"|'[^']*')*)>/gi;
