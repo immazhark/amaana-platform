@@ -95,6 +95,24 @@ export async function auditPublicRouteCss({ fetchImpl = fetch, routes = PUBLIC_R
   const site = new URL(ORIGIN);
   const entries = [];
   const sizes = new Map();
+  // Validate and snapshot the entire inventory before any network access.
+  // A later invalid entry must not permit earlier requests or duplicate rows.
+  if (!Array.isArray(routes) || routes.length === 0) throw new Error("Invalid public route inventory");
+  const canonicalRoutes = [...routes];
+  const seenRoutes = new Set();
+  for (const route of canonicalRoutes) {
+    if (typeof route !== "string" || !/^\/(?!\/)/.test(route) ||
+        route.includes("//") || route.includes("%") ||
+        /[?#\\\s\u0000-\u001F\u007F]/u.test(route) ||
+        (route !== "/" && route.endsWith("/")) ||
+        route.split("/").some(segment => segment === "." || segment === "..") ||
+        seenRoutes.has(route)) {
+      throw new Error("Invalid public route: " + String(route));
+    }
+    // Require the supplied pathname to be the URL actually requested.
+    if (new URL(route, site).pathname !== route) throw new Error("Invalid public route: " + route);
+    seenRoutes.add(route);
+  }
   async function request(url) {
     // Never permit an external hop before validating the target origin.
     const response = await fetchImpl(url, { redirect: "manual", signal: AbortSignal.timeout(15000) });
@@ -103,10 +121,7 @@ export async function auditPublicRouteCss({ fetchImpl = fetch, routes = PUBLIC_R
     if (!response.url || new URL(response.url).origin !== site.origin) throw new Error("Public route CSS audit unexpected origin at " + url);
     return response;
   }
-  for (const route of routes) {
-    if (typeof route !== "string" || !/^\/(?!\/)/.test(route) || route.includes("..") || route.includes("?") || route.includes("#") || route.includes("\\")) {
-      throw new Error("Invalid public route: " + route);
-    }
+  for (const route of canonicalRoutes) {
     const pageUrl = new URL(route, site);
     if (pageUrl.origin !== site.origin) throw new Error("Invalid public route: " + route);
     const html = await (await request(pageUrl.href)).text();

@@ -610,3 +610,72 @@ test("AF-R057 excludes noscript fallback stylesheets from a JS-enabled CSS audit
   assert.deepEqual(stylesheetsInHtml(`<noscript>${fake}</noscript>${real}`),
     ["https://amaanafoundation.org/_next/static/real.css"]);
 });
+
+
+test("AF-R057 rejects missing, empty and non-array route inventories before fetching", async () => {
+  for (const routes of [[], "/impact", null, new Set(["/impact"]), { 0: "/impact", length: 1 }]) {
+    let fetches = 0;
+    await assert.rejects(auditPublicRouteCss({
+      routes,
+      fetchImpl: async () => { fetches += 1; throw new Error("Network requested for invalid inventory"); },
+    }), /Invalid public route/, String(routes));
+    assert.equal(fetches, 0, "Invalid route inventories must not fetch any resource");
+  }
+});
+
+test("AF-R057 rejects noncanonical public route aliases before fetching", async () => {
+  const invalid = [
+    "//foreign.invalid", "/impact//older", "/impact/./older",
+    "/impact/../donate", "/impact/%2e%2e/donate",
+    "/impact%2farchive", "/impact%5carchive", "/impact/",
+    "/impact?view=raw", "/impact#archive", "/impact\narchive",
+    "/impact archive", "/impact\\archive",
+  ];
+  for (const route of invalid) {
+    let fetches = 0;
+    await assert.rejects(auditPublicRouteCss({
+      routes: [route],
+      fetchImpl: async () => { fetches += 1; throw new Error("Network requested for invalid route"); },
+    }), /Invalid public route/, route);
+    assert.equal(fetches, 0, route + " must fail before network access");
+  }
+});
+
+test("AF-R057 validates every route before fetching the first valid one", async () => {
+  let fetches = 0;
+  await assert.rejects(auditPublicRouteCss({
+    routes: ["/", "/impact/../donate"],
+    fetchImpl: async () => { fetches += 1; throw new Error("Network requested before route preflight"); },
+  }), /Invalid public route/);
+  assert.equal(fetches, 0, "A later invalid route must block all network requests");
+});
+
+test("AF-R057 rejects duplicate routes rather than reporting a route twice", async () => {
+  const visited = [];
+  await assert.rejects(auditPublicRouteCss({
+    routes: ["/", "/"],
+    fetchImpl: async url => {
+      visited.push(url);
+      return { ok: true, status: 200, url, text: async () => "" };
+    },
+  }), /Invalid public route/);
+  assert.deepEqual(visited, [], "Duplicate route input must fail before requesting a page");
+});
+
+test("AF-R057 keeps canonical root and nested public routes measurable", async () => {
+  const visited = [];
+  const report = await auditPublicRouteCss({
+    routes: ["/", "/impact", "/our-work/2026"],
+    fetchImpl: async url => {
+      visited.push(url);
+      return { ok: true, status: 200, url, text: async () => "" };
+    },
+  });
+  assert.deepEqual(report.routes.map(row => row.route), ["/", "/impact", "/our-work/2026"]);
+  assert.deepEqual(visited, [
+    "https://amaanafoundation.org/",
+    "https://amaanafoundation.org/impact",
+    "https://amaanafoundation.org/our-work/2026",
+  ]);
+  assert.equal(report.shared.decodedCssBytes, 0);
+});

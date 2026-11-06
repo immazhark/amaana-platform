@@ -1,3 +1,7 @@
+## 2026-11-06 IST — PR #682 AF-R057 CSS audit route preflight RED-first
+
+On protected `main` `61e4f4624276ac608aa78b607521ffe00b9b1581`, sole writer CHATGPT_ACTIVE prepared isolated `fix/af-r057-public-css-route-preflight-20261106`. Native RED [42245202488](https://github.com/immazhark/amaana-platform/actions/runs/42245202488): four negative tests failed for malformed/non-array routes, noncanonical URL aliases, delayed invalid-route rejection after an earlier fetch, and duplicate routes; positive canonical route passed. Candidate source fix `3cad9193debbcf076e1b738ae7e9136aca4b0d7e` snapshots the route list, validates all entries and duplicates before first HTTP request, and reuses existing manual redirect/response-origin checks. Keep full exact-head CI and separate ready-state before protected expected-head merge. Source-only report integrity, no application behavior or live infra, and 149 unchanged.
+
 ## 2026-11-06 IST — #681 non-force continuation after protected #680 merge
 
 Protected #680 merged at `1a28cd2f79995e23920589c4ca7480b7e2781915` after complete CI 42233729697 and separate ready-state 42238525138. Preserve both #680 and #681 source/coordination histories without rewriting either; native #681 RED 42234529924, earlier-head all-green CI 42234982514, fresh full acceptance and separate promotion required for new two-parent head. Source-only, no production runtime/infrastructure or 149-count change.
