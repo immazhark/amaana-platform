@@ -510,3 +510,56 @@ test("AF-R047 rejects malformed unmatched legacy layout manifest entries", () =>
     "Malformed sibling layouts must not silently pass the integrity audit");
   }
 });
+
+test("AF-R047 does not double-count aliased on-disk bundle paths", () => {
+  const legacy = summarizeAppRouteBundles({
+    "/page": [
+      "static/chunks/shared.js",
+      "static/chunks/./shared.js",
+      "static/chunks//shared.js",
+    ],
+  }, asset => {
+    assert.equal(asset, "static/chunks/shared.js", "Only canonical asset paths may be measured");
+    return 13;
+  });
+  assert.equal(legacy[0].jsBytes, 13,
+    "One on-disk file must not be counted as three different manifest assets");
+
+  for (const path of [
+    "static/css/./site.css",
+    "static/css//site.css",
+    "static/css/hidden/../site.css",
+  ]) {
+    assert.throws(() => reporter.summarizeClientReferenceCss(
+      { "/page": "/" },
+      page => referenceSource(page, {
+        "[project]/src/app/layout": [{ path, inlined: false }],
+      }),
+      () => 17,
+    ), /Unsafe client-reference CSS asset path/, path);
+  }
+
+  for (const path of [
+    "static/chunks/./shared.js",
+    "static/chunks//shared.js",
+    "static/chunks/hidden/../shared.js",
+  ]) {
+    assert.throws(() => reporter.summarizeClientReferenceJs(
+      { "/page": "/" },
+      page => jsReferenceSource(page, {
+        "[project]/src/app/layout": [path],
+      }),
+      ["static/chunks/runtime.js"], () => 13,
+    ), /Unsafe JavaScript asset path/, path);
+  }
+
+  const canonical = summarizeAppRouteBundles({
+    "/layout": ["static/chunks/shared.js"],
+    "/page": ["static/chunks/shared.js"],
+  }, asset => {
+    assert.equal(asset, "static/chunks/shared.js");
+    return 13;
+  });
+  assert.equal(canonical[0].jsBytes, 13,
+    "Canonical inherited and page assets must still deduplicate");
+});
