@@ -62,6 +62,19 @@ function bodyHasReachableDirectCall(body, name) {
   let found = false;
   function visit(node) {
     if (found || ts.isFunctionLike(node)) return;
+    // Nested try bodies must obey the same direct return/throw boundary as the
+    // exported handler. Catch-only guards do not protect successful requests.
+    if (ts.isBlock(node)) {
+      for (const statement of node.statements) {
+        visit(statement);
+        if (ts.isReturnStatement(statement) || ts.isThrowStatement(statement)) break;
+      }
+      return;
+    }
+    if (ts.isTryStatement(node)) {
+      visit(node.tryBlock);
+      return;
+    }
 
     // The condition of an if/ternary is evaluated, but its alternative bodies
     // are optional. A guard confined to one branch cannot cover the handler.
@@ -89,14 +102,7 @@ function bodyHasReachableDirectCall(body, name) {
     }
     ts.forEachChild(node, visit);
   }
-  if (ts.isBlock(body)) {
-    for (const statement of body.statements) {
-      visit(statement);
-      if (ts.isReturnStatement(statement) || ts.isThrowStatement(statement)) break;
-    }
-  } else {
-    visit(body);
-  }
+  visit(body);
   return found;
 }
 
