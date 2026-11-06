@@ -1,11 +1,13 @@
 import styles from "./public-route-loading.module.css";
+import { CanonicalArticle } from "./canonical-article";
 
 type PublicLoadingRoute =
   | "stories"
   | "our-work"
   | "impact"
   | "appeals"
-  | "faith-and-reflections";
+  | "faith-and-reflections"
+  | "donate";
 
 const routeCopy: Record<PublicLoadingRoute, { title: string; message: string }> = {
   "stories": { title: "Stories of Amanah", message: "Loading published stories…" },
@@ -13,12 +15,34 @@ const routeCopy: Record<PublicLoadingRoute, { title: string; message: string }> 
   "impact": { title: "Our Impact", message: "Loading documented outcomes…" },
   "appeals": { title: "Verified Appeals", message: "Checking current public appeals…" },
   "faith-and-reflections": { title: "Faith & Reflections", message: "Loading the reviewed library…" },
+  "donate": { title: "Domestic Donations", message: "Checking currently approved giving routes…" },
 };
 
 /** An App Router transition fallback. Never render provisional database facts,
  * people, fundraising counters, links or media before publication checks finish. */
 export function PublicRouteLoading({ route }: { route: PublicLoadingRoute }) {
   const { title, message } = routeCopy[route];
+  // Keep the matched donation page's standard hero/body geometry available
+  // while current checkout eligibility and verified balances are resolved.
+  if (route === "donate") {
+    return (
+      <CanonicalArticle
+        title={title}
+        eyebrow="Donate · Amaana Foundation"
+        intro="Checking current domestic giving availability."
+        heroVariant="action"
+        heroVisualTitle={title}
+        heroVisualNote={message}
+        heroActions={[]}
+        blocks={[]}
+      >
+        <p className={styles.status} role="status" aria-live="polite" aria-atomic="true">
+          {message}
+        </p>
+      </CanonicalArticle>
+    );
+  }
+
   return (
     <section className={styles.root} aria-labelledby="public-route-loading-title">
       <div className={styles.hero}>

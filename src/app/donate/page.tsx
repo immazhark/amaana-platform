@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
+import { PublicRouteLoading } from "@/components/public-route-loading";
 import { CanonicalArticle } from "@/components/canonical-article";
 import { complianceCopy } from "@/lib/master-copy";
 import { getReviewedDonationPageData, getDonationImpactHighlights } from "@/lib/public-page-data";
@@ -35,7 +37,7 @@ export const metadata: Metadata = {
 // Always recheck current checkout eligibility and verified balances per request.
 export const dynamic = "force-dynamic";
 
-export default async function Page() {
+async function DonatePageContent() {
   const [reviewedAppeals, publishedInitiatives] = await Promise.all([
     getReviewedDonationPageData(),
     getDonationImpactHighlights().catch(error => {
@@ -97,5 +99,13 @@ export default async function Page() {
         <AppealLandingCheckout appeals={eligibleChoices} paymentDetails={getDonationPaymentDetails()} />}
       <p className={styles.note}>Choose the route that matches your intention: an open appeal supports that specific published need, while programme support is available only when Amaana has confirmed an approved destination.</p>
     </CanonicalArticle>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<PublicRouteLoading route="donate" />}>
+      <DonatePageContent />
+    </Suspense>
   );
 }
