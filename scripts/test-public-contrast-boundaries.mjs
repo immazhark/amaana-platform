@@ -42,3 +42,18 @@ test("Media paper-card metadata uses readable ink without dark editorial regress
   }
   assert.ok(contrast("#e0b318", "#1d3150") >= 4.5, "Editorial variant must keep readable gold on navy");
 });
+
+test("AF-R019 admin text actions use readable light ink while sidebar retains gold", () => {
+  const css = appCss("refinement.css");
+  // The existing same-class buttons are in both the dark sidebar and pale
+  // admin content. Do not swap the shared brand gold or dark sidebar contrast.
+  assert.equal(declaration(css, ".text-button", "color"), "#e0b318");
+  assert.ok(contrast("#e0b318", "#122239") >= 4.5, "Sidebar gold must remain readable on navy");
+
+  assert.equal(declaration(css, ".admin-content", "background"), "#f4f6f9");
+  assert.equal(declaration(css, ".admin-content .text-button", "color"), "var(--af-color-gold-ink)");
+  for (const surface of ["#f4f6f9", "#ffffff", "#fffdf8"]) {
+    assert.ok(contrast(inkToken("gold-ink"), surface) >= 4.5,
+      `Admin light-content action text below 4.5:1 on ${surface}`);
+  }
+});
