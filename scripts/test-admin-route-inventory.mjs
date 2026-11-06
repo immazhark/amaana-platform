@@ -62,6 +62,19 @@ function bodyHasReachableDirectCall(body, name) {
   let found = false;
   function visit(node) {
     if (found || ts.isFunctionLike(node)) return;
+    // Nested try bodies must obey the same direct return/throw boundary as the
+    // exported handler. Catch-only guards do not protect successful requests.
+    if (ts.isBlock(node)) {
+      for (const statement of node.statements) {
+        visit(statement);
+        if (ts.isReturnStatement(statement) || ts.isThrowStatement(statement)) break;
+      }
+      return;
+    }
+    if (ts.isTryStatement(node)) {
+      visit(node.tryBlock);
+      return;
+    }
 
     // The condition of an if/ternary is evaluated, but its alternative bodies
     // are optional. A guard confined to one branch cannot cover the handler.
@@ -89,14 +102,7 @@ function bodyHasReachableDirectCall(body, name) {
     }
     ts.forEachChild(node, visit);
   }
-  if (ts.isBlock(body)) {
-    for (const statement of body.statements) {
-      visit(statement);
-      if (ts.isReturnStatement(statement) || ts.isThrowStatement(statement)) break;
-    }
-  } else {
-    visit(body);
-  }
+  visit(body);
   return found;
 }
 
@@ -334,6 +340,59 @@ test("AF-R012 rejects optional-branch-only admin guards", () => {
   for (const guard of ["getCurrentUser", "hasPermission", "isSameOrigin"]) {
     assert.equal(sourceHasGuardCall(predicate, guard, "POST"), true,
       `${guard}: direct required predicate or assignment must still count`);
+  }
+});
+
+test("AF-R012 rejects unreachable try-block and catch-only admin guards", () => {
+  for (const method of ["GET", "POST", "PATCH"]) {
+    const unreachable = `export async function ${method}() {
+      try {
+        return Response.json({ unguarded: true });
+        await getCurrentUser(); hasPermission({}, 'content.update'); isSameOrigin({});
+      } catch { return Response.json({ fallback: true }); }
+    }`;
+    for (const guard of ["getCurrentUser", "hasPermission", "isSameOrigin"]) {
+      assert.equal(sourceHasGuardCall(unreachable, guard, method), false,
+        `${method}: ${guard} after return in try cannot protect an API request`);
+    }
+  }
+
+  const catchOnly = [
+    "export async function POST() {",
+    " try { return Response.json({ unguarded: true }); }",
+    " catch { await getCurrentUser(); hasPermission({}, 'content.update'); isSameOrigin({}); }",
+    "}",
+  ].join("\n");
+  for (const guard of ["getCurrentUser", "hasPermission", "isSameOrigin"]) {
+    assert.equal(sourceHasGuardCall(catchOnly, guard, "POST"), false,
+      `catch-only ${guard} does not protect successful POST requests`);
+  }
+
+  const action = ts.createSourceFile("try-exit-admin-action.ts", [
+    "'use server';",
+    "export async function update() {",
+    "  try { throw new Error('denied'); await requirePermission('team.manage'); }",
+    "  catch { return 'unguarded'; }",
+    "}",
+  ].join("\n"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const exported = exportedAsyncProtectedActions(action).find(item => item.name === "update");
+  assert.ok(exported);
+  assert.equal(actionHasPermissionGuard(exported.body), false,
+    "Permission after a throw in try cannot authorize a server action");
+
+  const guarded = [
+    "export async function POST(request) {",
+    "  try {",
+    "    if (!isSameOrigin(request)) return Response.json({ status: 403 });",
+    "    const user = await getCurrentUser();",
+    "    if (!hasPermission(user, 'content.update')) return Response.json({ status: 403 });",
+    "    return Response.json({ ok: true });",
+    "  } catch { return Response.json({ error: true }); }",
+    "}",
+  ].join("\n");
+  for (const guard of ["getCurrentUser", "hasPermission", "isSameOrigin"]) {
+    assert.equal(sourceHasGuardCall(guarded, guard, "POST"), true,
+      `required ${guard} in a real try-block guard must still pass`);
   }
 });
 
