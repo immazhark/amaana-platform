@@ -25,9 +25,9 @@ afterEach(() => {
 });
 
 describe("donation payment details", () => {
-  it("does not render a QR URL unless a safe URL is configured", () => {
+  it("uses the canonical QR unless an approved safe URL is configured", () => {
     delete process.env.NEXT_PUBLIC_DONATION_UPI_QR_URL;
-    expect(getDonationPaymentDetails().upi.qrImageUrl).toBeNull();
+    expect(getDonationPaymentDetails().upi.qrImageUrl).toBe("/brand/amaana-upi-qr.png");
 
     process.env.NEXT_PUBLIC_DONATION_UPI_QR_URL = "/media/2026/donation-upi-qr.png";
     expect(getDonationPaymentDetails().upi.qrImageUrl).toBe("/media/2026/donation-upi-qr.png");
