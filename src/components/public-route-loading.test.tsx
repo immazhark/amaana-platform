@@ -21,3 +21,15 @@ it.each(routes)("renders a public-safe loading status for %s", (route, title, me
   expect(html).not.toMatch(/<main\b|<button\b|<a\b|<img\b|<video\b/);
   expect(html).not.toMatch(/beneficiar(?:y|ies)|donor|raised|funded|\b₹\s*\d/i);
 });
+
+// AF-R071: A dynamic donation landing page must not show an empty transition
+// or promise a payment destination before current eligibility is checked.
+it("AF-R071 donation loading is accessible, nontransactional, and wired", () => {
+  // @ts-expect-error RED: the donate route is not yet supported by the fallback.
+  const html = renderToStaticMarkup(<PublicRouteLoading route="donate" />);
+  expect(html).toContain("Domestic Donations");
+  expect(html).toContain("Checking currently approved giving routes");
+  expect(html).toContain('role="status"');
+  expect(html).toContain('aria-live="polite"');
+  expect(html).not.toMatch(/<main\\b|<button\\b|<a\\b|<img\\b|<video\\b|\\b₹\\s*\\d/i);
+});
