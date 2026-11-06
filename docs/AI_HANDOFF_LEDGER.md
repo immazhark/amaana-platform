@@ -1,3 +1,7 @@
+## 2026-11-06 IST — AF-R047 public route label integrity RED→GREEN candidate
+
+RED run 42225808531 fast 127918970398 reproduces unvalidated relative route label. GREEN candidate restricts report-only public route strings to canonical path shapes while preserving existing `Invalid App Router page route` test contract and previous accepted reporter code. #678 remains independent in hosted CI. Exact-head complete suite, separate ready-state and guarded merge required, no historical 149 promotion or live payment/infra effect.
+
 ## 2026-11-06 IST — AF-R047 public label validation next isolated task
 
 Single writer CHATGPT_ACTIVE. Branch `fix/af-r047-route-label-integrity-20261106` from `4d9f5d4ca9606b237fcf6158f4d173317250dfd6`; independent #678 full CI pending. RED native regression for malformed public route labels across legacy aggregate and Next16 reference CSS/JS before source change. Preserve accepted #677 page path guard, #676 styles, and coordination histories. Require full exact-head, separate ready-state and guarded merge; no live infrastructure/finance/provider impact. Canonical 149 unchanged.

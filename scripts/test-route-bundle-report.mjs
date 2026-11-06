@@ -610,18 +610,18 @@ test("AF-R047 rejects malformed public route labels before reading client-refere
   for (const route of invalidRoutes) {
     const paths = { "/page": route };
     assert.throws(() => summarizeUnattributedAppAssets(paths, []),
-      /Invalid App Router public route/, route);
+      /Invalid App Router page route/, route);
     let reads = 0;
     assert.throws(() => reporter.summarizeClientReferenceCss(paths,
       page => {
         reads += 1;
         return referenceSource(page, { "[project]/src/app/layout": [] });
-      }, () => 1), /Invalid App Router public route/, route);
+      }, () => 1), /Invalid App Router page route/, route);
     assert.throws(() => reporter.summarizeClientReferenceJs(paths,
       page => {
         reads += 1;
         return jsReferenceSource(page, { "[project]/src/app/layout": [] });
-      }, [], () => 1), /Invalid App Router public route/, route);
+      }, [], () => 1), /Invalid App Router page route/, route);
     assert.equal(reads, 0, "Invalid route labels must fail before client-reference file reads");
   }
   for (const route of ["/", "/stories", "/stories/[slug]", "/(public)/stories"]) {

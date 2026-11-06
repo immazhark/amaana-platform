@@ -93,10 +93,18 @@ export function summarizeUnattributedAppAssets(appPaths, assets) {
 
 const isRecord = value => value !== null && typeof value === "object" && !Array.isArray(value);
 
+// Public route labels from generated manifests are URL paths, not external
+// locations, query strings or aliases for other directory levels.
+function validPublicRoute(route) {
+  return typeof route === "string" && route.startsWith("/") &&
+    !route.includes("//") && !/[?#\\\s\u0000-\u001F\u007F]/u.test(route) &&
+    !route.split("/").some(segment => segment === "." || segment === "..");
+}
+
 function pageRouteEntries(appPaths) {
   const pages = Object.entries(appPaths).filter(([page]) => page.endsWith("/page"));
   if (pages.some(([page]) => !validAppPage(page))) throw new Error("Unsafe App Router page path");
-  if (pages.some(([, route]) => typeof route !== "string" || route.length === 0)) {
+  if (pages.some(([, route]) => !validPublicRoute(route))) {
     throw new Error("Invalid App Router page route");
   }
   return pages;
