@@ -1,3 +1,7 @@
+## 2026-11-06 IST — AF-R047 failed regression → minimal path validation
+
+RED: run 42214722842 fast 127881846323, 107 pass / 1 expected failure from noncanonical `/stories/./page` accepted by legacy reporter. GREEN candidate applies three small source checks in `scripts/report-route-bundles.mjs`, preserving route groups and manifest-read-before-validation prevention. Next: exact-head required checks, separate ready-state and protected SHA-guarded merge; #676 independently running. No live provider/infra/data/finance change.
+
 ## 2026-11-06 IST — AF-R047 app route path integrity regression-first
 
 Sole writer CHATGPT_ACTIVE. Branch `fix/af-r047-noncanonical-page-route-20261106`, base `57ae5dae4f428f3b24cbcd61e425247bd5274bbb`, parallel read-only validation of independent #676; new native RED tests malformed `/stories/./page` acceptance in legacy and Next16 build-reporting paths. Only `scripts/report-route-bundles.mjs`, its native tests and coordination records authorized. Hosted RED before production script fix, exact-head full CI, separate ready-state and SHA-guarded merge. No live infrastructure or finance action. Historical 149 unchanged.
