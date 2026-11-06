@@ -1,3 +1,7 @@
+## 2026-11-06 IST — AF-R012 conditional-guard static inventory task
+
+Sole writer CHATGPT_ACTIVE; main `499fd1c89f71f6419e30f37603bf1ea6558920e2`, branch `test/af-r012-conditional-guard-failclosed-20261106`. AF-R012 optional-branch guard false positive is independent of draft #671 CSS measurement reconciliation and its CI. First write native synthetic negative regression in scripts/test-admin-route-inventory.mjs, run GitHub hosted RED, then add smallest conservative AST audit correction, exact-head GREEN, separate ready-state promotion and protected SHA-guard merge. Do not amend production auth/RBAC or media/payment/data, no external activation. No canonical 149 status promotion. Rollback isolated script. Read the current GitHub PR and HEAD before continuing.
+
 ## 2026-11-02 IST — Narrow reminder/live rail 320px regression-first task
 
 Single implementation writer CHATGPT_ACTIVE from protected source `6f46f038ef1e9881ddf783fa22a40949ad6e6be3`. Branch `fix/rail-320-mobile-content-reflow-20261102`; browser proof defines ordered label/title/source and badge/title/CTA at 320px, 44px CTA, no overflow. Requires actual failing browser regression then bounded @media(max-width:359px) corrective CSS, preserve 390px existing behavior and 149 counts. PR #629 independent exact-head CI in progress; do not edit it or force merges. No changes to donor, payment, auth, schema, media or secrets.
