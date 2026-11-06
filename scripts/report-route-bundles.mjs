@@ -27,6 +27,7 @@ export function summarizeAppRouteBundles(pages, byteSize) {
   }
   const routePages = Object.keys(pages).filter(key => key.endsWith("/page"));
   if (!routePages.length) throw new Error("No App Router page entries found in the build manifest");
+  if (routePages.some(page => !validAppPage(page))) throw new Error("Unsafe App Router page path");
   if (routePages.some(page => !Array.isArray(pages[page]))) {
     throw new Error("Invalid App Router page asset list");
   }
@@ -94,6 +95,7 @@ const isRecord = value => value !== null && typeof value === "object" && !Array.
 
 function pageRouteEntries(appPaths) {
   const pages = Object.entries(appPaths).filter(([page]) => page.endsWith("/page"));
+  if (pages.some(([page]) => !validAppPage(page))) throw new Error("Unsafe App Router page path");
   if (pages.some(([, route]) => typeof route !== "string" || route.length === 0)) {
     throw new Error("Invalid App Router page route");
   }
@@ -112,7 +114,7 @@ export function parseClientReferenceManifest(source, appPath) {
 
 function validAppPage(page) {
   return /^\/[A-Za-z0-9_()[\].@/-]*page$/u.test(page) && page.endsWith("/page") &&
-    !page.includes("//") && !page.split("/").includes("..");
+    !page.includes("//") && !page.split("/").some(segment => segment === "." || segment === "..");
 }
 
 /** Assigned on-disk CSS only: exclude sibling/error entries and unmeasured JS. */

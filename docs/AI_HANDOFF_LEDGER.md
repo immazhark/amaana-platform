@@ -1,3 +1,15 @@
+## 2026-11-06 IST — #677 post-#676 source-preserving reconciliation
+
+Accepted main `9d5fef7477ecc9f4708b74179b9999610f070452` from guarded #676. Preserve #676 home/recognition CSS+e2e, #677 reporter/test and both coordination histories. Ordinary two-parent merge, no rewrite; new exact-head CI + separate promotion required before #677 guarded merge. Original RED 42214722842 and GREEN 42215083804 are prior-head evidence only. No 149 count promotion or live provider action.
+
+## 2026-11-06 IST — AF-R047 failed regression → minimal path validation
+
+RED: run 42214722842 fast 127881846323, 107 pass / 1 expected failure from noncanonical `/stories/./page` accepted by legacy reporter. GREEN candidate applies three small source checks in `scripts/report-route-bundles.mjs`, preserving route groups and manifest-read-before-validation prevention. Next: exact-head required checks, separate ready-state and protected SHA-guarded merge; #676 independently running. No live provider/infra/data/finance change.
+
+## 2026-11-06 IST — AF-R047 app route path integrity regression-first
+
+Sole writer CHATGPT_ACTIVE. Branch `fix/af-r047-noncanonical-page-route-20261106`, base `57ae5dae4f428f3b24cbcd61e425247bd5274bbb`, parallel read-only validation of independent #676; new native RED tests malformed `/stories/./page` acceptance in legacy and Next16 build-reporting paths. Only `scripts/report-route-bundles.mjs`, its native tests and coordination records authorized. Hosted RED before production script fix, exact-head full CI, separate ready-state and SHA-guarded merge. No live infrastructure or finance action. Historical 149 unchanged.
+
 ## 2026-11-06 IST — AF-R025 native RED → controlled CSS candidate
 
 Hosted RED CI 42213380030 fast job 127877342591 confirmed exactly two new test failures: expected 1.04 >=1.12 and .94 >=1.12 for two actual long display titles. GREEN candidate only alters two unitless leading ratios to 1.14, retains browser assertions and full existing styling. Do not claim test/build/browser acceptance until new exact-head CI; no other source behavior or live infrastructure changes. Preserve original 149 classes and full coordination history.
