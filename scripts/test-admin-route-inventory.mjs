@@ -236,6 +236,37 @@ test("AF-R012 requires real guards inside the exported admin handler, not unused
     "getCurrentUser", "POST"), true);
 });
 
+test("AF-R012 ignores admin guards after an unconditional exit", () => {
+  for (const method of ["GET", "POST", "PATCH", "DELETE"]) {
+    const unguarded = `export async function ${method}() {
+      return Response.json({ accessible: true });
+      await getCurrentUser();
+      hasPermission({}, 'content.update');
+      isSameOrigin({});
+    }`;
+    for (const name of ["getCurrentUser", "hasPermission", "isSameOrigin"]) {
+      assert.equal(sourceHasGuardCall(unguarded, name, method), false,
+        `${method}: unreachable ${name}() cannot satisfy an admin API guard`);
+    }
+  }
+
+  const action = ts.createSourceFile("unreachable-admin-action.ts", [
+    "'use server';",
+    "export async function unsafeSave() {",
+    "  throw new Error('exit');",
+    "  await requirePermission('team.manage');",
+    "}",
+  ].join("\n"), ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const unsafeSave = exportedAsyncProtectedActions(action).find(item => item.name === "unsafeSave");
+  assert.ok(unsafeSave, "must find the real exported action");
+  assert.equal(actionHasPermissionGuard(unsafeSave.body), false,
+    "Permission calls after unconditional throw must not pass action inventory");
+
+  assert.equal(sourceHasGuardCall(
+    "export async function PATCH() { await getCurrentUser(); return Response.json({}); }",
+    "getCurrentUser", "PATCH"), true, "A guard before exit must remain detectable");
+});
+
 const root = process.cwd();
 const browserContract = readFileSync(join(root, "e2e/admin-anonymous-boundaries.spec.mjs"), "utf8");
 
