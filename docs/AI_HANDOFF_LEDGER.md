@@ -1,3 +1,7 @@
+## 2026-11-06 IST — AF-R012 optional-control scanner task
+
+Single writer CHATGPT_ACTIVE, branch `test/af-r012-optional-loop-switch-guards-20261106`, base `57ae5dae4f428f3b24cbcd61e425247bd5274bbb`. Independent from #676 and #677. Require hosted native RED to reproduce false-positive API/action guard detection in optional loop bodies/switch cases, then bounded conservative scanner correction; exact-head complete CI, separate ready-state and SHA-guarded merge. No auth runtime or live infrastructure activation; 149 history unchanged.
+
 ## 2026-11-06 IST — AF-R047 merge ancestry after #674
 
 Reconcile #675 against guarded #674 merge `514e7f6d463656f98270d860ebb0a87af206c0de` with normal two-parent Git merge. Preserve #674 admin CSS and contrast test, #675 bundle integrity reporter and regression, both coordination histories. Re-run full hosted acceptance and separate ready-state on resulting head. No skipped test counted as passed, no runtime/finance/provider/secret/infrastructure activation or 149-status promotion.
