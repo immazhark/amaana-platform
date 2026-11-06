@@ -62,6 +62,27 @@ function bodyHasReachableDirectCall(body, name) {
   let found = false;
   function visit(node) {
     if (found || ts.isFunctionLike(node)) return;
+
+    // The condition of an if/ternary is evaluated, but its alternative bodies
+    // are optional. A guard confined to one branch cannot cover the handler.
+    if (ts.isIfStatement(node)) {
+      visit(node.expression);
+      return;
+    }
+    if (ts.isConditionalExpression(node)) {
+      visit(node.condition);
+      return;
+    }
+    // A short-circuit RHS is also optional. Keep the always-evaluated LHS,
+    // including the common if (!hasPermission(...)) denial pattern.
+    if (ts.isBinaryExpression(node) && (
+      node.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken ||
+      node.operatorToken.kind === ts.SyntaxKind.BarBarToken ||
+      node.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken
+    )) {
+      visit(node.left);
+      return;
+    }
     if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === name) {
       found = true;
       return;
