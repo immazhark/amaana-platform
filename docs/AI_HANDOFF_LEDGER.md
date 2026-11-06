@@ -1,6 +1,14 @@
+## 2026-11-06 IST — AF-R047 reconciliation after protected #673
+
+Writer CHATGPT_ACTIVE; noncanonical build resource reporter task branch based on #673 accepted main `3cebdcfae4a7a33665ec7fc1943aa702996f55af`. RED `42198822276` confirmed duplicate path alias overcount. Preserve prior coordination histories, #673 guard scanner and AF-R047 reporter/test. Repeat full exact-head and separate ready-state, SHA-guarded merge only after success, and report Railway SKIPPED when reporter-only. No 149 status promotion.
+
 ## 2026-11-06 IST — AF-R047 canonical static build assets task
 
 Writer CHATGPT_ACTIVE, accepted main `0b71d9f5d3d80f8a1838b9bc9a458576b7b7777a`, branch `fix/af-r047-noncanonical-build-asset-alias-20261106`. A bundle manifest can list identical on-disk resources under differing syntactic paths with '.' or empty segments; reporter's Set currently treats them distinct. Add synthetic RED for duplicate attribution and fail-closed handling of noncanonical Next16 paths; then minimal input normalization/validation, exact-head full CI and ready-state, no protected merge until all required checks pass. #673/#674 are independent source scopes; reconcile accepted main by non-force two-parent commit if they merge earlier. No live infrastructure, donor or payment changes. No historical 149 promotion. Rollback scripts only.
+
+## 2026-11-06 IST — AF-R012 try/catch static audit test-first handoff
+
+CHATGPT_ACTIVE sole implementation writer on `test/af-r012-try-exit-guard-inventory-20261106`, based on main `f325569703502a41a945aae2b19ae60769af11f1`. Separate #671 already in hosted exact-head checks. Static guard detector may accept permissions after unconditional return nested inside try or catch-only guard. Isolate failing synthetic script test, correct AST scanner conservatively, verify all required CI and ready-state; do not change production auth, finance, media, donor, schema, secrets or infra. Preserve coordination and historical 149 classification. Next read PR and CI, no blind merge or force push.
 
 ## 2026-11-06 IST — AF-R012 conditional-guard static inventory task
 
