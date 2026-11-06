@@ -563,3 +563,33 @@ test("AF-R047 does not double-count aliased on-disk bundle paths", () => {
   assert.equal(canonical[0].jsBytes, 13,
     "Canonical inherited and page assets must still deduplicate");
 });
+
+
+test("AF-R047 rejects noncanonical dot-segment App Router pages before asset attribution", () => {
+  const path = "/stories/./page";
+  const routes = { [path]: "/stories" };
+  let manifestReads = 0;
+  assert.throws(() => summarizeAppRouteBundles({
+    [path]: ["static/chunks/story.js"],
+  }, () => 7), /Unsafe App Router page path/);
+  assert.throws(() => summarizeUnattributedAppAssets(routes, []), /Unsafe App Router page path/);
+  assert.throws(() => reporter.summarizeClientReferenceCss(routes,
+    page => {
+      manifestReads += 1;
+      return referenceSource(page, {
+        "[project]/src/app/layout": [{ path: "static/css/base.css", inlined: false }],
+      });
+    }, () => 7), /Unsafe App Router page path/);
+  assert.throws(() => reporter.summarizeClientReferenceJs(routes,
+    page => {
+      manifestReads += 1;
+      return jsReferenceSource(page, {
+        "[project]/src/app/layout": ["static/chunks/base.js"],
+      });
+    }, [], () => 7), /Unsafe App Router page path/);
+  assert.equal(manifestReads, 0, "Reject malformed paths before reading their manifest");
+  const valid = summarizeUnattributedAppAssets({
+    "/stories/(overview)/page": "/stories",
+  }, []);
+  assert.deepEqual(valid.routes, ["/stories"], "Existing route-group paths stay valid");
+});

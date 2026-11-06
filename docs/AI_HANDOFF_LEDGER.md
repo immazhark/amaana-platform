@@ -1,3 +1,7 @@
+## 2026-11-06 IST — AF-R047 app route path integrity regression-first
+
+Sole writer CHATGPT_ACTIVE. Branch `fix/af-r047-noncanonical-page-route-20261106`, base `57ae5dae4f428f3b24cbcd61e425247bd5274bbb`, parallel read-only validation of independent #676; new native RED tests malformed `/stories/./page` acceptance in legacy and Next16 build-reporting paths. Only `scripts/report-route-bundles.mjs`, its native tests and coordination records authorized. Hosted RED before production script fix, exact-head full CI, separate ready-state and SHA-guarded merge. No live infrastructure or finance action. Historical 149 unchanged.
+
 ## 2026-11-06 IST — AF-R047 merge ancestry after #674
 
 Reconcile #675 against guarded #674 merge `514e7f6d463656f98270d860ebb0a87af206c0de` with normal two-parent Git merge. Preserve #674 admin CSS and contrast test, #675 bundle integrity reporter and regression, both coordination histories. Re-run full hosted acceptance and separate ready-state on resulting head. No skipped test counted as passed, no runtime/finance/provider/secret/infrastructure activation or 149-status promotion.
