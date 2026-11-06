@@ -1,3 +1,15 @@
+## 2026-11-06 IST — #678 post-#676 audited branch ancestry
+
+Accepted main `9d5fef7477ecc9f4708b74179b9999610f070452` from #676 preserved with #678 optional-loop/switch audit regression and fix, plus both coordination histories. Non-force two-parent merge. Native RED 42216023805; full new exact-head CI and separate ready-state required. #677 independent. Do not modify production auth or live finance/provider/infra. No 149 reclassification.
+
+## 2026-11-06 IST — AF-R012 native false-positive reproduction and fix
+
+RED 42216023805 fast 127886207736, two intentional new negative failures. Minimal static scanner fix excludes optional loop bodies and switch clauses but retains always-run condition/initializer/discriminant checks, plus positive test. Revalidate exact head in full hosted CI, then separate ready state and SHA guard. No production access-control or live operator change. Historical 149 unchanged.
+
+## 2026-11-06 IST — AF-R012 optional-control scanner task
+
+Single writer CHATGPT_ACTIVE, branch `test/af-r012-optional-loop-switch-guards-20261106`, base `57ae5dae4f428f3b24cbcd61e425247bd5274bbb`. Independent from #676 and #677. Require hosted native RED to reproduce false-positive API/action guard detection in optional loop bodies/switch cases, then bounded conservative scanner correction; exact-head complete CI, separate ready-state and SHA-guarded merge. No auth runtime or live infrastructure activation; 149 history unchanged.
+
 ## 2026-11-06 IST — AF-R025 native RED → controlled CSS candidate
 
 Hosted RED CI 42213380030 fast job 127877342591 confirmed exactly two new test failures: expected 1.04 >=1.12 and .94 >=1.12 for two actual long display titles. GREEN candidate only alters two unitless leading ratios to 1.14, retains browser assertions and full existing styling. Do not claim test/build/browser acceptance until new exact-head CI; no other source behavior or live infrastructure changes. Preserve original 149 classes and full coordination history.

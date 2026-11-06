@@ -86,6 +86,18 @@ function bodyHasReachableDirectCall(body, name) {
       visit(node.condition);
       return;
     }
+    // A loop may run zero iterations, and only one switch clause can run.
+    // Inspect expressions that must be evaluated, never optional bodies/cases.
+    if (ts.isWhileStatement(node) || ts.isSwitchStatement(node) ||
+        ts.isForInStatement(node) || ts.isForOfStatement(node)) {
+      visit(node.expression);
+      return;
+    }
+    if (ts.isForStatement(node)) {
+      if (node.initializer) visit(node.initializer);
+      if (node.condition) visit(node.condition);
+      return;
+    }
     // A short-circuit RHS is also optional. Keep the always-evaluated LHS,
     // including the common if (!hasPermission(...)) denial pattern.
     if (ts.isBinaryExpression(node) && (
@@ -483,5 +495,53 @@ test("protected financial amount controls retain accessible numeric entry withou
       assert.match(tag, /inputMode="decimal"/, `${name} must request a numeric keyboard`);
       assert.match(tag, /pattern="/, `${name} must have a native validity pattern`);
     }
+  }
+});
+
+
+test("AF-R012 does not count optional loop or switch branches as unconditional API guards", () => {
+  const guards = "await getCurrentUser(); hasPermission({}, 'content.update'); isSameOrigin({});";
+  for (const optional of [
+    `while (false) { ${guards} }`,
+    `for (let i = 0; i < 0; i += 1) { ${guards} }`,
+    `for (const item of []) { ${guards} }`,
+    `switch (flag) { case 'allowed': ${guards} break; default: break; }`,
+  ]) {
+    const source = `export async function POST() { ${optional} return Response.json({ public: true }); }`;
+    for (const name of ["getCurrentUser", "hasPermission", "isSameOrigin"]) {
+      assert.equal(sourceHasGuardCall(source, name, "POST"), false,
+        `${name} hidden in optional execution must not guard an admin API`);
+    }
+  }
+  const positive = "export async function POST() { await getCurrentUser(); while(false) {} return Response.json({ ok: true }); }";
+  assert.equal(sourceHasGuardCall(positive, "getCurrentUser", "POST"), true,
+    "Direct guard outside optional iteration remains detectable");
+});
+
+test("AF-R012 does not accept permission guards confined to a switch server-action case", () => {
+  const source = [
+    "'use server';",
+    "export async function update() {",
+    "  switch (role) { case 'admin': await requirePermission('team.manage'); break; default: break; }",
+    "  return 'unguarded';",
+    "}",
+  ].join("\n");
+  const parsed = ts.createSourceFile("switch-action.ts", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const action = exportedAsyncProtectedActions(parsed).find(item => item.name === "update");
+  assert.ok(action);
+  assert.equal(actionHasPermissionGuard(action.body), false,
+    "An optional switch case cannot guard the full server action");
+});
+
+
+test("AF-R012 still counts mandatory loop and switch expressions", () => {
+  const required = [
+    ["export async function POST() { while (!isSameOrigin({})) { break; } return Response.json({}); }", "isSameOrigin"],
+    ["export async function POST() { for (let user = getCurrentUser(); false;) { break; } return Response.json({}); }", "getCurrentUser"],
+    ["export async function POST() { switch (hasPermission({}, 'content.update')) { default: break; } return Response.json({}); }", "hasPermission"],
+  ];
+  for (const [source, name] of required) {
+    assert.equal(sourceHasGuardCall(source, name, "POST"), true,
+      `${name} in a mandatory control expression must remain detectable`);
   }
 });
