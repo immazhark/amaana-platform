@@ -454,6 +454,8 @@ function recoverableReviewMessage(error: unknown): string | null {
 export async function saveVerificationWithFeedback(
   _previous: AdminActionFeedback, data: FormData,
 ): Promise<AdminActionFeedback> {
+  // An exported server action authenticates independently, even when delegating.
+  await requirePermission("assistance.update");
   try {
     await saveVerification(data);
     return { kind: "success", message: "Verification saved. Review the current status before continuing." };
@@ -467,6 +469,7 @@ export async function saveVerificationWithFeedback(
 export async function updateRequestWithFeedback(
   _previous: AdminActionFeedback, data: FormData,
 ): Promise<AdminActionFeedback> {
+  await requirePermission("assistance.update");
   try {
     await updateRequest(data);
     return { kind: "success", message: "Request changes saved." };
