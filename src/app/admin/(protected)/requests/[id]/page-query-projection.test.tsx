@@ -6,7 +6,7 @@ vi.mock("@/lib/auth", () => ({ requirePermission: mocks.permission, hasPermissio
 vi.mock("@/lib/prisma", () => ({ prisma: {
   assistanceRequest: { findUnique: mocks.request }, user: { findMany: mocks.staff }, auditEvent: { findMany: mocks.history },
 } }));
-vi.mock("./actions", () => ({ assignRequest: vi.fn(), convertToAppeal: vi.fn(), saveVerification: vi.fn(), updateRequest: vi.fn() }));
+vi.mock("./actions", () => ({ assignRequest: vi.fn(), convertToAppeal: vi.fn(), saveVerificationWithFeedback: vi.fn(), updateRequestWithFeedback: vi.fn() }));
 import RequestDetailPage from "./page";
 
 beforeEach(() => {
