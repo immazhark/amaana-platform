@@ -58,7 +58,7 @@ export function ReviewedMedicalAppeal({ appeal, donation, coverMedia, paymentDet
           </section>}
           <AppealShare title={shareCopy.title} summary={shareCopy.summary} path={`/appeals/${appeal.slug}`} />
         </div>
-        <aside className={styles.support} id="support-this-appeal" aria-labelledby="medical-support-heading">
+        <section className={styles.support} id="support-this-appeal" aria-labelledby="medical-support-heading">
           <p className="v2-section-label">{payable ? "Support this appeal" : "Funding status"}</p>
           <h2 id="medical-support-heading">{formatINR(raised)} raised</h2>
           <p>of {formatINR(goal)} approved target</p>
@@ -73,7 +73,7 @@ export function ReviewedMedicalAppeal({ appeal, donation, coverMedia, paymentDet
             <p className={styles.note}>Direct UPI and bank transfers are counted only after the UTR/reference is reconciled with received funds. An ordinary acknowledgement is not an 80G tax-deduction certificate.</p>
           </> : <p>Donations are unavailable for this appeal right now. You can still read its published information and updates.</p>}
           <Link className="v2-text-link" href="/contact">Contact Amaana about this appeal →</Link>
-        </aside>
+        </section>
       </div>
     </section>
   </div>;

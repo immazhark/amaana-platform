@@ -31,6 +31,12 @@ it("renders the story, actual funding details and existing same-page payment flo
   expect(methods).toHaveBeenCalledWith(expect.objectContaining({ appealId: "synthetic-case-id", maxAmount: 7500, zakatEligible: false, paymentDetails }));
 });
 
+it("keeps its support panel as a labelled section instead of a nested complementary landmark", () => {
+  const html = renderToStaticMarkup(<ReviewedMedicalAppeal highlySensitive={true} appeal={appeal} donation={donation} coverMedia={null} paymentDetails={paymentDetails} />);
+  expect(html).toMatch(/<section\\b[^>]*id="support-this-appeal"[^>]*aria-labelledby="medical-support-heading"/);
+  expect(html).not.toMatch(/<aside\\b[^>]*id="support-this-appeal"/);
+});
+
 it.each([
   null,
   { ...donation, slug: "another-case" },
