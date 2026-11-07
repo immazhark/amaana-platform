@@ -76,6 +76,28 @@ for(const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]])fo
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const response=await page.goto(route,{waitUntil:'load'});
  await page.evaluate(async()=>{await document.fonts.ready;});
+ if (route.startsWith('/admin/requests/') && route.split('/').length===4) {
+  // The synthetic authenticated request must keep checkbox titles and helper
+  // text on separate lines with usable control geometry at both breakpoints.
+  const formLayout = await page.locator('.admin-detail-grid form').first().evaluate(form => {
+    const checkbox = form.querySelector('label.checkbox');
+    const span = checkbox?.querySelector('span');
+    const title = span?.querySelector('strong');
+    const description = span?.querySelector('small');
+    const control = checkbox?.querySelector('input[type="checkbox"]');
+    return {
+      formGap: parseFloat(getComputedStyle(form).rowGap),
+      textLayout: span ? getComputedStyle(span).display : '',
+      nameToDescriptionGap: title && description
+        ? description.getBoundingClientRect().top-title.getBoundingClientRect().bottom : -1,
+      controlWidth: control?.getBoundingClientRect().width ?? 0,
+    };
+  });
+  expect(formLayout.formGap,'form controls need distinct groups and breathing room').toBeGreaterThanOrEqual(10);
+  expect(formLayout.textLayout,'checkbox title and helper text must stack').toBe('grid');
+  expect(formLayout.nameToDescriptionGap,'checkbox helper text must not collide with label').toBeGreaterThanOrEqual(4);
+  expect(formLayout.controlWidth,'checkbox must have a usable visible target').toBeGreaterThanOrEqual(18);
+ }
  const overflowDetails=await page.evaluate(horizontalOverflowDetails);
  const metrics=await page.evaluate(()=>{
   const visible=n=>n.getBoundingClientRect().width>0&&!n.closest('[hidden],[inert],[aria-hidden="true"]');
