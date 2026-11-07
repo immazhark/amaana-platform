@@ -1,6 +1,21 @@
+## 2026-11-07 IST — Explicit Codex → ChatGPT implementation handoff: Mr. Khaja appeal #692
+
+**CHATGPT_ACTIVE sole repository implementation writer.** Owner explicitly confirmed Codex has stopped due to usage limits and delegated full repository continuation to this ChatGPT session. Outgoing: Codex; incoming: ChatGPT. No concurrent Codex repository writes permitted until a new owner-directed handoff.
+
+Integration: protected `main` (current at handoff `03a45b373ee59cd349d11845d4aafdf5b4e04d15`); active task branch `feat/mr-khaja-reviewed-appeal-page-20261107`, PR #692, previously `ed68dc29a2bea2764661727af641293f6c099520` (expected to advance with this record). #689 was merged on main after #692 branched; preserve both histories by non-force reconciliation. #684 separately remains DRAFT and financially held.
+
+Current task: complete the prepared reviewed-Mr-Khaja page, fix exact-head CI failures, clarify owner-confirmed ₹5,00,000 target in fallback, complete source-only release after full exact-head CI and distinct ready-state approval. Owner verified official Axis Bank and UPI/QR intended destinations and target. Owner confirmation does not replace independent payment-routing verification, production case review/published Appeal record, privacy-redacted published media derivative or separately scoped live activation. Existing case was SUBMITTED; do not fabricate financial progress or activate checkout. Synthetic fixtures only; no real donor payment. No change to historic 149 statuses. Avoid provider changes, migrations, notifications and production writes.
+
+Rollback: revert just #692 bounded source if necessary; live case binding remains unset and informational fallback persists.
+
 ## 2026-11-07 IST — AF-R057 quote-aware stylesheet attribution
 
 CODEX_ACTIVE sole writer. Native RED 3a865b67: 19 new quoted rawtext/comment opener cases failed while 70 existing cases passed. Minimal unified quote-aware tag/context scan now preserves genuine stylesheet links after unrelated quoted text and keeps actual comments/rawtext/template/noscript content inert. All 89 native CSS-audit tests pass; independent read-only review found no introduced blocker. URL restrictions, byte arithmetic, route inventory and application runtime unchanged. Full hosted impact-selected checks, distinct ready-state and guarded merge still required. No complete HTML-parser/CWV or canonical 149 closure claim. Rollback script and regression only.
+
+
+## 2026-11-07 IST — Complete Mr. Khaja appeal view prepared, activation held
+
+CODEX_ACTIVE sole writer. Owner explicitly requests proper structured page with image, description, funding and Razorpay/direct bank/UPI QR. Fresh read-only production checks show SUBMITTED/no verification/no approved target/no linked appeal; no matching published Appeal and zero Khaja-titled public privacy-approved image candidates. Built same-page ReviewedMedicalAppeal using actual reviewed public/donation projections, approved cover lookup and existing DonationMethods. Explicit server-only MR_KHAJA_PUBLIC_APPEAL_SLUG binding remains unset; no name guessing, production data writes, QR activation or infraapply. Full plan docs/mission-control/2026-11-07-mr-khaja-appeal-activation-plan.md names exact environment, case evidence and rollback. RED: missing component import; route required branch failed1/5pass; metadata privacy regression failed1/6pass. Final focused16 pass, full2650 passed/20 isolated-DB skipped; TypeScript/scoped lint/diff pass. Synthetic fixture materialized/typechecked successfully and then excluded; three responsive/a11y/payment-choice browser cases added, not locally executed. Review refinement sanitises highly-sensitive OG/Twitter/share copy. Draft only, not live; exact-head hosted acceptance and case/target/payment/media authorization remain required. Preserve all existing financial safeguards and149 classifications.
 
 ## 2026-11-07 IST — Reconcile #687 after public information #686
 

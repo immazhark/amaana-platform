@@ -16,6 +16,15 @@ describe("public medical-support information: Mr. Khaja", () => {
     expect(mrKhajaPublicInformation.zakatEligibility).toBe("UNVERIFIED");
   });
 
+  it("shows the owner's approved ₹5,00,000 fundraising target without asserting case checkout is live", () => {
+    expect(mrKhajaPublicInformation.requestedINR).toBe(500_000);
+    expect(mrKhajaPublicInformation.evidenceNotice).toMatch(/approved fundraising target/i);
+    expect(mrKhajaPublicInformation.evidenceNotice).toMatch(/not an independently certified medical estimate/i);
+    expect(mrKhajaPublicInformation.evidenceNotice).not.toMatch(/not an approved(?:, remaining)? fundraising target/i);
+    expect(mrKhajaPublicInformation.fundraisingStatus).toBe("INFORMATION_ONLY");
+    expect(mrKhajaPublicInformation.donationCheckoutPath).toBeNull();
+  });
+
   it("keeps confidential medical proofs, foreign payment instructions and private identifiers out of public copy", () => {
     const copy = [mrKhajaPublicInformation.title,
       mrKhajaPublicInformation.summary,
