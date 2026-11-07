@@ -29,6 +29,7 @@ const routes = [
   "navigation-destination",
   "direct-donation",
   "reviewed-donation",
+  "reviewed-medical",
   "donation",
   "gallery",
   "home-hero",
