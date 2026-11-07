@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 };
 
 export default function MrKhajaPublicInformationPage() {
-  return <main className="v2-home">
+  return <div className="v2-home">
     <PageHero
       variant="level2"
       className="page-hero--long-title"
@@ -53,5 +53,5 @@ export default function MrKhajaPublicInformationPage() {
         </div>
       </div>
     </section>
-  </main>;
+  </div>;
 }
