@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   ASSISTANCE_CONFIDENTIALITY_LEVELS,
@@ -9,7 +10,8 @@ import {
 } from "@/lib/assistance";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { assignRequest, convertToAppeal, saveVerification, updateRequest } from "./actions";
+import { assignRequest, convertToAppeal, saveVerificationWithFeedback, updateRequestWithFeedback } from "./actions";
+import { AdminActionFeedbackForm } from "@/components/admin-action-feedback-form";
 
 type Props = { params: Promise<{ id: string }> };
 const label = (value: string) => value.replaceAll("_", " ").toLowerCase().replace(/^./, character => character.toUpperCase());
@@ -79,7 +81,7 @@ export default async function RequestDetailPage({ params }: Props) {
         <section className="card">
           <h2>Private verification & publication gate</h2>
           <p className="muted">Record verification, funding checks, disclosure permissions and Zakat review here. This information is internal and is not copied automatically into public appeal text.</p>
-          <form action={saveVerification} className="field">
+          <AdminActionFeedbackForm action={saveVerificationWithFeedback}>
             <input type="hidden" name="id" value={id}/>
             <input type="hidden" name="expectedRequestUpdatedAt" value={request.updatedAt.toISOString()}/>
             <input type="hidden" name="expectedVerificationUpdatedAt" value={verification?.updatedAt.toISOString() ?? ""}/>
@@ -138,7 +140,7 @@ export default async function RequestDetailPage({ params }: Props) {
             {verification?.completedAt && <small className="muted">Completed {verification.completedAt.toLocaleString("en-IN")} by {verification.reviewedBy?.name ?? "authorised reviewer"}.</small>}
             {verificationLocked && <small className="muted">Verification is locked because this request has already been converted into a linked appeal.</small>}
             <button className="button" disabled={!hasPermission(user, "assistance.update") || verificationLocked}>Save verification</button>
-          </form>
+          </AdminActionFeedbackForm>
 
           {verification?.decision === "APPROVED_PUBLIC" && <div>
             <h3>Public appeal readiness</h3>
@@ -167,7 +169,7 @@ export default async function RequestDetailPage({ params }: Props) {
 
         <section className="card">
           <h2>Review</h2>
-          <form action={updateRequest} className="field">
+          <AdminActionFeedbackForm action={updateRequestWithFeedback}>
             <input type="hidden" name="id" value={id}/>
             <input type="hidden" name="expectedUpdatedAt" value={request.updatedAt.toISOString()}/>
             <label htmlFor="status">Status</label>
@@ -177,7 +179,7 @@ export default async function RequestDetailPage({ params }: Props) {
             <textarea id="internalNotes" name="internalNotes" defaultValue={request.internalNotes ?? ""} maxLength={10000}/>
             {converted && <small className="muted">The converted status is managed by the linked appeal workflow; internal notes can still be updated here.</small>}
             <button className="button" disabled={!hasPermission(user, "assistance.update")}>Save review</button>
-          </form>
+          </AdminActionFeedbackForm>
         </section>
 
         {request.status === "APPROVED" && !request.appeal && verification?.decision === "APPROVED_PUBLIC" && publicAppealReady && hasPermission(user, "appeal.create") && hasPermission(user, "assistance.update") && <section className="card">
@@ -203,7 +205,7 @@ export default async function RequestDetailPage({ params }: Props) {
           <p className="muted">This verification decision is {label(verification.decision)}. No public appeal conversion is offered unless the case has been specifically approved for public fundraising.</p>
         </section>}
 
-        {request.appeal && <section className="card"><h2>Linked appeal</h2><p>{request.appeal.title}</p><span className="status-badge">{request.appeal.status}</span></section>}
+        {request.appeal && <section className="card"><h2>Linked appeal</h2><p>{request.appeal.title}</p><span className="status-badge">{request.appeal.status}</span>{hasPermission(user, "appeal.view") && <Link className="button secondary" href={`/admin/appeals/${request.appeal.id}`}>Open appeal editor</Link>}</section>}
       </aside>
     </div>
   </>;

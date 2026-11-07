@@ -12,7 +12,7 @@ vi.mock("@/lib/prisma", () => ({ prisma: {
 } }));
 vi.mock("next/navigation", () => ({ notFound: () => { throw new Error("NOT_FOUND"); } }));
 vi.mock("./actions", () => ({
-  assignRequest: vi.fn(), convertToAppeal: vi.fn(), saveVerification: vi.fn(), updateRequest: vi.fn(),
+  assignRequest: vi.fn(), convertToAppeal: vi.fn(), saveVerificationWithFeedback: vi.fn(), updateRequestWithFeedback: vi.fn(),
 }));
 import RequestDetailPage from "./page";
 
@@ -111,5 +111,35 @@ describe("request current-assignment preservation", () => {
     const { html, options } = await assignmentOptions(null);
     expect(options.filter(option => option.selected).map(option => option.value)).toEqual([""]);
     expect(html).not.toContain("currently unavailable");
+  });
+});
+
+describe("request to appeal staff navigation", () => {
+  it("provides a direct editor link for a converted appeal to staff with appeal.view", async () => {
+    mocks.permission.mockImplementation((_user, permission) =>
+      ["assistance.view", "assistance.update", "appeal.view"].includes(permission));
+    mocks.request.mockResolvedValue({
+      ...request("CONVERTED_TO_APPEAL"),
+      appealId: "synthetic-linked-appeal",
+      appeal: { id: "synthetic-linked-appeal", title: "Synthetic medical appeal" },
+    });
+    const html = renderToStaticMarkup(await RequestDetailPage({
+      params: Promise.resolve({ id: "synthetic-request" }),
+    }));
+    expect(html).toContain('href="/admin/appeals/synthetic-linked-appeal"');
+    expect(html).toContain("Open appeal editor");
+  });
+  it("does not offer the linked appeal editor to staff without appeal.view", async () => {
+    mocks.request.mockResolvedValue({
+      ...request("CONVERTED_TO_APPEAL"),
+      appealId: "synthetic-linked-appeal",
+      appeal: { id: "synthetic-linked-appeal", title: "Synthetic medical appeal", status: "DRAFT" },
+    });
+    const html = renderToStaticMarkup(await RequestDetailPage({
+      params: Promise.resolve({ id: "synthetic-request" }),
+    }));
+    expect(html).toContain("Linked appeal");
+    expect(html).not.toContain('href="/admin/appeals/synthetic-linked-appeal"');
+    expect(html).not.toContain("Open appeal editor");
   });
 });
