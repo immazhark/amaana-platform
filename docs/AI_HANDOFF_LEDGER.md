@@ -1,3 +1,7 @@
+## 2026-11-07 IST — Public medical information campaign after #685
+
+Merged #685 source + runtime `a26146a6259652351b4816587a136adcfefadd71` verified public health. #686 source-only personal-name-limited medical information head `1476c4c5d76819a97fa6206ece9dc46cbcf8a251` based on old main is reconciled forward with both parents; immutable path `/medical-support/mr-khaja` can be shown to general public after guarded merge and independent deploy. Do not claim database fundraising is live: owner-supplied real assistance request is SUBMITTED, has no verification, approved goal or linked appeal. Neither the official donor QR PR #684 nor release of private patient images is authorized by this work. #687 admin layout draft independent. No private data, donor payments or production schema mutated.
+
 ## 2026-11-07 IST — #683 nonforce integration after #682
 
 Protected main `9f4b37f0db1c64c3dae39540c7d8f0f22c44239e` merged #682 with full exact-head CI and distinct ready-state checks. #683 AF-R012 native RED run `42246579307`; full seven-job GREEN `42246851808` on old head `4f79d3658185d1a5c0ff9cbafccf593e32e0a0bd`. Integrate on main without rewriting either original commit history; preserve source-only AST wrapper tests and all prepended coordination. Refresh exact-head CI and promotion before any protected merge. #684 domestic QR remains unmerged pending separately scoped financial destination verification. No live infra or medical-case publication and no 149 reclassification.
