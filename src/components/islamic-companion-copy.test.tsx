@@ -6,8 +6,8 @@ vi.mock("react", async original => ({
   ...await original<typeof import("react")>(),
   useState: (initial: unknown) => {
     const index = state.valueIndex++;
-    if (!(index in state.values)) state.values[index] = initial;
-    return [state.values[index], (value: unknown) => { state.values[index] = value; }];
+    if (!(index in state.values)) state.values[index] = typeof initial === "function" ? initial() : initial;
+    return [state.values[index], (value: unknown) => { state.values[index] = typeof value === "function" ? value(state.values[index]) : value; }];
   },
   useRef: (initial: unknown) => {
     const index = state.refIndex++;
@@ -15,6 +15,7 @@ vi.mock("react", async original => ({
   },
   useEffect: () => undefined,
 }));
+import { hyderabadClock } from "@/lib/daily-companion";
 import { IslamicCompanionPanel } from "./islamic-companion-panel";
 
 afterEach(() => { state.values.length = 0; state.refs.length = 0; vi.unstubAllGlobals(); });
@@ -27,10 +28,11 @@ function deferred() {
 }
 
 function copyHandler() {
+  let now = new Date("2026-11-07T18:29:00Z");
   function render() {
     state.valueIndex = 0; state.refIndex = 0;
-    return IslamicCompanionPanel({ panel: "readings", date: "2026-10-27",
-    now: new Date("2026-10-27T06:00:00Z"), onClose: vi.fn(), onPanelChange: vi.fn(), onMoonChange: vi.fn(),
+    return IslamicCompanionPanel({ panel: "readings", date: hyderabadClock(now).date,
+    now, onClose: vi.fn(), onPanelChange: vi.fn(), onMoonChange: vi.fn(),
     });
   }
   function find(node: ReactNode): (() => Promise<void>) | undefined {
@@ -51,7 +53,7 @@ function copyHandler() {
       return status(node.props.children);
     }
   }
-  return { copy: handler, message: () => status(render()) };
+  return { copy: () => find(render())!(), message: () => status(render()), changeTime: (value: string) => { now = new Date(value); render(); } };
 }
 
 const success = "Reading and references copied.";
@@ -101,4 +103,37 @@ describe("Companion latest clipboard feedback", () => {
     await copy();
     expect(message()).toBe(unavailable);
   });
+  it.each([true, false])("ignores an old-day copy completion after midnight, success=%s", async succeeds => {
+    const pending = deferred();
+    const writeText = vi.fn().mockReturnValueOnce(pending.promise);
+    vi.stubGlobal("navigator", { clipboard: { writeText } });
+    const view = copyHandler();
+    const oldCopy = view.copy();
+    expect(writeText.mock.calls[0]?.[0]).toContain("2026-11-07");
+    view.changeTime("2026-11-07T18:31:00Z");
+    if (succeeds) pending.resolve(); else pending.reject(new Error("Synthetic old denial"));
+    await oldCopy;
+    expect(view.message()).toBe("");
+  });
+
+  it("clears completed feedback across reading changes without resurrecting it", async () => {
+    vi.stubGlobal("navigator", { clipboard: { writeText: vi.fn().mockResolvedValue(undefined) } });
+    const view = copyHandler();
+    await view.copy(); expect(view.message()).toBe(success);
+    view.changeTime("2026-11-07T18:31:00Z"); expect(view.message()).toBe("");
+    view.changeTime("2026-11-07T18:29:00Z"); expect(view.message()).toBe("");
+  });
+
+  it("keeps the new reading success when an old reading copy fails later", async () => {
+    const old = deferred();
+    const writeText = vi.fn().mockReturnValueOnce(old.promise).mockResolvedValueOnce(undefined);
+    vi.stubGlobal("navigator", { clipboard: { writeText } });
+    const view = copyHandler(); const oldCopy = view.copy();
+    view.changeTime("2026-11-07T18:31:00Z"); await view.copy();
+    expect(writeText.mock.calls[1]?.[0]).toContain("2026-11-08");
+    expect(view.message()).toBe(success);
+    old.reject(new Error("Synthetic old denial")); await oldCopy;
+    expect(view.message()).toBe(success);
+  });
+
 });

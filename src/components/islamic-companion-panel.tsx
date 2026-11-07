@@ -62,7 +62,6 @@ export function IslamicCompanionPanel({
   const [requestVersion, setRequestVersion] = useState(0);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [copyMessage, setCopyMessage] = useState("");
   const panelRef = useRef<HTMLDivElement>(null);
   const copyActionRef = useRef(0);
 
@@ -123,19 +122,32 @@ export function IslamicCompanionPanel({
   const afterSunset = clock !== null && maghrib !== null && clock.minutes >= maghrib;
   const moon = currentData ? (afterSunset ? currentData.eveningMoon : currentData.moon) : null;
   const reading = now && clock ? dailyReading(now, clock) : null;
+  const readingIdentity = reading?.date ?? null;
+  const [copyFeedback, setCopyFeedback] = useState(() => ({ identity: readingIdentity, token: {}, message: "" }));
+  let currentFeedback = copyFeedback;
+  // Reset before rendering a different daily reading, including a return to it.
+  if (copyFeedback.identity !== readingIdentity) {
+    currentFeedback = { identity: readingIdentity, token: {}, message: "" };
+    setCopyFeedback(currentFeedback);
+  }
+  const copyToken = currentFeedback.token;
+  const copyMessage = currentFeedback.message;
+  function updateCopyMessage(message: string) {
+    setCopyFeedback(current => current.token === copyToken ? { ...current, message } : current);
+  }
   const upcoming = now && currentData && clock ? nextSalah(currentData.today, currentData.tomorrow, now, clock) : null;
 
   async function copyReading() {
     if (!reading) return;
     const action = ++copyActionRef.current;
-    setCopyMessage("");
+    updateCopyMessage("");
     const { ayah, hadith } = reading;
     const text = `Amaana Foundation · ${reading.date}\nQur’an ${ayah.key}${ayah.excerpt ? " (excerpt)" : ""}\n${ayah.arabic}\n${ayah.meaning}\nThe Clear Quran · Dr. Mustafa Khattab\nhttps://quran.com/${ayah.key.replace(":", "/")}\n\nHadith meaning summary: ${hadith.summary}\n${hadith.reference}\n${hadith.url}`;
     try {
       await navigator.clipboard.writeText(text);
-      if (action === copyActionRef.current) setCopyMessage("Reading and references copied.");
+      if (action === copyActionRef.current) updateCopyMessage("Reading and references copied.");
     } catch {
-      if (action === copyActionRef.current) setCopyMessage("Copy is unavailable. You can select the text or open its source link.");
+      if (action === copyActionRef.current) updateCopyMessage("Copy is unavailable. You can select the text or open its source link.");
     }
   }
 
