@@ -26,3 +26,11 @@ it.each(["missing","closed"])("fails closed for %s appeal, before storage or wri
  await expect(createMediaAsset(form("appeal:synthetic-appeal"))).rejects.toThrow(/appeal.*(not available|not found|inactive|cannot)/i);
  expect(m.create).not.toHaveBeenCalled();expect(m.upload).not.toHaveBeenCalled();
 });
+
+it("rejects a document masquerading as an appeal cover candidate", async () => {
+  const f = form("appeal:synthetic-appeal");
+  f.set("kind", "DOCUMENT");
+  await expect(createMediaAsset(f)).rejects.toThrow(/appeal cover candidates must be images/i);
+  expect(m.create).not.toHaveBeenCalled();
+  expect(m.upload).not.toHaveBeenCalled();
+});

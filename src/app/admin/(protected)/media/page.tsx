@@ -105,7 +105,7 @@ export default async function AdminMediaPage({ searchParams }: Props) {
     <ol className={styles.steps} aria-label="Image approval workflow">
       <li><strong>1. Upload</strong><span>Add an original or privacy-redacted image.</span></li>
       <li><strong>2. Review</strong><span>Confirm provenance, consent and public-use safety.</span></li>
-      <li><strong>3. Use</strong><span>Copy the approved URL into the appeal cover field.</span></li>
+      <li><strong>3. Use</strong><span>Copy the approved URL for the cover. Published appeals need a separately approved change.</span></li>
     </ol>
 
     <details className={styles.diagnostics} open={!storage.deliveryReady}>
@@ -135,7 +135,7 @@ export default async function AdminMediaPage({ searchParams }: Props) {
             {stories.length > 0 && <optgroup label="Stories">{stories.map(item => <option key={item.id} value={`story:${item.id}`}>{item.title}</option>)}</optgroup>}
             {faith.length > 0 && <optgroup label="Faith & Reflections">{faith.map(item => <option key={item.id} value={`faith:${item.id}`}>{item.title}</option>)}</optgroup>}
           </select>
-          <small>For an appeal: upload here, complete privacy approval, then copy the approved image URL into the appeal cover field. This does not set the cover or publish an appeal automatically. <Link href="/admin/appeals" className="inline-link">Manage appeals</Link>.</small>
+          <small>For an appeal: upload here, complete privacy approval, then copy the approved image URL. This does not set the cover or publish an appeal automatically. Already-published appeals require a separate reviewed cover change. <Link href="/admin/appeals" className="inline-link">Manage appeals</Link>.</small>
         </div>
         <div className="field">
           <label htmlFor="kind">Media type</label>
@@ -170,7 +170,7 @@ export default async function AdminMediaPage({ searchParams }: Props) {
 
     <section className="admin-card">
       <div className="admin-heading"><div><p className="eyebrow">Existing media</p><h2>Review queue and published archive</h2></div><span className="status-badge">{pagination.totalItems} in this view</span></div>
-      <nav className="filter-row" aria-label="Media publication filter">
+      <nav className={`filter-row ${styles.filters}`} aria-label="Media publication filter">
         <Link href="/admin/media" aria-current={selectedVisibility === "review" ? "page" : undefined}>Awaiting review ({visibilityCounts.get(false) ?? 0})</Link>
         <Link href="/admin/media?visibility=public" aria-current={selectedVisibility === "public" ? "page" : undefined}>Published ({visibilityCounts.get(true) ?? 0})</Link>
         <Link href="/admin/media?visibility=all" aria-current={selectedVisibility === "all" ? "page" : undefined}>All media</Link>

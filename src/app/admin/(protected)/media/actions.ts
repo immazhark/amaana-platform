@@ -121,6 +121,9 @@ export async function createMediaAsset(formData: FormData) {
     throw new Error("An identity image must use the IMAGE media type.");
   }
   const identityImage = inferredKind === "IMAGE" && identityValue === "on";
+  if (appealId && inferredKind !== "IMAGE") {
+    throw new Error("Appeal cover candidates must be images, not documents.");
+  }
   if (appealId && identityImage) {
     throw new Error("Appeal cover candidates must not replace cause or initiative identity images.");
   }

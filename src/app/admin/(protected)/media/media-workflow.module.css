@@ -74,3 +74,15 @@
   .steps li { padding: .8rem 1rem; }
   .disclosure { padding: .75rem; }
 }
+
+/* The current queue/archive choice is visually distinct as well as announced. */
+.filters :global(a[aria-current="page"]) {
+  color: #fff;
+  background: var(--af-color-navy-800);
+  border-color: var(--af-color-navy-800);
+  font-weight: 700;
+}
+.filters :global(a:focus-visible) {
+  outline: 3px solid var(--af-color-focus);
+  outline-offset: 2px;
+}
