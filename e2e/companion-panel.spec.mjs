@@ -190,3 +190,48 @@ for (const latestSucceeds of [true, false]) {
     await expect(status).toHaveText(expected);
   });
 }
+
+for (const oldCopySucceeds of [true, false]) {
+  test(`Companion ignores previous-day copy feedback after IST midnight, success=${oldCopySucceeds}`, async ({ page }) => {
+    await page.clock.install({ time: new Date('2026-11-07T23:59:00+05:30') });
+    await page.addInitScript(() => {
+      window.__companionCopies = [];
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: {
+        writeText: text => new Promise((resolve, reject) => window.__companionCopies.push({ text, resolve, reject })),
+      } });
+    });
+    await page.goto('/browser-acceptance/home-hero');
+    await page.locator('.amaana-companion-dock button').click();
+    const panel = page.locator('.amaana-companion-panel');
+    const copy = panel.getByRole('button', { name: 'Copy reading & references', exact: true });
+    await copy.click();
+    expect(await page.evaluate(() => window.__companionCopies[0].text)).toContain('2026-11-07');
+    const oldHeading = await panel.locator('#daily-ayah-title').textContent();
+    await page.clock.fastForward(65_000);
+    await expect(panel.locator('#daily-ayah-title')).not.toHaveText(oldHeading);
+    await page.evaluate(async success => {
+      const old = window.__companionCopies[0];
+      if (success) old.resolve(); else old.reject(new Error('Synthetic previous-day denial'));
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+    }, oldCopySucceeds);
+    await expect(panel.getByRole('status')).toHaveText('');
+    await copy.click();
+    expect(await page.evaluate(() => window.__companionCopies[1].text)).toContain('2026-11-08');
+    await page.evaluate(() => window.__companionCopies[1].resolve());
+    await expect(panel.getByRole('status')).toHaveText('Reading and references copied.');
+  });
+}
+
+test('Companion clears completed reading feedback at IST midnight', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-11-07T23:59:00+05:30') });
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async () => undefined } });
+  });
+  await page.goto('/browser-acceptance/home-hero');
+  await page.locator('.amaana-companion-dock button').click();
+  const panel = page.locator('.amaana-companion-panel');
+  await panel.getByRole('button', { name: 'Copy reading & references', exact: true }).click();
+  await expect(panel.getByRole('status')).toHaveText('Reading and references copied.');
+  await page.clock.fastForward(65_000);
+  await expect(panel.getByRole('status')).toHaveText('');
+});
