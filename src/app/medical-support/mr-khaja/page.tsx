@@ -8,6 +8,8 @@ import { mrKhajaPublicInformation as info } from "@/lib/mr-khaja-public-informat
 export const metadata: Metadata = {
   title: "Mr. Khaja — Family Medical Support Request",
   description: info.summary,
+  // The family has approved limited website disclosure, not indefinite search indexing.
+  robots: { index: false, follow: true, nocache: true },
   alternates: { canonical: info.path },
   openGraph: {
     type: "article",
