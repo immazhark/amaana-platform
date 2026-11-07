@@ -285,6 +285,11 @@ dd { margin: .25rem 0 0; white-space: pre-wrap; }
   line-height: 1.45;
 }
 
+.admin-content .admin-detail-grid form.field textarea {
+  min-height: 8rem;
+  resize: vertical;
+}
+
 .admin-content .admin-detail-grid form.field > button {
   justify-self: stretch;
   min-height: 3rem;
