@@ -37,7 +37,7 @@ vi.mock("@/lib/appeal-update-publication", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
-import { addAppealUpdate, publishAppealUpdate, transitionAppeal, unpublishAppealUpdate, updateAppeal, updateFeaturing } from "./actions";
+import { addAppealUpdate, publishAppealUpdate, transitionAppeal, transitionAppealWithFeedback, unpublishAppealUpdate, updateAppeal, updateAppealWithFeedback, updateFeaturing } from "./actions";
 
 function form(values: Record<string, string>) {
   const data = new FormData();
@@ -191,5 +191,63 @@ describe("appeal update publication recovery", () => {
     await expect(unpublishAppealUpdate(form({ appealId: "appeal-1", updateId: "update-1" })))
       .rejects.toThrow("already internal");
     expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+});
+
+describe("reviewable appeal form feedback", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requirePermission.mockResolvedValue({ id: "synthetic-editor" });
+    mocks.hasPermission.mockReturnValue(true);
+  });
+
+  it("shows an actionable validation message for a malformed draft without mutation", async () => {
+    const result = await updateAppealWithFeedback({ kind: "idle", message: "" }, form({
+      id: "synthetic-appeal",
+      expectedUpdatedAt: "2026-11-07T08:00:00.000Z",
+      title: "Short",
+      slug: "valid-slug",
+      summary: "Sufficiently long synthetic public summary.",
+      story: "Sufficiently long synthetic public story for a test case.",
+      goalAmount: "500000",
+      category: "MEDICAL",
+    }));
+    expect(result).toEqual({ kind: "error", message: "Complete all required appeal fields" });
+    expect(mocks.appealFind).not.toHaveBeenCalled();
+    expect(mocks.updateManyAppeal).not.toHaveBeenCalled();
+  });
+
+  it("shows a version error for a stale/missing status form without mutation", async () => {
+    const result = await transitionAppealWithFeedback({ kind: "idle", message: "" },
+      form({ id: "synthetic-appeal", status: "PUBLISHED", expectedUpdatedAt: "" }));
+    expect(result).toEqual({
+      kind: "error",
+      message: "Appeal workflow version is missing or invalid. Refresh before changing status.",
+    });
+    expect(mocks.appealFind).not.toHaveBeenCalled();
+    expect(mocks.updateManyAppeal).not.toHaveBeenCalled();
+  });
+
+  it("does not downgrade unexpected database failures to safe messages", async () => {
+    mocks.appealFind.mockRejectedValueOnce(new Error("Synthetic database inaccessible"));
+    await expect(updateAppealWithFeedback({ kind: "idle", message: "" }, form({
+      id: "synthetic-appeal",
+      expectedUpdatedAt: "2026-11-07T08:00:00.000Z",
+      title: "Verified synthetic medical support",
+      slug: "verified-medical-support",
+      summary: "Sufficiently long synthetic public summary.",
+      story: "Sufficiently long synthetic public story for a test case.",
+      goalAmount: "500000",
+      category: "MEDICAL",
+    }))).rejects.toThrow("Synthetic database inaccessible");
+    expect(mocks.updateManyAppeal).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when appeal permissions are unavailable", async () => {
+    mocks.requirePermission.mockRejectedValueOnce(new Error("Not authorized"));
+    await expect(transitionAppealWithFeedback({ kind: "idle", message: "" },
+      form({ id: "synthetic-appeal", status: "PUBLISHED", expectedUpdatedAt: "" })))
+      .rejects.toThrow("Not authorized");
+    expect(mocks.appealFind).not.toHaveBeenCalled();
   });
 });
