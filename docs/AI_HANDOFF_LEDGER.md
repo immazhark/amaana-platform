@@ -1,3 +1,7 @@
+## 2026-11-07 IST — Reconcile #687 after public information #686
+
+Protected main `04f65403c9b55b9c8b3a416337469fcdb602d782` merged public Mr. Khaja information route and separate family-request discovery panel. #687 admin form readability on `fix/admin-form-accessibility-spacing-20261107` is source/disjoint and reconciled via nonforce two-parent commit; preserve exact prior source/blob and additive coordination. Needs fresh exact-head full CI plus separate ready-state before SHA-guarded merge and deployed runtime acceptance. Live financial goal is not yet a published database appeal; QR #684 remains draft. No historic 149 recategorization.
+
 ## 2026-11-07 IST — Public medical information campaign after #685
 
 Merged #685 source + runtime `a26146a6259652351b4816587a136adcfefadd71` verified public health. #686 source-only personal-name-limited medical information head `1476c4c5d76819a97fa6206ece9dc46cbcf8a251` based on old main is reconciled forward with both parents; immutable path `/medical-support/mr-khaja` can be shown to general public after guarded merge and independent deploy. Do not claim database fundraising is live: owner-supplied real assistance request is SUBMITTED, has no verification, approved goal or linked appeal. Neither the official donor QR PR #684 nor release of private patient images is authorized by this work. #687 admin layout draft independent. No private data, donor payments or production schema mutated.
