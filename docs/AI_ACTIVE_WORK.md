@@ -1,3 +1,11 @@
+## 2026-11-08 IST — Admin Media Library daily-workflow clarity and appeal covers
+
+**CHATGPT_ACTIVE sole repository implementation writer**, continued from the owner's explicit 7 November Codex→ChatGPT handoff. Outgoing: same ChatGPT writer on accepted Mr. Khaja PR #692. Incoming/current: ChatGPT. Integration: protected `main` at `1a707c914277e0bed022c85943d48f225b6d8ab2`; task branch `fix/admin-media-appeal-workflow-clarity-20261108` from that exact commit. Open draft PRs #684, #688, #690, #691 are separate scopes; do not overwrite or bulk-merge them.
+
+Owner's requested scope: retire the already-completed one-off 154-image ZIP importer from the daily admin Media Review screen without deleting images or importer endpoints; provide a focused upload→privacy review→copy cover URL flow with a readable pending-review queue and a browsable published library; ensure new appeals including Mr. Khaja are discoverable for *media preparation*. Existing attachment dropdown currently excludes appeals, and existing media records total 154/public 154; the current Khaja appeal is PUBLISHED but has no cover. There is no `MediaAsset.appealId` schema relation: prefer a documented audit-only appeal-intent association and manual cover URL review, with no schema migration or automated financial/media publication.
+
+Tests: write and execute RED regression, then minimal implementation, focused GREEN and full exact-head gates. No private file, donor data, public-patient media, payment activation, schema change, infra mutation or 154-record bulk action. Accessible keyboard focus, labelled controls, responsive. No 149-item promotion. Rollback: revert task PR source-only; existing media records remain unchanged. Release: distinct ready-state checks, SHA-guarded merge and Railway/public verification.
+
 ## 2026-11-07 IST — Explicit Codex → ChatGPT implementation handoff: Mr. Khaja appeal #692
 
 **CHATGPT_ACTIVE sole repository implementation writer.** Owner explicitly confirmed Codex has stopped due to usage limits and delegated full repository continuation to this ChatGPT session. Outgoing: Codex; incoming: ChatGPT. No concurrent Codex repository writes permitted until a new owner-directed handoff.
