@@ -388,3 +388,91 @@ export async function convertToAppeal(formData: FormData) {
   });
   redirect(`/admin/requests/${id}`);
 }
+
+export type AdminActionFeedback = {
+  kind: "idle" | "error" | "success";
+  message: string;
+};
+
+// These errors arise from deterministic, user-correctable form rules. Do not
+// return raw database, network, auth or unexpected exception text to clients.
+const safeReviewFeedbackPrefixes = [
+  "Complete verification with an approved decision before marking this request approved",
+  "Complete verification with a declined decision before marking this request rejected",
+  "Verification summary is required.",
+  "Need must be confirmed.",
+  "Supporting evidence must be reviewed.",
+  "Verified need amount must be recorded.",
+  "Payment destination must be confirmed.",
+  "Other funding or duplicate fundraising must be checked.",
+  "A verification decision is required.",
+  "Zakat review must be recorded as eligible, not eligible, or not applicable.",
+  "Verification decision must approve a public appeal.",
+  "Approved public target must be recorded.",
+  "Public-name consent must be resolved.",
+  "Photo/media consent must be resolved",
+  "Medical-detail disclosure consent must be resolved",
+  "Institution/hospital naming consent must be resolved",
+  "Public archive consent must be resolved.",
+  "Verification must be formally completed.",
+  "Request edit version is missing or invalid.",
+  "Verification edit version is invalid.",
+  "Verification changed while you were reviewing it.",
+  "This request changed while you were reviewing it.",
+  "Verification was locked because this request was converted",
+  "Verification is locked after conversion to an appeal",
+  "Approval permission is required to complete verification",
+  "Approval permission is required to reopen a completed verification",
+  "Approval permission is required",
+  "A public fundraising target can only be stored for an approved public appeal",
+  "Approved public target cannot exceed the verified need amount",
+  "Invalid verification decision",
+  "Invalid confidentiality level",
+  "Invalid public-name consent",
+  "Invalid photo consent",
+  "Invalid medical-details consent",
+  "Invalid institution-name consent",
+  "Invalid archive consent",
+  "Invalid Zakat review status",
+  "Invalid status",
+  "Internal notes are too long",
+  "Verification summary is too long",
+  "Other-funding notes are too long",
+  "Payment destination is too long",
+  "Verified need amount must be a positive",
+  "Approved public target must be a positive",
+  "This status can only be changed by the linked appeal workflow",
+] as const;
+
+function recoverableReviewMessage(error: unknown): string | null {
+  if (!(error instanceof Error)) return null;
+  const message = error.message;
+  if (!message || message.length > 1_200 || /[<>\\\r\n]/.test(message)) return null;
+  return safeReviewFeedbackPrefixes.some(prefix => message.startsWith(prefix)) ? message : null;
+}
+
+export async function saveVerificationWithFeedback(
+  _previous: AdminActionFeedback, data: FormData,
+): Promise<AdminActionFeedback> {
+  try {
+    await saveVerification(data);
+    return { kind: "success", message: "Verification saved. Review the current status before continuing." };
+  } catch (error) {
+    const message = recoverableReviewMessage(error);
+    if (message === null) throw error;
+    return { kind: "error", message };
+  }
+}
+
+export async function updateRequestWithFeedback(
+  _previous: AdminActionFeedback, data: FormData,
+): Promise<AdminActionFeedback> {
+  try {
+    await updateRequest(data);
+    return { kind: "success", message: "Request changes saved." };
+  } catch (error) {
+    const message = recoverableReviewMessage(error);
+    if (message === null) throw error;
+    return { kind: "error", message };
+  }
+}

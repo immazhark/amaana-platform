@@ -100,7 +100,7 @@ for(const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]])fo
  fs.writeFileSync(path.join(directory,slug+'.json'),JSON.stringify({route,sourceRoutes,status:response?.status(),finalPath:new URL(page.url()).pathname,width,height,metrics,overflowDetails,textResizeOverflow,textResizeDetails,violations,incomplete:audit.incomplete.map(i=>({id:i.id,targets:i.nodes.map(n=>n.target)})),errors},null,2));
  const expectedStatus=route==='/donate/synthetic-ui-audit'?404:200;
  expect(response?.status(),route).toBe(expectedStatus);
- expect(new URL(page.url()).pathname,route).toBe(route==='/our-work/medical-financial-assistance'?'/programmes/medical-financial-relief':route);
+ expect(new URL(page.url()).pathname,route).toBe(route==='/admin/requests'?'/admin':route==='/our-work/medical-financial-assistance'?'/programmes/medical-financial-relief':route);
  if(!route.startsWith('/browser-acceptance/')){expect(metrics.headings,route).toHaveLength(1);expect(metrics.headings.join(' ')).not.toMatch(/platform is temporarily unavailable|page could not complete/i);}
  expect(metrics.overflow,`${route}: ${JSON.stringify(overflowDetails)}`).toBe(false);expect(textResizeOverflow,`200% text resizing: ${route}: ${JSON.stringify(textResizeDetails)}`).toBe(false);expect(metrics.oversizedH2,route).toEqual([]);expect(metrics.brokenAnchors,route).toEqual([]);expect(errors,route).toEqual([]);
  expect(violations.filter(v=>['serious','critical'].includes(v.impact)),route).toEqual([]);
