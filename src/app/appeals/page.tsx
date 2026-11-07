@@ -69,7 +69,7 @@ export default async function AppealsPage({ searchParams }: { searchParams: Prom
           <p className="v2-section-label">Family medical assistance request · Informational update</p>
           <h2 className="v2-section-title" id="khaja-family-information">Help Mr. Khaja Continue His Treatment and Recovery</h2>
           <p>The family has requested support during recovery from major surgery. This public information is separate from the reviewed fundraising records below; case-specific donation checkout is not yet active.</p>
-          <Link className="v2-button" href="/medical-support/mr-khaja">Read the family's request</Link>
+          <Link className="v2-button" href="/medical-support/mr-khaja">Read the family&apos;s request</Link>
         </div>
       </section>
 

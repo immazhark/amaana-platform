@@ -37,7 +37,7 @@ export default function MrKhajaPublicInformationPage() {
     />
     <section className="v2-section paper" aria-labelledby="khaja-story-heading">
       <div className="v2-shell">
-        <p className="v2-section-label">The family's account</p>
+        <p className="v2-section-label">The family&apos;s account</p>
         <h2 className="v2-section-title" id="khaja-story-heading">Supporting treatment and recovery</h2>
         {info.story.map((paragraph, index) => <p key={index}>{paragraph}</p>)}
       </div>
