@@ -34,7 +34,7 @@ vi.mock("@/lib/prisma-transaction", () => ({
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
 
-import { assignRequest, convertToAppeal, saveVerification } from "./actions";
+import { assignRequest, convertToAppeal, saveVerification, saveVerificationWithFeedback, updateRequestWithFeedback } from "./actions";
 
 function form(values: Record<string, string>) {
   const data = new FormData();
@@ -167,5 +167,74 @@ describe("assistance admin concurrency guards", () => {
 
     expect(mocks.verificationUpsert).not.toHaveBeenCalled();
     expect(mocks.auditCreate).not.toHaveBeenCalled();
+  });
+});
+
+describe("reviewer-facing validation feedback (AF-ADMIN-500)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requirePermission.mockResolvedValue({ id: "synthetic-reviewer" });
+    mocks.hasPermission.mockReturnValue(true);
+    mocks.transaction.mockImplementation(async callback => callback(tx()));
+  });
+
+  it("returns a field-level verification error instead of crashing when the summary is missing", async () => {
+    const renderedAt = new Date("2026-11-07T08:00:00.000Z");
+    mocks.requestFind.mockResolvedValue({
+      id: "synthetic-request", appealId: null, status: AssistanceStatus.UNDER_VERIFICATION,
+      verification: null,
+    });
+    const result = await saveVerificationWithFeedback({ kind: "idle", message: "" }, form({
+      id: "synthetic-request",
+      expectedRequestUpdatedAt: renderedAt.toISOString(),
+      expectedVerificationUpdatedAt: "",
+      verifiedNeedAmount: "500000",
+      approvedPublicTarget: "500000",
+      paymentDestination: "Verified domestic settlement",
+      decision: "APPROVED_PUBLIC",
+      confidentialityLevel: "CONFIDENTIAL",
+      publicNameConsent: "ALLOWED",
+      photoConsent: "ALLOWED",
+      medicalDetailsConsent: "NOT_ALLOWED",
+      institutionNameConsent: "NOT_ALLOWED",
+      archiveConsent: "ALLOWED",
+      zakatStatus: "NOT_APPLICABLE",
+      markComplete: "on",
+      needConfirmed: "on",
+      evidenceReviewed: "on",
+      otherFundingChecked: "on",
+      verificationSummary: "",
+    }));
+    expect(result).toEqual({ kind: "error", message: "Verification summary is required." });
+    expect(mocks.verificationUpsert).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+  });
+
+  it("returns the request-approval prerequisite without crashing or changing status", async () => {
+    mocks.requestFind.mockResolvedValue({
+      id: "synthetic-request", status: AssistanceStatus.UNDER_VERIFICATION,
+      appealId: null, email: null, referenceNumber: "AF-SYNTH-01",
+      updatedAt: new Date("2026-11-07T08:00:00.000Z"),
+      verification: { decision: "PENDING", completedAt: null },
+    });
+    const result = await updateRequestWithFeedback({ kind: "idle", message: "" }, form({
+      id: "synthetic-request", expectedUpdatedAt: "2026-11-07T08:00:00.000Z",
+      status: "APPROVED", internalNotes: "",
+    }));
+    expect(result).toEqual({ kind: "error", message: "Complete verification with an approved decision before marking this request approved" });
+    expect(mocks.requestUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+  });
+
+  it("rethrows database faults instead of misreporting them as input validation", async () => {
+    mocks.requirePermission.mockRejectedValueOnce(new Error("Synthetic authentication backend unavailable"));
+    await expect(saveVerificationWithFeedback({ kind: "idle", message: "" }, form({ id: "synthetic-request" })))
+      .rejects.toThrow("Synthetic authentication backend unavailable");
+  });
+
+  it("rejects a user without update permission rather than returning a successful response", async () => {
+    mocks.requirePermission.mockRejectedValueOnce(new Error("Not authorized"));
+    await expect(updateRequestWithFeedback({ kind: "idle", message: "" }, form({ id: "synthetic-request" })))
+      .rejects.toThrow("Not authorized");
   });
 });
