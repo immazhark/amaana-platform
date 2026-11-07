@@ -37,7 +37,7 @@ it.each([false, true])("avoids unused attachment reads for a non-editor with app
   expect(mocks.assets).toHaveBeenCalledWith(expect.objectContaining({ where: { isPublic: false }, take: ADMIN_PAGE_SIZE }));
   expect(mocks.reviews).toHaveBeenCalledOnce();
   expect(html).toContain("Synthetic media record");
-  expect(html).not.toContain("Add reviewed media");
+  expect(html).not.toContain("Upload media for review");
   expect(html.includes("Approve privacy gate &amp; publish")).toBe(canApprove);
 });
 
@@ -49,7 +49,7 @@ it("keeps all four attachment option lists for editors", async () => {
     expect(read.mock.calls[0]?.[0].select).toEqual({ id: true, title: true });
     expect(html).toContain(`Synthetic attachment ${index}`);
   });
-  expect(html).toContain("Add reviewed media");
+  expect(html).toContain("Upload media for review");
   expect(html).toContain("Save metadata");
   expect(html).not.toContain("Approve privacy gate &amp; publish");
 });
