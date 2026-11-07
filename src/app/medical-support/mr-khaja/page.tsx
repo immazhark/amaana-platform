@@ -1,3 +1,9 @@
+import { cache } from "react";
+import { publicAppealShareCopy } from "@/lib/public-appeal-share";
+import { getAppealSearchPrivacy } from "@/lib/appeal-search-privacy";
+import { ReviewedMedicalAppeal } from "@/components/reviewed-medical-appeal";
+import { getAppealPageData, getDonationPageData, getAppealCoverMedia } from "@/lib/public-page-data";
+import { getDonationPaymentDetails } from "@/lib/donation-payment-details";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/page-hero";
@@ -5,7 +11,7 @@ import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { formatINR } from "@/lib/appeals";
 import { mrKhajaPublicInformation as info } from "@/lib/mr-khaja-public-information";
 
-export const metadata: Metadata = {
+const informationMetadata: Metadata = {
   title: "Mr. Khaja — Family Medical Support Request",
   description: info.summary,
   // The family has approved limited website disclosure, not indefinite search indexing.
@@ -21,7 +27,39 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: info.title, description: info.summary },
 };
 
-export default function MrKhajaPublicInformationPage() {
+export const dynamic = "force-dynamic";
+
+const boundPublicAppeal = cache(async () => {
+  // Set only after the actual case is reviewed/published and the exact binding
+  // is approved. Never infer a financial record from a beneficiary's name.
+  const slug = process.env.MR_KHAJA_PUBLIC_APPEAL_SLUG?.trim();
+  if (!slug || slug.length > 200 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) return null;
+  return getAppealPageData(slug);
+});
+
+export async function generateMetadata(): Promise<Metadata> {
+  const appeal = await boundPublicAppeal();
+  if (!appeal) return informationMetadata;
+  const privacy = await getAppealSearchPrivacy(appeal.slug);
+  const copy = publicAppealShareCopy(appeal.title, appeal.summary, privacy === "HIGHLY_SENSITIVE");
+  return {
+    ...informationMetadata, title: copy.title, description: copy.summary,
+    openGraph: { type: "article", url: info.path, title: copy.title, description: copy.summary,
+      images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }] },
+    twitter: { card: "summary_large_image", title: copy.title, description: copy.summary },
+  };
+}
+
+export default async function MrKhajaPublicInformationPage() {
+  const appeal = await boundPublicAppeal();
+  if (appeal) {
+      const [donation, coverMedia, privacy] = await Promise.all([
+        getDonationPageData(appeal.slug), getAppealCoverMedia(appeal.coverImageUrl), getAppealSearchPrivacy(appeal.slug),
+      ]);
+      return <ReviewedMedicalAppeal appeal={appeal} donation={donation}
+        coverMedia={coverMedia} highlySensitive={privacy === "HIGHLY_SENSITIVE"} paymentDetails={getDonationPaymentDetails()} />;
+  }
+
   return <div className="v2-home">
     <PageHero
       variant="level2"

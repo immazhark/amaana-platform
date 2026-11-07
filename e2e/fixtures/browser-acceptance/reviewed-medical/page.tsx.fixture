@@ -1,0 +1,27 @@
+import { notFound } from "next/navigation";
+import { Prisma } from "@prisma/client";
+import { ReviewedMedicalAppeal } from "@/components/reviewed-medical-appeal";
+
+export const dynamic = "force-dynamic";
+export const metadata = { title: "Synthetic medical appeal acceptance", robots: { index: false, follow: false } };
+
+export default function SyntheticMedicalAppeal() {
+  if (process.env.AMAANA_BROWSER_ACCEPTANCE !== "true") notFound();
+  const appeal = {
+    slug: "synthetic-reviewed-medical", title: "Synthetic reviewed medical support", summary: "Synthetic approved public summary for isolated acceptance.",
+    category: "MEDICAL" as const, beneficiaryDisplayName: "Synthetic case", beneficiaryLocation: "Hyderabad",
+    story: "Synthetic public description of a reviewed need.\nOnly approved public information appears here.",
+    status: "PUBLISHED" as const, goalAmount: new Prisma.Decimal(10000), amountRaised: new Prisma.Decimal(2500),
+    closesAt: null, publishedAt: new Date("2026-11-07T00:00:00Z"), coverImageUrl: null,
+    updates: [{ id: "synthetic-update", title: "Synthetic confirmed update", content: "Synthetic public update content.", publishedAt: new Date("2026-11-07T00:00:00Z") }],
+  };
+  // Safe brand SVG is a synthetic display stand-in, not a scanned payment QR
+  // or a beneficiary photograph. Live case/media approval remains separate.
+  return <ReviewedMedicalAppeal appeal={appeal}
+    donation={{ ...appeal, id: "synthetic-reviewed-medical", zakatEligible: false }}
+    coverMedia={{ id: "synthetic-cover", kind: "IMAGE", title: "Synthetic reviewed image", publicUrl: "/brand/amaana-mark.svg", externalUrl: null,
+      altText: "Synthetic reviewed image for acceptance", caption: null, sourceYear: 2026, width: 800, height: 600, sortOrder: 0 }}
+    highlySensitive={true}
+    paymentDetails={{ upi: { id: "synthetic-test@upi", qrImageUrl: "/brand/amaana-mark.svg" },
+      bank: { accountName: "SYNTHETIC ACCEPTANCE ONLY", accountNumber: "000000000000", ifsc: "TEST0000000", bankName: "Synthetic bank", branch: "Synthetic branch" } }} />;
+}
