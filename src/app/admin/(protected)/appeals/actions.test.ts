@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   updateManyUpdate: vi.fn(),
   auditCreate: vi.fn(),
   transaction: vi.fn(),
+  publicationIssues: vi.fn(() => [] as string[]),
   updateAppeal: vi.fn(),
   updateManyAppeal: vi.fn(),
 }));
@@ -28,14 +29,14 @@ vi.mock("@/lib/prisma", () => ({
 }));
 vi.mock("@/lib/appeal-publication", () => ({
   getAppealConsentContentIssues: () => [],
-  getFirstPublicationIssues: () => [],
+  getFirstPublicationIssues: mocks.publicationIssues,
   goalMatchesApprovedPublicTarget: () => true,
 }));
 vi.mock("@/lib/prisma-transaction", () => ({ withSerializableTransactionRetry: (callback: (tx: unknown) => unknown) => callback((globalThis as typeof globalThis & { __appealTx: unknown }).__appealTx) }));
 vi.mock("@/lib/appeal-update-publication", () => ({
   getAppealUpdatePublicationIssues: ({ appealStatus }: { appealStatus: string }) => appealStatus === "PUBLISHED" ? [] : ["Appeal must be actively published."],
 }));
-vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+vi.mock("next/cache", () => ({ revalidatePath: vi.fn(), revalidateTag: vi.fn() }));
 
 import { addAppealUpdate, publishAppealUpdate, transitionAppeal, transitionAppealWithFeedback, unpublishAppealUpdate, updateAppeal, updateAppealWithFeedback, updateFeaturing } from "./actions";
 
@@ -250,4 +251,37 @@ describe("reviewable appeal form feedback", () => {
       .rejects.toThrow("Not authorized");
     expect(mocks.appealFind).not.toHaveBeenCalled();
   });
+  it("returns combined publication prerequisites without changing status", async () => {
+    mocks.publicationIssues.mockReturnValueOnce(["Verification record is required.", "Need must be confirmed."]);
+    mocks.appealFind.mockResolvedValueOnce({ status: "UNDER_REVIEW", assistanceRequest: null });
+    await expect(transitionAppealWithFeedback({ kind: "idle", message: "" }, form({
+      id: "synthetic-appeal", status: "PUBLISHED", expectedUpdatedAt: "2026-11-07T08:00:00.000Z",
+    }))).resolves.toEqual({ kind: "error", message: "Appeal cannot be published: Verification record is required. Need must be confirmed." });
+    expect(mocks.updateManyAppeal).not.toHaveBeenCalled();
+  });
+
+  it("rejects an unexpected suffix after an otherwise recoverable message", async () => {
+    mocks.appealFind.mockRejectedValueOnce(new Error("Invalid appeal status transition private database details"));
+    await expect(transitionAppealWithFeedback({ kind: "idle", message: "" }, form({
+      id: "synthetic-appeal", status: "PUBLISHED", expectedUpdatedAt: "2026-11-07T08:00:00.000Z",
+    }))).rejects.toThrow("private database details");
+  });
+
+  it("reports a successful permitted transition and preserves its audit", async () => {
+    const appeal = { status: "DRAFT", updatedAt: new Date("2026-11-07T08:00:00.000Z"), assistanceRequest: null };
+    mocks.appealFind.mockResolvedValue(appeal);
+    mocks.updateManyAppeal.mockResolvedValue({ count: 1 });
+    await expect(transitionAppealWithFeedback({ kind: "idle", message: "" }, form({
+      id: "synthetic-appeal", status: "UNDER_REVIEW", expectedUpdatedAt: appeal.updatedAt.toISOString(),
+    }))).resolves.toEqual({ kind: "success", message: "Appeal status saved." });
+    expect(mocks.auditCreate).toHaveBeenCalledWith({ data: expect.objectContaining({ action: "appeal.status_changed" }) });
+  });
+
+  it("rejects an empty publication error rather than reporting safe validation", async () => {
+    mocks.appealFind.mockRejectedValueOnce(new Error("Appeal cannot be published: "));
+    await expect(transitionAppealWithFeedback({ kind: "idle", message: "" }, form({
+      id: "synthetic-appeal", status: "PUBLISHED", expectedUpdatedAt: "2026-11-07T08:00:00.000Z",
+    }))).rejects.toThrow("Appeal cannot be published: ");
+  });
+
 });

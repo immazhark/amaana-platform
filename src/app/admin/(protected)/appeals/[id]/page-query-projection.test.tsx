@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 const mocks = vi.hoisted(() => ({ permission: vi.fn(), allowed: vi.fn(), appeal: vi.fn(), history: vi.fn(), privateRequest: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ requirePermission: mocks.permission, hasPermission: mocks.allowed }));
 vi.mock("@/lib/prisma", () => ({ prisma: { appeal: { findUnique: mocks.appeal }, auditEvent: { findMany: mocks.history }, assistanceRequest: { findUnique: mocks.privateRequest } } }));
-vi.mock("../actions", () => ({ addAppealUpdate: vi.fn(), publishAppealUpdate: vi.fn(), transitionAppeal: vi.fn(), unpublishAppealUpdate: vi.fn(), updateAppeal: vi.fn(), updateFeaturing: vi.fn() }));
+vi.mock("../actions", () => ({ addAppealUpdate: vi.fn(), publishAppealUpdate: vi.fn(), transitionAppealWithFeedback: vi.fn(), unpublishAppealUpdate: vi.fn(), updateAppealWithFeedback: vi.fn(), updateFeaturing: vi.fn() }));
 import AppealEditorPage from "./page";
 
 const verification = {
