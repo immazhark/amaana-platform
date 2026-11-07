@@ -13,6 +13,8 @@ afterEach(() => vi.unstubAllEnvs());
 it("does not guess a financial case or query records without an explicit binding", async () => {
   const html = renderToStaticMarkup(await Page());
   expect(html).toContain("not yet active");
+  expect(html).toContain("approved fundraising target");
+  expect(html).not.toContain("not an approved, remaining fundraising target");
   expect(mocks.publicAppeal).not.toHaveBeenCalled();
   expect(mocks.donation).not.toHaveBeenCalled();
 });

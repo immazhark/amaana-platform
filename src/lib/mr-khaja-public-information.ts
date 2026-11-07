@@ -19,5 +19,5 @@ export const mrKhajaPublicInformation = {
   donationCheckoutPath: null,
   zakatEligibility: "UNVERIFIED",
   paymentNotice: "Support from within India can be discussed with Amaana Foundation. Dedicated donation checkout for this specific request is not yet active on the website; please contact the team to confirm an approved way to contribute and how the purpose and reference will be recorded.",
-  evidenceNotice: "This account summarises information supplied by the family. The requested amount is not a certified medical estimate or an approved, remaining fundraising target.",
+  evidenceNotice: "This account summarises information supplied by the family. Amaana Foundation has confirmed ₹5,00,000 as the approved fundraising target for this request. The target is not an independently certified medical estimate or a statement of the amount remaining to be raised. Case-specific checkout remains inactive until review and publication are completed.",
 } as const;

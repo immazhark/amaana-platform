@@ -14,6 +14,8 @@ for (const width of [320, 390, 1440]) {
     await expect(page.locator('#medical-appeal-story')).toContainText('Synthetic public description');
     await expect(page.getByRole('progressbar', { name: 'Appeal funding progress' })).toHaveAttribute('aria-valuenow', '25');
     await expect(page.getByRole('button', { name: 'Secure online payment', exact: true })).toBeVisible();
+    const checkoutContrast = await new AxeBuilder({ page }).include('#support-this-appeal').withTags(['wcag2aaa']).analyze();
+    expect(checkoutContrast.violations.filter(violation => violation.id === 'color-contrast-enhanced')).toEqual([]);
     await page.getByRole('button', { name: 'Direct UPI / QR', exact: true }).click();
     await expect(page.getByRole('region', { name: 'Verified UPI details' })).toContainText('synthetic-test@upi');
     const qrDisplay = page.getByRole('img', { name: 'Amaana Foundation verified UPI payment QR code', exact: true });

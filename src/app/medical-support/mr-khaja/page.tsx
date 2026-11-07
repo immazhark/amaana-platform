@@ -82,8 +82,8 @@ export default async function MrKhajaPublicInformationPage() {
     </section>
     <section className="v2-section" aria-labelledby="khaja-request-heading">
       <div className="v2-shell">
-        <p className="v2-section-label">Assistance requested by the family</p>
-        <h2 className="v2-section-title" id="khaja-request-heading">{formatINR(info.requestedINR)} requested</h2>
+        <p className="v2-section-label">Foundation-approved fundraising target</p>
+        <h2 className="v2-section-title" id="khaja-request-heading">{formatINR(info.requestedINR)} approved fundraising target</h2>
         <p>{info.evidenceNotice}</p>
         <p><strong>India-only support:</strong> {info.paymentNotice}</p>
         <p>Privacy: only the approved short name is used. Private clinical documents and identifiable contact details are not published on this page.</p>

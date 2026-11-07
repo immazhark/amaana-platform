@@ -15,3 +15,9 @@
   .layout { grid-template-columns: minmax(0, 1fr); }
   .support { grid-row: 1; }
 }
+
+/* Keep enhanced small-text contrast in the new reviewed appeal without changing
+ * the global light-surface label palette (6.74:1 on ivory). */
+.support :global(.v2-amount-field) label > span {
+  color: var(--af-color-gold-ink) !important;
+}

@@ -4,7 +4,7 @@ Owner request: a complete appeal with approved description, reviewed photograph,
 
 ## Current evidence
 
-Read-only production inspection on 7 November 2026 IST: the assistance request remains SUBMITTED, without a verification record, completed review, approved public target or linked appeal. No matching published Appeal exists. ₹5,00,000 is requested, not yet an approved target. No production records were changed. Do not fabricate a case, zero-raised figure, medical review, Zakat badge or media approval.
+Read-only production inspection on 7 November 2026 IST: the assistance request remains SUBMITTED, without a verification record, completed review, approved public target or linked appeal. No matching published Appeal exists. The owner explicitly approved ₹5,00,000 as the public fundraising target on 7 November 2026; the case-review database record has not yet been approved or published. This target is not a certified medical estimate or an actual remaining balance. No production records were changed. Do not fabricate a case, zero-raised figure, medical review, Zakat badge or media approval.
 
 ## Prepared source
 
@@ -17,8 +17,8 @@ Cover media must pass the existing public Media-library review lookup. Supplied 
 ## Required case decisions and evidence
 
 1. Complete actual admin verification: need/evidence review, verified need, other funding/debt checks, payment destination, approved public target, public disclosure/archive choices, Zakat review, authorised reviewer and completion. Record only decisions supported by actual review.
-2. Confirm whether ₹5,00,000 is the approved public target, or supply the approved amount.
-3. Independently confirm the official Amaana receiving bank/UPI/QR and acknowledgement/reconciliation routing for this case. Poster/source consistency alone is not ownership attestation. No foreign destination is included.
+2. Owner decision complete: ₹5,00,000 is the approved public target. An authorised case reviewer must still enter/verify this amount in the actual application approval record; do not fabricate the review or an amount raised.
+3. Owner confirmation received for the official Amaana Axis Bank account 925020008040264, IFSC UTIB0002922, branch Mehdipatnam and the provided UPI/QR. Independently attest provider payee ownership and case-specific acknowledgement/reconciliation routing before QR activation. Poster/source consistency alone is not ownership attestation. No foreign destination is included.
 4. Review the actual patient photograph: all identifiable faces redacted, EXIF/GPS removed, provenance/disclosure reviewed, GREEN public website and Hero use approved. Preserve originals; no synthetic beneficiary photo.
 5. Convert the approved request using the existing workflow; review the resulting appeal's public content/target/photo and publish. Retain its actual ID and slug in the private operational record, not in source.
 
