@@ -679,3 +679,22 @@ test("AF-R057 keeps canonical root and nested public routes measurable", async (
   ]);
   assert.equal(report.shared.decodedCssBytes, 0);
 });
+
+for (const quote of ['"', "'"]) {
+  for (const opener of ["<script>", "<style>", "<title>", "<textarea>", "<xmp>", "<noembed>", "<noframes>", "<noscript>", "<!--"]) {
+    test(`AF-R057 keeps active CSS after quoted ${opener} with ${quote}`, () => {
+      assert.deepEqual(stylesheetsInHtml(`<div data-example=${quote}${opener}${quote}>Example</div><link rel="stylesheet" href="/_next/static/real.css">`),
+        ["https://amaanafoundation.org/_next/static/real.css"]);
+    });
+  }
+}
+
+test("AF-R057 quoted openers inside inert content do not expose inert CSS", () => {
+  const fake = '<link rel="stylesheet" href="/_next/static/fake.css">';
+  const real = '<link rel="stylesheet" href="/_next/static/real.css">';
+  for (const markup of [
+    `<script data-example="<!--">${fake}</script>${real}`,
+    `<template><div data-example="<script>">${fake}</div></template>${real}`,
+    `<!-- <div data-example="<script>">${fake} -->${real}`,
+  ]) assert.deepEqual(stylesheetsInHtml(markup), ["https://amaanafoundation.org/_next/static/real.css"]);
+});

@@ -1,3 +1,11 @@
+## 2026-11-07 IST — AF-R057 quote-aware stylesheet attribution
+
+CODEX_ACTIVE sole writer. Native RED 3a865b67: 19 new quoted rawtext/comment opener cases failed while 70 existing cases passed. Minimal unified quote-aware tag/context scan now preserves genuine stylesheet links after unrelated quoted text and keeps actual comments/rawtext/template/noscript content inert. All 89 native CSS-audit tests pass; independent read-only review found no introduced blocker. URL restrictions, byte arithmetic, route inventory and application runtime unchanged. Full hosted impact-selected checks, distinct ready-state and guarded merge still required. No complete HTML-parser/CWV or canonical 149 closure claim. Rollback script and regression only.
+
+## 2026-11-07 IST — AF-R057 quoted HTML context audit correction
+
+CODEX_ACTIVE sole writer on fix/af-r057-quoted-context-openers-20261107 from accepted c44b05b. #688 implementation published a3893b82599969abf3ebc2912fbdba85cd3c360e for independent exact-head hosted acceptance; local 2646 passed/20 isolated DB skipped. New audit-only scope: genuine stylesheet lost after quoted rawtext/comment opener in unrelated attributes. Add native RED then quote-aware context scan, preserve real inert bodies/templates and URL/byte guards. No runtime application, payments, private records or infrastructure changes. Historical 149 unchanged.
+
 ## 2026-11-07 IST — Admin form layout PR #687 reconciled after Mr. Khaja information merge
 
 Protected main `04f65403c9b55b9c8b3a416337469fcdb602d782` merged #686 after its all-seven exact-head run 42361328521 and separate ready-state run 42363058074; real website rollout still requires independent SHA and public URL verification. #687 had tested form geometry/capped CSS at original head `6a4515670975f09c01bc8987b5d892bafebbc0f3` (full CI 42362008698, exact-run result must be inspected). This non-force two-parent reconciliation retains main's public-content source and handoff, #687's scoped admin CSS/browser geometry coverage and both coordination histories. Re-run complete exact-head CI and separately ready-state promotion after this head; never treat old checks as certifying this merge. Payment PR #684 remains draft pending independent destination verification. No protected direct push or DB/auth/payment/secret/migration change. 149 historical totals unchanged.
