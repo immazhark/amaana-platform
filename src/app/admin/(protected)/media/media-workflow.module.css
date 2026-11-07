@@ -1,0 +1,76 @@
+/* A focused admin workflow: routine upload, approval queue and retained archive. */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .75rem;
+  margin: 0 0 1.25rem;
+  padding: 0;
+  list-style: none;
+}
+.steps li {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--af-color-border);
+  border-radius: var(--af-radius-md);
+  background: var(--af-color-surface);
+}
+.steps strong { display: block; color: var(--af-color-navy-800); }
+.steps span { display: block; margin-top: .3rem; color: var(--af-color-muted); font-size: .9rem; line-height: 1.45; }
+.diagnostics {
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--af-color-border);
+  border-radius: var(--af-radius-md);
+  background: var(--af-color-surface);
+}
+.diagnostics > summary, .disclosure > summary {
+  cursor: pointer;
+  color: var(--af-color-navy-800);
+  font-weight: 700;
+  line-height: 1.5;
+}
+.diagnostics > summary { display: list-item; }
+.diagnostics > summary .status-badge { margin-left: .7rem; }
+.diagnostics[open] > summary, .disclosure[open] > summary { margin-bottom: 1rem; }
+.disclosure {
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid var(--af-color-border);
+  border-radius: var(--af-radius-sm);
+  background: var(--af-color-surface);
+}
+.disclosure > summary:focus-visible, .diagnostics > summary:focus-visible {
+  outline: 3px solid var(--af-color-focus);
+  outline-offset: 3px;
+}
+.disclosure :global(.form-grid) { margin-top: .75rem; }
+.library {
+  display: grid;
+  gap: 1rem;
+  min-width: 0;
+}
+.library > article {
+  min-width: 0;
+  padding: 1.15rem;
+  border: 1px solid var(--af-color-border);
+  border-radius: var(--af-radius-md);
+  background: var(--af-color-surface);
+  box-shadow: 0 4px 16px rgb(18 34 57 / 4%);
+}
+.library > article > * + * { margin-top: .9rem; }
+.library :global(.admin-media-summary) { min-width: 0; overflow-wrap: anywhere; }
+.library :global(.admin-media-summary) h3 { font-size: 1.05rem; margin-block: .35rem; }
+.library :global(.admin-media-summary) small { display: block; }
+.url {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  margin-top: .35rem;
+  color: var(--af-color-muted);
+  font-size: .8rem;
+}
+@media (max-width: 760px) {
+  .steps { grid-template-columns: minmax(0, 1fr); gap: .5rem; }
+  .steps li { padding: .8rem 1rem; }
+  .disclosure { padding: .75rem; }
+}
