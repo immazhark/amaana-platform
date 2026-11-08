@@ -111,6 +111,50 @@ describe("private document retention deletion", () => {
     expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
   });
 
+  it.each(["RETAIN", "PLACE_HOLD", "RELEASE_HOLD", "DELETE", "INVALID_DECISION"])(
+    "denies %s before loading or changing any private evidence",
+    async decision => {
+      const form = new FormData();
+      form.set("documentId", "doc_123");
+      form.set("decision", decision);
+      form.set("reason", "Synthetic reviewer request");
+      if (decision === "DELETE") form.set("deleteConfirmation", "DELETE");
+      mocks.requirePermission.mockRejectedValueOnce(new Error("Permission denied"));
+
+      await expect(reviewDocumentRetention(form)).rejects.toThrow("Permission denied");
+
+      expect(mocks.requirePermission).toHaveBeenCalledExactlyOnceWith("assistance.approve");
+      expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+      expect(mocks.findFirstAudit).not.toHaveBeenCalled();
+      expect(mocks.createAudit).not.toHaveBeenCalled();
+      expect(mocks.updateManyDocument).not.toHaveBeenCalled();
+      expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+      expect(mocks.transaction).not.toHaveBeenCalled();
+      expect(mocks.deleteDocumentRecord).not.toHaveBeenCalled();
+      expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
+      expect(mocks.revalidatePath).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    { caseName: "missing document ID", field: "documentId", replacement: "" },
+    { caseName: "invalid DELETE confirmation", field: "deleteConfirmation", replacement: "delete" },
+  ])("does not disclose $caseName validation to unauthorized callers", async ({ field, replacement }) => {
+    const form = deletionForm();
+    form.set(field, replacement);
+    mocks.requirePermission.mockRejectedValueOnce(new Error("Unauthorised"));
+
+    await expect(reviewDocumentRetention(form)).rejects.toThrow("Unauthorised");
+
+    expect(mocks.requirePermission).toHaveBeenCalledExactlyOnceWith("assistance.approve");
+    expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+    expect(mocks.findFirstAudit).not.toHaveBeenCalled();
+    expect(mocks.createAudit).not.toHaveBeenCalled();
+    expect(mocks.updateManyDocument).not.toHaveBeenCalled();
+    expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
   it("rejects a stale hold decision without writing contradictory audit history", async () => {
     const form = new FormData();
     form.set("documentId", "doc_123");
