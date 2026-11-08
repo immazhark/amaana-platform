@@ -84,7 +84,7 @@ describe("AF-R012 private assistance document download boundaries", () => {
     expect(response.headers.get("cache-control")).toBe("private, no-store");
     expect(response.headers.get("referrer-policy")).toBe("no-referrer");
     expect(response.headers.get("x-robots-tag")).toBe("noindex, nofollow, noarchive");
-    expect(mocks.audit.mock.invocationCallOrder[0]).toBeGreaterThan(mocks.signedUrl.mock.invocationCallOrder[0]);
+    expect(mocks.audit.mock.invocationCallOrder[0]!).toBeGreaterThan(mocks.signedUrl.mock.invocationCallOrder[0]!);
   });
 
   it("fails closed without recording a view when private signing fails", async () => {
