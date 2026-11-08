@@ -46,3 +46,25 @@ describe("appeal moderation list IST update date", () => {
     expect(mocks.findMany).not.toHaveBeenCalled();
   });
 });
+
+describe("admin appeal listing minimum staff projection", () => {
+  it("only staff names are queried for the admin appeal listing", async () => {
+    mocks.findMany.mockResolvedValueOnce([{
+      id: "synthetic-appeal", title: "Synthetic approved case", slug: "synthetic-case",
+      status: "DRAFT", goalAmount: money(5000), createdBy: { name: "Synthetic editor" },
+      reviewedBy: { name: "Synthetic reviewer" }, updatedAt: new Date("2026-11-09T00:00:00.000Z"),
+    }]);
+
+    const html = renderToStaticMarkup(await AdminAppealsPage({ searchParams: Promise.resolve({}) }));
+
+    expect(mocks.permission).toHaveBeenCalledWith("appeal.view");
+    expect(mocks.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      include: {
+        createdBy: { select: { name: true } },
+        reviewedBy: { select: { name: true } },
+      },
+    }));
+    expect(html).toContain("Synthetic editor");
+    expect(html).toContain("Synthetic reviewer");
+  });
+});
