@@ -135,7 +135,7 @@ for (const [device,width,height] of [['compact-mobile',320,844],['mobile',390,84
   test(`source-rendered root interruption ${device}`, async ({page}) => {
     await page.setViewportSize({width,height});
     const html = '<!doctype html>'+renderErrorSource('src/app/global-error.tsx');
-    await page.goto('/about');await page.setContent(html);
+    // Use a script-free origin document. Hydrating /about can mutate the isolated\n    // recovery fixture after setContent and duplicate its action during zoom.\n    await page.goto('/robots.txt');await page.setContent(html);
     expect(await page.evaluate(()=>document.documentElement.clientWidth),'standalone recovery viewport').toBe(width);
     const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag2aaa']).analyze();
     const geometry=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth+1,heading:document.querySelector('h1')?.textContent}));
@@ -144,7 +144,7 @@ for (const [device,width,height] of [['compact-mobile',320,844],['mobile',390,84
     await page.screenshot({path:path.join(directory,`${evidenceName}.jpg`),type:'jpeg',quality:65,fullPage:true});
     fs.writeFileSync(path.join(directory,`${evidenceName}.json`),JSON.stringify({route:'global-error.tsx',evidence:'Source-rendered isolated layout; recovery callback is reviewed in source, not exercised by this static render.',width,height,geometry,violations:audit.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}))},null,2));
     expect(geometry.overflow).toBe(false);
-    await expect(page.getByRole('button',{name:'Try again →',exact:true})).toBeVisible();
+    await expect(page.getByRole('button',{name:'Try again →',exact:true})).toHaveCount(1);\n    await expect(page.getByRole('button',{name:'Try again →',exact:true})).toBeVisible();
     expect(audit.violations.filter(v=>['serious','critical'].includes(v.impact))).toEqual([]);
     await page.addStyleTag({content:'html { font-size: 200% !important; }'});
     const resized=await page.evaluate(()=>{
