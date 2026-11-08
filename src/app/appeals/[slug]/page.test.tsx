@@ -107,6 +107,20 @@ describe("appeal breadcrumb privacy parity", () => {
 });
 
 
+describe("appeal funding layout and honest small progress", () => {
+  it("shows ₹500 as 0.1% of ₹5,00,000 rather than rounding down to 0%", async () => {
+    mocks.appeal.mockResolvedValue({
+      ...appeal,
+      amountRaised: { toNumber: () => 500 },
+      goalAmount: { toNumber: () => 500_000 },
+    });
+    const html = renderToStaticMarkup(await AppealPage(params));
+    expect(html).toContain('aria-valuenow="0.1"');
+    expect(html).toContain('0.1%');
+    expect(html).toContain('funding');
+  });
+});
+
 describe("appeal field-update display dates", () => {
   it("shows the India calendar day even when the server default is UTC", async () => {
     const original = Date.prototype.toLocaleDateString;

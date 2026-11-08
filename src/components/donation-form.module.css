@@ -42,3 +42,51 @@
 .amountControl input{font-weight:700!important}
 .checkoutControl,.choice label,.intentOption{border-radius:.75rem;transition-duration:var(--af-motion-medium)}
 .status,.hint,.intentIntro,.intentNote,.choice small,.intentOption small{line-height:1.55}
+
+
+/* Donor UX correction: text inputs inside one framed control must not show
+   a second inner focus indicator. The visible 3px ring is on the wrapper. */
+.checkoutControl{box-sizing:border-box;max-width:100%;min-width:0}
+.checkoutControl:focus-within{
+  border-color:#466faa;
+  box-shadow:0 0 0 3px rgb(70 111 170 / 30%);
+}
+.checkoutControl input:focus-visible,
+.checkoutControl input:focus{
+  outline:none!important;
+  box-shadow:none!important;
+  border:0!important;
+}
+.amountControl input{font-size:clamp(1.35rem,3vw,2rem)!important;line-height:1.2!important}
+
+/* A giving intention is a radio with adjacent text, never a full-width
+   inherited text input. Keep each choice in its own readable row. */
+.intentGrid{grid-template-columns:minmax(0,1fr);gap:.65rem}
+.intentOption{display:grid;grid-template-columns:1.2rem minmax(0,1fr);align-items:start;column-gap:.8rem;row-gap:0;padding:.9rem 1rem;min-height:3.75rem}
+.intentOption input[type="radio"]{
+  width:1.2rem!important;
+  min-width:1.2rem!important;
+  height:1.2rem!important;
+  min-height:1.2rem!important;
+  padding:0!important;
+  margin:.18rem 0 0!important;
+  border:0!important;
+  flex:none;
+}
+.intentOption input[type="radio"]:focus-visible{
+  outline:none!important;
+  box-shadow:none!important;
+}
+.intentOption:focus-within{outline:3px solid var(--af-color-focus);outline-offset:2px}
+.intentOption span{display:grid;min-width:0;gap:.25rem}
+.intentOption strong{font-size:1rem;line-height:1.35;letter-spacing:0;overflow-wrap:break-word}
+.intentOption small{font-size:.86rem;line-height:1.5;overflow-wrap:break-word}
+@media(max-width:620px){.intentOption{padding:.85rem .9rem}.amountControl input{font-size:1.45rem!important}}
+
+/* More specific than the global .v2-premium-form input:focus-visible rule.
+ * Only the enclosing control supplies the keyboard focus ring. */
+:global(.v2-premium-form) .checkoutControl input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus-visible {
+  outline: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
