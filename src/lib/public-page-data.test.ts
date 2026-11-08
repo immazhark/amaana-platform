@@ -26,6 +26,8 @@ import {
 } from "./public-page-data";
 import { getPublishedInitiativeBySlug } from "./public-content";
 import { getInitiativePageData } from "./public-page-data";
+import { programmeCategories, programmes } from "./master-copy";
+import { programmeCategoryPath } from "./programme-category-routing";
 
 describe("public page gallery media query contracts", () => {
   afterEach(() => vi.unstubAllEnvs());
@@ -79,12 +81,12 @@ describe("public page gallery media query contracts", () => {
         { slug: "verified-2026", title: "Verified initiative", primaryMetric: "234", primaryMetricLabel: "winter kits" },
       ])
       .mockResolvedValueOnce([])
-      .mockResolvedValueOnce([{ slug: "verified-2026" }]);
+      .mockResolvedValueOnce([{ slug: "eid-gift-kits" }]);
     const data = await getHomepageDiscoveryData();
     expect(data.initiatives).toEqual([
       { slug: "verified-2026", title: "Verified initiative", primaryMetric: "234", primaryMetricLabel: "winter kits" },
     ]);
-    expect(data.publishedProgrammeSlugs).toEqual(["verified-2026"]);
+    expect(data.publishedProgrammeSlugs).toEqual(["eid-gift-kits"]);
     expect(mocks.initiativeFindMany).toHaveBeenCalledTimes(3);
     expect(mocks.causeFindMany).toHaveBeenCalledOnce();
 
@@ -101,6 +103,57 @@ describe("public page gallery media query contracts", () => {
     }
     expect(mocks.initiativeFindMany.mock.calls[0]?.[0].where)
       .toHaveProperty("mediaAssets.some");
+  });
+
+  it("bounds homepage publication checks to every consulted programme destination", async () => {
+    await getHomepageDiscoveryData();
+
+    const query = mocks.initiativeFindMany.mock.calls[2]?.[0];
+    expect(query).toMatchObject({
+      where: {
+        status: "PUBLISHED", cause: { status: "PUBLISHED" },
+        slug: { in: expect.any(Array) },
+      },
+      select: { slug: true },
+    });
+    const slugs = query.where.slug.in as string[];
+    expect(new Set(slugs).size).toBe(slugs.length);
+    expect(slugs).toContain("eid-gift-kits");
+    for (const programme of programmes) {
+      if (!("parentSlug" in programme)) expect(slugs).toContain(programme.slug);
+      else expect(slugs).not.toContain(programme.slug);
+    }
+    for (const category of programmeCategories) {
+      const destination = programmeCategoryPath(category.slug);
+      if (destination.startsWith("/our-work/")) {
+        expect(slugs).toContain(destination.slice("/our-work/".length));
+      }
+    }
+    const expectedSlugs = new Set(programmes.filter(programme => !("parentSlug" in programme)).map(programme => programme.slug));
+    expectedSlugs.add("eid-gift-kits");
+    for (const category of programmeCategories) {
+      const destination = programmeCategoryPath(category.slug);
+      if (destination.startsWith("/our-work/")) expectedSlugs.add(destination.slice("/our-work/".length));
+    }
+    expect(new Set(slugs)).toEqual(expectedSlugs);
+    expect(query).not.toHaveProperty("take");
+  });
+
+  it("returns only published candidate membership without inventing unpublished programmes", async () => {
+    const records = [{ slug: "eid-gift-kits" }, { slug: "winter-relief" }, { slug: "eid-gift-kits-2025" }, { slug: "unrelated-archive" }];
+    mocks.initiativeFindMany
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([])
+      .mockImplementationOnce((query: { where: { slug?: { in: string[] } } }) => {
+        const allowed = query.where.slug?.in;
+        return Promise.resolve(allowed ? records.filter(record => allowed.includes(record.slug)) : records);
+      });
+
+    const data = await getHomepageDiscoveryData();
+
+    expect(data.publishedProgrammeSlugs).toEqual(["eid-gift-kits", "winter-relief"]);
+    expect(data.publishedProgrammeSlugs).not.toContain("taleem");
+    expect(data.initiatives).toEqual([]);
   });
 
   it("restricts the public appeals index to unpaid, unexpired published candidates at SQL", async () => {
