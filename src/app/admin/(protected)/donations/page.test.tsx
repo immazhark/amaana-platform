@@ -77,3 +77,28 @@ describe("admin donation list IST dates", () => {
     expect(mocks.paymentFind).not.toHaveBeenCalled();
   });
 });
+
+
+describe("unmatched critical provider event IST audit time", () => {
+  it.each([
+    ["2026-12-31T18:29:59.000Z", "31/12/2026"],
+    ["2026-12-31T18:30:00.000Z", "1/1/2027"],
+    ["2026-12-31T18:35:00.000Z", "1/1/2027"],
+  ])("shows unmatched captured event %s under India date %s on a UTC server", async (utc, date) => {
+    mocks.donationFind.mockResolvedValueOnce([]);
+    mocks.paymentCount.mockResolvedValueOnce(1);
+    mocks.paymentFind.mockResolvedValueOnce([{
+      id: "synthetic-event",
+      providerEventId: "synthetic-evt-id",
+      eventType: "payment.captured",
+      processedAt: new Date(utc),
+    }]);
+
+    const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({}) }));
+
+    expect(html).toContain("Unmatched payment events");
+    expect(html).toContain("synthetic-evt-id");
+    expect(html).toContain("<span>" + date);
+    expect(mocks.permission).toHaveBeenCalledWith("donation.view");
+  });
+});
