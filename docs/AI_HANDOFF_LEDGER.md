@@ -1,3 +1,11 @@
+## 2026-11-08 IST — P0 donor form + appeal desktop/mobile layout regressions
+
+**CHATGPT_ACTIVE sole repo writer.** Owner explicitly requested urgent donor-facing presentation corrections in this ChatGPT session; existing Codex is exhausted. Main at task fork `1a707c914277e0bed022c85943d48f225b6d8ab2`; task branch `fix/donor-checkout-appeal-responsive-20261108`. Prior draft PR #693 admin-media clarity remains separate, exact head `82aa0a0e601ac71ea162263b37cf99bca0d4dfd6`; hosted browser failed and must be separately repaired, do not alter/merge as part of donor UI scope. Open PRs #684, #688, #690, #691 remain independent. Source and runtime SHA distinct.
+
+Task: fix observed 2026-11-08 desktop/iPhone Safari/Facebook in-app screenshots of giving intent radio labels spread out / unreadable, nested field focus rings, direct bank/UPI copy links, direct transfer label and field alignment, published appeal progress and share actions misaligned. Shared components affected across all donation modes, so one bounded donor presentation PR. Preserve financial/verification/provider logic, Zakat eligibility decisions, exact destination, form schemas, RBAC, source facts, public media and dark/light accessible focus. No personal/photo records or operational production change. Acceptance: RED browser/responsive + focus/readability/copy icon regressions on synthetic fixtures, smallest CSS/semantic change, exact-head build/browser/DB/security checks, separate ready-state and SHA-guarded merge. Public runtime only after success; no checkout transaction.
+
+Rollback: revert just this PR, leaving payment and donation records unchanged. Donor-facing issue takes priority over draft #693; no competing repo writer. Canonical 149 historical counts unchanged.
+
 ## 2026-11-07 IST — Explicit Codex → ChatGPT implementation handoff: Mr. Khaja appeal #692
 
 **CHATGPT_ACTIVE sole repository implementation writer.** Owner explicitly confirmed Codex has stopped due to usage limits and delegated full repository continuation to this ChatGPT session. Outgoing: Codex; incoming: ChatGPT. No concurrent Codex repository writes permitted until a new owner-directed handoff.
