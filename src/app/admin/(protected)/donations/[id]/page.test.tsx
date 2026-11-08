@@ -209,3 +209,38 @@ describe("AF-R012 private donation-detail server authorization and reconciliatio
     expect(mocks.evidence).toHaveBeenCalledWith("synthetic-private-evidence", "synthetic-donation");
   });
 });
+
+describe("donation detail minimum linked-record projections", () => {
+  it("fetches only the displayed appeal title", async () => {
+    const html = await renderDonation();
+    expect(mocks.findDonation).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
+      include: expect.objectContaining({ appeal: { select: { title: true } } }),
+    }));
+    expect(html).toContain("Synthetic approved appeal");
+    expect(mocks.permission).toHaveBeenCalledExactlyOnceWith("donation.view");
+  });
+
+  it("fetches only displayed event fields while preserving stable newest-first order", async () => {
+    mocks.findDonation.mockResolvedValueOnce(donation({
+      paymentMethod: "RAZORPAY",
+      events: [
+        { id: "event-2", eventType: "payment.captured", providerEventId: "synthetic-event-2", processedAt: istNewYear },
+        { id: "event-1", eventType: "payment.authorized", providerEventId: "synthetic-event-1", processedAt: new Date("2026-12-31T17:30:00.000Z") },
+      ],
+    }));
+    const html = await renderDonation();
+    expect(mocks.findDonation).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
+      include: expect.objectContaining({
+        events: {
+          select: { id: true, eventType: true, providerEventId: true, processedAt: true },
+          orderBy: [{ processedAt: "desc" }, { id: "desc" }],
+        },
+        reconciledBy: { select: { name: true } },
+      }),
+    }));
+    expect(html).toContain("payment.captured");
+    expect(html).toContain("payment.authorized");
+    expect(html.indexOf("synthetic-event-2")).toBeLessThan(html.indexOf("synthetic-event-1"));
+    expect(mocks.evidence).not.toHaveBeenCalled();
+  });
+});
