@@ -89,7 +89,7 @@ export function parseExactPaise(input: string): number {
   }
 
   const [rupees, fraction = ""] = input.split(".");
-  const paise = BigInt(rupees) * 100n + BigInt(fraction.padEnd(2, "0") || "0");
+  const paise = BigInt(rupees ?? "0") * 100n + BigInt(fraction.padEnd(2, "0") || "0");
   if (paise < 1n || paise > BigInt(MAX_FOUNDATION_PAISE)) {
     throw new RangeError("Amount is outside the foundation's supported range");
   }
