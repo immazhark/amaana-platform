@@ -10,7 +10,8 @@ test("shared donor text fields exclude radio inputs before layout inheritance", 
   expect(formCss).toContain("input:not([type=checkbox]):not([type=radio]):not([type=file])");
 });
 test("nested checkout focus is visible only around the outer control", () => {
-  expect(donationCss).toMatch(/checkoutControl[^\n]*input:focus-visible/);
+  expect(donationCss).toMatch(/checkoutControl[^\\n]*input:focus-visible/);
+  expect(donationCss).toContain(':global(.v2-premium-form) .checkoutControl input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus-visible');
 });
 test("direct giving intention uses the audited compact radio card layout", () => {
   expect(copy).not.toContain('<label className="checkbox" key={intent}><input type="radio"');

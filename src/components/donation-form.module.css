@@ -82,3 +82,11 @@
 .intentOption strong{font-size:1rem;line-height:1.35;letter-spacing:0;overflow-wrap:break-word}
 .intentOption small{font-size:.86rem;line-height:1.5;overflow-wrap:break-word}
 @media(max-width:620px){.intentOption{padding:.85rem .9rem}.amountControl input{font-size:1.45rem!important}}
+
+/* More specific than the global .v2-premium-form input:focus-visible rule.
+ * Only the enclosing control supplies the keyboard focus ring. */
+:global(.v2-premium-form) .checkoutControl input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus-visible {
+  outline: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
