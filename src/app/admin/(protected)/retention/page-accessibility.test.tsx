@@ -109,3 +109,30 @@ it("announces both private document tabs while preserving each record link", asy
     expect(anchor).toContain('Open private document ↗<span class="sr-only"> (opens in a new tab)</span>');
   }
 });
+
+
+describe("retention review-after date on non-India servers", () => {
+  it.each([
+    ["2027-01-01T00:00:00.000Z", "1/1/2027"],
+    ["2027-06-01T00:00:00.000Z", "1/6/2027"],
+  ])("preserves the selected India review day for %s", async (reviewAfter, expectedDay) => {
+    vi.stubEnv("TZ", "America/Los_Angeles");
+    try {
+      mocks.documents.mockResolvedValue([documentRows[0]]);
+      mocks.events.mockResolvedValue([{
+        id: "synthetic-review",
+        entityType: "AssistanceRequest",
+        entityId: "synthetic-request-1",
+        action: "assistance.document_retention_reviewed",
+        metadata: { documentId: "synthetic-one", reason: "Synthetic reason", reviewAfter },
+        createdAt: new Date("2026-12-31T18:31:00.000Z"),
+        actor: { name: "Synthetic reviewer" },
+      }]);
+      const html = renderToStaticMarkup(await RetentionReviewPage({ searchParams: Promise.resolve({}) }));
+      expect(html).toContain(`review after ${expectedDay}`);
+      expect(mocks.permission).toHaveBeenCalledWith("assistance.approve");
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+});
