@@ -14,7 +14,8 @@ import {
 import { deletePublicMediaObject, uploadPublicMediaFile, validatePublicMediaFile } from "@/lib/storage";
 import { logServerError } from "@/lib/server-log";
 
-type TargetFields = { causeId?: string; initiativeId?: string; storyId?: string; faithContentId?: string };
+type TargetFields = { causeId?: string; initiativeId?: string; storyId?: string; faithContentId?: string; appealId?: string };
+const PREPARABLE_APPEAL_STATUSES = new Set(["DRAFT", "UNDER_REVIEW", "PUBLISHED", "PAUSED"]);
 
 function targetFields(value: string): TargetFields {
   const parts = value.split(":");
@@ -26,6 +27,9 @@ function targetFields(value: string): TargetFields {
   if (kind === "initiative") return { initiativeId: id };
   if (kind === "story") return { storyId: id };
   if (kind === "faith") return { faithContentId: id };
+  // An appeal has no MediaAsset foreign key. Preserve the intended appeal
+  // in the immutable creation audit; do not invent a database association.
+  if (kind === "appeal") return { appealId: id };
   throw new Error("Unsupported content target");
 }
 
@@ -79,6 +83,18 @@ function usesApprovedManagedDelivery(asset: { storageKey?: string | null; public
 export async function createMediaAsset(formData: FormData) {
   const user = await requirePermission("content.update");
   const target = targetFields(singleCreateText(formData, "target") ?? "");
+  const { appealId, ...mediaTarget } = target;
+  // Listing appeal titles does not grant edit rights to them. Require the
+  // existing appeal-view permission before accepting an appeal media intent.
+  if (appealId) {
+    await requirePermission("appeal.view");
+    const appeal = await prisma.appeal.findUnique({
+      where: { id: appealId }, select: { id: true, status: true },
+    });
+    if (!appeal || !PREPARABLE_APPEAL_STATUSES.has(appeal.status)) {
+      throw new Error("Appeal is not available for an image upload.");
+    }
+  }
   const files = formData.getAll("file");
   if (files.length > 1 || (files.length === 1 && !(files[0] instanceof File))) {
     throw new Error("Use a single file field.");
@@ -105,6 +121,12 @@ export async function createMediaAsset(formData: FormData) {
     throw new Error("An identity image must use the IMAGE media type.");
   }
   const identityImage = inferredKind === "IMAGE" && identityValue === "on";
+  if (appealId && inferredKind !== "IMAGE") {
+    throw new Error("Appeal cover candidates must be images, not documents.");
+  }
+  if (appealId && identityImage) {
+    throw new Error("Appeal cover candidates must not replace cause or initiative identity images.");
+  }
 
   if (!file && !manualUrl) throw new Error("Upload a file or provide an approved public URL");
   if (file && manualUrl) throw new Error("Choose either a managed upload or a reviewed external URL, not both.");
@@ -118,6 +140,16 @@ export async function createMediaAsset(formData: FormData) {
 
   try {
     await withSerializableTransactionRetry(async tx => {
+      // Recheck inside the serializable transaction: an appeal could have
+      // closed between form display, upload validation and record creation.
+      if (appealId) {
+        const currentAppeal = await tx.appeal.findUnique({
+          where: { id: appealId }, select: { id: true, status: true },
+        });
+        if (!currentAppeal || !PREPARABLE_APPEAL_STATUSES.has(currentAppeal.status)) {
+          throw new Error("Appeal is not available for an image upload.");
+        }
+      }
       if (identityImage) {
         // Predicate-read the current identity set before demotion. Under
         // PostgreSQL SERIALIZABLE this makes concurrent identity creations for
@@ -146,7 +178,7 @@ export async function createMediaAsset(formData: FormData) {
           height: uploaded?.height ?? null,
           sortOrder: displayOrder,
           isPublic: false,
-          ...target,
+          ...mediaTarget,
         },
       });
 

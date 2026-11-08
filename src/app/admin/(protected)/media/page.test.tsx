@@ -57,14 +57,14 @@ describe("Media Library empty filter feedback", () => {
       searchParams: Promise.resolve({ visibility }),
     }));
     expect(mocks.count).toHaveBeenCalledWith({ where: { isPublic: visibility === "public" } });
-    expect(html).toContain(`No ${label} media records match this filter.`);
-    expect(html).toContain('href="/admin/media">Clear filter</a>');
+    expect(html).toContain(visibility === "review" ? "No images awaiting review." : `No ${label} media records match this filter.`);
+    expect(html).toContain('href="/admin/media?visibility=all">Clear filter</a>');
     expect(html).not.toContain("No media records yet.");
   });
 
-  it("keeps the original truthful empty state for the unfiltered library", async () => {
+  it("keeps a truthful empty state for the explicit all-media archive", async () => {
     mocks.groups.mockResolvedValue([]);
-    const html = renderToStaticMarkup(await AdminMediaPage({ searchParams: Promise.resolve({}) }));
+    const html = renderToStaticMarkup(await AdminMediaPage({ searchParams: Promise.resolve({ visibility: "all" }) }));
     expect(mocks.count).toHaveBeenCalledWith({ where: undefined });
     expect(html).toContain("No media records yet.");
     expect(html).not.toContain("Clear filter");
