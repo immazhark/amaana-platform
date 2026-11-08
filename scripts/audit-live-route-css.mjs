@@ -11,25 +11,33 @@ function attr(attributes, name) {
   return null;
 }
 
-/** Links inside HTML template contents are inert until a script adopts them.
- * Keep a lightweight quote-aware tag scan so nested or unclosed templates do
- * not inflate initial rendered stylesheet attribution.
+/** Tokenize tags once so attribute text cannot open comments or inert bodies.
+ * This audit observes script-enabled HTML; template and noscript links are inert.
  */
-function withoutInertTemplates(markup) {
-  const tags = /<(\/?)([a-z][a-z0-9:_-]*)(?=[\t\n\f\r />])((?:[^"'<>]|"[^"]*"|'[^']*')*)>/gi;
-  let depth = 0;
-  let from = 0;
-  let visible = "";
-  for (const match of markup.matchAll(tags)) {
-    if (match[2].toLowerCase() !== "template") continue;
-    if (match[1]) {
-      if (depth && --depth === 0) from = match.index + match[0].length;
-    } else {
-      if (depth === 0) visible += markup.slice(from, match.index);
-      depth += 1;
+function* activeOpeningTags(markup) {
+  const tags = /<!--[\s\S]*?(?:-->|$)|<(\/?)([a-z][a-z0-9:_-]*)(?=[\t\n\f\r />])((?:[^"'<>]|"[^"]*"|'[^']*')*)>/gi;
+  const rawNames = new Set(["script", "style", "title", "textarea", "xmp", "noembed", "noframes", "noscript"]);
+  let templateDepth = 0;
+  let match;
+  while ((match = tags.exec(markup)) !== null) {
+    if (match[0].startsWith("<!--")) continue;
+    const name = match[2].toLowerCase();
+    if (name === "template") {
+      if (match[1]) templateDepth = Math.max(0, templateDepth - 1);
+      else templateDepth += 1;
+      continue;
     }
+    if (match[1]) continue;
+    if (rawNames.has(name)) {
+      const closing = new RegExp(`</${name}\\s*>`, "gi");
+      closing.lastIndex = tags.lastIndex;
+      const end = closing.exec(markup);
+      if (!end) return;
+      tags.lastIndex = closing.lastIndex;
+      continue;
+    }
+    if (templateDepth === 0) yield [match[0], name, match[3]];
   }
-  return depth ? visible : visible + markup.slice(from);
 }
 
 /** Resolve same-origin Next CSS referenced by rendered public HTML. */
@@ -38,16 +46,7 @@ export function stylesheetsInHtml(html, origin = ORIGIN) {
   const site = new URL(origin);
   if (!/^https?:$/.test(site.protocol) || site.username || site.password) throw new Error("Origin must use HTTP(S) without credentials");
   const unique = new Set();
-  // Commented-out (including unterminated) links are not rendered resources.
-  // Raw-text/RCDATA bodies cannot contain active stylesheet links.
-  // Stop at the matching closing element so later genuine links remain visible.
-  const renderedMarkup = withoutInertTemplates(html.replace(/<!--[\s\S]*?(?:-->|$)/g, "")
-    // This audit measures the script-enabled page, not no-JS fallbacks.
-    .replace(/<(script|style|title|textarea|xmp|noembed|noframes|noscript)(?=[\t\n\f\r />])[^>]*>[\s\S]*?(?:<\/\1\s*>|$)/gi, ""));
-  // Consume every complete opening tag, including quoted attributes, so a
-  // link-shaped attribute value cannot become a standalone resource tag.
-  const tags = /<([a-z][a-z0-9:_-]*)(?=[\t\n\f\r />])((?:[^"'<>]|"[^"]*"|'[^']*')*)>/gi;
-  for (const match of renderedMarkup.matchAll(tags)) {
+  for (const match of activeOpeningTags(html)) {
     if (match[1].toLowerCase() !== "link") continue;
     const rel = attr(match[2], "rel");
     const raw = attr(match[2], "href");

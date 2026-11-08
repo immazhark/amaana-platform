@@ -54,7 +54,7 @@ function view(props = original) {
   visit(root);
   hooks.pending.splice(0).forEach(effect => effect());
   const status = elements.find(element => element.props.role === "status");
-  const copy = elements.find(element => element.type === "button" && element.props.children === "Copy link");
+  const copy = elements.find(element => element.type === "button" && element.props["aria-label"] === "Copy link");
   if (!status || !copy || typeof copy.props.onClick !== "function") throw new Error("Expected sharing controls");
   return { feedback: status.props.children, copy: copy.props.onClick as () => void };
 }
