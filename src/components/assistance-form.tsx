@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { type FormEvent, type ReactNode, useRef, useState } from "react";
+import { type FormEvent, type ReactNode, useEffect, useRef, useState } from "react";
 import { privateTrackingPath } from "@/lib/private-tracking";
 import { assistanceDocumentSelectionIssue } from "@/lib/assistance-document-selection";
 import { ASSISTANCE_FIELDS as assistanceFieldOrder, classifyAssistanceResponse, UNCERTAIN_ASSISTANCE_MESSAGE, type AssistanceField, type AssistanceFieldErrors as FieldErrors } from "@/lib/assistance-feedback";
@@ -32,6 +32,7 @@ export function AssistanceForm({ copy }: { copy: AssistanceCopy }) {
   const [step, setStep] = useState<AssistanceStep>(1);
   const [maxVisitedStep, setMaxVisitedStep] = useState<AssistanceStep>(1);
   const [error, setError] = useState("");
+  const [errorFocusRequest, setErrorFocusRequest] = useState(0);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [phase, setPhase] = useState<"ready" | "submitting" | "submitted" | "followup">("ready");
   const submissionLocked = useRef(false);
@@ -56,7 +57,12 @@ export function AssistanceForm({ copy }: { copy: AssistanceCopy }) {
 
   function clearFieldError(field: AssistanceField) { setFieldErrors(current => current[field] ? { ...current, [field]: undefined } : current); }
   function firstFieldError(field: AssistanceField) { return fieldErrors[field]?.[0]; }
-  function focusErrorSummary() { requestAnimationFrame(() => errorRef.current?.focus()); }
+  // A committed error alert must exist before focus moves. A queued animation frame
+  // can run before React mounts the new alert under concurrent rendering.
+  useEffect(() => {
+    if (errorFocusRequest > 0) errorRef.current?.focus();
+  }, [errorFocusRequest]);
+  function focusErrorSummary() { setErrorFocusRequest(current => current + 1); }
 
   function focusStep(target: AssistanceStep) {
     requestAnimationFrame(() => requestAnimationFrame(() => {
