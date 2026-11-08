@@ -112,3 +112,100 @@ it("announces the evidence tab while preserving the generated private URL", asyn
   expect(mocks.evidence).toHaveBeenCalledWith("synthetic-evidence-key", "synthetic-donation");
   expect(mocks.permission).toHaveBeenCalledWith("donation.view");
 });
+
+
+describe("AF-R012 private donation-detail server authorization and reconciliation boundaries", () => {
+  it("rejects a viewer without donation.view before querying a private record", async () => {
+    mocks.permission.mockRejectedValueOnce(new Error("Permission denied: donation.view"));
+    await expect(renderDonation()).rejects.toThrow("Permission denied: donation.view");
+    expect(mocks.permission).toHaveBeenCalledWith("donation.view");
+    expect(mocks.findDonation).not.toHaveBeenCalled();
+    expect(mocks.canReconcile).not.toHaveBeenCalled();
+    expect(mocks.evidence).not.toHaveBeenCalled();
+  });
+
+  it("does not generate a private evidence URL for an unavailable donation", async () => {
+    mocks.findDonation.mockResolvedValueOnce(null);
+    await expect(renderDonation()).rejects.toThrow("Not found");
+    expect(mocks.permission).toHaveBeenCalledWith("donation.view");
+    expect(mocks.findDonation).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: "synthetic-donation" },
+    }));
+    expect(mocks.canReconcile).not.toHaveBeenCalled();
+    expect(mocks.evidence).not.toHaveBeenCalled();
+  });
+
+  it("keeps a view-only operator from verifying a pending direct UPI claim", async () => {
+    mocks.findDonation.mockResolvedValueOnce(donation({
+      status: "PENDING_VERIFICATION",
+      paymentMethod: "DIRECT_UPI",
+    }));
+    const html = await renderDonation();
+    expect(html).toContain("Your account can view this record but cannot reconcile donations.");
+    expect(html).not.toContain("Verify received transfer");
+    expect(html).not.toContain("Reject claim");
+    expect(mocks.canReconcile).toHaveBeenCalledWith({ id: "synthetic-viewer" }, "donation.reconcile");
+  });
+
+  it("renders the existing reconciliation form only for permitted pending direct claims", async () => {
+    mocks.canReconcile.mockReturnValueOnce(true);
+    mocks.findDonation.mockResolvedValueOnce(donation({
+      status: "PENDING_VERIFICATION",
+      paymentMethod: "BANK_TRANSFER",
+    }));
+    const html = await renderDonation();
+    expect(html).toContain("Verify received transfer");
+    expect(html).toContain("Reject claim");
+    expect(html).toContain('name="donationId"');
+    expect(html).toContain("Verify against Amaana");
+    expect(mocks.evidence).not.toHaveBeenCalled();
+  });
+
+  it("does not expose a second reconciliation action for a captured direct transfer", async () => {
+    mocks.canReconcile.mockReturnValueOnce(true);
+    mocks.findDonation.mockResolvedValueOnce(donation({
+      status: "CAPTURED",
+      paymentMethod: "DIRECT_UPI",
+    }));
+    const html = await renderDonation();
+    expect(html).toContain("Payment events");
+    expect(html).not.toContain("Verify received transfer");
+    expect(html).not.toContain("Reject claim");
+    expect(html).not.toContain('name="donationId"');
+  });
+
+  it("never offers direct-transfer reconciliation controls to a Razorpay record", async () => {
+    mocks.canReconcile.mockReturnValueOnce(true);
+    mocks.findDonation.mockResolvedValueOnce(donation({
+      status: "PENDING_VERIFICATION",
+      paymentMethod: "RAZORPAY",
+    }));
+    const html = await renderDonation();
+    expect(html).toContain("Payment events");
+    expect(html).not.toContain("Verify received transfer");
+    expect(html).not.toContain("Reject claim");
+    expect(mocks.evidence).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when private evidence has no approved signed URL", async () => {
+    mocks.findDonation.mockResolvedValueOnce(donation({
+      transferEvidenceKey: "synthetic-private-evidence",
+    }));
+    mocks.evidence.mockResolvedValueOnce(null);
+    const html = await renderDonation();
+    expect(html).toContain("Not supplied");
+    expect(html).not.toContain("Open private evidence");
+    expect(html).not.toContain("synthetic-private-evidence");
+    expect(mocks.evidence).toHaveBeenCalledWith("synthetic-private-evidence", "synthetic-donation");
+  });
+
+  it("does not render an unsigned evidence fallback when URL signing fails", async () => {
+    mocks.findDonation.mockResolvedValueOnce(donation({
+      transferEvidenceKey: "synthetic-private-evidence",
+    }));
+    mocks.evidence.mockRejectedValueOnce(new Error("Private evidence unavailable"));
+    await expect(renderDonation()).rejects.toThrow("Private evidence unavailable");
+    expect(mocks.permission).toHaveBeenCalledWith("donation.view");
+    expect(mocks.evidence).toHaveBeenCalledWith("synthetic-private-evidence", "synthetic-donation");
+  });
+});

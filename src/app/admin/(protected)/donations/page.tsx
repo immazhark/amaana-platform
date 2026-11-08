@@ -180,7 +180,7 @@ export default async function DonationsPage({ searchParams }: Props) {
           <td>{formatINR(donation.amount.toNumber())}</td>
           <td>{formatINR(donation.refundedAmount.toNumber())}</td>
           <td><span className="status-badge">{donation.status}</span></td>
-          <td>{donation.createdAt.toLocaleDateString("en-IN")}</td>
+          <td>{donation.createdAt.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })}</td>
         </tr>)}</tbody>
       </table>
       {donations.length === 0 && <p className="empty-state">No donations match this view.</p>}
