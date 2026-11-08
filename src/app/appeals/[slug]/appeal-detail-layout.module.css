@@ -14,7 +14,7 @@
 }
 .section .fundingPanel > div{min-width:0}
 .metric{display:grid;gap:.35rem;min-width:0}
-.metric > span{color:#58677c;font-size:.82rem;font-weight:700;line-height:1.4}
+.metric > span{color:#33445b;font-size:.82rem;font-weight:700;line-height:1.4}
 .metric > strong{
   display:block;color:#172b47;
   font-family:var(--af-font-display);
@@ -23,17 +23,17 @@
   font-variant-numeric:tabular-nums;
   white-space:normal!important;overflow-wrap:normal!important;
 }
-.metric > small{display:block;color:#4d5e76;font-size:.9rem;line-height:1.5}
+.metric > small{display:block;color:#33445b;font-size:.9rem;line-height:1.5}
 .progressArea{display:grid;gap:.65rem;min-width:0}
 .progressHeader{display:flex;align-items:baseline;justify-content:space-between;gap:.5rem;min-width:0}
 .progressHeader > span{color:#465975;font-size:.85rem;font-weight:700}
 .progressHeader > strong{color:#172b47;font-size:1.05rem;font-weight:800;font-variant-numeric:tabular-nums}
 .progressArea :global(.v2-appeal-progress){height:.65rem;border-radius:999px;overflow:hidden;background:#e5e9ef}
 .progressArea :global(.v2-appeal-progress) > span{height:100%;border-radius:999px;background:#466faa}
-.progressArea > p{margin:0;color:#58677c;font-size:.83rem;line-height:1.45}
+.progressArea > p{margin:0;color:#33445b;font-size:.83rem;line-height:1.45}
 .actionArea{display:grid;gap:.65rem;min-width:0}
 .actionArea .donateButton{margin:0;display:inline-flex;min-height:3.2rem;width:100%;font-size:1rem;font-weight:750;text-align:center}
-.actionArea :global(.v2-appeal-secure-note){margin:0;color:#4d5e76;font-size:.82rem;line-height:1.5}
+.actionArea :global(.v2-appeal-secure-note){margin:0;color:#33445b;font-size:.82rem;line-height:1.5}
 @media(max-width:1050px){
   .section .fundingPanel:global(.v2-appeal-donation-panel){grid-template-columns:repeat(2,minmax(0,1fr))}
   .actionArea{grid-column:1/-1}
@@ -42,4 +42,17 @@
   .section .fundingPanel:global(.v2-appeal-donation-panel){grid-template-columns:minmax(0,1fr);gap:1rem;padding:1.15rem}
   .actionArea{grid-column:auto}
   .metric > strong{font-size:clamp(2rem,8vw,2.6rem)}
+}
+
+/* Browser acceptance: closed-state text on the ivory funding card must
+ * remain readable. The legacy appeal style used white ink on a dark card. */
+.actionArea :global(.v2-appeal-closed){
+  margin:0;
+  padding:.85rem 1rem;
+  border:1px solid #95aac4;
+  border-radius:.75rem;
+  background:#eef3fa;
+  color:#172b47;
+  font-weight:700;
+  text-align:center;
 }

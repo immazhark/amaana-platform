@@ -39,6 +39,9 @@ for (const width of [390, 1280]) {
     expect(focus.innerOutline).toBe("none");
     expect(focus.outerFocus).not.toBe("none");
 
+    // The reviewed-landing fixture intentionally has bank: null. Test direct
+    // transfer controls on the dedicated isolated fixture with a bank.
+    expect((await page.goto("/browser-acceptance/direct-donation", { waitUntil: "load" }))?.ok()).toBe(true);
     await page.getByRole("button", { name: "Bank transfer" }).click();
     await checkIntentCards();
     for (const name of ["Copy account number", "Copy IFSC"]) {
