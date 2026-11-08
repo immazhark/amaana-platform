@@ -86,3 +86,12 @@
   outline: 3px solid var(--af-color-focus);
   outline-offset: 2px;
 }
+
+/* WCAG AAA small-text ink for administrative links on pale controls.
+ * The approved brand blue #466FAA is reserved for large text and accents. */
+.accessibleLink {
+  color: #244c82 !important;
+  text-decoration: underline;
+  text-underline-offset: .16em;
+}
+.accessibleLink:focus-visible { outline: 3px solid #466faa; outline-offset: 3px; }

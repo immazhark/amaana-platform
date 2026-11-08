@@ -135,7 +135,7 @@ export default async function AdminMediaPage({ searchParams }: Props) {
             {stories.length > 0 && <optgroup label="Stories">{stories.map(item => <option key={item.id} value={`story:${item.id}`}>{item.title}</option>)}</optgroup>}
             {faith.length > 0 && <optgroup label="Faith & Reflections">{faith.map(item => <option key={item.id} value={`faith:${item.id}`}>{item.title}</option>)}</optgroup>}
           </select>
-          <small>For an appeal: upload here, complete privacy approval, then copy the approved image URL. This does not set the cover or publish an appeal automatically. Already-published appeals require a separate reviewed cover change. <Link href="/admin/appeals" className="inline-link">Manage appeals</Link>.</small>
+          <small>For an appeal: upload here, complete privacy approval, then copy the approved image URL. This does not set the cover or publish an appeal automatically. Already-published appeals require a separate reviewed cover change. <Link href="/admin/appeals" className={`inline-link ${styles.accessibleLink}`}>Manage appeals</Link>.</small>
         </div>
         <div className="field">
           <label htmlFor="kind">Media type</label>
@@ -176,7 +176,7 @@ export default async function AdminMediaPage({ searchParams }: Props) {
         <Link href="/admin/media?visibility=all" aria-current={selectedVisibility === "all" ? "page" : undefined}>All media</Link>
       </nav>
       <p className="muted">Review images before public use. Published images are retained in the archive; uploading never means publication.</p>
-      {assets.length === 0 ? <p className="empty-state">{selectedVisibility === "review" ? "No images awaiting review." : selectedVisibility === "public" ? "No public media records match this filter." : "No media records yet."} {selectedVisibility !== "all" && <Link className="inline-link" href="/admin/media?visibility=all">Clear filter</Link>}</p> : <div className={styles.library}>{assets.map(asset => {
+      {assets.length === 0 ? <p className="empty-state">{selectedVisibility === "review" ? "No images awaiting review." : selectedVisibility === "public" ? "No public media records match this filter." : "No media records yet."} {selectedVisibility !== "all" && <Link className={`inline-link ${styles.accessibleLink}`} href="/admin/media?visibility=all">Clear filter</Link>}</p> : <div className={styles.library}>{assets.map(asset => {
         const review = latestReview.get(asset.id);
         return <article className="admin-media-item" key={asset.id}>
           <div className="admin-media-summary"><div><span className="status-badge">{asset.isPublic ? "PUBLIC" : "PRIVATE REVIEW"}</span>{asset.kind === "IMAGE" && asset.sortOrder === IDENTITY_MEDIA_SORT_ORDER ? <span className="status-badge">IDENTITY HERO</span> : null}<small>{asset.kind.replaceAll("_", " ")} · {asset.sourceYear ?? "year not set"}</small></div><h3>{asset.title || asset.altText || asset.sourcePath || "Untitled media"}</h3><p>{targetLabel(asset)}</p>{asset.publicUrl && asset.isPublic ? <><a href={asset.publicUrl} target="_blank" rel="noreferrer">Open public asset ↗<span className="sr-only"> (opens in a new tab)</span></a><small className={styles.url}>{asset.publicUrl}</small></> : <small>Private review: the image URL is not publicly accessible until approved.</small>}
