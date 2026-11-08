@@ -1,4 +1,4 @@
-import { beforeEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
 const mocks = vi.hoisted(() => ({ permission: vi.fn(), allowed: vi.fn(), request: vi.fn(), staff: vi.fn(), history: vi.fn() }));
@@ -34,4 +34,55 @@ it("announces the new tab for each private document without changing its destina
   expect(anchor).toContain('target="_blank"');
   expect(anchor).toContain('rel="noreferrer"');
   expect(anchor).toContain('Synthetic evidence.pdf<span class="sr-only"> (opens in a new tab)</span>');
+});
+
+afterEach(() => vi.unstubAllEnvs());
+
+
+describe("admin assistance review India-local timeline", () => {
+  const midnight = new Date("2026-12-31T18:30:00.000Z");
+  const afterMidnight = new Date("2026-12-31T18:35:00.000Z");
+
+  it.each([
+    ["2026-12-31T18:29:59.000Z", "31 December 2026"],
+    ["2026-12-31T18:30:00.000Z", "1 January 2027"],
+    ["2026-12-31T18:35:00.000Z", "1 January 2027"],
+  ])("renders the assistance request's received calendar day in IST for %s", async (iso, expected) => {
+    vi.stubEnv("TZ", "UTC");
+    const item = await mocks.request();
+    mocks.request.mockResolvedValueOnce({ ...item, createdAt: new Date(iso) });
+
+    const html = await render();
+
+    expect(html).toContain("received " + expected);
+  });
+
+  it("displays the verification completion timestamp on the correct IST date", async () => {
+    vi.stubEnv("TZ", "UTC");
+    const item = await mocks.request();
+    mocks.request.mockResolvedValueOnce({
+      ...item,
+      verification: { ...item.verification, completedAt: midnight },
+    });
+
+    const html = await render();
+
+    expect(html).toContain("Completed 1/1/2027");
+    expect(html).toContain("Synthetic reviewer");
+  });
+
+  it("displays the audit history timestamp on the correct IST date", async () => {
+    vi.stubEnv("TZ", "UTC");
+    mocks.history.mockResolvedValueOnce([{
+      id: "synthetic-event",
+      action: "synthetic_reviewed",
+      createdAt: afterMidnight,
+      actor: { name: "Synthetic actor" },
+    }]);
+
+    const html = await render();
+
+    expect(html).toContain("Synthetic actor · 1/1/2027");
+    expect(html).not.toContain("Synthetic actor · 31/12/2026");
+  });
 });
