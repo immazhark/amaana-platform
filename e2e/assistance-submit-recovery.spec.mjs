@@ -90,3 +90,29 @@ test("rapid assistance submit events issue only one request", async ({ page }) =
   await expect(page.getByRole("button", { name: "Follow-up required", exact: true })).toBeDisabled();
   expect(calls).toBe(1);
 });
+
+
+test("uncertain assistance alert receives focus after React commit even when an animation frame is unavailable", async ({ page }) => {
+  await page.route("**/api/assistance", route => route.fulfill({
+    status: 201,
+    contentType: "application/json",
+    body: JSON.stringify({ referenceNumber: {}, trackingToken: {} }),
+  }));
+  await prepare(page);
+
+  // Deliberately remove the animation frame that formerly carried error focus.
+  // The error is rendered by React, so focus must be requested after its DOM commit.
+  await page.evaluate(() => {
+    const original = window.requestAnimationFrame.bind(window);
+    window.requestAnimationFrame = () => -1;
+    window.setTimeout(() => { window.requestAnimationFrame = original; }, 5000);
+  });
+  await page.locator("form.v2-assistance-form").evaluate(form => form.requestSubmit());
+
+  const error = page.locator('.v2-assistance-form .form-error[role="alert"]');
+  await expect(error).toContainText("Your request may already be recorded");
+  await expect(error).toBeFocused();
+  await expect(page.getByRole("button", { name: "Follow-up required", exact: true })).toBeDisabled();
+  await expect(page.locator('input[name="applicantName"]')).toHaveValue("Synthetic Recovery Applicant");
+  await expect(page.locator('input[name="consent"]')).toBeChecked();
+});
