@@ -49,7 +49,7 @@ export default async function AdminMediaPage({ searchParams }: Props) {
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
   const assets = await prisma.mediaAsset.findMany({
     where,
-    include: { cause: true, initiative: true, story: true, faithContent: true },
+    include: { cause: { select: { title: true } }, initiative: { select: { title: true } }, story: { select: { title: true } }, faithContent: { select: { title: true } } },
     orderBy: [{ isPublic: "asc" }, { sourceYear: "desc" }, { sortOrder: "asc" }, { createdAt: "desc" }, { id: "desc" }],
     skip: pagination.skip,
     take: pagination.pageSize,
