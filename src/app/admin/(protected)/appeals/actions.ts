@@ -1,5 +1,6 @@
 "use server";
 
+import type { AdminActionFeedback } from "../requests/[id]/actions";
 import { AppealCategory, AppealStatus } from "@prisma/client";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { getAppealConsentContentIssues, getFirstPublicationIssues, goalMatchesApprovedPublicTarget } from "@/lib/appeal-publication";
@@ -200,4 +201,94 @@ export async function unpublishAppealUpdate(formData: FormData) {
     await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.update_unpublished", entityType: "Appeal", entityId: appealId, metadata: { updateId } } });
   });
   revalidatePath(`/admin/appeals/${appealId}`); revalidatePath("/appeals"); revalidatePath(`/appeals/${appeal.slug}`);
+}
+
+// Only deterministic form-rule messages may cross the server-action boundary.
+const recoverableAppealMessages = [
+  "Appeal edit version is missing or invalid. Refresh before editing.",
+  "Complete all required appeal fields",
+  "Cover image URL must be a safe HTTPS or root-relative public media URL",
+  "Published appeal content cannot be edited in this workflow",
+  "Appeal goal must match the approved public fundraising target",
+  "This appeal changed while you were reviewing it. Refresh before editing content.",
+  "Appeal workflow version is missing or invalid. Refresh before changing status.",
+  "Invalid appeal status transition",
+  "Approval permission is required",
+  "This appeal changed while you were reviewing it. Refresh before changing status.",
+  "Appeal goal must be a positive rupee amount with no more than two decimal places",
+  "Appeal goal must be a positive amount no greater than ₹9,999,999,999.99",
+  "A public beneficiary name requires explicit public-name consent.",
+  "A beneficiary-related cover image cannot be used when photo/media consent is not allowed.",
+  "Appeal goal must match the approved public fundraising target.",
+  "Cover image must reference an image from the approved Media review library.",
+  "Appeal cover media must be an image.",
+  "Appeal cover media must still be public and privacy-approved.",
+  "Appeal cover media must have a public delivery URL.",
+  "Appeal cover media needs a recorded structured privacy review.",
+  "Appeal cover media must have GREEN public-use classification.",
+  "Appeal cover media must be approved for website use.",
+  "Appeal cover media must have confirmed provenance.",
+  "Appeal cover media cannot contain private documents or private data.",
+  "Appeal cover media needs recorded child and patient privacy checks.",
+  "Identifiable child or patient cover media requires documented publication consent.",
+  "Appeal cover media consent does not permit general website use.",
+  "Appeal cover media requires explicit Hero use approved review.",
+  "Need must be confirmed.",
+  "Supporting evidence must be reviewed.",
+  "Verified need amount must be recorded.",
+  "Approved public target must be recorded.",
+  "Approved public target cannot exceed the verified need amount.",
+  "Payment destination must be confirmed.",
+  "Other funding or duplicate fundraising must be checked.",
+  "Verification summary is required.",
+  "Verification decision must approve a public appeal.",
+  "Public-name consent must be resolved.",
+  "Photo/media consent must be resolved, including not applicable when no beneficiary image will be used.",
+  "Medical-detail disclosure consent must be resolved, including not applicable where irrelevant.",
+  "Institution/hospital naming consent must be resolved, including not applicable where irrelevant.",
+  "Public archive consent must be resolved.",
+  "Zakat review must be recorded as eligible, not eligible, or not applicable.",
+  "Verification must be formally completed.",
+  "Verification record is required."
+] as const;
+
+function recoverableAppealMessage(error: unknown): string | null {
+  if (!(error instanceof Error) || error.message.length > 4000) return null;
+  const prefix = "Appeal cannot be published: ";
+  let remaining = error.message.startsWith(prefix) ? error.message.slice(prefix.length) : error.message;
+  if (!remaining) return null;
+  while (remaining) {
+    const match = recoverableAppealMessages.find(message => remaining === message || remaining.startsWith(`${message} `));
+    if (!match) return null;
+    remaining = remaining.slice(match.length).trimStart();
+  }
+  return error.message || null;
+}
+
+export async function updateAppealWithFeedback(
+  _previous: AdminActionFeedback, data: FormData,
+): Promise<AdminActionFeedback> {
+  await requirePermission("appeal.update");
+  try {
+    await updateAppeal(data);
+    return { kind: "success", message: "Appeal content saved." };
+  } catch (error) {
+    const message = recoverableAppealMessage(error);
+    if (message === null) throw error;
+    return { kind: "error", message };
+  }
+}
+
+export async function transitionAppealWithFeedback(
+  _previous: AdminActionFeedback, data: FormData,
+): Promise<AdminActionFeedback> {
+  await requirePermission("appeal.update");
+  try {
+    await transitionAppeal(data);
+    return { kind: "success", message: "Appeal status saved." };
+  } catch (error) {
+    const message = recoverableAppealMessage(error);
+    if (message === null) throw error;
+    return { kind: "error", message };
+  }
 }
