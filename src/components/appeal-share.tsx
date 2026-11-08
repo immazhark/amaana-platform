@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { CopyIcon, MessageIcon, ShareIcon } from "./donation-interface-icons";
+import styles from "./appeal-share.module.css";
 
 type AppealShareProps = { title: string; summary: string; path: string };
 type ShareData = { title: string; summary: string; url: string };
@@ -56,22 +58,21 @@ export function AppealShare({ title, summary, path }: AppealShareProps) {
   }
 
   return (
-    <div className="v2-appeal-share" role="group" aria-label="Share this appeal">
-      <div>
+    <div className={`v2-appeal-share ${styles.card}`} role="group" aria-label="Share this appeal">
+      <div className={styles.intro}>
         <span className="v2-section-label">Share responsibly</span>
         <p>Help someone support this verified appeal.</p>
       </div>
-      <div className="v2-appeal-share-actions">
-        <button type="button" className="v2-text-link" onClick={() => void act("share")}>Share appeal ↗</button>
-        <a className="v2-text-link" href={whatsappUrl} target="_blank" rel="noopener noreferrer"
-          onClick={() => { actionId.current++; updateStatus(""); }}>WhatsApp ↗ <span className="sr-only">(opens in a new tab)</span></a>
-        <button type="button" className="v2-text-link" onClick={() => void act("copy")}>Copy link</button>
+      <div className={`v2-appeal-share-actions ${styles.actions}`}>
+        <button type="button" className={styles.action} onClick={() => void act("share")}><ShareIcon/><span>Share appeal</span></button>
+        <a className={styles.action} href={whatsappUrl} target="_blank" rel="noopener noreferrer"
+          onClick={() => { actionId.current++; updateStatus(""); }}><MessageIcon/><span>WhatsApp</span><span className="sr-only">(opens in a new tab)</span></a>
+        <button type="button" className={styles.action} onClick={() => void act("copy")}><CopyIcon/><span>Copy link</span></button>
       </div>
-      <p className="v2-appeal-share-status" role="status">{status}</p>
+      <p className={`v2-appeal-share-status ${styles.status}`} role="status" aria-live="polite">{status}</p>
       {status === copyError && (
-        <input readOnly aria-label="Appeal URL to copy manually"
-          value={canonicalUrl} onFocus={event => event.currentTarget.select()}
-          style={{ width: "100%" }}/>
+        <input readOnly aria-label="Appeal URL to copy manually" className={styles.fallback}
+          value={canonicalUrl} onFocus={event => event.currentTarget.select()}/>
       )}
     </div>
   );
