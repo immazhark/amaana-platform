@@ -19,8 +19,11 @@ function requiredText(value: FormDataEntryValue | null, field: string, max: numb
 function optionalReviewDate(value: FormDataEntryValue | null) {
   const raw = String(value ?? "").trim();
   if (!raw) return null;
+  if (!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(raw)) throw new Error("Invalid review date");
   const date = new Date(`${raw}T00:00:00.000Z`);
-  if (Number.isNaN(date.getTime())) throw new Error("Invalid review date");
+  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== raw) {
+    throw new Error("Invalid review date");
+  }
   return date.toISOString();
 }
 
