@@ -86,3 +86,26 @@ it("does not advertise a reserved URL on an unpublished media record", async () 
   }
   expect(html).toContain("Private review: the image URL is not publicly accessible until approved.");
 });
+
+it("selects only linked content titles for media cards", async () => {
+  mocks.assets.mockResolvedValue([{
+    ...assets[0],
+    initiative: { title: "Synthetic linked initiative" },
+    story: null,
+    cause: null,
+    faithContent: null,
+  }]);
+
+  const html = renderToStaticMarkup(await AdminMediaPage({ searchParams: Promise.resolve({}) }));
+
+  expect(mocks.permission).toHaveBeenCalledWith("content.view");
+  expect(mocks.assets).toHaveBeenCalledWith(expect.objectContaining({
+    include: {
+      cause: { select: { title: true } },
+      initiative: { select: { title: true } },
+      story: { select: { title: true } },
+      faithContent: { select: { title: true } },
+    },
+  }));
+  expect(html).toContain("Synthetic linked initiative");
+});
