@@ -67,7 +67,7 @@ export function AppealShare({ title, summary, path }: AppealShareProps) {
         <button type="button" className={styles.action} onClick={() => void act("share")}><ShareIcon/><span>Share appeal</span></button>
         <a className={styles.action} href={whatsappUrl} target="_blank" rel="noopener noreferrer"
           onClick={() => { actionId.current++; updateStatus(""); }}><MessageIcon/><span>WhatsApp</span><span className="sr-only">(opens in a new tab)</span></a>
-        <button type="button" className={styles.action} onClick={() => void act("copy")}><CopyIcon/><span>Copy link</span></button>
+        <button type="button" className={styles.action} aria-label="Copy link" onClick={() => void act("copy")}><CopyIcon/><span>Copy link</span></button>
       </div>
       <p className={`v2-appeal-share-status ${styles.status}`} role="status" aria-live="polite">{status}</p>
       {status === copyError && (
