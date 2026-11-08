@@ -136,3 +136,47 @@ describe("retention review-after date on non-India servers", () => {
     }
   });
 });
+
+describe("private retention page authorization precedes all evidence queries", () => {
+  it.each([
+    { caseName: "anonymous", message: "Authentication required", params: {} },
+    { caseName: "wrong role in eligible view", message: "Permission denied", params: { state: "eligible" } },
+    { caseName: "expired session in active view", message: "Session expired", params: { state: "active", page: "2" } },
+    { caseName: "revoked reviewer on later page", message: "Access revoked", params: { page: "3" } },
+    { caseName: "malformed filter", message: "Authentication required", params: { state: "unrecognized", page: "-9" } },
+    { caseName: "far-page query", message: "Permission denied", params: { state: "eligible", page: "999999" } },
+  ])("blocks $caseName before database access", async ({ message, params }) => {
+    mocks.permission.mockRejectedValueOnce(new Error(message));
+
+    await expect(RetentionReviewPage({ searchParams: Promise.resolve(params) })).rejects.toThrow(message);
+
+    expect(mocks.permission).toHaveBeenCalledExactlyOnceWith("assistance.approve");
+    expect(mocks.count).not.toHaveBeenCalled();
+    expect(mocks.documents).not.toHaveBeenCalled();
+    expect(mocks.events).not.toHaveBeenCalled();
+  });
+
+  it("does not start any private query while permission verification is pending", async () => {
+    let grantPermission: ((value: { id: string }) => void) | undefined;
+    const pendingPermission = new Promise<{ id: string }>(resolve => {
+      grantPermission = resolve;
+    });
+    mocks.permission.mockReturnValueOnce(pendingPermission);
+    mocks.documents.mockResolvedValue([]);
+
+    const render = RetentionReviewPage({ searchParams: Promise.resolve({ state: "eligible" }) });
+
+    expect(mocks.count).not.toHaveBeenCalled();
+    expect(mocks.documents).not.toHaveBeenCalled();
+    expect(mocks.events).not.toHaveBeenCalled();
+
+    if (!grantPermission) throw new Error("Permission test promise was not initialised");
+    grantPermission({ id: "synthetic-reviewer" });
+    await render;
+
+    expect(mocks.permission).toHaveBeenCalledExactlyOnceWith("assistance.approve");
+    expect(mocks.count).toHaveBeenCalledTimes(3);
+    expect(mocks.documents).toHaveBeenCalledTimes(1);
+    expect(mocks.events).not.toHaveBeenCalled();
+  });
+});
