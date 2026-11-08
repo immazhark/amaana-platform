@@ -1,0 +1,23 @@
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: clamp(1.5rem, 4vw, 4rem);
+  align-items: start;
+}
+.story { display: grid; gap: 2rem; min-width: 0; }
+.storyText { white-space: pre-line; line-height: 1.8; overflow-wrap: anywhere; }
+.support { min-width: 0; padding: clamp(1rem, 3vw, 2rem); border: 1px solid var(--af-color-border); border-radius: 1rem; background: var(--af-color-surface); scroll-margin-top: 8rem; }
+.note { font-size: .9375rem; line-height: 1.7; }
+.update { padding-block: 1rem; border-bottom: 1px solid var(--af-color-border); }
+.progress { height: .75rem; overflow: hidden; border-radius: 1rem; background: var(--af-color-surface-muted); }
+.progress > span { display: block; height: 100%; background: #466faa; }
+@media (max-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .support { grid-row: 1; }
+}
+
+/* Keep enhanced small-text contrast in the new reviewed appeal without changing
+ * the global light-surface label palette (6.74:1 on ivory). */
+.support :global(.v2-amount-field) label > span {
+  color: var(--af-color-gold-ink) !important;
+}

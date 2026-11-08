@@ -15,6 +15,7 @@ import { normalizeSafePublicMediaUrl } from "@/lib/public-media";
 import { openGraphShareImages, twitterShareImages } from "@/lib/social-share-media";
 import { formatINR, isAppealOpenForDonations } from "@/lib/appeals";
 import { getAppealCoverMedia, getAppealPageData } from "@/lib/public-page-data";
+import fundingStyles from "./appeal-detail-layout.module.css";
 
 type Props = { params: Promise<{ slug: string }> };
 export const dynamic = "force-dynamic";
@@ -40,7 +41,9 @@ export default async function AppealDetailPage({ params }: Props) {
   const coverMedia = await getAppealCoverMedia(coverUrl);
   const raised = appeal.amountRaised.toNumber();
   const goal = appeal.goalAmount.toNumber();
-  const progress = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
+  // Show actual small progress: ₹500 of ₹5,00,000 is 0.1%, not 0%.
+  const progress = goal > 0 ? Math.min(100, Math.round((raised / goal) * 1_000) / 10) : 0;
+  const progressLabel = raised > 0 && progress === 0 ? "Less than 0.1%" : `${progress}%`;
   const isOpen = isAppealOpenForDonations(appeal);
   const highlySensitive = confidentialityLevel === "HIGHLY_SENSITIVE";
   const shareCopy = publicAppealShareCopy(appeal.title, appeal.summary, highlySensitive);
@@ -58,7 +61,35 @@ export default async function AppealDetailPage({ params }: Props) {
         visual={coverMedia ? <PublicMedia asset={coverMedia} priority /> : <WorkVisualPlaceholder label={appeal.title} />}
       />
 
-      <section className="v2-appeal-funding-strip" aria-label="Appeal funding status"><div className="v2-shell"><aside className="v2-appeal-donation-panel" aria-describedby="appeal-payment-boundary"><div><small>Appeal progress</small><strong>{formatINR(raised)}</strong><p>raised of {formatINR(goal)}</p></div><div className="v2-appeal-funding-progress"><div className="v2-appeal-progress" role="progressbar" aria-label={`${appeal.title} funding progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress} aria-valuetext={`${formatINR(raised)} raised of ${formatINR(goal)}; ${progress}% supported`}><span style={{ width: `${progress}%` }} /></div><div className="v2-appeal-progress-foot"><span>{progress}% supported</span><span>INR · India only</span></div></div><div>{isOpen ? <Link className="v2-button v2-appeal-donate-button" href={`/donate/${appeal.slug}`}>Support this appeal</Link> : <span className="v2-appeal-closed">This appeal is closed</span>}<p className="v2-appeal-secure-note" id="appeal-payment-boundary">Domestic INR donations are processed securely through Razorpay. Amaana does not accept foreign contributions.</p></div></aside><AppealShare title={shareCopy.title} summary={shareCopy.summary} path={`/appeals/${appeal.slug}`} /></div></section>
+      <section className={`v2-appeal-funding-strip ${fundingStyles.section}`} aria-label="Appeal funding status">
+        <div className={`v2-shell ${fundingStyles.shell}`}>
+          <aside className={`v2-appeal-donation-panel ${fundingStyles.fundingPanel}`} aria-describedby="appeal-payment-boundary">
+            <div className={fundingStyles.metric}>
+              <span>Raised so far</span>
+              <strong>{formatINR(raised)}</strong>
+              <small>of {formatINR(goal)} fundraising target</small>
+            </div>
+            <div className={fundingStyles.progressArea}>
+              <div className={fundingStyles.progressHeader}>
+                <span>Fundraising progress</span><strong>{progressLabel}</strong>
+              </div>
+              <div className="v2-appeal-progress" role="progressbar" aria-label={`${appeal.title} funding progress`}
+                aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}
+                aria-valuetext={`${formatINR(raised)} raised of ${formatINR(goal)}; ${progressLabel} funded`}>
+                <span style={{ width: `${progress}%` }} />
+              </div>
+              <p>Domestic donations · INR only</p>
+            </div>
+            <div className={fundingStyles.actionArea}>
+              {isOpen
+                ? <Link className={`v2-button v2-appeal-donate-button ${fundingStyles.donateButton}`} href={`/donate/${appeal.slug}`}>Support this appeal</Link>
+                : <span className="v2-appeal-closed">This appeal is closed</span>}
+              <p className="v2-appeal-secure-note" id="appeal-payment-boundary">Secure online checkout through Razorpay. Direct UPI and bank transfers require reconciliation. Domestic Indian contributions only.</p>
+            </div>
+          </aside>
+          <AppealShare title={shareCopy.title} summary={shareCopy.summary} path={`/appeals/${appeal.slug}`} />
+        </div>
+      </section>
 
       <section className="v2-appeal-context-strip" aria-label="How this appeal is handled"><div className="v2-shell"><div><span>01</span><strong>Reviewed need</strong><small>Information assessed before publication</small></div><div><span>02</span><strong>Public-safe story</strong><small>Private proofs remain private</small></div><div><span>03</span><strong>Tracked support</strong><small>Progress stays attached to this appeal</small></div><div><span>04</span><strong>Known updates</strong><small>Only confirmed outcomes are published</small></div></div></section>
 
