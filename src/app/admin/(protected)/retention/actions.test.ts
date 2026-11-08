@@ -75,6 +75,42 @@ describe("private document retention deletion", () => {
     }));
   });
 
+  it.each([
+    "2027-02-30",
+    "2027-13-01",
+    "2027-2-03",
+  ])("rejects impossible or noncanonical review date %s before reading private evidence", async reviewAfter => {
+    const form = new FormData();
+    form.set("documentId", "doc_123");
+    form.set("decision", "RETAIN");
+    form.set("reason", "Synthetic scheduled retention review");
+    form.set("reviewAfter", reviewAfter);
+
+    await expect(reviewDocumentRetention(form)).rejects.toThrow("Invalid review date");
+    expect(mocks.requirePermission).toHaveBeenCalledWith("assistance.approve");
+    expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+    expect(mocks.createAudit).not.toHaveBeenCalled();
+    expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
+  });
+
+  it("accepts a real leap-day retention review without changing its calendar day", async () => {
+    const form = new FormData();
+    form.set("documentId", "doc_123");
+    form.set("decision", "RETAIN");
+    form.set("reason", "Synthetic future review");
+    form.set("reviewAfter", "2028-02-29");
+    await reviewDocumentRetention(form);
+    expect(mocks.createAudit).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        action: "assistance.document_retention_reviewed",
+        metadata: expect.objectContaining({
+          reviewAfter: "2028-02-29T00:00:00.000Z",
+        }),
+      }),
+    }));
+    expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
+  });
+
   it("rejects a stale hold decision without writing contradictory audit history", async () => {
     const form = new FormData();
     form.set("documentId", "doc_123");
