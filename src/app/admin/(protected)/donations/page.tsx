@@ -153,7 +153,7 @@ export default async function DonationsPage({ searchParams }: Props) {
       <ol className="history">
         {unmatchedCriticalEvents.map(event => <li key={event.id}>
           <strong>{event.eventType}</strong>
-          <span>{event.processedAt.toLocaleString("en-IN")}</span>
+          <span>{event.processedAt.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</span>
           <small>{event.providerEventId}</small>
         </li>)}
       </ol>
