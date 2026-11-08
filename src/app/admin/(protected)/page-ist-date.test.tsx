@@ -60,3 +60,28 @@ describe("assistance queue India-local received day", () => {
     expect(mocks.permission).toHaveBeenCalledWith({ id: "synthetic-operator" }, "assistance.view");
   });
 });
+
+describe("assistance queue minimum staff projection", () => {
+  it("selects only the assigned staff name for queue rows", async () => {
+    mocks.findMany.mockResolvedValueOnce([{
+      id: "synthetic-request", referenceNumber: "SYNTHETIC-RECEIVED-2",
+      applicantName: "Synthetic applicant", city: "Synthetic city",
+      category: "MEDICAL", status: "SUBMITTED",
+      assignedTo: { name: "Synthetic caseworker" }, _count: { documents: 3 },
+      createdAt: new Date("2026-11-09T00:00:00.000Z"),
+    }]);
+
+    const html = renderToStaticMarkup(await AdminQueuePage({ searchParams: Promise.resolve({}) }));
+
+    expect(mocks.user).toHaveBeenCalledOnce();
+    expect(mocks.permission).toHaveBeenCalledWith({ id: "synthetic-operator" }, "assistance.view");
+    expect(mocks.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      include: {
+        assignedTo: { select: { name: true } },
+        _count: { select: { documents: true } },
+      },
+    }));
+    expect(html).toContain("Synthetic caseworker");
+    expect(html).toContain("<td>3</td>");
+  });
+});
