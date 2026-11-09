@@ -2811,3 +2811,7 @@ Independent review PASS. Three synthetic RED failures; GREEN 18 focused tests. C
 ## 2026-11-09 IST — acknowledgement stale-response guard
 
 Actual-effect synthetic regression RED on both delayed success/failure after cleanup; GREEN four lifecycle controls plus existing date test (5/5). TypeScript, scoped lint and independent review PASS. First broad suite: 2,817 pass, 20 isolated DB skips, one unrelated source-lint configuration test exceeded its existing 5-second timeout during concurrent lint. Sequential full rerun pending; no timeout/control weakened. No token policy, API, schema or provider change. Full exact-head/browser/promotion gates required. Rollback component/test diff.
+
+## 2026-11-09 IST — direct-transfer late response navigation
+
+Extend #723 response-lifecycle batch with original form connectivity guard before success navigation. Actual extracted submit regression RED disconnected form (connected control PASS); GREEN 6 combined direct/ack lifecycle tests. One report request and retained lock asserted. Scoped lint PASS; no API/report cancellation/provider/schema/live change. Full exact-head acceptance and promotion required; rollback form/test diff.

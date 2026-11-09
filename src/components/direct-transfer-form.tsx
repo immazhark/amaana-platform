@@ -42,13 +42,14 @@ export function DirectTransferForm({ appealId, maxAmount, method, paymentDetails
   }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
     if (submissionRef.current) return;
     submissionRef.current = true;
     onLockChange(true);
     setError(""); setBusy(true);
     let posted = false;
     try {
-      const values = new FormData(event.currentTarget);
+      const values = new FormData(form);
       const evidence = values.get("evidence");
       const evidenceIssue = donationEvidenceUploadIssue(evidence instanceof File ? evidence : null);
       if (evidenceIssue) throw new Error(evidenceIssue);
@@ -84,7 +85,7 @@ export function DirectTransferForm({ appealId, maxAmount, method, paymentDetails
           typeof result.receiptToken !== "string" || !/^[A-Za-z0-9_-]{20,300}$/.test(result.receiptToken)) {
         throw new Error("uncertain");
       }
-      router.push(privateDonationAcknowledgementPath(result.referenceNumber, result.receiptToken));
+      if (form.isConnected) router.push(privateDonationAcknowledgementPath(result.referenceNumber, result.receiptToken));
     } catch (caught) {
       if (posted) {
         setUncertain(true);

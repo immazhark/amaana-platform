@@ -1,3 +1,7 @@
+## 2026-11-09 IST — CHATGPT_ACTIVE direct-transfer late navigation guard
+
+Continue existing #723 UI response-lifecycle batch: actual submit synthetic regression for successful report after original form disconnects. Preserve one submitted report and uncertainty locks; guard only late navigation. No submission cancellation, API/schema/provider change or live transfer. RED then GREEN and required exact-head acceptance.
+
 ## 2026-11-09 IST — CHATGPT_ACTIVE acknowledgement stale-response guard
 
 Sole writer on fix/acknowledgement-stale-response-20261109 from main 7fcd9f4. Synthetic actual-effect regression for delayed response after cleanup, then cancellation guard on response state writes. UI lifecycle only; no auth/token policy, API, schema or provider change. Rollback component/test diff. Exact-head acceptance required.
