@@ -2803,3 +2803,7 @@ Native hosted RED CI 42142710859 fast job 127646759686: 2620 tests passed, one n
 ## 2026-11-09 IST — capture enum review correction
 
 CHATGPT_ACTIVE sole writer continued #719 head a8f21acb96a20b44078d8576845f3b21a20dcd51. Independent review reproduced array/object enum coercion. Four new tests RED (15 existing pass), then 19/19 GREEN with primitive string guards in validIdentity/validAttempt. Complete local suite 2,785 PASS / 20 isolated DB SKIP; strict typecheck and scoped ESLint PASS after Prisma generation. Initial broad checks ran before client generation completed and failed imports; rerun after generation passed. No live records/provider/schema/handler activation. New exact-head hosted acceptance and distinct promotion still required. Next integration obligation: scoped immutable capture/exception ledger and PostgreSQL races before connecting this offline classifier to webhook posting. Public version request returned HTTP403; Railway latest foundation deployment b87fde26-f0c1-4c21-a760-0acfd79d7b26 SLEEPING at 52ef89b. No live-verification claim.
+
+## 2026-11-09 IST — capability enum correction
+
+Independent review PASS. Three synthetic RED failures; GREEN 18 focused tests. Complete local suite 2,814 PASS / 20 isolated database skips. Scoped lint PASS. No provider, schema, webhook or live activation. Exact-head hosted acceptance and distinct promotion required before guarded merge.
