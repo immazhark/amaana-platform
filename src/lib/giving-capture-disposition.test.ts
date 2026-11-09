@@ -74,6 +74,19 @@ describe("offline capture disposition: no money is posted by this helper", () =>
     })).toBe("DUPLICATE_CAPTURE");
   });
 
+  it("escalates contradictory evidence for the same payment business identity", () => {
+    for (const conflictingHistory of [
+      { ...verified, orderId: "order_synthetic_conflict" },
+      { ...verified, amountPaise: 15000 },
+      { ...verified, currency: "USD" },
+    ]) {
+      expect(classifyCaptureDisposition({
+        ...validInput,
+        priorCapturedReceipts: [conflictingHistory],
+      })).toBe("CORRELATION_EXCEPTION");
+    }
+  });
+
   it("preserves a second distinct verified capture as an excess exception after fulfilment", () => {
     expect(classifyCaptureDisposition({
       ...validInput,
