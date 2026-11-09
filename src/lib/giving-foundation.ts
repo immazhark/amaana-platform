@@ -166,11 +166,11 @@ export function validateProviderCapability(
   if (!capability || !requested || capability.enabled !== true) return false;
   if (!nonblank(capability.accountId) || capability.accountId !== requested.accountId) return false;
   if (capability.currency !== "INR" || requested.currency !== "INR") return false;
-  if (!["LIVE", "TEST"].includes(String(capability.environment)) ||
+  if (typeof capability.environment !== "string" || !["LIVE", "TEST"].includes(capability.environment) ||
       capability.environment !== requested.environment) return false;
-  if (!["RAZORPAY", "DIRECT_UPI", "BANK_TRANSFER"].includes(String(capability.method)) ||
+  if (typeof capability.method !== "string" || !["RAZORPAY", "DIRECT_UPI", "BANK_TRANSFER"].includes(capability.method) ||
       capability.method !== requested.method) return false;
-  if (!["ONE_TIME", "RECURRING"].includes(String(capability.frequency)) ||
+  if (typeof capability.frequency !== "string" || !["ONE_TIME", "RECURRING"].includes(capability.frequency) ||
       capability.frequency !== requested.frequency) return false;
   return true;
 }

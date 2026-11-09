@@ -95,3 +95,17 @@ describe("giving foundation: proposals and capabilities fail closed", () => {
     expect(validateProviderCapability(capability, { accountId: "domestic-inr", environment: "LIVE", method: "RAZORPAY", frequency: "ONE_TIME", currency: "USD" })).toBe(false);
   });
 });
+
+
+describe("capability enum primitive boundaries", () => {
+  it.each([
+    ["environment", "LIVE"], ["method", "RAZORPAY"], ["frequency", "ONE_TIME"],
+  ])("rejects shared non-string %s values", (field, label) => {
+    const valid = { accountId: "domestic-inr", environment: "LIVE", method: "RAZORPAY", frequency: "ONE_TIME", currency: "INR", enabled: true };
+    for (const value of [[label], { toString: () => label }]) {
+      expect(validateProviderCapability({ ...valid, [field]: value }, { ...valid, [field]: value })).toBe(false);
+      expect(validateProviderCapability({ ...valid, [field]: value }, valid)).toBe(false);
+      expect(validateProviderCapability(valid, { ...valid, [field]: value })).toBe(false);
+    }
+  });
+});
