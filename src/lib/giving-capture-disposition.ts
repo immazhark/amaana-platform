@@ -96,13 +96,21 @@ export function classifyCaptureDisposition(value: unknown): CaptureDisposition {
     return "REJECT";
   }
 
-  const recorded = new Set<string>();
+  const recorded = new Map<string, Record<string, unknown>>();
   for (const previousValue of history as unknown[]) {
     const previous = record(previousValue);
     if (!previous || !validReceipt(previous)) return "REJECT";
     const identity = captureBusinessIdentity(previous);
     if (!identity) return "REJECT";
-    recorded.add(identity);
+    const earlier = recorded.get(identity);
+    // Contradictory records for the same captured provider payment require
+    // reconciliation; an event-ID retry must never erase the discrepancy.
+    if (earlier && (earlier.orderId !== previous.orderId ||
+        earlier.amountPaise !== previous.amountPaise ||
+        earlier.currency !== previous.currency)) {
+      return "CORRELATION_EXCEPTION";
+    }
+    recorded.set(identity, previous);
   }
 
   if (receipt.provider !== attempt.provider ||
@@ -116,7 +124,15 @@ export function classifyCaptureDisposition(value: unknown): CaptureDisposition {
 
   const identity = captureBusinessIdentity(receipt);
   if (!identity) return "REJECT";
-  if (recorded.has(identity)) return "DUPLICATE_CAPTURE";
+  const earlier = recorded.get(identity);
+  if (earlier) {
+    if (earlier.orderId !== receipt.orderId ||
+        earlier.amountPaise !== receipt.amountPaise ||
+        earlier.currency !== receipt.currency) {
+      return "CORRELATION_EXCEPTION";
+    }
+    return "DUPLICATE_CAPTURE";
+  }
   if (input.intendedUnitFulfilled) return "EXCESS_CAPTURE_EXCEPTION";
   return "ELIGIBLE_FOR_POSTING";
 }
