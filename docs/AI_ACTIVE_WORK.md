@@ -1,3 +1,7 @@
+## 2026-11-09 IST — CHATGPT_ACTIVE AF-R066 donation-method style scope
+
+Sole writer on chore/donation-method-style-governance-20261109 from main efd1eb0. Govern existing donation-methods.module.css, replace two #fff literals with exact-white canonical token, preserve all other CSS declarations. Prove lint RED then GREEN and exact declaration equivalence after token expansion. No layout/content/payment/provider/schema changes. Exact-head/browser acceptance required; rollback three implementation files. AF-R066/R061 remain Partial.
+
 ## 2026-11-09 IST — CHATGPT_ACTIVE offline fund-policy window guard
 
 **CHATGPT_ACTIVE sole repository implementation writer.** Branch `feat/giving-policy-window-contract-20261109` based on released giving foundation `52ef89bf07e8d6a679ae5d8c00552c91fb41e939`. Scope: standalone General-purpose fund/policy effective-date, expiry and evidence checks against an explicit Asia/Kolkata local calendar date, with negative synthetic tests first. Not a source of approved fund facts and not linked to active checkout, provider, auth, schema, financial operation or notifications. Full scope `docs/mission-control/2026-11-09-giving-policy-window-scope.md`; other open PRs have independent release gates. No 149 historical promotion.

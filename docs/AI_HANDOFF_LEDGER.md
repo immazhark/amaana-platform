@@ -2810,3 +2810,7 @@ CHATGPT_ACTIVE sole writer continued #719 head a8f21acb96a20b44078d8576845f3b21a
 ## 2026-11-09 IST — capability enum correction
 
 Independent review PASS. Three synthetic RED failures; GREEN 18 focused tests. Complete local suite 2,814 PASS / 20 isolated database skips. Scoped lint PASS. No provider, schema, webhook or live activation. Exact-head hosted acceptance and distinct promotion required before guarded merge.
+
+## 2026-11-09 IST — AF-R066 donation-method style governance
+
+Native Stylelint RED exactly two color-no-hex violations in excluded donation-methods.module.css. Added exact-white canonical token and replaced only those two literals; governed script now includes the module. GREEN governed lint; expansion restores original stylesheet byte-for-byte, diff check PASS. No TS/runtime logic/dependency changes; no duplicate unit tests for literal-only CSS. Hosted exact-head browser/build/budget acceptance required. AF-R066/R061 remain Partial; rollback script/token/module diff.
