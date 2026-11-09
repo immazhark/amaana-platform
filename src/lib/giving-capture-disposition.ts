@@ -36,8 +36,8 @@ function positivePaise(value: unknown): value is number {
 }
 
 function validIdentity(candidate: Record<string, unknown>): boolean {
-  return PROVIDERS.has(String(candidate.provider)) &&
-    ENVIRONMENTS.has(String(candidate.environment)) &&
+  return typeof candidate.provider === "string" && PROVIDERS.has(candidate.provider) &&
+    typeof candidate.environment === "string" && ENVIRONMENTS.has(candidate.environment) &&
     id(candidate.merchantAccountId) &&
     id(candidate.paymentId);
 }
@@ -52,8 +52,8 @@ function validReceipt(candidate: Record<string, unknown>): boolean {
 }
 
 function validAttempt(candidate: Record<string, unknown>): boolean {
-  return PROVIDERS.has(String(candidate.provider)) &&
-    ENVIRONMENTS.has(String(candidate.environment)) &&
+  return typeof candidate.provider === "string" && PROVIDERS.has(candidate.provider) &&
+    typeof candidate.environment === "string" && ENVIRONMENTS.has(candidate.environment) &&
     id(candidate.merchantAccountId) &&
     id(candidate.orderId) &&
     positivePaise(candidate.expectedAmountPaise) &&

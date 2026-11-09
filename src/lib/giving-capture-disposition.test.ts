@@ -121,3 +121,24 @@ describe("offline capture disposition: no money is posted by this helper", () =>
     })).toBe("REJECT");
   });
 });
+
+
+describe("capture enum fields require primitive strings", () => {
+  it.each([
+    ["provider", ["RAZORPAY"]],
+    ["environment", ["TEST"]],
+    ["provider", { toString: () => "RAZORPAY" }],
+    ["environment", { toString: () => "TEST" }],
+  ])("rejects coerced %s in every identity boundary", (field, value) => {
+    expect(captureBusinessIdentity({ ...verified, [field]: value })).toBeNull();
+    expect(classifyCaptureDisposition({
+      ...validInput, attempt: { ...attempt, [field]: value },
+    })).toBe("REJECT");
+    expect(classifyCaptureDisposition({
+      ...validInput, receipt: { ...verified, [field]: value },
+    })).toBe("REJECT");
+    expect(classifyCaptureDisposition({
+      ...validInput, priorCapturedReceipts: [{ ...verified, [field]: value }],
+    })).toBe("REJECT");
+  });
+});
