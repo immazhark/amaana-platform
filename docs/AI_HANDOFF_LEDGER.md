@@ -2807,3 +2807,7 @@ CHATGPT_ACTIVE sole writer continued #719 head a8f21acb96a20b44078d8576845f3b21a
 ## 2026-11-09 IST — capability enum correction
 
 Independent review PASS. Three synthetic RED failures; GREEN 18 focused tests. Complete local suite 2,814 PASS / 20 isolated database skips. Scoped lint PASS. No provider, schema, webhook or live activation. Exact-head hosted acceptance and distinct promotion required before guarded merge.
+
+## 2026-11-09 IST — acknowledgement stale-response guard
+
+Actual-effect synthetic regression RED on both delayed success/failure after cleanup; GREEN four lifecycle controls plus existing date test (5/5). TypeScript, scoped lint and independent review PASS. First broad suite: 2,817 pass, 20 isolated DB skips, one unrelated source-lint configuration test exceeded its existing 5-second timeout during concurrent lint. Sequential full rerun pending; no timeout/control weakened. No token policy, API, schema or provider change. Full exact-head/browser/promotion gates required. Rollback component/test diff.

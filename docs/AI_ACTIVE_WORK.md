@@ -1,3 +1,7 @@
+## 2026-11-09 IST — CHATGPT_ACTIVE acknowledgement stale-response guard
+
+Sole writer on fix/acknowledgement-stale-response-20261109 from main 7fcd9f4. Synthetic actual-effect regression for delayed response after cleanup, then cancellation guard on response state writes. UI lifecycle only; no auth/token policy, API, schema or provider change. Rollback component/test diff. Exact-head acceptance required.
+
 ## 2026-11-09 IST — CHATGPT_ACTIVE capability enum correction
 
 Sole writer on fix/giving-capability-primitive-enums-20261109 from main 4d7a0fe. Independent review reproduced shared array acceptance in environment/method/frequency. Synthetic RED then primitive-string correction; offline capability policy only, no provider/payment/schema/live activation. Rollback: revert source/test correction. Required exact-head and separate promotion checks remain.
