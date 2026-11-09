@@ -2811,3 +2811,7 @@ Independent review PASS. Three synthetic RED failures; GREEN 18 focused tests. C
 ## 2026-11-09 IST — donation intention error reset
 
 Sole CHATGPT writer. Actual JSX AST regression failed on absent change recovery, then focused 3/3 PASS after fieldset change clears only givingIntent. Scoped lint and independent review PASS. Four mocked browser variants now check replacement selection clears invalid state and linked error without another order request; browser execution pending. UI-only, no schema/payment/provider/live activation. Exact-head full acceptance and separate promotion required; rollback handler/test diff.
+
+## 2026-11-09 IST — delayed checkout initialization race
+
+Existing #722 checkout batch extended: actual mount updater overwrote opening/verifying with ready. Phase-table regression RED exactly 2/5, then GREEN 8 focused cases after allowing only loading to advance to ready. Scoped lint PASS. Preserve active locks/status; no server/payment provider/schema/live activation. New exact-head application/browser acceptance required; older-head checks are superseded. Rollback updater/test diff.

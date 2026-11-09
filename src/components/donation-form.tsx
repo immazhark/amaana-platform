@@ -44,7 +44,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, copy, onLockCha
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
       if (window.Razorpay) {
-        setPhase(current => current === "reconciliation" ? current : "ready");
+        setPhase(current => current === "loading" ? "ready" : current);
       }
     });
     return () => window.cancelAnimationFrame(frame);

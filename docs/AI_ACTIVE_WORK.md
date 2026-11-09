@@ -1,3 +1,7 @@
+## 2026-11-09 IST — CHATGPT_ACTIVE checkout phase race correction
+
+Extend existing checkout PR #722 with delayed mount-frame phase preservation. Independent review executed actual updater: opening/verifying incorrectly become ready. RED phase table then loading-only ready transition. No gateway/server/schema/live activation. Prior candidate checks do not certify new head.
+
 ## 2026-11-09 IST — CHATGPT_ACTIVE donation intention error reset
 
 Sole writer on fix/donation-intention-error-reset-20261109 from main 7fcd9f4. Reproduce missing givingIntent change handler using actual JSX AST; then clear only that field error on change. UI-only, no payment/schema/provider activation. Rollback: revert handler/test. Hosted browser and exact-head acceptance remain required.
