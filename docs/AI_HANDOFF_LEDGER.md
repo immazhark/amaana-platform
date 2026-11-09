@@ -2807,3 +2807,7 @@ CHATGPT_ACTIVE sole writer continued #719 head a8f21acb96a20b44078d8576845f3b21a
 ## 2026-11-09 IST — capability enum correction
 
 Independent review PASS. Three synthetic RED failures; GREEN 18 focused tests. Complete local suite 2,814 PASS / 20 isolated database skips. Scoped lint PASS. No provider, schema, webhook or live activation. Exact-head hosted acceptance and distinct promotion required before guarded merge.
+
+## 2026-11-09 IST — donation intention error reset
+
+Sole CHATGPT writer. Actual JSX AST regression failed on absent change recovery, then focused 3/3 PASS after fieldset change clears only givingIntent. Scoped lint and independent review PASS. Four mocked browser variants now check replacement selection clears invalid state and linked error without another order request; browser execution pending. UI-only, no schema/payment/provider/live activation. Exact-head full acceptance and separate promotion required; rollback handler/test diff.

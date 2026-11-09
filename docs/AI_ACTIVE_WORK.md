@@ -1,3 +1,7 @@
+## 2026-11-09 IST — CHATGPT_ACTIVE donation intention error reset
+
+Sole writer on fix/donation-intention-error-reset-20261109 from main 7fcd9f4. Reproduce missing givingIntent change handler using actual JSX AST; then clear only that field error on change. UI-only, no payment/schema/provider activation. Rollback: revert handler/test. Hosted browser and exact-head acceptance remain required.
+
 ## 2026-11-09 IST — CHATGPT_ACTIVE capability enum correction
 
 Sole writer on fix/giving-capability-primitive-enums-20261109 from main 4d7a0fe. Independent review reproduced shared array acceptance in environment/method/frequency. Synthetic RED then primitive-string correction; offline capability policy only, no provider/payment/schema/live activation. Rollback: revert source/test correction. Required exact-head and separate promotion checks remain.
