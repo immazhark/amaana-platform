@@ -1,0 +1,7 @@
+# Giving fund policy window — offline source contract
+
+Date: 9 November 2026 IST. This bounded continuation of the approved master donation-engine foundation defines **source-only**, fail-closed temporal policy checks for reviewed General giving purposes. It does not create fund records, issue real permission to collect money, change existing policy/checkout/Razorpay code or activate any public route.
+
+Contract inputs are normalized, reviewed policy-version records only; the server supplies the decision date explicitly as an Asia/Kolkata local ISO date (`YYYY-MM-DD`). No browser clock, environment default, automatic year rollover, claims of Zakat eligibility, endowment or statutory tax benefit. Require stable fund/policy identity, active version, non-empty approval evidence, coherent effective start and expiry dates, and the explicit current eligible purpose GENERAL. Reject paused/closed/superseded/expired/not-yet-effective windows. A new approved version is necessary for further collection when old policy is expired; no retroactive reassignment of accepted donations.
+
+RED first in synthetic Vitest, GREEN narrow pure module, then exact-head hosted checks, separate ready-state and SHA-guarded protected merge. No database schema or migration, provider, webhook, donor data, notification, live receiving-bank or infrastructure actions. Rollback: revert standalone source and test files plus coordination. Source contract alone is not durable financial compliance. Historical 149 register unchanged. Writer: CHATGPT_ACTIVE.

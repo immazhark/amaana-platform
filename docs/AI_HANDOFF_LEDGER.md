@@ -1,3 +1,6 @@
+## 2026-11-09 IST — CHATGPT_ACTIVE offline fund-policy window guard
+
+**CHATGPT_ACTIVE sole repository implementation writer.** Branch `feat/giving-policy-window-contract-20261109` based on released giving foundation `52ef89bf07e8d6a679ae5d8c00552c91fb41e939`. Scope: standalone General-purpose fund/policy effective-date, expiry and evidence checks against an explicit Asia/Kolkata local calendar date, with negative synthetic tests first. Not a source of approved fund facts and not linked to active checkout, provider, auth, schema, financial operation or notifications. Full scope `docs/mission-control/2026-11-09-giving-policy-window-scope.md`; other open PRs have independent release gates. No 149 historical promotion.
 ## 2026-11-09 IST — CHATGPT_ACTIVE pure capture disposition slice
 
 **CHATGPT_ACTIVE sole implementation writer by owner handoff.** New bounded offline source-only task on `feat/giving-capture-disposition-contract-20261109` based on protected main `bde664476d16043b368b5796d444ab25aeb13e8a`. The master donation engine requires distinguishing duplicate provider notifications, distinct real captures, mismatch reconciliation and excess capture after a satisfied intent. Define a pure classification API and synthetic negative tests first, no integration with payment processing, database, schema, gateway, live mandate, webhook, outbox, donor data or financial actuation. Exact scope and rollback: `docs/mission-control/2026-11-09-giving-capture-disposition-scope.md`. #716/#718 donation foundations and #714 homepage remain separately gated by full browser CI; #684 financial QR held. Tests RED then GREEN; full exact-head CI and separate ready-state before protected merge. Historical 149 totals unchanged.
@@ -2815,3 +2818,10 @@ Sole CHATGPT writer. Actual JSX AST regression failed on absent change recovery,
 ## 2026-11-09 IST — delayed checkout initialization race
 
 Existing #722 checkout batch extended: actual mount updater overwrote opening/verifying with ready. Phase-table regression RED exactly 2/5, then GREEN 8 focused cases after allowing only loading to advance to ready. Scoped lint PASS. Preserve active locks/status; no server/payment provider/schema/live activation. New exact-head application/browser acceptance required; older-head checks are superseded. Rollback updater/test diff.
+## 2026-11-09 IST — acknowledgement stale-response guard
+
+Actual-effect synthetic regression RED on both delayed success/failure after cleanup; GREEN four lifecycle controls plus existing date test (5/5). TypeScript, scoped lint and independent review PASS. First broad suite: 2,817 pass, 20 isolated DB skips, one unrelated source-lint configuration test exceeded its existing 5-second timeout during concurrent lint. Sequential full rerun pending; no timeout/control weakened. No token policy, API, schema or provider change. Full exact-head/browser/promotion gates required. Rollback component/test diff.
+
+## 2026-11-09 IST — direct-transfer late response navigation
+
+Extend #723 response-lifecycle batch with original form connectivity guard before success navigation. Actual extracted submit regression RED disconnected form (connected control PASS); GREEN 6 combined direct/ack lifecycle tests. One report request and retained lock asserted. Scoped lint PASS; no API/report cancellation/provider/schema/live change. Full exact-head acceptance and promotion required; rollback form/test diff.
