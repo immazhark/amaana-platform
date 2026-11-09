@@ -2,7 +2,7 @@
    Keep semantic roles here; route styles consume aliases rather than redefining the palette. */
 :root {
   /* Brand colour roles */
-  --af-color-white: #fff;
+  --af-color-opaque-white: #fff;
   --af-color-canvas: #faf6ec;
   --af-color-surface: #fffdf8;
   --af-color-surface-muted: #f3eddd;
