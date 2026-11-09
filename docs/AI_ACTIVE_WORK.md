@@ -1,6 +1,9 @@
 ## 2026-11-09 IST — CHATGPT_ACTIVE offline fund-policy window guard
 
 **CHATGPT_ACTIVE sole repository implementation writer.** Branch `feat/giving-policy-window-contract-20261109` based on released giving foundation `52ef89bf07e8d6a679ae5d8c00552c91fb41e939`. Scope: standalone General-purpose fund/policy effective-date, expiry and evidence checks against an explicit Asia/Kolkata local calendar date, with negative synthetic tests first. Not a source of approved fund facts and not linked to active checkout, provider, auth, schema, financial operation or notifications. Full scope `docs/mission-control/2026-11-09-giving-policy-window-scope.md`; other open PRs have independent release gates. No 149 historical promotion.
+## 2026-11-09 IST — CHATGPT_ACTIVE giving designation snapshot slice
+
+**CHATGPT_ACTIVE is sole repository implementation writer.** Independent, *stacked* source-only follow-on to #716 on branch `feat/giving-designation-snapshot-contract-20261109`, original base head `737806521ccdda4885b04ba38be8a83881f642ab`. The reviewed master donation plan requires exclusive FUND/APPEAL target and a resolved policy/fund snapshot; historical unmapped appeals must not silently become General donations. Add a negative synthetic contract test, then a minimal pure validation/snapshot helper requiring an active evidence-backed General policy and approved appeal mapping when APPEAL is chosen. No Prisma migration, payment handler, donor PII, live fund, checkout UI, provider, tax/religious or infrastructure activation. This follow-on cannot merge ahead of #716; exact-head CI, browser/database selection, separate ready-state and SHA-guard apply. #714/#717 browser issue remains separate and #684 QR remains financially held. The 149-item classification is unchanged.
 
 ## 2026-11-09 IST — CHATGPT_ACTIVE giving foundation ownership takeover
 
