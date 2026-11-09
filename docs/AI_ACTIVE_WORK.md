@@ -1,6 +1,10 @@
 ## 2026-11-09 IST — CHATGPT_ACTIVE offline fund-policy window guard
 
 **CHATGPT_ACTIVE sole repository implementation writer.** Branch `feat/giving-policy-window-contract-20261109` based on released giving foundation `52ef89bf07e8d6a679ae5d8c00552c91fb41e939`. Scope: standalone General-purpose fund/policy effective-date, expiry and evidence checks against an explicit Asia/Kolkata local calendar date, with negative synthetic tests first. Not a source of approved fund facts and not linked to active checkout, provider, auth, schema, financial operation or notifications. Full scope `docs/mission-control/2026-11-09-giving-policy-window-scope.md`; other open PRs have independent release gates. No 149 historical promotion.
+## 2026-11-09 IST — CHATGPT_ACTIVE capability enum correction
+
+Sole writer on fix/giving-capability-primitive-enums-20261109 from main 4d7a0fe. Independent review reproduced shared array acceptance in environment/method/frequency. Synthetic RED then primitive-string correction; offline capability policy only, no provider/payment/schema/live activation. Rollback: revert source/test correction. Required exact-head and separate promotion checks remain.
+
 ## 2026-11-09 IST — CHATGPT_ACTIVE capture enum review correction
 
 Sole implementation writer continues existing PR #719 at a8f21acb96a20b44078d8576845f3b21a20dcd51 under current owner directive. Independent read-only review found enum coercion accepts JSON arrays as provider/environment identities. Add synthetic RED regressions across identity, attempt, receipt and history, then require primitive strings in both validators. Offline contract only; no gateway, webhook, persistence, donor data or live activation. Reuse existing scope and rollback by reverting this correction. Fresh exact-head acceptance and separate ready-state required; old green does not certify this change.
