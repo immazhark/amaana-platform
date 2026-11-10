@@ -16,7 +16,19 @@ export default async function TeamAdminPage({ searchParams }: Props) {
   const { notice, error } = await searchParams;
   const groups = await prisma.teamGroup.findMany({
     orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
-    include: { members: { where: { deletedAt: null }, orderBy: [{ sortOrder: "asc" }, { id: "asc" }] } },
+    select: {
+      id: true, key: true, title: true, description: true, updatedAt: true,
+      members: {
+        where: { deletedAt: null },
+        orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
+        select: {
+          id: true, slug: true, groupId: true, fullName: true,
+          designation: true, bio: true, linkedinUrl: true,
+          email: true, photoAlt: true, photoStorageKey: true,
+          isPublished: true, updatedAt: true,
+        },
+      },
+    },
   });
   return (
     <>

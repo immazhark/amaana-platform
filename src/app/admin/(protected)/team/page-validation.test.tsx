@@ -21,3 +21,42 @@ it("declares the server minimum on group create and update fields",async()=>{
   for(const input of inputs??[])expect(input).toMatch(/minlength="2"/i);
  }
 });
+
+it("AF-R012 limits team editor group/member projections while keeping editable values", async () => {
+  mocks.groups.mockResolvedValue([{
+    id: "synthetic-group", key: "TRUSTEES", title: "Trustees",
+    description: "Synthetic directory", updatedAt: new Date("2026-11-10T00:00:00Z"),
+    members: [{
+      id: "synthetic-member", slug: "synthetic-team-slug", groupId: "synthetic-group",
+      fullName: "Synthetic Name", designation: "Synthetic Role",
+      bio: "Synthetic Biography", linkedinUrl: "https://example.invalid/profile",
+      email: "team@example.invalid", photoAlt: "Portrait description",
+      photoStorageKey: "synthetic-private-storage-key",
+      isPublished: true, updatedAt: new Date("2026-11-10T00:00:00Z"),
+    }],
+  }]);
+  const html = renderToStaticMarkup(await Page({ searchParams: Promise.resolve({}) }));
+  expect(mocks.groups).toHaveBeenCalledWith({
+    orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
+    select: {
+      id: true, key: true, title: true, description: true, updatedAt: true,
+      members: {
+        where: { deletedAt: null },
+        orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
+        select: {
+          id: true, slug: true, groupId: true, fullName: true,
+          designation: true, bio: true, linkedinUrl: true,
+          email: true, photoAlt: true, photoStorageKey: true,
+          isPublished: true, updatedAt: true,
+        },
+      },
+    },
+  });
+  expect(html).toContain("Synthetic Name");
+  expect(html).toContain("Synthetic Role");
+  expect(html).toContain("Synthetic Biography");
+  expect(html).toContain("synthetic-team-slug");
+  expect(html).toContain("Remove the current public photograph");
+  expect(html).toContain("team@example.invalid");
+  expect(html).toContain("synthetic-group");
+});
