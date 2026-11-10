@@ -102,3 +102,45 @@ describe("unmatched critical provider event IST audit time", () => {
     expect(mocks.permission).toHaveBeenCalledWith("donation.view");
   });
 });
+
+describe("admin Donations minimum displayed-row projection", () => {
+  it("reads only visible donation fields and the linked appeal title", async () => {
+    mocks.donationFind.mockResolvedValueOnce([{
+      id: "synthetic-donation-row",
+      referenceNumber: "SYNTHETIC-PROJECTION-1",
+      donorName: "Synthetic donation viewer",
+      donorEmail: "synthetic@example.invalid",
+      appeal: { title: "Synthetic appeal" },
+      givingIntent: "GENERAL",
+      paymentMethod: "DIRECT_UPI",
+      amount: money(300),
+      refundedAmount: money(0),
+      status: "CAPTURED",
+      createdAt: new Date("2026-11-10T00:00:00Z"),
+    }]);
+
+    const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({}) }));
+
+    expect(mocks.permission).toHaveBeenCalledWith("donation.view");
+    expect(mocks.donationFind).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
+      select: {
+        id: true,
+        referenceNumber: true,
+        donorName: true,
+        donorEmail: true,
+        givingIntent: true,
+        paymentMethod: true,
+        amount: true,
+        refundedAmount: true,
+        status: true,
+        createdAt: true,
+        appeal: { select: { title: true } },
+      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    }));
+    expect(html).toContain("SYNTHETIC-PROJECTION-1");
+    expect(html).toContain("Synthetic donation viewer");
+    expect(html).toContain("Synthetic appeal");
+    expect(html).toContain("Direct UPI");
+  });
+});
