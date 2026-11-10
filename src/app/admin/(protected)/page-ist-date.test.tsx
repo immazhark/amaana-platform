@@ -61,8 +61,8 @@ describe("assistance queue India-local received day", () => {
   });
 });
 
-describe("assistance queue minimum staff projection", () => {
-  it("selects only the assigned staff name for queue rows", async () => {
+describe("assistance queue minimum displayed-data projection", () => {
+  it("selects only displayed case identity, status, date, assigned staff and document count", async () => {
     mocks.findMany.mockResolvedValueOnce([{
       id: "synthetic-request", referenceNumber: "SYNTHETIC-RECEIVED-2",
       applicantName: "Synthetic applicant", city: "Synthetic city",
@@ -76,11 +76,22 @@ describe("assistance queue minimum staff projection", () => {
     expect(mocks.user).toHaveBeenCalledOnce();
     expect(mocks.permission).toHaveBeenCalledWith({ id: "synthetic-operator" }, "assistance.view");
     expect(mocks.findMany).toHaveBeenCalledWith(expect.objectContaining({
-      include: {
+      select: {
+        id: true,
+        referenceNumber: true,
+        applicantName: true,
+        city: true,
+        category: true,
+        status: true,
+        createdAt: true,
         assignedTo: { select: { name: true } },
         _count: { select: { documents: true } },
       },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     }));
+    expect(html).toContain("SYNTHETIC-RECEIVED-2");
+    expect(html).toContain("Synthetic applicant");
+    expect(html).toContain("Synthetic city");
     expect(html).toContain("Synthetic caseworker");
     expect(html).toContain("<td>3</td>");
   });
