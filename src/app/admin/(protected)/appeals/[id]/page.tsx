@@ -14,7 +14,25 @@ export default async function AppealEditorPage({ params }: Props) {
   const canViewAssistance = hasPermission(user, "assistance.view");
   const updates = { select: { id: true, title: true, content: true, isPublic: true, author: { select: { name: true } } }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] } satisfies Prisma.Appeal$updatesArgs;
   const [appeal, history, linkedRequest] = await Promise.all([
-    prisma.appeal.findUnique({ where: { id }, include: { updates } }),
+    prisma.appeal.findUnique({
+      where: { id },
+      select: {
+        title: true,
+        status: true,
+        updatedAt: true,
+        slug: true,
+        category: true,
+        beneficiaryDisplayName: true,
+        beneficiaryLocation: true,
+        summary: true,
+        story: true,
+        goalAmount: true,
+        coverImageUrl: true,
+        isFeatured: true,
+        featuredOrder: true,
+        updates,
+      },
+    }),
     prisma.auditEvent.findMany({ where: { entityType: "Appeal", entityId: id }, select: { id: true, action: true, createdAt: true, actor: { select: { name: true } } }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] }),
     canViewAssistance ? prisma.assistanceRequest.findUnique({
       where: { appealId: id },
