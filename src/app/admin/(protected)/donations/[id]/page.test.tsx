@@ -214,7 +214,7 @@ describe("donation detail minimum linked-record projections", () => {
   it("fetches only the displayed appeal title", async () => {
     const html = await renderDonation();
     expect(mocks.findDonation).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
-      include: expect.objectContaining({ appeal: { select: { title: true } } }),
+      select: expect.objectContaining({ appeal: { select: { title: true } } }),
     }));
     expect(html).toContain("Synthetic approved appeal");
     expect(mocks.permission).toHaveBeenCalledExactlyOnceWith("donation.view");
@@ -230,7 +230,7 @@ describe("donation detail minimum linked-record projections", () => {
     }));
     const html = await renderDonation();
     expect(mocks.findDonation).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
-      include: expect.objectContaining({
+      select: expect.objectContaining({
         events: {
           select: { id: true, eventType: true, providerEventId: true, processedAt: true },
           orderBy: [{ processedAt: "desc" }, { id: "desc" }],
@@ -243,4 +243,46 @@ describe("donation detail minimum linked-record projections", () => {
     expect(html.indexOf("synthetic-event-2")).toBeLessThan(html.indexOf("synthetic-event-1"));
     expect(mocks.evidence).not.toHaveBeenCalled();
   });
+});
+
+
+it("reads only displayed private Donation detail fields and the existing bounded relations", async () => {
+  const html = await renderDonation();
+  expect(mocks.permission).toHaveBeenCalledExactlyOnceWith("donation.view");
+  expect(mocks.findDonation).toHaveBeenCalledExactlyOnceWith({
+    where: { id: "synthetic-donation" },
+    select: {
+      id: true,
+      referenceNumber: true,
+      status: true,
+      donorName: true,
+      isAnonymous: true,
+      donorEmail: true,
+      donorPhone: true,
+      givingIntent: true,
+      paymentMethod: true,
+      transferReference: true,
+      transferredAt: true,
+      transferEvidenceKey: true,
+      reconciliationNotes: true,
+      providerOrderId: true,
+      providerPaymentId: true,
+      receiptNumber: true,
+      amount: true,
+      refundedAmount: true,
+      createdAt: true,
+      capturedAt: true,
+      failedAt: true,
+      refundedAt: true,
+      appeal: { select: { title: true } },
+      events: {
+        select: { id: true, eventType: true, providerEventId: true, processedAt: true },
+        orderBy: [{ processedAt: "desc" }, { id: "desc" }],
+      },
+      reconciledBy: { select: { name: true } },
+    },
+  });
+  expect(html).toContain("SYNTHETIC-IST-001");
+  expect(html).toContain("Synthetic approved appeal");
+  expect(html).toContain("Public anonymity");
 });
