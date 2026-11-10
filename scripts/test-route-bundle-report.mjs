@@ -629,3 +629,33 @@ test("AF-R047 rejects malformed public route labels before reading client-refere
     assert.deepEqual(report.routes, [route], "Normal App Router labels remain accepted");
   }
 });
+
+
+test("AF-R047 rejects doubled Next asset-prefix separators without rejecting canonical assets", () => {
+  const cssEntry = path => referenceSource("/page", {
+    "[project]/src/app/layout": [{ path, inlined: false }],
+  });
+  for (const path of ["/_next//static/css/site.css", "_next//static/css/site.css"]) {
+    assert.throws(() => reporter.summarizeClientReferenceCss(
+      { "/page": "/" }, () => cssEntry(path), () => 11,
+    ), /Unsafe client-reference CSS asset path/, path);
+  }
+  for (const path of ["/_next//static/chunks/app.js", "_next//static/chunks/app.js"]) {
+    assert.throws(() => reporter.summarizeClientReferenceJs(
+      { "/page": "/" }, page => jsReferenceSource(page, {
+        "[project]/src/app/layout": [path],
+      }), [], () => 13,
+    ), /Unsafe JavaScript asset path/, path);
+    assert.throws(() => reporter.summarizeClientReferenceJs(
+      { "/page": "/" }, page => jsReferenceSource(page, {}), [path], () => 13,
+    ), /Unsafe JavaScript asset path/, path);
+  }
+  assert.equal(reporter.summarizeClientReferenceCss(
+    { "/page": "/" }, () => cssEntry("/_next/static/css/site.css"), () => 11,
+  )[0].cssBytes, 11);
+  assert.equal(reporter.summarizeClientReferenceJs(
+    { "/page": "/" }, page => jsReferenceSource(page, {
+      "[project]/src/app/layout": ["/_next/static/chunks/app.js"],
+    }), [], () => 13,
+  )[0].jsBytes, 13);
+});
