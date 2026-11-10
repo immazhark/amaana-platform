@@ -2911,3 +2911,8 @@ Owner-directed sole writer. Original candidate #738 `cb236b95fa40e93f77e48bd93c6
 
 Single implementation writer. Candidate branch `fix/admin-retention-audit-reconciled-20261110` stacks on #741 at `8033cc09c9a452c2759481ffdc74580616dcc5ba` so release order #741 then this reconciled retention audit query. Original #739 has proven RED at `54abfe39bc4991cf683de55fb9f86de2123ee516` / Actions `42796662892` fast `129763586106` and GREEN scoped source `67ec44bd201d07e092cd48ac2d2fd5ebfe896734`, but its original base conflicts with subsequent main; no forced update. Copy exact tested production and synthetic test file blobs from #739 onto the latest candidate stack; retain `assistance.approve`, retention state/hold/delete actions and sorting. Full fresh exact-head CI and protected ready-state merge. Financial QR #684 held, 149 unchanged; rollback these scoped files and note.
 
+
+## 2026-11-10 IST — CHATGPT_ACTIVE reconciled request document-list read AF-R012
+
+Single writer, bounded source branch `fix/admin-request-documents-reconciled-20261110` based on #743 candidate head `c0c61d92c9d34b5dca4065f8d2836121773084e3`, dependency #741 → #743 → this PR. Original #740 tested RED (`42797762154` fast `129767281819`, one synthetic expected query failure), then corrected documents relation to exactly id, originalName, mimeType and sizeBytes. Its original base conflicts with newer releases. Reuse exact source/test blob from #740 on current release stack; never force push. No auth, storage downloads, payment, private file reads, schema or infrastructure change. Require full fresh exact-head CI, browser/DB/build/final verification, review, separate ready-state, SHA guarded merge. #684 financial hold, 149 unchanged. Rollback scoped query/test and note.
+
