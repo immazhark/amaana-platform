@@ -76,7 +76,19 @@ export default async function DonationsPage({ searchParams }: Props) {
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
   const donations = await prisma.donation.findMany({
     where,
-    include: { appeal: { select: { title: true } } },
+    select: {
+      id: true,
+      referenceNumber: true,
+      donorName: true,
+      donorEmail: true,
+      givingIntent: true,
+      paymentMethod: true,
+      amount: true,
+      refundedAmount: true,
+      status: true,
+      createdAt: true,
+      appeal: { select: { title: true } },
+    },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     skip: pagination.skip,
     take: pagination.pageSize,
