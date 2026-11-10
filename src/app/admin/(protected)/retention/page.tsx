@@ -59,7 +59,13 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
           "assistance.document_deleted",
         ] },
       },
-      include: { actor: { select: { name: true } } },
+      select: {
+        entityId: true,
+        action: true,
+        metadata: true,
+        createdAt: true,
+        actor: { select: { name: true } },
+      },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     });
 
