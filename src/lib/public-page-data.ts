@@ -6,6 +6,8 @@ import { isAppealOpenForDonations } from "@/lib/appeals";
 import { canExposeAppealArchive } from "@/lib/appeal-update-publication";
 import { canExposePublicAppeal, canExposeSyntheticStagingContent } from "@/lib/public-environment";
 import { IDENTITY_MEDIA_SORT_ORDER } from "@/lib/public-media";
+import { programmeCategories, programmes } from "@/lib/master-copy";
+import { programmeCategoryPath } from "@/lib/programme-category-routing";
 import {
   getPublishedFaithContentBySlug,
   getPublishedInitiativeBySlug,
@@ -146,6 +148,15 @@ export const getHomepageHeroMedia = cache(async () => {
  * candidates per umbrella area. This avoids serializing the full annual archive
  * on every homepage request.
  */
+const homepageProgrammeCandidateSlugs = Array.from(new Set([
+  "eid-gift-kits",
+  ...programmes.filter(programme => !("parentSlug" in programme)).map(programme => programme.slug),
+  ...programmeCategories.flatMap(category => {
+    const destination = programmeCategoryPath(category.slug);
+    return destination.startsWith("/our-work/") ? [destination.slice("/our-work/".length)] : [];
+  }),
+]));
+
 export const getHomepageDiscoveryData = cache(async () => {
   const fieldSlugs = ["qurbani-meat-distribution-2026", "dates-distribution-2026"];
 
@@ -207,6 +218,7 @@ export const getHomepageDiscoveryData = cache(async () => {
       where: {
         status: "PUBLISHED",
         cause: { status: "PUBLISHED" },
+        slug: { in: homepageProgrammeCandidateSlugs },
       },
       select: { slug: true },
     }),
