@@ -1,8 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { readFileSync } from 'node:fs';
-const before = readFileSync('e2e/fixtures/donation-form-before.css', 'utf8');
-const after = readFileSync('src/components/donation-form.module.css', 'utf8');
-const globals = readFileSync('src/app/globals.css', 'utf8');
+import { join } from 'node:path';
+const appWorkspace = process.env.AMAANA_APP_WORKSPACE ?? process.cwd();
+const before = readFileSync(new URL('./fixtures/donation-form-before.css', import.meta.url), 'utf8');
+const after = readFileSync(join(appWorkspace, 'src/components/donation-form.module.css'), 'utf8');
+const globals = readFileSync(join(appWorkspace, 'src/app/globals.css'), 'utf8');
 const normalize = css => css.replace(/:global\(([^)]+)\)/g, '$1');
 const markup = `<div class="v2-premium-form"><div class="checkoutShell"><label class="checkoutLabel">Synthetic amount</label><div class="checkoutControl amountControl"><b>₹</b><input aria-label="Synthetic amount" value="500"></div><small class="hint">Synthetic hint</small></div><div class="choice"><label><input type="checkbox"><span><strong>Domestic contribution</strong><small>Synthetic confirmation</small></span></label></div><fieldset class="intentGroup"><legend>Giving intention</legend><p class="intentIntro">Synthetic context</p><div class="intentGrid"><label class="intentOption"><input type="radio" name="intent"><span><strong>General</strong><small>Synthetic intention</small></span></label></div><small class="intentNote">Synthetic note</small></fieldset><div class="status">Synthetic status</div></div>`;
 for (const width of [390, 620, 621, 760, 761, 1440]) {
