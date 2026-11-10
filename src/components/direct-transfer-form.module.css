@@ -2,56 +2,56 @@
 .shell{min-width:0;max-width:100%}
 .form{min-width:0;gap:1rem}
 .form :global(.field){min-width:0;display:grid;align-content:start;gap:.45rem}
-.form :global(.field) > label{display:flex;align-items:baseline;flex-wrap:wrap;gap:.35rem;font-size:.86rem;font-weight:700;line-height:1.4;color:#21334d}
+.form :global(.field) > label{display:flex;align-items:baseline;flex-wrap:wrap;gap:.35rem;font-size:.86rem;font-weight:700;line-height:1.4;color:var(--af-color-transfer-label)}
 .form :global(.field) > input:not([type="radio"]):not([type="checkbox"]):not([type="file"]){
   display:block;box-sizing:border-box;min-width:0;width:100%;min-height:3.3rem;
   padding:.75rem .9rem!important;
-  border:1px solid #aebcce!important;
+  border:1px solid var(--af-color-transfer-field-border)!important;
   border-radius:.75rem!important;
-  background:#fff!important;
-  color:#172b47!important;
+  background:var(--af-color-opaque-white)!important;
+  color:var(--af-color-transfer-ink)!important;
   font-size:1rem!important;
   line-height:1.45!important;
   outline:none!important;box-shadow:none!important;
 }
 .form :global(.field) > input:not([type="radio"]):not([type="checkbox"]):not([type="file"]):focus-visible{
-  border-color:#466faa!important;
-  outline:3px solid #466faa!important;
+  border-color:var(--af-color-blue-600)!important;
+  outline:3px solid var(--af-color-blue-600)!important;
   outline-offset:2px!important;
   box-shadow:none!important;
 }
 .form :global(.field) > input[type="file"]{
   min-width:0;max-width:100%;width:100%;
-  padding:.65rem;border:1px solid #aebcce;border-radius:.75rem;background:#fff;
+  padding:.65rem;border:1px solid var(--af-color-transfer-field-border);border-radius:.75rem;background:var(--af-color-opaque-white);
   font-size:.94rem;
 }
 .form :global(.field) > input[type="file"]:focus-visible{
-  outline:3px solid #466faa!important;outline-offset:2px!important;
+  outline:3px solid var(--af-color-blue-600)!important;outline-offset:2px!important;
   box-shadow:none!important;
 }
-.form :global(.field) > small{font-size:.82rem;line-height:1.5;color:#55647b}
+.form :global(.field) > small{font-size:.82rem;line-height:1.5;color:var(--af-color-transfer-muted)}
 .form :global(fieldset){display:block;min-width:0;margin:0;padding:0;border:0}
-.form :global(fieldset) > legend{padding:0 0 .8rem;font-size:1rem;font-weight:700;color:#172b47}
-.paymentCard{min-width:0;margin-bottom:1.25rem;padding:clamp(1rem,2.5vw,1.5rem);border:1px solid #d6dfeb;border-radius:1rem;background:#fff}
+.form :global(fieldset) > legend{padding:0 0 .8rem;font-size:1rem;font-weight:700;color:var(--af-color-transfer-ink)}
+.paymentCard{min-width:0;margin-bottom:1.25rem;padding:clamp(1rem,2.5vw,1.5rem);border:1px solid var(--af-color-transfer-card-border);border-radius:1rem;background:var(--af-color-opaque-white)}
 .paymentCard :global(.details){margin:0}
 .paymentCard :global(.details) > div{min-width:0}
-.paymentCard :global(dt){font-size:.78rem;letter-spacing:.03em;color:#516077}
-.paymentCard :global(dd){margin:.35rem 0 0;color:#172b47;line-height:1.4;font-size:1rem;overflow-wrap:anywhere}
+.paymentCard :global(dt){font-size:.78rem;letter-spacing:.03em;color:var(--af-color-transfer-detail-label)}
+.paymentCard :global(dd){margin:.35rem 0 0;color:var(--af-color-transfer-ink);line-height:1.4;font-size:1rem;overflow-wrap:anywhere}
 .bankDetails{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem 1.25rem}
-.bankDetails > div{padding:0 0 .8rem;border-bottom:1px solid #e0e6ef}
+.bankDetails > div{padding:0 0 .8rem;border-bottom:1px solid var(--af-color-transfer-divider)}
 .copyRow{display:flex;align-items:center;gap:.5rem;min-width:0}
 .copyRow > span,.copyRow > code{min-width:0;overflow-wrap:anywhere;word-break:break-word;user-select:all;font-variant-numeric:tabular-nums}
 .copyButton{
   display:inline-grid;place-items:center;flex:0 0 2.75rem;
   width:2.75rem;height:2.75rem;padding:0;
-  border:1px solid #b9cbe2;border-radius:.7rem;
-  background:#f3f7fc;color:#244c82;cursor:pointer;
+  border:1px solid var(--af-color-transfer-copy-border);border-radius:.7rem;
+  background:var(--af-color-transfer-copy-surface);color:var(--af-color-transfer-copy-ink);cursor:pointer;
 }
-.copyButton:hover{border-color:#466faa;background:#e7effa}
-.copyButton:focus-visible{outline:3px solid #466faa!important;outline-offset:2px!important}
-.upiRow{display:flex;align-items:center;justify-content:space-between;gap:.75rem;min-width:0;padding-bottom:1rem;border-bottom:1px solid #e0e6ef}
+.copyButton:hover{border-color:var(--af-color-blue-600);background:var(--af-color-transfer-copy-hover)}
+.copyButton:focus-visible{outline:3px solid var(--af-color-blue-600)!important;outline-offset:2px!important}
+.upiRow{display:flex;align-items:center;justify-content:space-between;gap:.75rem;min-width:0;padding-bottom:1rem;border-bottom:1px solid var(--af-color-transfer-divider)}
 .upiRow > div{display:grid;gap:.45rem;min-width:0}
-.upiRow code{font-size:clamp(.94rem,1.8vw,1.08rem);color:#172b47;overflow-wrap:anywhere;user-select:all}
+.upiRow code{font-size:clamp(.94rem,1.8vw,1.08rem);color:var(--af-color-transfer-ink);overflow-wrap:anywhere;user-select:all}
 .upiLink{margin:1rem 0;font-size:.9rem;line-height:1.6}
 .paymentCard img{display:block;max-width:100%;height:auto;margin:1rem auto}
 @media(max-width:620px){.bankDetails{grid-template-columns:1fr}.paymentCard{padding:1rem}.form{gap:.8rem}}

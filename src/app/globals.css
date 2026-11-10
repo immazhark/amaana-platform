@@ -26,6 +26,19 @@
   --af-color-meta: #5f6b75;
   --af-color-accent-text: #6b4d00;
 
+  /* Exact-value direct-transfer component roles. */
+  --af-color-transfer-label: #21334d;
+  --af-color-transfer-field-border: #aebcce;
+  --af-color-transfer-ink: #172b47;
+  --af-color-transfer-muted: #55647b;
+  --af-color-transfer-card-border: #d6dfeb;
+  --af-color-transfer-detail-label: #516077;
+  --af-color-transfer-divider: #e0e6ef;
+  --af-color-transfer-copy-border: #b9cbe2;
+  --af-color-transfer-copy-surface: #f3f7fc;
+  --af-color-transfer-copy-ink: #244c82;
+  --af-color-transfer-copy-hover: #e7effa;
+
   /* Spacing */
   --af-space-1: .25rem;
   --af-space-2: .5rem;

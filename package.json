@@ -52,7 +52,7 @@
     "audit:admin-edge": "node scripts/audit-admin-edge-coverage.test.mjs && node scripts/audit-admin-edge-coverage.mjs",
     "security:client-bundle": "node scripts/check-client-secret-boundary.mjs",
     "security:public-env": "node scripts/check-public-env-secret-names.mjs",
-    "stylelint:governed": "npx --yes stylelint@17.16.0 src/app/donate/donate-audit.module.css src/components/donation-methods.module.css"
+    "stylelint:governed": "npx --yes stylelint@17.16.0 src/app/donate/donate-audit.module.css src/components/donation-methods.module.css src/components/direct-transfer-form.module.css"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1128.0",
