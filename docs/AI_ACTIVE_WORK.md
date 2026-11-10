@@ -1,3 +1,7 @@
+## 2026-11-10 IST — CHATGPT_ACTIVE donation form cascade governance
+
+Sole writer on refactor/donation-form-style-governance-20261110 from main dda27a2. Native RED22 violations already reproduced. Consolidate only exact root selectors with individually reviewed first/last destinations, retain grouped/media rules, tokenize exact colors, add governed target. Compare original/new computed styles in synthetic browser across six widths, focus/checked and reduced motion. No payment/API/schema/provider change. Required exact-head acceptance and rollback stylesheet/token/script diff.
+
 ## 2026-11-10 IST — CHATGPT_ACTIVE AF-R066 direct-transfer style scope
 
 Sole writer on chore/direct-transfer-style-governance-20261110 stacked after #714606ae126. Govern direct-transfer-form.module.css, reuse exact existing blue/white tokens and add collision-free exact-value transfer tokens. No rendering declarations beyond literal substitution; native lint RED then GREEN and byte parity after expansion. No API/provider/schema/financial activation. Do not merge ahead of #714; full exact-head/browser/promotion required. AF-R066/R061 remain Partial.
