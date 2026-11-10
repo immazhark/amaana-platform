@@ -1,6 +1,6 @@
 # External repository adoption review — Amaana Foundation
 
-**Date:** 11 November 2026 IST. **Scope:** owner-supplied GitHub candidates, metadata review and selected primary README/skill checks. This is a decision screen, **not** a line-by-line source/security audit of each upstream repository or certification of its dependencies. Do not equate recent push/stars with trust. No tool from this list was installed into the application, and no deployment or cost was authorized.
+**Date:** 11 November 2026 IST. **Scope:** 59 unique owner-supplied GitHub candidates, metadata review and selected primary README/skill checks. This is a decision screen, **not** a line-by-line source/security audit of each upstream repository or certification of its dependencies. Do not equate recent push/stars with trust. No tool from this list was installed into the application, and no deployment or cost was authorized.
 
 ## Architecture filter
 
@@ -52,6 +52,7 @@ Sole writer CHATGPT_ACTIVE on this coordination branch following explicit owner 
 - [andrewyng/openworker](https://github.com/andrewyng/openworker) — Autonomous agent runner; not needed as an application dependency.
 - [firecrawl/anydoc](https://github.com/firecrawl/anydoc) — Optional offline extraction for authorized documents, not donor-upload processing without privacy/design review.
 - [img2threejs/img2threejs](https://github.com/img2threejs/img2threejs) — Procedural 3D generation does not support current dignified website performance goals.
+- [Anil-matcha/Open-Generative-AI](https://github.com/Anil-matcha/Open-Generative-AI) — Image/video studio and multi-model provider surfaces; no current Amaana website requirement, privacy/consent/provider review needed.
 - [OpenWhispr/openwhispr](https://github.com/OpenWhispr/openwhispr) — Local dictation, not website runtime.
 - [calesthio/OpenMontage](https://github.com/calesthio/OpenMontage) — Media editing project; URL redirected during metadata check; not for public beneficiary media.
 - [lcy362/agnes-video-generator](https://github.com/lcy362/agnes-video-generator) — Self-hosted AI video workflow; external model/provider and content provenance review required.
