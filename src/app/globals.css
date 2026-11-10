@@ -39,6 +39,12 @@
   --af-color-transfer-copy-ink: #244c82;
   --af-color-transfer-copy-hover: #e7effa;
 
+  /* Exact-value checkout component roles. */
+  --af-color-checkout-placeholder: #697482;
+  --af-color-checkout-amount-surface: #fffaf0;
+  --af-color-checkout-choice-surface: #f7f3eb;
+  --af-color-checkout-status-ink: #445263;
+
   /* Spacing */
   --af-space-1: .25rem;
   --af-space-2: .5rem;

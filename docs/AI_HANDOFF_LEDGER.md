@@ -2835,3 +2835,7 @@ Native Stylelint RED exactly two color-no-hex violations in excluded donation-me
 ## 2026-11-10 IST — AF-R066 direct-transfer stylesheet
 
 Stacked after #714606ae126. Native lint RED24 hex violations. Exact blue/white reuse plus eleven collision-free transfer-role tokens replace thirteen distinct hex colors. GREEN governed lint and exact original module bytes after token expansion; selector/declaration order, spacing, focus, responsive and reduced-motion rules unchanged. No duplicate unit tests for literal-only CSS; browser/build/budget/full exact-head and separate promotion required. No API/provider/schema/live activation. AF-R066/R061 classifications unchanged. Rollback token/module/lint-script diff.
+
+## 2026-11-10 IST — AF-R060/R061/R066 donation form consolidation
+
+Native RED22 violations reproduced before work. Selector-specific root consolidation preserves grouped/media positions; exact existing tokens reused plus four checkout role values. GREEN governed Stylelint, browser spec syntax and diff checks. Original CSS retained as synthetic fixture; 12 browser cases compare all computed CSS properties and element rectangles across six widths/two motion settings and three focus/checked states. Browser execution pending, not certified by lint. No payment/API/schema/provider activation. Require independent review and exact-head full/browser/build/promotion acceptance. Rollback source/token/script/test diff; historical149 unchanged.
