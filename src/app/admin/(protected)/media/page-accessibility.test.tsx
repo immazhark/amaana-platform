@@ -100,12 +100,12 @@ it("selects only linked content titles for media cards", async () => {
 
   expect(mocks.permission).toHaveBeenCalledWith("content.view");
   expect(mocks.assets).toHaveBeenCalledWith(expect.objectContaining({
-    include: {
+    select: expect.objectContaining({
       cause: { select: { title: true } },
       initiative: { select: { title: true } },
       story: { select: { title: true } },
       faithContent: { select: { title: true } },
-    },
+    }),
   }));
   expect(html).toContain("Synthetic linked initiative");
 });
