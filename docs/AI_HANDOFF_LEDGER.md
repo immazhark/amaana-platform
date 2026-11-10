@@ -17,3 +17,9 @@ Railway: prior website deployment fbceb0fb-5b36-40d2-bf81-e839c6160f8d SUCCESS a
 Next: inspect latest Railway website deployment and independently verify version/readiness; retain #684 financial activation hold. Then select the next bounded current-main task after checking overlap. Historical 149 classifications unchanged. Rollback: separately reviewed narrow revert of the four read projections and tests.
 
 Prior coordination records are preserved byte-for-byte under docs/archive/*-before-codex-20261111.md and in Git history. Their dated ownership and release claims are historical, not current.
+
+## 11 November 2026 IST — Codex to ChatGPT, owner-confirmed
+
+Owner explicitly confirmed Codex had stopped and transferred sole implementation-writing responsibility to ChatGPT. Incoming writer verified protected-target main at `8118c02422dace83cdbb00c77af376a1d0f9507f`, open drafts #753/#754/#684 and Railway production resource inventory. Coordination branch `docs/chatgpt-takeover-reference-review-20261111` opened from the verified main SHA, and `docs/AI_ACTIVE_WORK.md` updated to `CHATGPT_ACTIVE`. The preceding Codex entry above remains unchanged historical evidence.
+
+#753 head `216f2bc35cead55e47f80f1568f1321556f900ee`, CI `42888310882` SUCCESS at observation; #754 stacked head `ded5f4c0ee816acb9f8c252556bcfc0fcb84a436`, CI `42889006110` IN_PROGRESS. No existing implementation heads modified during this handoff. #684 payment change remains draft/held. Railway website last SLEEPING `aeccc2f8-eb93-4ba4-8da7-3445e89df5c6` at runtime source `03667a783ac1f42db4f880f29a6b864421c4e6ec`; public health identity not independently verified. Next: review/adopt relevant external engineering references, then complete exact-head release verification for #753 before #754. No background execution or production activation implied.
