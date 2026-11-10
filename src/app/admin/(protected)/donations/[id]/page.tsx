@@ -15,7 +15,29 @@ export default async function DonationDetailPage({ params }: Props) {
   const { id } = await params;
   const donation = await prisma.donation.findUnique({
     where: { id },
-    include: {
+    select: {
+      id: true,
+      referenceNumber: true,
+      status: true,
+      donorName: true,
+      isAnonymous: true,
+      donorEmail: true,
+      donorPhone: true,
+      givingIntent: true,
+      paymentMethod: true,
+      transferReference: true,
+      transferredAt: true,
+      transferEvidenceKey: true,
+      reconciliationNotes: true,
+      providerOrderId: true,
+      providerPaymentId: true,
+      receiptNumber: true,
+      amount: true,
+      refundedAmount: true,
+      createdAt: true,
+      capturedAt: true,
+      failedAt: true,
+      refundedAt: true,
       appeal: { select: { title: true } },
       events: {
         select: { id: true, eventType: true, providerEventId: true, processedAt: true },
