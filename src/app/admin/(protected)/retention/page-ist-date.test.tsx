@@ -71,3 +71,44 @@ describe("private retention review IST audit timestamps", () => {
     expect(mocks.history).not.toHaveBeenCalled();
   });
 });
+
+describe("private retention audit-event minimal projection", () => {
+  it("fetches only document review fields while keeping the reviewer and hold display", async () => {
+    mocks.history.mockResolvedValueOnce([{
+      entityId: "synthetic-request",
+      action: "assistance.document_legal_hold_placed",
+      metadata: { documentId: syntheticDoc.id, reason: "Synthetic legal hold" },
+      actor: { name: "Synthetic reviewer" },
+      createdAt: new Date("2026-11-10T00:00:00Z"),
+    }]);
+
+    const html = renderToStaticMarkup(await RetentionReviewPage({
+      searchParams: Promise.resolve({ state: "eligible" }),
+    }));
+
+    expect(mocks.permission).toHaveBeenCalledExactlyOnceWith("assistance.approve");
+    expect(mocks.history).toHaveBeenCalledExactlyOnceWith({
+      where: {
+        entityType: "AssistanceRequest",
+        entityId: { in: [syntheticDoc.assistanceRequestId] },
+        action: { in: [
+          "assistance.document_retention_reviewed",
+          "assistance.document_legal_hold_placed",
+          "assistance.document_legal_hold_released",
+          "assistance.document_deleted",
+        ] },
+      },
+      select: {
+        entityId: true,
+        action: true,
+        metadata: true,
+        createdAt: true,
+        actor: { select: { name: true } },
+      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    });
+    expect(html).toContain("Deletion suspended by hold");
+    expect(html).toContain("Synthetic reviewer");
+    expect(html).toContain("Synthetic-private-evidence.pdf");
+  });
+});
