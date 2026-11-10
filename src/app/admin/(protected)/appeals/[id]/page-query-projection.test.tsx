@@ -31,7 +31,7 @@ it("keeps private request verification out of an appeal-only viewer's query and 
   mocks.allowed.mockReturnValue(false);
 
   const html = await render();
-  expect(mocks.appeal.mock.calls[0]?.[0].include.assistanceRequest).toBeFalsy();
+  expect(mocks.appeal.mock.calls[0]?.[0].select.assistanceRequest).toBeFalsy();
   expect(mocks.privateRequest).not.toHaveBeenCalled();
   expect(mocks.allowed).toHaveBeenCalledWith(expect.anything(), "assistance.view");
   expect(html).not.toContain("SYNTHETIC-REQUEST");
@@ -45,7 +45,7 @@ it("keeps private request verification out of an appeal-only viewer's query and 
 
 it("reads only rendered update fields and the author's name", async () => {
   const html = await render();
-  expect(mocks.appeal.mock.calls[0]?.[0].include.updates).toEqual({
+  expect(mocks.appeal.mock.calls[0]?.[0].select.updates).toEqual({
     select: { id: true, title: true, content: true, isPublic: true, author: { select: { name: true } } },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
   });
@@ -54,7 +54,7 @@ it("reads only rendered update fields and the author's name", async () => {
 });
 it("limits linked private request data to the reference and displayed verification boundary", async () => {
   const html = await render();
-  expect(mocks.appeal.mock.calls[0]?.[0].include.assistanceRequest).toBeUndefined();
+  expect(mocks.appeal.mock.calls[0]?.[0].select.assistanceRequest).toBeUndefined();
   expect(mocks.privateRequest.mock.calls[0]?.[0]).toEqual({ where: { appealId: "synthetic-appeal" }, select: {
     referenceNumber: true, verification: { select: Object.fromEntries(Object.keys(verification).map(key => [key, true])) },
   } });
@@ -112,4 +112,34 @@ it("announces the public preview tab without changing the appeal destination", a
   expect(anchor).toContain('target="_blank"');
   expect(anchor).toContain('rel="noreferrer"');
   expect(anchor).toContain('View public page<span class="sr-only"> (opens in a new tab)</span>');
+});
+
+it("fetches only displayed Appeal editor fields and approved update-list fields", async () => {
+  const html = await render();
+  expect(mocks.permission).toHaveBeenCalledExactlyOnceWith("appeal.view");
+  expect(mocks.appeal).toHaveBeenCalledExactlyOnceWith({
+    where: { id: "synthetic-appeal" },
+    select: {
+      title: true,
+      status: true,
+      updatedAt: true,
+      slug: true,
+      category: true,
+      beneficiaryDisplayName: true,
+      beneficiaryLocation: true,
+      summary: true,
+      story: true,
+      goalAmount: true,
+      coverImageUrl: true,
+      isFeatured: true,
+      featuredOrder: true,
+      updates: {
+        select: { id: true, title: true, content: true, isPublic: true, author: { select: { name: true } } },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      },
+    },
+  });
+  expect(html).toContain("Synthetic appeal");
+  expect(html).toContain("Synthetic update content");
+  expect(html).toContain("Appeal editor");
 });
