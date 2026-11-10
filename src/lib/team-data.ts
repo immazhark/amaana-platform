@@ -5,7 +5,8 @@ export async function getPublishedTeam() {
   const groups = await prisma.teamGroup.findMany({
     where: { members: { some: { isPublished: true, deletedAt: null } } },
     orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
-    include: {
+    select: {
+      id: true, key: true, title: true, description: true,
       members: {
         where: { isPublished: true, deletedAt: null },
         orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
