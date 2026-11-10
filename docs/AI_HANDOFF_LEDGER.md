@@ -2810,3 +2810,18 @@ CHATGPT_ACTIVE sole writer continued #719 head a8f21acb96a20b44078d8576845f3b21a
 ## 2026-11-09 IST — capability enum correction
 
 Independent review PASS. Three synthetic RED failures; GREEN 18 focused tests. Complete local suite 2,814 PASS / 20 isolated database skips. Scoped lint PASS. No provider, schema, webhook or live activation. Exact-head hosted acceptance and distinct promotion required before guarded merge.
+
+## 2026-11-09 IST — donation intention error reset
+
+Sole CHATGPT writer. Actual JSX AST regression failed on absent change recovery, then focused 3/3 PASS after fieldset change clears only givingIntent. Scoped lint and independent review PASS. Four mocked browser variants now check replacement selection clears invalid state and linked error without another order request; browser execution pending. UI-only, no schema/payment/provider/live activation. Exact-head full acceptance and separate promotion required; rollback handler/test diff.
+
+## 2026-11-09 IST — delayed checkout initialization race
+
+Existing #722 checkout batch extended: actual mount updater overwrote opening/verifying with ready. Phase-table regression RED exactly 2/5, then GREEN 8 focused cases after allowing only loading to advance to ready. Scoped lint PASS. Preserve active locks/status; no server/payment provider/schema/live activation. New exact-head application/browser acceptance required; older-head checks are superseded. Rollback updater/test diff.
+## 2026-11-09 IST — acknowledgement stale-response guard
+
+Actual-effect synthetic regression RED on both delayed success/failure after cleanup; GREEN four lifecycle controls plus existing date test (5/5). TypeScript, scoped lint and independent review PASS. First broad suite: 2,817 pass, 20 isolated DB skips, one unrelated source-lint configuration test exceeded its existing 5-second timeout during concurrent lint. Sequential full rerun pending; no timeout/control weakened. No token policy, API, schema or provider change. Full exact-head/browser/promotion gates required. Rollback component/test diff.
+
+## 2026-11-09 IST — direct-transfer late response navigation
+
+Extend #723 response-lifecycle batch with original form connectivity guard before success navigation. Actual extracted submit regression RED disconnected form (connected control PASS); GREEN 6 combined direct/ack lifecycle tests. One report request and retained lock asserted. Scoped lint PASS; no API/report cancellation/provider/schema/live change. Full exact-head acceptance and promotion required; rollback form/test diff.

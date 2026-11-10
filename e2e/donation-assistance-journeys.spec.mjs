@@ -195,6 +195,12 @@ test.describe('donation journey without real payment', () => {
       await expect(page.locator('#giving-intent-error')).toHaveText('Choose a supported intention.');
       if (selectedIntent) await expect(target).toBeChecked();
       else await expect(target).not.toBeChecked();
+      const replacement = page.locator(`input[name="givingIntent"][value="${selectedIntent === 'SADAQAH' ? 'GENERAL' : 'SADAQAH'}"]`);
+      await replacement.check();
+      await expect(replacement).toBeFocused();
+      await expect(group).not.toHaveAttribute('aria-invalid');
+      await expect(group).not.toHaveAttribute('aria-describedby');
+      await expect(page.locator('#giving-intent-error')).toHaveCount(0);
       expect(orderCalls).toBe(1);
     });
   }
