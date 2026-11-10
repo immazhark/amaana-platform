@@ -1,9 +1,36 @@
+## 2026-11-10 IST — CHATGPT_ACTIVE final accepted-source housekeeping batch
+
+Sole writer combines reviewed homepage membership scope #714 and exact style-governance scope #724 after released checkout main2562af2c. Preserve all histories. No new source behavior beyond reviewed query bound and isolated exact-white token/lint expansion. Keep #724 until combined #714 exact-head full/browser/promotion acceptance and guarded merge; close as superseded afterwards. Financial QR #684 remains separately held. Historical149 unchanged.
+
 ## 2026-11-09 IST — CODEX_ACTIVE bounded homepage programme lookup
 
 **CODEX_ACTIVE sole implementation writer.** Branch `fix/homepage-programme-membership-bound-20261109`, stacked base #713 `1a070db8c3a3fe6db839f9953733a379cd2fd247`. The dynamic homepage fetched every published initiative slug although its membership consumers consult only canonical top-level programmes, direct category initiative destinations and the Eid growth flag. Derive a deduplicated finite candidate set from existing content/routing and constrain only that membership query. Unique Initiative.slug bounds the result without an arbitrary take. Retain initiative/cause publication filters and all metrics/media queries. Two synthetic regressions reproduce exactly 2 failures/10 existing passes before correction; 12/12 focused tests and scoped ESLint pass after correction; full native suite 2,745 PASS/20 isolated DB SKIP. Strict TypeScript and hosted exact-head acceptance pending at publication. Independent read-only review found no required issue and confirmed import graph has no cycle. No new programme/content assertion, private data, schema, payment, provider or infrastructure change. Require dependency release, full exact-head checks, separate ready-state, expected-head merge and independent runtime verification. Historical 149 classifications unchanged; rollback only these query/test changes.
+## 2026-11-09 IST — CHATGPT_ACTIVE combined checkout lifecycle candidate
+
+Sole writer consolidates #722 and #723 after released main efd1eb0, preserving all parents and coordination histories. Includes intention error reset, delayed initialization phase preservation, stale acknowledgement callback guard and direct-transfer late-navigation guard. No schema, gateway API/provider or financial activation. Keep #723 preserved until combined #722 full exact-head/browser/promotion acceptance and guarded merge; then close superseded PR. #714 remains separate; #684 financially held. Rollback component/test diffs.
+
+## 2026-11-09 IST — CHATGPT_ACTIVE checkout phase race correction
+
+Extend existing checkout PR #722 with delayed mount-frame phase preservation. Independent review executed actual updater: opening/verifying incorrectly become ready. RED phase table then loading-only ready transition. No gateway/server/schema/live activation. Prior candidate checks do not certify new head.
+
+## 2026-11-09 IST — CHATGPT_ACTIVE donation intention error reset
+
+Sole writer on fix/donation-intention-error-reset-20261109 from main 7fcd9f4. Reproduce missing givingIntent change handler using actual JSX AST; then clear only that field error on change. UI-only, no payment/schema/provider activation. Rollback: revert handler/test. Hosted browser and exact-head acceptance remain required.
+## 2026-11-09 IST — CHATGPT_ACTIVE AF-R066 donation-method style scope
+
+Sole writer on chore/donation-method-style-governance-20261109 from main efd1eb0. Govern existing donation-methods.module.css, replace two #fff literals with exact-white canonical token, preserve all other CSS declarations. Prove lint RED then GREEN and exact declaration equivalence after token expansion. No layout/content/payment/provider/schema changes. Exact-head/browser acceptance required; rollback three implementation files. AF-R066/R061 remain Partial.
+
 ## 2026-11-09 IST — CHATGPT_ACTIVE offline fund-policy window guard
 
 **CHATGPT_ACTIVE sole repository implementation writer.** Branch `feat/giving-policy-window-contract-20261109` based on released giving foundation `52ef89bf07e8d6a679ae5d8c00552c91fb41e939`. Scope: standalone General-purpose fund/policy effective-date, expiry and evidence checks against an explicit Asia/Kolkata local calendar date, with negative synthetic tests first. Not a source of approved fund facts and not linked to active checkout, provider, auth, schema, financial operation or notifications. Full scope `docs/mission-control/2026-11-09-giving-policy-window-scope.md`; other open PRs have independent release gates. No 149 historical promotion.
+## 2026-11-09 IST — CHATGPT_ACTIVE direct-transfer late navigation guard
+
+Continue existing #723 UI response-lifecycle batch: actual submit synthetic regression for successful report after original form disconnects. Preserve one submitted report and uncertainty locks; guard only late navigation. No submission cancellation, API/schema/provider change or live transfer. RED then GREEN and required exact-head acceptance.
+
+## 2026-11-09 IST — CHATGPT_ACTIVE acknowledgement stale-response guard
+
+Sole writer on fix/acknowledgement-stale-response-20261109 from main 7fcd9f4. Synthetic actual-effect regression for delayed response after cleanup, then cancellation guard on response state writes. UI lifecycle only; no auth/token policy, API, schema or provider change. Rollback component/test diff. Exact-head acceptance required.
+
 ## 2026-11-09 IST — CHATGPT_ACTIVE capability enum correction
 
 Sole writer on fix/giving-capability-primitive-enums-20261109 from main 4d7a0fe. Independent review reproduced shared array acceptance in environment/method/frequency. Synthetic RED then primitive-string correction; offline capability policy only, no provider/payment/schema/live activation. Rollback: revert source/test correction. Required exact-head and separate promotion checks remain.
