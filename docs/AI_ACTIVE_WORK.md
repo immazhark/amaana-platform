@@ -1,3 +1,7 @@
+## 2026-11-10 IST — CHATGPT_ACTIVE AF-R012 home-carousel actual-session boundary
+
+Owner-directed sole implementation writer on `test/home-carousel-action-session-20261110` from verified protected main `8fa49759303bd7320916977a126482dfcd725469`. Add coverage for the existing Home Carousel server action using real `requirePermission` and synthetic session cookies/users. Deny anonymous, malformed, expired/revoked and unrelated roles before any transaction or cache mutation; retain a least-privilege positive validation control. No application runtime, RBAC policy, provider, donor record, schema, cron or financial change. Existing #729 AF-R047 report correction remains separate and under its own exact-head browser/CI gate; #684 QR remains financially held. This is coverage only, not a claimed runtime fix or closure of AF-R012/149. Require focused hosted test, exact-head full CI, separate ready-state, guarded merge, then verify Railway/public runtime when applicable. Rollback test and coordination-only changes.
+
 ## 2026-11-10 IST — CHATGPT_ACTIVE media action session coverage
 
 Sole writer adds AF-R012 existing-behavior actual-auth media coverage, stacked after #72759db5b17. Four entrypoints plus appeal-target secondary view permission; synthetic cookies/users/records/storage tripwires only. No auth policy/runtime/data/schema/provider change. Controlled mutation proof and required exact-head acceptance; rollback tests/coordination only.
