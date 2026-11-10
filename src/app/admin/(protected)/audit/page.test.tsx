@@ -62,3 +62,39 @@ it("renders audit timestamps in IST independently of the host zone", async () =>
   expect(html).toContain("Time (IST)");
   expect(mocks.permission).toHaveBeenCalledWith("rbac.manage");
 });
+
+it("AF-R012 reads only displayed audit-event fields while preserving admin history output", async () => {
+  mocks.find.mockResolvedValue([{
+    id: "synthetic-audit-record",
+    createdAt: new Date("2026-11-10T06:00:00Z"),
+    action: "synthetic.review",
+    entityType: "Synthetic",
+    entityId: "synthetic-entity",
+    metadata: { decision: "synthetic" },
+    actor: { name: "Synthetic reviewer", email: "reviewer@example.invalid" },
+  }]);
+
+  const rendered = renderToStaticMarkup(
+    await AuditHistoryPage({ searchParams: Promise.resolve({ action: "synthetic.review", entityType: "Synthetic" }) }),
+  );
+
+  expect(mocks.permission).toHaveBeenCalledWith("rbac.manage");
+  expect(mocks.find).toHaveBeenCalledWith(expect.objectContaining({
+    where: { action: "synthetic.review", entityType: "Synthetic" },
+    select: {
+      id: true,
+      createdAt: true,
+      action: true,
+      entityType: true,
+      entityId: true,
+      metadata: true,
+      actor: { select: { name: true, email: true } },
+    },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+  }));
+  expect(rendered).toContain("Synthetic reviewer");
+  expect(rendered).toContain("reviewer@example.invalid");
+  expect(rendered).toContain("synthetic.review");
+  expect(rendered).toContain("synthetic-entity");
+  expect(rendered).toContain("synthetic");
+});

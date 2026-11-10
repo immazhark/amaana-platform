@@ -1,6 +1,13 @@
 import type { TeamGroup, TeamMember } from "@prisma/client";
 
-type Props = { groups: TeamGroup[]; member?: TeamMember };
+type TeamGroupOption = Pick<TeamGroup, "id" | "title">;
+type TeamMemberEditorFields = Pick<
+  TeamMember,
+  | "id" | "slug" | "groupId" | "fullName" | "designation"
+  | "bio" | "linkedinUrl" | "email" | "photoAlt"
+  | "photoStorageKey" | "isPublished"
+>;
+type Props = { groups: TeamGroupOption[]; member?: TeamMemberEditorFields };
 
 export function TeamMemberFields({ groups, member }: Props) {
   const prefix = member?.id ?? "new";

@@ -35,7 +35,15 @@ export default async function AuditHistoryPage({ searchParams }: Props) {
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
   const events = await prisma.auditEvent.findMany({
     where,
-    include: { actor: { select: { name: true, email: true } } },
+    select: {
+      id: true,
+      createdAt: true,
+      action: true,
+      entityType: true,
+      entityId: true,
+      metadata: true,
+      actor: { select: { name: true, email: true } },
+    },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     skip: pagination.skip,
     take: pagination.pageSize,
