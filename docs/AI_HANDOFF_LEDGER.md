@@ -2897,3 +2897,7 @@ Sole writer under owner directive, independent branch `fix/admin-assistance-docu
 ## 2026-11-10 IST — AF-R012 Assistance linked-document selection RED
 
 PR #740 draft test-only head `bdc4386806b704baa94b7302f26ad5aaf69e9584`; hosted Actions `42797762154` fast `129767281819` failed exactly one expected assertion: the document relation still used `documents: true` instead of the four rendered fields. 290 other test files passed, three opt-in groups skipped; downstream jobs skipped after RED, not passes. Limit only nested documents relation to id, originalName, mimeType, sizeBytes; preserve all other query relations and server authorization. Full fresh GREEN, independent review, distinct promotion and protected merge pending. Historical 149 unchanged; no live data, media, payment or infrastructure action.
+
+## 2026-11-10 IST — Assistance document list corrected candidate
+
+After hosted native RED `42797762154`, source commit `8a15e6a6d5549dba3f00693ca81d84511fca464d` replaced only `documents: true` inside the permission-protected request detail query with an explicit id, originalName, mimeType, sizeBytes projection. Existing private document URL resolution, access policy, edits, case verification and all other query relations unchanged. Test `page-query-projection.test.tsx` remains an exact shape guard; full fresh candidate CI and separate ready-state acceptance are still required. No claim of deployment, private record access or historic 149 advancement.
