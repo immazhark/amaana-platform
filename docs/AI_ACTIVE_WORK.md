@@ -1,3 +1,7 @@
+## 2026-11-10 IST — CHATGPT_ACTIVE AF-R066 direct-transfer style scope
+
+Sole writer on chore/direct-transfer-style-governance-20261110 stacked after #714606ae126. Govern direct-transfer-form.module.css, reuse exact existing blue/white tokens and add collision-free exact-value transfer tokens. No rendering declarations beyond literal substitution; native lint RED then GREEN and byte parity after expansion. No API/provider/schema/financial activation. Do not merge ahead of #714; full exact-head/browser/promotion required. AF-R066/R061 remain Partial.
+
 ## 2026-11-10 IST — CHATGPT_ACTIVE final accepted-source housekeeping batch
 
 Sole writer combines reviewed homepage membership scope #714 and exact style-governance scope #724 after released checkout main2562af2c. Preserve all histories. No new source behavior beyond reviewed query bound and isolated exact-white token/lint expansion. Keep #724 until combined #714 exact-head full/browser/promotion acceptance and guarded merge; close as superseded afterwards. Financial QR #684 remains separately held. Historical149 unchanged.
