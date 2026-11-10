@@ -2839,3 +2839,7 @@ Stacked after #714606ae126. Native lint RED24 hex violations. Exact blue/white r
 ## 2026-11-10 IST — AF-R060/R061/R066 donation form consolidation
 
 Native RED22 violations reproduced before work. Selector-specific root consolidation preserves grouped/media positions; exact existing tokens reused plus four checkout role values. GREEN governed Stylelint, browser spec syntax and diff checks. Original CSS retained as synthetic fixture; 12 browser cases compare all computed CSS properties and element rectangles across six widths/two motion settings and three focus/checked states. Browser execution pending, not certified by lint. No payment/API/schema/provider activation. Require independent review and exact-head full/browser/build/promotion acceptance. Rollback source/token/script/test diff; historical149 unchanged.
+
+## 2026-11-10 IST — AF-R012 assistance server-action sessions
+
+Added existing-behavior synthetic actual-auth coverage across six exported entrypoints: anonymous/malformed/expired-or-revoked/unrelated permission denial before private effects, independent conversion permissions and least-privilege positive version-validation controls. Focused34 PASS; controlled removal of conversion assistance.view produced exactly1 intended failure, then source restored. Scoped lint/type checks; hosted exact-head acceptance required. No runtime defect or whole AF-R012 closure claimed; no production source, DB/provider/schema changes. Rollback test/coordination.

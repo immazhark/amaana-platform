@@ -1,3 +1,7 @@
+## 2026-11-10 IST — CHATGPT_ACTIVE assistance action session coverage
+
+Sole writer adds AF-R012 existing-behavior coverage, stacked after #726b2255174. Actual auth with synthetic cookies/users exercises six exported assistance entrypoints before private operations, including independent conversion permissions. No runtime fix or auth-policy change; no real DB/data. Controlled sensitivity proof and exact-head acceptance required; rollback test/coordination only.
+
 ## 2026-11-10 IST — CHATGPT_ACTIVE donation form cascade governance
 
 Sole writer on refactor/donation-form-style-governance-20261110 from main dda27a2. Native RED22 violations already reproduced. Consolidate only exact root selectors with individually reviewed first/last destinations, retain grouped/media rules, tokenize exact colors, add governed target. Compare original/new computed styles in synthetic browser across six widths, focus/checked and reduced motion. No payment/API/schema/provider change. Required exact-head acceptance and rollback stylesheet/token/script diff.
