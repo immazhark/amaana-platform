@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync, lstatSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -211,6 +211,11 @@ export function summarizeClientReferenceJs(appPaths, readManifest, rootMainFiles
       matched.add(entry);
       for (const script of paths) assets.add(script);
     }
+    // A nonempty map with only sibling/error entries cannot establish this
+    // route's assignment. Shared runtime alone must not disguise the mismatch.
+    if (Object.keys(manifest.entryJSFiles).length && !matched.size) {
+      throw new Error("No matching client-reference JavaScript entries");
+    }
     let jsBytes = 0;
     for (const asset of assets) {
       if (!sizes.has(asset)) {
@@ -226,8 +231,12 @@ export function summarizeClientReferenceJs(appPaths, readManifest, rootMainFiles
 
 function walkBuildAssets(directory, root = directory) {
   if (!existsSync(directory)) throw new Error("Next.js static asset directory is missing");
+  const directoryStat = lstatSync(directory);
+  if (directoryStat.isSymbolicLink()) throw new Error("Symbolic links are not supported in static build assets");
+  if (!directoryStat.isDirectory()) throw new Error("Next.js static asset path is not a directory");
   return readdirSync(directory, { withFileTypes: true }).flatMap(item => {
     const path = join(directory, item.name);
+    if (item.isSymbolicLink()) throw new Error("Symbolic links are not supported in static build assets");
     if (item.isDirectory()) return walkBuildAssets(path, root);
     if (!item.isFile() || !/\.(js|css)$/.test(item.name)) return [];
     return [{ path: path.slice(root.length + 1).replaceAll("\\", "/"), bytes: statSync(path).size }];
