@@ -112,3 +112,35 @@ describe("private retention audit-event minimal projection", () => {
     expect(html).toContain("Synthetic-private-evidence.pdf");
   });
 });
+
+
+describe("private retention document minimum projection", () => {
+  it("reads only the private document list fields and the existing case relation", async () => {
+    const html = renderToStaticMarkup(await RetentionReviewPage({
+      searchParams: Promise.resolve({ state: "eligible" }),
+    }));
+    expect(mocks.permission).toHaveBeenCalledExactlyOnceWith("assistance.approve");
+    expect(mocks.docs).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
+      select: {
+        id: true,
+        assistanceRequestId: true,
+        originalName: true,
+        mimeType: true,
+        sizeBytes: true,
+        assistanceRequest: {
+          select: {
+            id: true,
+            referenceNumber: true,
+            applicantName: true,
+            status: true,
+            createdAt: true,
+            appeal: { select: { status: true, title: true } },
+          },
+        },
+      },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+    }));
+    expect(html).toContain("Synthetic-private-evidence.pdf");
+    expect(html).toContain("SYNTHETIC-REQ-01");
+  });
+});
