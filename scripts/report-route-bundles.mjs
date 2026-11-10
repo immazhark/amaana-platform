@@ -8,6 +8,8 @@ import { pathToFileURL } from "node:url";
  */
 function normalizedStaticAsset(value) {
   if (typeof value !== "string") return null;
+  // Reject empty segments before stripping _next/ or its leading slash.
+  if (value.includes("//")) return null;
   const normalized = value.replace(/^\/?_next\//, "").replace(/^\//, "");
   if (!/^static\/[A-Za-z0-9_./-]+\.(?:js|css)$/.test(normalized)) return null;
   // Distinct manifest strings can resolve to the same on-disk file.
