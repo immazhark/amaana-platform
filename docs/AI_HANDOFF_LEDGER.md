@@ -2851,3 +2851,7 @@ Stacked after #72759db5b17. Actual-auth22 synthetic session/permission cases PAS
 ## 2026-11-10 IST — published-media secondary permission evidence
 
 Extended #728 with public-edit denial/approved control and draft-edit control using actual auth. Guard-removal mutation RED exactly1, restored GREEN25 focused. Dedicated synthetic asset lookup preserves initial denial-before-read assertions. Full2,894 PASS/20 isolated DB SKIP; TypeScript/scoped lint/independent review PASS. Test-only, no runtime auth/publication/storage policy change; require fresh final-head hosted acceptance.
+
+## 2026-11-10 IST — AF-R012 Home Carousel action actual-session coverage
+
+Owner-directed CHATGPT_ACTIVE continuation on `test/home-carousel-action-session-20261110` from protected main `8fa49759303bd7320916977a126482dfcd725469`. Added synthetic actual-auth session regression test `src/app/admin/(protected)/home-carousel/authorization.test.ts`: anonymous/malformed/expired-or-revoked/unrelated permission denial before transaction and cache effects; least-privilege editor positive validation. Existing production Carousel action and policy unchanged. Hosted tests/exact-head acceptance pending; do not claim tests passed or complete AF-R012. Independent #729 still under browser/CI gate, #684 payment QR still needs separately scoped live routing certification. No production data, provider, schema, cron, or infrastructure operation. Rollback only test/coordination additions; 149-item classification unchanged.
