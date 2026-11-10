@@ -2,6 +2,10 @@
 
 Owner-directed transfer from prior ChatGPT Work session. Sole implementation writer on `fix/route-asset-prefix-alias-20261110`, based on protected main `68dbf3067e40d71ed4e3248e7d1da04cac9ae323`. The current route-asset normalizer accepts `/_next//static/...` aliases despite rejecting other duplicate slash segments. Reproduce with a fail-first synthetic CLI/helper regression, then reject doubled separators before prefix normalization. Keep normal `_next/static/...` support; do not change actual website runtime, routes, bundles, JS/CSS budgets or claimed Web Vitals. #728 remains under exact-head browser acceptance; #684 remains financially held. Separate exact-head CI, ready-state and guarded merge required. Historical 149 unchanged. Rollback: reporter/test diff.
 
+## 2026-11-10 IST — CHATGPT_ACTIVE media action session coverage
+
+Sole writer adds AF-R012 existing-behavior actual-auth media coverage, stacked after #72759db5b17. Four entrypoints plus appeal-target secondary view permission; synthetic cookies/users/records/storage tripwires only. No auth policy/runtime/data/schema/provider change. Controlled mutation proof and required exact-head acceptance; rollback tests/coordination only.
+
 ## 2026-11-10 IST — CHATGPT_ACTIVE assistance action session coverage
 
 Sole writer adds AF-R012 existing-behavior coverage, stacked after #726b2255174. Actual auth with synthetic cookies/users exercises six exported assistance entrypoints before private operations, including independent conversion permissions. No runtime fix or auth-policy change; no real DB/data. Controlled sensitivity proof and exact-head acceptance required; rollback test/coordination only.
