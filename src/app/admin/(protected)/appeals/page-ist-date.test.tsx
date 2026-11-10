@@ -48,7 +48,7 @@ describe("appeal moderation list IST update date", () => {
 });
 
 describe("admin appeal listing minimum staff projection", () => {
-  it("only staff names are queried for the admin appeal listing", async () => {
+  it("only rendered appeal and staff fields are queried for the admin list", async () => {
     mocks.findMany.mockResolvedValueOnce([{
       id: "synthetic-appeal", title: "Synthetic approved case", slug: "synthetic-case",
       status: "DRAFT", goalAmount: money(5000), createdBy: { name: "Synthetic editor" },
@@ -59,10 +59,17 @@ describe("admin appeal listing minimum staff projection", () => {
 
     expect(mocks.permission).toHaveBeenCalledWith("appeal.view");
     expect(mocks.findMany).toHaveBeenCalledWith(expect.objectContaining({
-      include: {
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        status: true,
+        goalAmount: true,
+        updatedAt: true,
         createdBy: { select: { name: true } },
         reviewedBy: { select: { name: true } },
       },
+      orderBy: [{ updatedAt: "desc" }, { id: "desc" }],
     }));
     expect(html).toContain("Synthetic editor");
     expect(html).toContain("Synthetic reviewer");
