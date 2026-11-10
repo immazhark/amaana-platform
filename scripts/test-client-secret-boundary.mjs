@@ -179,3 +179,24 @@ test("scanner rejects public environment files regardless of secret marker conte
   const safe = runScanner("Site verification text", {}, ".well-known/verification.txt", "public");
   assert.equal(safe.status, 0, safe.stderr);
 });
+
+for (const filename of ["config.cjs", "config.js.bak", "download"]) {
+  for (const assetRoot of ["public", ".next/static"]) {
+    test(`AF-R007 scans ${filename} in ${assetRoot} without disclosing canaries`, () => {
+      const result = runScanner(Buffer.from(`synthetic embedded ${canary}`), {}, filename, assetRoot);
+      assert.equal(result.status, 1, "Publicly served files must not bypass scanning by extension");
+      assert.match(result.stderr, /REDACTED SECRET VALUE/);
+      assert.equal((result.stderr + result.stdout).includes(canary), false);
+    });
+  }
+}
+
+test("AF-R007 accepts clean binary assets and catches embedded canary bytes", () => {
+  const header = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0, 0xff, 0xfe]);
+  const clean = runScanner(header, {}, "fixture.png", "public");
+  assert.equal(clean.status, 0, clean.stderr);
+  const leaked = runScanner(Buffer.concat([header, Buffer.from(canary)]), {}, "fixture.png", "public");
+  assert.equal(leaked.status, 1);
+  assert.match(leaked.stderr, /REDACTED SECRET VALUE/);
+  assert.equal((leaked.stderr + leaked.stdout).includes(canary), false);
+});
