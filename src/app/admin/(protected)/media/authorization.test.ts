@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { beforeEach, expect, it, vi } from "vitest";
-const mocks = vi.hoisted(() => ({ cookie: vi.fn(), user: vi.fn(), privileged: vi.fn(), appeal: vi.fn() }));
+const mocks = vi.hoisted(() => ({ cookie: vi.fn(), user: vi.fn(), privileged: vi.fn(), appeal: vi.fn(), asset: vi.fn() }));
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: mocks.cookie }) }));
 vi.mock("next/navigation", () => ({ redirect: (path: string) => { throw new Error("Synthetic redirect: " + path); } }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.privileged }));
@@ -9,7 +9,7 @@ vi.mock("@/lib/server-log", () => ({ logServerError: mocks.privileged }));
 vi.mock("@/lib/prisma-transaction", () => ({ withSerializableTransactionRetry: mocks.privileged }));
 vi.mock("@/lib/prisma", () => ({ prisma: {
   user: { findFirst: mocks.user },
-  mediaAsset: { findUniqueOrThrow: mocks.privileged, create: mocks.privileged, updateMany: mocks.privileged, delete: mocks.privileged },
+  mediaAsset: { findUniqueOrThrow: mocks.asset, create: mocks.privileged, updateMany: mocks.privileged, delete: mocks.privileged },
   appeal: { findUnique: mocks.appeal },
   auditEvent: { create: mocks.privileged }, notification: { create: mocks.privileged },
   $transaction: mocks.privileged,
@@ -22,7 +22,7 @@ const actions = { createMediaAsset, updateMediaAsset, setMediaPublication, delet
 const permissions = { createMediaAsset: "content.update", updateMediaAsset: "content.update", setMediaPublication: "content.approve", deleteMediaAsset: "content.approve" };
 const errors = { createMediaAsset: "Choose a single valid content target", updateMediaAsset: "Media record is required", setMediaPublication: "Use a single media ID", deleteMediaAsset: "Use a single text media ID" };
 beforeEach(() => {
-  vi.clearAllMocks(); mocks.appeal.mockResolvedValue(null); mocks.cookie.mockReturnValue({ value: token }); mocks.user.mockResolvedValue(user(["content.view"]));
+  vi.clearAllMocks(); mocks.asset.mockResolvedValue(null); mocks.appeal.mockResolvedValue(null); mocks.cookie.mockReturnValue({ value: token }); mocks.user.mockResolvedValue(user(["content.view"]));
   mocks.privileged.mockImplementation(() => { throw new Error("Unexpected private assistance operation"); });
 });
 for (const [name, action] of Object.entries(actions)) {
@@ -35,6 +35,7 @@ for (const [name, action] of Object.entries(actions)) {
       if (scenario === "anonymous" || scenario === "malformed") expect(mocks.user).not.toHaveBeenCalled();
       else expect(mocks.user).toHaveBeenCalledWith(expect.objectContaining({ where: { status: "ACTIVE", sessions: { some: { tokenHash, expiresAt: { gt: expect.any(Date) } } } } }));
       expect(mocks.appeal).not.toHaveBeenCalled();
+    expect(mocks.asset).not.toHaveBeenCalled();
     expect(mocks.privileged).not.toHaveBeenCalled();
     });
   }
@@ -45,6 +46,7 @@ for (const [name, action] of Object.entries(actions)) {
     await expect(action(new FormData())).rejects.toThrow(errors[name as keyof typeof errors]);
     expect(mocks.user).toHaveBeenCalled();
     expect(mocks.appeal).not.toHaveBeenCalled();
+    expect(mocks.asset).not.toHaveBeenCalled();
     expect(mocks.privileged).not.toHaveBeenCalled();
   });
 }
@@ -55,6 +57,26 @@ for (const canView of [false, true]) {
     await expect(createMediaAsset(form)).rejects.toThrow(canView ? "Appeal is not available" : "Synthetic redirect: /admin/forbidden");
     if (canView) expect(mocks.appeal).toHaveBeenCalledWith({ where: { id: "synthetic-appeal" }, select: { id: true, status: true } });
     else expect(mocks.appeal).not.toHaveBeenCalled();
+    expect(mocks.asset).not.toHaveBeenCalled();
     expect(mocks.privileged).not.toHaveBeenCalled();
   });
 }
+
+for (const canApprove of [false, true]) {
+  it("published media edit independently requires content.approve=" + canApprove, async () => {
+    mocks.user.mockResolvedValue(user(canApprove ? ["content.update", "content.approve"] : ["content.update"]));
+    mocks.asset.mockResolvedValue({ isPublic: true, storageKey: null, kind: "IMAGE" });
+    const form = new FormData(); form.set("id", "synthetic-published"); form.set("expectedUpdatedAt", "2026-11-10T00:00:00.000Z");
+    await expect(updateMediaAsset(form)).rejects.toThrow(canApprove ? "Media must retain an approved public URL" : "Published media requires approval permission to edit");
+    expect(mocks.asset).toHaveBeenCalledWith({ where: { id: "synthetic-published" } });
+    expect(mocks.privileged).not.toHaveBeenCalled();
+  });
+}
+it("draft media editing does not require publication approval", async () => {
+  mocks.user.mockResolvedValue(user(["content.update"]));
+  mocks.asset.mockResolvedValue({ isPublic: false, storageKey: null, kind: "IMAGE" });
+  const form = new FormData(); form.set("id", "synthetic-draft"); form.set("expectedUpdatedAt", "2026-11-10T00:00:00.000Z");
+  await expect(updateMediaAsset(form)).rejects.toThrow("Media must retain an approved public URL");
+  expect(mocks.asset).toHaveBeenCalledWith({ where: { id: "synthetic-draft" } });
+  expect(mocks.privileged).not.toHaveBeenCalled();
+});

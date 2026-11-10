@@ -2847,3 +2847,7 @@ Added existing-behavior synthetic actual-auth coverage across six exported entry
 ## 2026-11-10 IST — AF-R012 media action sessions
 
 Stacked after #72759db5b17. Actual-auth22 synthetic session/permission cases PASS across four media actions including independent appeal.view requirement before target lookup/upload and scoped lookup positive control. Removing that guard caused exactly1 intended failure; source restored. Full2,891 PASS/20 isolated DB SKIP; type/scoped lint and independent review PASS. Coverage only, no runtime fix or full AF-R012 closure. No production data/schema/provider changes. Required final exact-head/full/promotion before guarded merge. Rollback tests/coordination.
+
+## 2026-11-10 IST — published-media secondary permission evidence
+
+Extended #728 with public-edit denial/approved control and draft-edit control using actual auth. Guard-removal mutation RED exactly1, restored GREEN25 focused. Dedicated synthetic asset lookup preserves initial denial-before-read assertions. Full2,894 PASS/20 isolated DB SKIP; TypeScript/scoped lint/independent review PASS. Test-only, no runtime auth/publication/storage policy change; require fresh final-head hosted acceptance.
