@@ -214,7 +214,7 @@ describe("donation detail minimum linked-record projections", () => {
   it("fetches only the displayed appeal title", async () => {
     const html = await renderDonation();
     expect(mocks.findDonation).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
-      include: expect.objectContaining({ appeal: { select: { title: true } } }),
+      select: expect.objectContaining({ appeal: { select: { title: true } } }),
     }));
     expect(html).toContain("Synthetic approved appeal");
     expect(mocks.permission).toHaveBeenCalledExactlyOnceWith("donation.view");
@@ -230,7 +230,7 @@ describe("donation detail minimum linked-record projections", () => {
     }));
     const html = await renderDonation();
     expect(mocks.findDonation).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({
-      include: expect.objectContaining({
+      select: expect.objectContaining({
         events: {
           select: { id: true, eventType: true, providerEventId: true, processedAt: true },
           orderBy: [{ processedAt: "desc" }, { id: "desc" }],
