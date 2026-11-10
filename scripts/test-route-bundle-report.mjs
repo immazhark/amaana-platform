@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -659,3 +659,63 @@ test("AF-R047 rejects doubled Next asset-prefix separators without rejecting can
     }), [], () => 13,
   )[0].jsBytes, 13);
 });
+
+for (const [label, entries] of [
+  ["sibling page", { "[project]/src/app/other/page": ["static/chunks/other.js"] }],
+  ["unrelated layout", { "[project]/src/app/other/layout": [] }],
+  ["unrelated error", { "[project]/src/app/global-error": [] }],
+]) {
+  for (const shared of [[], ["static/chunks/runtime.js"]]) {
+    test(`AF-R047 rejects unmatched nonempty JS map: ${label}, shared=${shared.length}`, () => {
+      let measured = false;
+      assert.throws(() => reporter.summarizeClientReferenceJs(
+        { "/donate/page": "/donate" },
+        page => jsReferenceSource(page, entries), shared,
+        () => { measured = true; return 100; },
+      ), /No matching client-reference JavaScript entries/);
+      assert.equal(measured, false, "Mismatched attribution must fail before measuring shared assets");
+    });
+  }
+}
+
+test("AF-R047 preserves empty JS maps and matching empty ancestor entries", () => {
+  for (const entries of [{}, { "[project]/src/app/layout": [] }]) {
+    const rows = reporter.summarizeClientReferenceJs(
+      { "/donate/page": "/donate" }, page => jsReferenceSource(page, entries),
+      ["static/chunks/runtime.js"], () => 100,
+    );
+    assert.deepEqual(rows, [{ route: "/donate", appPath: "/donate/page", jsBytes: 100, scriptCount: 1 }]);
+  }
+});
+
+for (const kind of ["js", "css", "directory", "root"]) {
+  test(`AF-R047 rejects symlinked static build assets: ${kind}`, () => {
+    const directory = mkdtempSync(join(tmpdir(), "amaana-symlink-assets-"));
+    try {
+      const build = join(directory, ".next");
+      const actual = join(directory, "synthetic-assets");
+      mkdirSync(build);
+      mkdirSync(actual);
+      writeFileSync(join(actual, "asset.js"), "synthetic");
+      writeFileSync(join(actual, "asset.css"), "synthetic");
+      writeFileSync(join(build, "app-path-routes-manifest.json"), JSON.stringify({ "/page": "/" }));
+      if (kind === "root") {
+        symlinkSync(actual, join(build, "static"), "dir");
+      } else {
+        mkdirSync(join(build, "static"));
+        symlinkSync(kind === "directory" ? actual : join(actual, `asset.${kind}`),
+          join(build, "static", kind === "directory" ? "nested" : `asset.${kind}`),
+          kind === "directory" ? "dir" : "file");
+      }
+      const cli = fileURLToPath(new URL("./report-route-bundles.mjs", import.meta.url));
+      const result = spawnSync(process.execPath, [cli, "--json"], {
+        cwd: directory, encoding: "utf8", timeout: 5000,
+      });
+      assert.equal(result.status, 1, "Symlinked assets must not produce a successful byte report");
+      assert.equal(result.stdout, "");
+      assert.match(result.stderr, /Symbolic links are not supported in static build assets/);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+}
