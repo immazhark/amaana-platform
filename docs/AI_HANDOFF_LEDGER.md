@@ -2843,3 +2843,7 @@ Native RED22 violations reproduced before work. Selector-specific root consolida
 ## 2026-11-10 IST — AF-R012 assistance server-action sessions
 
 Added existing-behavior synthetic actual-auth coverage across six exported entrypoints: anonymous/malformed/expired-or-revoked/unrelated permission denial before private effects, independent conversion permissions and least-privilege positive version-validation controls. Focused34 PASS; controlled removal of conversion assistance.view produced exactly1 intended failure, then source restored. Scoped lint/type checks; hosted exact-head acceptance required. No runtime defect or whole AF-R012 closure claimed; no production source, DB/provider/schema changes. Rollback test/coordination.
+
+## 2026-11-10 IST — AF-R012 media action sessions
+
+Stacked after #72759db5b17. Actual-auth22 synthetic session/permission cases PASS across four media actions including independent appeal.view requirement before target lookup/upload and scoped lookup positive control. Removing that guard caused exactly1 intended failure; source restored. Full2,891 PASS/20 isolated DB SKIP; type/scoped lint and independent review PASS. Coverage only, no runtime fix or full AF-R012 closure. No production data/schema/provider changes. Required final exact-head/full/promotion before guarded merge. Rollback tests/coordination.
