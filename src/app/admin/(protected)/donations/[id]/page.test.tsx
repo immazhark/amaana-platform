@@ -244,3 +244,44 @@ describe("donation detail minimum linked-record projections", () => {
     expect(mocks.evidence).not.toHaveBeenCalled();
   });
 });
+
+it("selects only displayed private Donation detail fields and bounded linked records", async () => {
+  const html = await renderDonation();
+  expect(mocks.permission).toHaveBeenCalledExactlyOnceWith("donation.view");
+  expect(mocks.findDonation).toHaveBeenCalledExactlyOnceWith({
+    where: { id: "synthetic-donation" },
+    select: {
+      id: true,
+      referenceNumber: true,
+      status: true,
+      donorName: true,
+      isAnonymous: true,
+      donorEmail: true,
+      donorPhone: true,
+      givingIntent: true,
+      paymentMethod: true,
+      transferReference: true,
+      transferredAt: true,
+      transferEvidenceKey: true,
+      reconciliationNotes: true,
+      providerOrderId: true,
+      providerPaymentId: true,
+      receiptNumber: true,
+      amount: true,
+      refundedAmount: true,
+      createdAt: true,
+      capturedAt: true,
+      failedAt: true,
+      refundedAt: true,
+      appeal: { select: { title: true } },
+      events: {
+        select: { id: true, eventType: true, providerEventId: true, processedAt: true },
+        orderBy: [{ processedAt: "desc" }, { id: "desc" }],
+      },
+      reconciledBy: { select: { name: true } },
+    },
+  });
+  expect(html).toContain("Synthetic donor");
+  expect(html).toContain("Synthetic approved appeal");
+  expect(html).toContain("SYNTHETIC-IST-001");
+});
