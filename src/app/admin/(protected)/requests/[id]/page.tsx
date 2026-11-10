@@ -24,8 +24,15 @@ export default async function RequestDetailPage({ params }: Props) {
       where: { id },
       include: {
         assignedTo: { select: { name: true } },
-        documents: true,
-        appeal: true,
+        documents: {
+          select: {
+            id: true,
+            originalName: true,
+            mimeType: true,
+            sizeBytes: true,
+          },
+        },
+        appeal: { select: { id: true, title: true, status: true } },
         verification: { include: { reviewedBy: { select: { name: true } } } },
       },
     }),
