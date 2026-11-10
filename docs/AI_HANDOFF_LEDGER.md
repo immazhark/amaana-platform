@@ -2851,3 +2851,7 @@ Stacked after #72759db5b17. Actual-auth22 synthetic session/permission cases PAS
 ## 2026-11-10 IST — published-media secondary permission evidence
 
 Extended #728 with public-edit denial/approved control and draft-edit control using actual auth. Guard-removal mutation RED exactly1, restored GREEN25 focused. Dedicated synthetic asset lookup preserves initial denial-before-read assertions. Full2,894 PASS/20 isolated DB SKIP; TypeScript/scoped lint/independent review PASS. Test-only, no runtime auth/publication/storage policy change; require fresh final-head hosted acceptance.
+
+## 2026-11-10 IST — AF-R047 Next build asset prefix alias RED and correction
+
+Transferred implementation from ChatGPT Work under owner direction. Standalone test source on #729 at `c4a1546f9c3807dc4ace27e36443de704c6e6e60` reproduced native hosted RED: GitHub Actions `42775362728`, fast job `129692554843`, 135 pass / 1 intended failure (`Missing expected exception: /_next//static/css/site.css`); downstream production/database/browser skipped, not counted as passes. Small correction rejects duplicate separators before removing `_next` asset prefix and preserves canonical paths. Merged accepted main #728 ancestry into the same task branch without force push to retain coordination histories; fresh exact-head full checks and separate promotion/guarded merge remain. No site runtime, payment, auth, schema, media publication, Railway config or historical 149-class change. Rollback reporter/test/coordination diff.
