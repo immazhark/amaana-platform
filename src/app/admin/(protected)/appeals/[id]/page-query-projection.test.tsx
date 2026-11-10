@@ -113,3 +113,33 @@ it("announces the public preview tab without changing the appeal destination", a
   expect(anchor).toContain('rel="noreferrer"');
   expect(anchor).toContain('View public page<span class="sr-only"> (opens in a new tab)</span>');
 });
+
+it("fetches only displayed Appeal editor fields and approved update-list fields", async () => {
+  const html = await render();
+  expect(mocks.permission).toHaveBeenCalledExactlyOnceWith("appeal.view");
+  expect(mocks.appeal).toHaveBeenCalledExactlyOnceWith({
+    where: { id: "synthetic-appeal" },
+    select: {
+      title: true,
+      status: true,
+      updatedAt: true,
+      slug: true,
+      category: true,
+      beneficiaryDisplayName: true,
+      beneficiaryLocation: true,
+      summary: true,
+      story: true,
+      goalAmount: true,
+      coverImageUrl: true,
+      isFeatured: true,
+      featuredOrder: true,
+      updates: {
+        select: { id: true, title: true, content: true, isPublic: true, author: { select: { name: true } } },
+        orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      },
+    },
+  });
+  expect(html).toContain("Synthetic appeal");
+  expect(html).toContain("Synthetic update content");
+  expect(html).toContain("Appeal editor");
+});
