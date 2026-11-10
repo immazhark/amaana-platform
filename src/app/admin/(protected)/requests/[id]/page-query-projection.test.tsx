@@ -62,3 +62,21 @@ it("stops before all reads when page access is denied", async () => {
   expect(mocks.permission).toHaveBeenCalledWith("assistance.view");
   [mocks.request, mocks.staff, mocks.history].forEach(read => expect(read).not.toHaveBeenCalled());
 });
+
+it("loads only document list fields without private storage details", async () => {
+  const html = await render();
+  const query = mocks.request.mock.calls[0]?.[0];
+
+  expect(mocks.permission).toHaveBeenCalledExactlyOnceWith("assistance.view");
+  expect(query.where).toEqual({ id: "synthetic-request" });
+  expect(query.include.documents).toEqual({
+    select: {
+      id: true,
+      originalName: true,
+      mimeType: true,
+      sizeBytes: true,
+    },
+  });
+  expect(html).toContain("Private documents");
+  expect(html).toContain("No documents were submitted.");
+});
