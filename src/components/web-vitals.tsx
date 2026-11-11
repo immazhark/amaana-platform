@@ -1,7 +1,9 @@
 "use client";
 
 import { useReportWebVitals } from "next/web-vitals";
-import { canRecordWebVitalOnCurrentRoute, normalizePublicWebVitalPath } from "@/lib/web-vitals-path";
+import { createWebVitalDocumentGuard, normalizePublicWebVitalPath } from "@/lib/web-vitals-path";
+import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 import { sendBestEffortTelemetry } from "@/lib/client-telemetry";
 
 type Metric = Parameters<Parameters<typeof useReportWebVitals>[0]>[0];
@@ -21,6 +23,7 @@ const initialDocumentPathname: string | null = typeof window === "undefined"
 const pageLoadPath = initialDocumentPathname === null
   ? null
   : normalizePublicWebVitalPath(initialDocumentPathname);
+const documentGuard = createWebVitalDocumentGuard(initialDocumentPathname);
 const latest = new Map<string, { name: PublicVitalName; value: number }>();
 const reportedMetricIds = new Set<string>();
 
@@ -38,7 +41,7 @@ function sendReport(path: string, name: PublicVitalName, value: number) {
 
 function flushLatest() {
   if (latest.size === 0) return;
-  if (!canRecordWebVitalOnCurrentRoute(initialDocumentPathname, window.location.pathname, navigator.webdriver === true)) {
+  if (!documentGuard.canRecord(window.location.pathname, navigator.webdriver === true)) {
     latest.clear();
     return;
   }
@@ -58,7 +61,7 @@ function handleWebVital(metric: Metric) {
   if (metric.name !== "LCP" && metric.name !== "INP" && metric.name !== "CLS") return;
   if (!Number.isFinite(metric.value) || metric.value < 0) return;
 
-  if (!canRecordWebVitalOnCurrentRoute(initialDocumentPathname, window.location.pathname, navigator.webdriver === true)) return;
+  if (!documentGuard.canRecord(window.location.pathname, navigator.webdriver === true)) return;
 
   // Next/Web Vitals may report multiple deltas for one id; keep the latest
   // score in memory and send one final sample when the page is backgrounded.
@@ -73,6 +76,14 @@ function handleWebVital(metric: Metric) {
 }
 
 function WebVitalsReporter() {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    // This root reporter persists across SPA routes. Never let a return to
+    // the original URL re-admit the same document's performance observations.
+    if (!documentGuard.observeRoute(pathname)) latest.clear();
+  }, [pathname]);
+
   useReportWebVitals(handleWebVital);
   return null;
 }
