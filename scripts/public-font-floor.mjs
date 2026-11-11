@@ -20,8 +20,27 @@ export function auditFontSizes(source, path) {
     // A clamp's first argument is the lower bound. Its middle calc() may
     // legitimately subtract a small length without reducing that bound.
     const clampFloor = !shorthand && /^clamp\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*,/i.exec(value);
-    const measurements = clampFloor
-      ? [clampFloor]
+    // Fold only standalone constant calc products/quotients in font-size.
+    // Operand-only scanning misses calc(1rem * .5), while it rejects
+    // calc(11px * 2) despite the computed size being above the floor.
+    // Mixed-unit, nested and dynamic expressions keep the existing audit.
+    const directCalc = !shorthand && /^calc\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*([*/])\s*(-?\d*\.?\d+)\s*\)$/i.exec(value);
+    const reverseCalc = !shorthand && /^calc\(\s*(-?\d*\.?\d+)\s*\*\s*(-?\d*\.?\d+)\s*(rem|px)\s*\)$/i.exec(value);
+    const computed = directCalc
+      ? (directCalc[3] === "*" ? Number(directCalc[1]) * Number(directCalc[4])
+        : Number(directCalc[1]) / Number(directCalc[4]))
+      : reverseCalc ? Number(reverseCalc[1]) * Number(reverseCalc[2]) : null;
+    if (computed !== null && !Number.isFinite(computed)) {
+      violations.push({ path, value });
+      continue;
+    }
+    const computedUnit = directCalc?.[2] ?? reverseCalc?.[3];
+    const folded = computed !== null && computedUnit
+      ? [[value, String(computed), computedUnit]]
+      : null;
+    const measurements = folded
+      ? folded
+      : clampFloor ? [clampFloor]
       : [...value.matchAll(/(?:^|[^\w.])(-?\d*\.?\d+)\s*(rem|px)\b/gi)];
     // A font shorthand contains a size followed by an optional /line-height.
     // Check its first literal px/rem size only; a smaller line-height is not

@@ -55,3 +55,23 @@ test("font shorthand uses font-size, never its smaller line-height, for the mini
   ].join("");
   assert.deepEqual(auditFontSizes(css, "fixture.css"), []);
 });
+
+test("constant CSS calc arithmetic cannot bypass the public 12px font floor", () => {
+  const bad = [
+    ".multiplied{font-size:calc(1rem * .5)}",
+    ".divided{font-size:calc(1rem / 2)}",
+    ".inverse{font-size:calc(2 * .3rem)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(bad, "fixture.css"), [
+    { path: "fixture.css", value: "calc(1rem * .5)" },
+    { path: "fixture.css", value: "calc(1rem / 2)" },
+    { path: "fixture.css", value: "calc(2 * .3rem)" },
+  ]);
+
+  const safe = [
+    ".enlarged{font-size:calc(11px * 2)}",
+    ".same{font-size:calc(1rem / 1)}",
+    ".inverse{font-size:calc(2 * .75rem)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
+});
