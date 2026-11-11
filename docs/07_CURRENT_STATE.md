@@ -1,5 +1,19 @@
 # Amaana current state — 12 November 2026 IST
 
+**Source:** protected main `f21f8995da138d86d3a4951b0a5f11a9aad4d7df` after PR #781 expected-head guarded merge; candidate head `655424e1b7fa6516e25bc4a21c422368409b757f`, full exact-head CI `43117533290` all required jobs SUCCESS, distinct ready-state `43120830528` promotion/verify SUCCESS, no unresolved review threads. Delivered: normal-clone remote HEAD parser correction (native RED 4/5, GREEN 5/5), read-only 806-ref retention inventory (567 contained, 238 preserved unmerged, 1 main), 149 original-ID and 143 active-ID reconciled exports. No branch deletion.
+
+**Runtime:** Railway website `f9058056-1c6e-4dc3-96b0-1aa312389330` SUCCESS at `b18e1518e938049f12876a069ebfa8e8cfee39cb`; #781 website `6dab37b9-2fc3-4342-a567-a9f5c2064f78` SKIPPED and notification worker `04f0e2b4-6503-4175-8aab-02c84dee1bc8` SKIPPED. Independent fresh public version/readiness return `b18e1518e938049f12876a069ebfa8e8cfee39cb`, main, production, paymentMode live and ready. Source/runtime divergence is valid; do not force rollout.
+
+**Finance:** Only open PR #684, draft head `1d2918c211a5795202b24614b7b8a6e6131158e9`. Full code CI `43085100131` SUCCESS but payee ownership, credited UTR matching, reviewed exact production activation/rollback and separate promotion are unapproved; unmerged, not live. No real funds, notifications, cron, secrets, infrastructure or tax-certificate changes.
+
+**Backlog:** 4 Completed / 56 Implemented / 62 Partial / 25 Not started / 1 Superseded / 1 Not applicable = 149; active 143 (P0 35, P1 73, P2 35). Next bounded investigation: AF-R002/003 security advisory and actual installed/runtime evidence; AF-R004/006 storage server-only and credential-pair regressions already exist and should not be duplicated. This was not a comprehensive 149-item live acceptance or line-by-line review of all remote branches. Sole writer CHATGPT_ACTIVE; at safe boundary no active implementation PR beyond financially held #684.
+
+---
+
+## Prior checkpoint retained
+
+# Amaana current state — 12 November 2026 IST
+
 Sole implementation writer CHATGPT_ACTIVE; parallel reviewers are read-only. Integration target protected main. Inspected main **b18e1518e938049f12876a069ebfa8e8cfee39cb** (#780). Railway website **f9058056-1c6e-4dc3-96b0-1aa312389330 SUCCESS**; independent uncached public version/readiness HTTP 200 match this SHA/main/production and ready. paymentMode live is configuration evidence, not transaction certification.
 
 Current branch **fix/branch-inventory-canonical-refs-20261112**, base above: correct AF-R079 branch inventory failure on normal origin/HEAD symbolic alias. RED 4/5, GREEN 5/5 native synthetic tests, zero skipped. Corrected read-only full-clone ancestry snapshot: 806 remote branch refs, 567 contained/review-only, 238 unmerged/preserved, 1 main; no deletion approved. Exact-head CI/review/promotion/merge pending.

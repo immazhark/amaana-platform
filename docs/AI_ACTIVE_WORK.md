@@ -2,6 +2,10 @@
 
 ## Current effective checkpoint (supersedes dated handoff details below)
 
+**Post-#781 safe boundary, 12 November IST:** CHATGPT_ACTIVE sole writer; protected main `f21f8995da138d86d3a4951b0a5f11a9aad4d7df`, tested PR #781 head `655424e1b7fa6516e25bc4a21c422368409b757f`, full CI `43117533290` SUCCESS and separate ready-state `43120830528` SUCCESS, expected-head merge. Railway website/worker deployments SKIPPED for scripts/docs-only merge; public runtime `b18e1518e938049f12876a069ebfa8e8cfee39cb`, main/production/ready. No active task branch currently. Next unblocked source task: AF-R002/R003 patch and runtime-path acceptance; AF-R004/R006 existing storage regression review. Only open PR #684 remains financial-activation held. Historical 149 counts unchanged, 143 actionable. No live financial/provider/infrastructure/cron action performed.
+
+
+
 **Current bounded continuation:** sole writer CHATGPT_ACTIVE, branch `fix/branch-inventory-canonical-refs-20261112`, base `b18e1518e938049f12876a069ebfa8e8cfee39cb`. Read-only finance/backlog/security reviewers operate independently. Reproduced AF-R079 reporter failure in a normal full clone: `%(refname:short)` formats the symbolic remote HEAD as `origin`, rejected by the parser. Add a synthetic symbolic-HEAD regression, use canonical full refs, preserve all refs, and refresh the release/backlog evidence. No payment activation or infrastructure changes. Public version and readiness independently returned HTTP 200 for base main/production and ready; Railway `f9058056-1c6e-4dc3-96b0-1aa312389330` SUCCESS. Prior task #780 is merged.
 
 
