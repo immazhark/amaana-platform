@@ -719,3 +719,46 @@ for (const kind of ["js", "css", "directory", "root"]) {
     }
   });
 }
+
+for (const kind of ["file", "parent-directory", "static-root", "build-root"]) {
+  test(`AF-R047 legacy build-manifest rejects symlinked static asset path: ${kind}`, () => {
+    const directory = mkdtempSync(join(tmpdir(), "amaana-legacy-manifest-symlink-"));
+    try {
+      const actual = join(directory, "synthetic-outside");
+      const build = join(directory, ".next");
+      const manifest = JSON.stringify({ pages: { "/page": ["static/chunks/asset.js"] } });
+      mkdirSync(join(actual, "chunks"), { recursive: true });
+      writeFileSync(join(actual, "chunks", "asset.js"), "synthetic outside bytes");
+      if (kind === "build-root") {
+        mkdirSync(join(actual, "static", "chunks"), { recursive: true });
+        writeFileSync(join(actual, "static", "chunks", "asset.js"), "synthetic outside bytes");
+        writeFileSync(join(actual, "app-build-manifest.json"), manifest);
+        symlinkSync(actual, build, "dir");
+      } else {
+        mkdirSync(build);
+        writeFileSync(join(build, "app-build-manifest.json"), manifest);
+        if (kind === "static-root") {
+          symlinkSync(actual, join(build, "static"), "dir");
+        } else {
+          mkdirSync(join(build, "static"));
+          if (kind === "parent-directory") {
+            symlinkSync(join(actual, "chunks"), join(build, "static", "chunks"), "dir");
+          } else {
+            mkdirSync(join(build, "static", "chunks"));
+            symlinkSync(join(actual, "chunks", "asset.js"),
+              join(build, "static", "chunks", "asset.js"), "file");
+          }
+        }
+      }
+      const cli = fileURLToPath(new URL("./report-route-bundles.mjs", import.meta.url));
+      const result = spawnSync(process.execPath, [cli, "--json"], {
+        cwd: directory, encoding: "utf8", timeout: 5000,
+      });
+      assert.equal(result.status, 1, "Legacy manifest attribution must not follow a symlink");
+      assert.equal(result.stdout, "", "Failed reports must not emit a partial JSON audit");
+      assert.match(result.stderr, /Symbolic links are not supported in static build assets/);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+}
