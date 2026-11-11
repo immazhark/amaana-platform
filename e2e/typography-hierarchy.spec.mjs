@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
 import { waitForPublicOverview } from './helpers/public-overview-ready.mjs';
 
@@ -798,4 +800,42 @@ for (const width of [320, 390]) {
       expect(metrics.right, route).toBeLessThanOrEqual(width + 1);
     });
   }
+}
+
+/*
+ * AF-R025: the conditional programme infographic is absent if the reviewed
+ * highlight image has not been published. Exercise its actual checked-in CSS
+ * with deterministic synthetic markup instead of manufacturing media records.
+ * This is a CSS rendering regression, not a live programme publication test.
+ */
+const programmeCampaignCss = readFileSync(
+  process.env.AMAANA_APP_WORKSPACE
+    ? join(process.env.AMAANA_APP_WORKSPACE, 'src/app/our-work/[slug]/campaign.css')
+    : new URL('../src/app/our-work/[slug]/campaign.css', import.meta.url),
+  'utf8',
+);
+
+for (const width of [320, 390]) {
+  test(`conditional programme data heading wraps with accessible leading at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 850 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setContent(
+      '<section class="campaign-data-visual"><div class="v2-shell">' +
+      '<div style="width:min(280px,calc(100vw - 40px))">' +
+      '<h2>Reviewed programme information for participating families and communities</h2>' +
+      '</div></div></section>',
+    );
+    await page.addStyleTag({ content: programmeCampaignCss });
+    const result = await page.locator('.campaign-data-visual h2').evaluate(node => {
+      const style = getComputedStyle(node);
+      const fontSize = parseFloat(style.fontSize);
+      const lineHeight = parseFloat(style.lineHeight);
+      const bounds = node.getBoundingClientRect();
+      return { fontSize, leading: lineHeight / fontSize, lines: bounds.height / lineHeight };
+    });
+    expect(result.fontSize).toBeGreaterThan(20);
+    expect(result.leading).toBeGreaterThanOrEqual(1.12);
+    expect(result.leading).toBeLessThanOrEqual(1.24);
+    expect(result.lines).toBeGreaterThanOrEqual(1.45);
+  });
 }
