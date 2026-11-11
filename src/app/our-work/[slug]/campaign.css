@@ -98,7 +98,7 @@
 .campaign-breadcrumb nav,.campaign-history-note span,.canonical-facts--timeline li::before{font-weight:700}
 .campaign-breadcrumb a{text-decoration:underline;text-decoration-thickness:.075em;text-underline-offset:.2em;text-decoration-color:rgb(47 76 122 / 28%)}
 .campaign-breadcrumb a:is(:hover,:focus-visible){text-decoration-color:currentColor}
-.campaign-story-layout h2{font-family:var(--af-font-display);font-weight:500;font-size:clamp(2rem,4vw,3.5rem);line-height:1.08;letter-spacing:-.03em;text-wrap:balance}
+.campaign-story-layout h2{font-family:var(--af-font-display);font-weight:500;font-size:clamp(2rem,4vw,3.5rem);line-height:1.14;letter-spacing:-.03em;text-wrap:balance}
 .campaign-story-copy{max-width:100%}
 .campaign-story-copy p{max-width:100%}
 .campaign-story-copy p{line-height:1.72}
