@@ -96,3 +96,25 @@ test("same-unit CSS calc additions and subtractions use the computed final font-
     { path: "fixture.css", value: "calc(12px - 13px)" },
   ]);
 });
+
+test("chained constant CSS calc scalar operations must use the final font size", () => {
+  const unsafe = [
+    ".multiplied{font-size:calc(1rem * .5 * .5)}",
+    ".divided{font-size:calc(1rem / 2 / 2)}",
+    ".mixedOps{font-size:calc(16px * 2 / 4)}",
+    ".zeroDivisor{font-size:calc(1rem * 2 / 0)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(unsafe, "fixture.css").map(({ value }) => value), [
+    "calc(1rem * .5 * .5)",
+    "calc(1rem / 2 / 2)",
+    "calc(16px * 2 / 4)",
+    "calc(1rem * 2 / 0)",
+  ]);
+
+  const safe = [
+    ".scaled{font-size:calc(10px * 2 * 2)}",
+    ".remScaled{font-size:calc(.5rem * 2 * 2)}",
+    ".mixedOps{font-size:calc(2rem / 2 * 2)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
+});
