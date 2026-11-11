@@ -14,7 +14,7 @@ describe("AF-R001 Next.js supported security baseline", () => {
       devDependencies: Record<string, string>;
     };
     const lock = JSON.parse(readFileSync(resolve("package-lock.json"), "utf8")) as {
-      packages: Record<string, { version?: string; dependencies?: Record<string, string>; optionalDependencies?: Record<string, string> }>;
+      packages: Record<string, { version?: string; dependencies?: Record<string, string>; devDependencies?: Record<string, string>; optionalDependencies?: Record<string, string> }>;
     };
     const version = manifest.dependencies.next;
     const parsed = /^(\d+)\.(\d+)\.(\d+)$/.exec(version);
