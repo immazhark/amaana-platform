@@ -15,9 +15,12 @@ let sampled: boolean | null = null;
 let listenersInstalled = false;
 // Bind performance measurements to the initial document route, not a later
 // SPA navigation that might enter or leave an assistance/private page.
-const pageLoadPath: string | null = typeof window === "undefined"
+const initialDocumentPathname: string | null = typeof window === "undefined"
   ? null
-  : normalizePublicWebVitalPath(window.location.pathname);
+  : window.location.pathname;
+const pageLoadPath = initialDocumentPathname === null
+  ? null
+  : normalizePublicWebVitalPath(initialDocumentPathname);
 const latest = new Map<string, { name: PublicVitalName; value: number }>();
 const reportedMetricIds = new Set<string>();
 
@@ -35,7 +38,7 @@ function sendReport(path: string, name: PublicVitalName, value: number) {
 
 function flushLatest() {
   if (latest.size === 0) return;
-  if (!canRecordWebVitalOnCurrentRoute(pageLoadPath, window.location.pathname, navigator.webdriver === true)) {
+  if (!canRecordWebVitalOnCurrentRoute(initialDocumentPathname, window.location.pathname, navigator.webdriver === true)) {
     latest.clear();
     return;
   }
@@ -55,7 +58,7 @@ function handleWebVital(metric: Metric) {
   if (metric.name !== "LCP" && metric.name !== "INP" && metric.name !== "CLS") return;
   if (!Number.isFinite(metric.value) || metric.value < 0) return;
 
-  if (!canRecordWebVitalOnCurrentRoute(pageLoadPath, window.location.pathname, navigator.webdriver === true)) return;
+  if (!canRecordWebVitalOnCurrentRoute(initialDocumentPathname, window.location.pathname, navigator.webdriver === true)) return;
 
   // Next/Web Vitals may report multiple deltas for one id; keep the latest
   // score in memory and send one final sample when the page is backgrounded.
