@@ -9,7 +9,7 @@ afterEach(() => vi.unstubAllEnvs());
 
 const harmfulText = "</script><script>alert('x')</script>&>\u2028\u2029";
 
-function extractJsonLd(markup: string) {
+function extractJsonLd(markup: string, requireEscapedLineSeparators = true) {
   const match = markup.match(/<script type="application\/ld\+json"(?:\s+[^>]*)?>([\s\S]*?)<\/script>/);
   const serialized = match?.[1];
   if (serialized === undefined) throw new Error("Expected JSON-LD script tag");
@@ -23,8 +23,12 @@ function extractJsonLd(markup: string) {
   expect(serialized).toContain("\\u003c");
   expect(serialized).toContain("\\u003e");
   expect(serialized).toContain("\\u0026");
-  expect(serialized).toContain("\\u2028");
-  expect(serialized).toContain("\\u2029");
+  // Dynamic public content normalizes whitespace before serialization. Other
+  // entry points preserve separators and must still escape them literally.
+  if (requireEscapedLineSeparators) {
+    expect(serialized).toContain("\\u2028");
+    expect(serialized).toContain("\\u2029");
+  }
   return JSON.parse(serialized) as Record<string, unknown>;
 }
 
@@ -114,11 +118,12 @@ describe("public content JSON-LD runtime and serialization boundary", () => {
       imageUrl="/api/private/photo.jpg"
     />);
     expect(markup).toContain('data-public-content-schema="Article"');
-    const schema = extractJsonLd(markup);
+    const schema = extractJsonLd(markup, false);
+    const normalizedText = harmfulText.trim().replace(/\s+/g, " ");
     expect(schema["@context"]).toBe("https://schema.org");
     expect(schema["@id"]).toBe("https://amaanafoundation.org/stories/synthetic-reviewed#content");
-    expect(schema.name).toBe(harmfulText);
-    expect(schema.description).toBe(harmfulText);
+    expect(schema.name).toBe(normalizedText);
+    expect(schema.description).toBe(normalizedText);
     expect(schema).not.toHaveProperty("image");
     expect(schema).not.toHaveProperty("datePublished");
     expect(schema).not.toHaveProperty("dateModified");
