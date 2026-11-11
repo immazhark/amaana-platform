@@ -243,8 +243,26 @@ function walkBuildAssets(directory, root = directory) {
   });
 }
 
+/** Check each generated static path segment; statSync follows symlinks silently. */
+function legacyStaticAssetBytes(buildDir, asset) {
+  let current = buildDir;
+  let stat;
+  for (const segment of asset.split("/")) {
+    current = join(current, segment);
+    stat = lstatSync(current);
+    if (stat.isSymbolicLink()) {
+      throw new Error("Symbolic links are not supported in static build assets");
+    }
+  }
+  if (!stat?.isFile()) throw new Error("Next.js static asset path is not a file");
+  return measuredBytes(stat.size, "bundle");
+}
+
 function run() {
   const buildDir = join(process.cwd(), ".next");
+  if (existsSync(buildDir) && lstatSync(buildDir).isSymbolicLink()) {
+    throw new Error("Symbolic links are not supported in static build assets");
+  }
   const manifestPath = join(buildDir, "app-build-manifest.json");
   let result;
   if (existsSync(manifestPath)) {
@@ -253,9 +271,7 @@ function run() {
       metric: "manifest-assigned-uncompressed-bytes",
       routeAttributionAvailable: true,
       routes: summarizeAppRouteBundles(manifest.pages, asset => {
-        const size = statSync(join(buildDir, asset)).size;
-        if (!Number.isFinite(size) || size < 0) throw new Error(`Invalid bundle size: ${asset}`);
-        return size;
+        return legacyStaticAssetBytes(buildDir, asset);
       }),
     };
   } else {
