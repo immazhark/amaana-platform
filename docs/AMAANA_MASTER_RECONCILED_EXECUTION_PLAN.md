@@ -1,13 +1,13 @@
 # Amaana Master Reconciled Execution Plan — War-Footing Revision
 
-## Current verified 149-item status overlay — 12 November 2026 IST
+## Current verified 149-item status overlay — 12 November 2026 IST, updated after #780
 
 This section supersedes the **classification snapshot only** in the dated historical sections below. All 149 original item IDs and historical classifications remain preserved. It is an evidence-limited audit, not a declaration that every item was comprehensively re-tested.
 
 | Classification | Historical | Verified current | Change |
 |---|---:|---:|---:|
-| Completed | 1 | **4** | +3 |
-| Implemented (source/release acceptance pending) | 59 | **56** | −3 |
+| Completed | 1 | **6** | +5 |
+| Implemented (source/release acceptance pending) | 59 | **54** | −5 |
 | Partial | 61 | **62** | +1 |
 | Not started | 26 | **25** | −1 |
 | Superseded | 1 | **1** | 0 |
@@ -18,11 +18,13 @@ Verified item transitions:
 - **AF-R001 → Completed:** security-patched Next.js 16.4.6 in #777, exact-head CI `43079743688`, ready `43084587114`, Railway deployment `72705246-69cc-4956-b9ef-73e1c319ade2` SUCCESS and matching public SHA `f25df78b900dccd3c131a5ed0ad48447572b1dc2`.
 - **AF-R007 → Completed:** server-secret client-bundle scanner negative tests in #777 fast job `130728942837` (names, values, canaries and bypass fixtures), production job `130730418097` scanned 111 built/public files, and matching released/public main above. This does **not** close historic exposure/provider rotation risks (AF-R005 remains Partial).
 - **AF-R011 → Completed:** #778 hosted RED `43086783254` found four `new Function` test-harness sites. Exact-head full CI `43100919160`, separate ready-state `43105246650`, guarded merge `47152209927ae5df8be185af5c0af13ef0658a9b`, Railway deployment `a41c9146-4ec8-40c7-a4c9-b8f3c57d3e3a` SUCCESS and independent public `/api/health/version`+readiness match. Test-only fix; no live payments.
+- **AF-R008 → Completed:** #780 strict runtime Zod JSON-LD input shape and rendered `PublicContentStructuredData` negative tests, full exact-head CI `43109665136`, separate ready `43115374094`, guarded merge `b18e1518e938049f12876a069ebfa8e8cfee39cb`, Railway `f9058056-1c6e-4dc3-96b0-1aa312389330` SUCCESS and public exact SHA/ready; five sampled public route schemas verified.
+- **AF-R009 → Completed:** same #780 tests/release for `<`, `>`, `&`, U+2028/U+2029 escaping, inert script termination, roundtrip, and sampled rendered scripts. Not exhaustive all-route crawl.
 - **AF-R076 → Partial:** a read-only rendered-browser inspection of `/contact` on 12 November found native readable `mailto:` URLs for four main Contact links and the footer, while a raw page extractor saw Cloudflare-protected URLs before rendering. The original affected URL, no-JavaScript fallback and sitewide coverage remain unverified; no speculative config changes made.
 
-**Protected source main and public runtime:** `47152209927ae5df8be185af5c0af13ef0658a9b`, branch `main`, environment `production`, readiness `ready`. **Financial boundary:** draft #684 remains unmerged despite successful code CI; independent payee ownership, credited UTR/payment reconciliation and a separately reviewed production activation are required. No FCRA or statutory 80G certificates; maintain domestic INR and private-data locks.
+**Protected source main and public runtime:** `b18e1518e938049f12876a069ebfa8e8cfee39cb`, branch `main`, environment `production`, readiness `ready`. **Financial boundary:** draft #684 remains unmerged despite successful code CI; independent payee ownership, credited UTR/payment reconciliation and a separately reviewed production activation are required. No FCRA or statutory 80G certificates; maintain domestic INR and private-data locks.
 
-**Next unblocked work:** verify AF-R002/R003 dependency/advisory and actual runtime path, AF-R004/AF-R006 storage boundaries, and AF-R008/R009 structured-data rendering before further full-item reclassification. Source implementation, tests, merging, deployment and live acceptance remain separate fields. Historical sections below are dated evidence.
+**Next unblocked work:** verify AF-R004 client-import failure, AF-R006 private dedicated-credential effective readiness, AF-R002/R003 runtime linking and complete dev dependency audit. AF-R008/R009 original scopes were accepted through #780. Source implementation, tests, merging, deployment and live acceptance remain separate fields. Historical sections below are dated evidence.
 
 ---
 
