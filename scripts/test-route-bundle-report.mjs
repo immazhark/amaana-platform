@@ -762,3 +762,45 @@ for (const kind of ["file", "parent-directory", "static-root", "build-root"]) {
     }
   });
 }
+
+for (const kind of ["file", "broken-file", "app-directory", "server-directory"]) {
+  test(`AF-R047 rejects symlinked client-reference manifest paths: ${kind}`, () => {
+    const directory = mkdtempSync(join(tmpdir(), "amaana-client-manifest-symlink-"));
+    const build = join(directory, ".next");
+    const out = join(directory, "external-manifests");
+    const cli = fileURLToPath(new URL("./report-route-bundles.mjs", import.meta.url));
+    try {
+      mkdirSync(join(build, "static/css"), { recursive: true });
+      mkdirSync(join(build, "static/chunks"), { recursive: true });
+      mkdirSync(out, { recursive: true });
+      writeFileSync(join(build, "app-path-routes-manifest.json"), JSON.stringify({ "/page": "/" }));
+      writeFileSync(join(build, "static/css/root.css"), "body{}");
+      writeFileSync(join(build, "static/chunks/site.js"), "void 0");
+      const payload = referenceSource("/page", {
+        "[project]/src/app/layout": [{ path: "static/css/root.css", inlined: false }],
+      });
+      const filename = "page_client-reference-manifest.js";
+      if (kind === "file" || kind === "broken-file") {
+        mkdirSync(join(build, "server/app"), { recursive: true });
+        if (kind === "file") writeFileSync(join(out, filename), payload);
+        symlinkSync(join(out, filename), join(build, "server/app", filename), "file");
+      } else if (kind === "app-directory") {
+        mkdirSync(join(build, "server"), { recursive: true });
+        writeFileSync(join(out, filename), payload);
+        symlinkSync(out, join(build, "server/app"), "dir");
+      } else {
+        mkdirSync(join(out, "app"), { recursive: true });
+        writeFileSync(join(out, "app", filename), payload);
+        symlinkSync(out, join(build, "server"), "dir");
+      }
+      const result = spawnSync(process.execPath, [cli, "--json"], {
+        cwd: directory, encoding: "utf8", timeout: 5000,
+      });
+      assert.equal(result.status, 1, "Untrusted manifest links must never yield a successful audit");
+      assert.equal(result.stdout, "", "No partial route-byte report may be emitted");
+      assert.match(result.stderr, /Symbolic links are not supported in client-reference manifests/);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+}
