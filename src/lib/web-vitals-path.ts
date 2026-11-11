@@ -5,12 +5,15 @@ export function normalizePublicWebVitalPath(pathname: string): string | null {
   return normalizePublicAnalyticsPath(pathname);
 }
 
-/** Never upload or attribute document metrics from a later private SPA route. */
+/** Compare exact original document path, not only its anonymized slug bucket.
+ * Two distinct public appeal/stories pages can share one analytics label.
+ */
 export function canRecordWebVitalOnCurrentRoute(
-  initialNormalizedPath: string | null,
+  initialDocumentPathname: string | null,
   currentPathname: string,
   automatedBrowser = false,
 ): boolean {
-  return !automatedBrowser && initialNormalizedPath !== null
-    && normalizePublicWebVitalPath(currentPathname) === initialNormalizedPath;
+  return !automatedBrowser && initialDocumentPathname !== null
+    && currentPathname === initialDocumentPathname
+    && normalizePublicWebVitalPath(initialDocumentPathname) !== null;
 }
