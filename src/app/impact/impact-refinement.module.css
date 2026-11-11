@@ -107,7 +107,7 @@
   font-family:var(--af-font-display);
   font-size:clamp(1.08rem,1.35vw,1.38rem);
   font-weight:500;
-  line-height:1.08
+  line-height:1.16
 }
 :global(.v2-impact-tile-action){
   display:inline-flex;
