@@ -1,4 +1,4 @@
-import { readdir, readFile } from "node:fs/promises";
+import { lstat, readdir, readFile } from "node:fs/promises";
 import { join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -72,9 +72,21 @@ export function auditFontSizes(source, path) {
 }
 
 async function* cssFiles(directory) {
+  // A symlinked root is followed by readdir; a nested symlink is silently
+  // skipped by Dirent.isFile/isDirectory. Both can evade the CSS floor audit.
+  const root = await lstat(directory);
+  if (root.isSymbolicLink()) {
+    throw new Error(`Symbolic link is not permitted in public CSS audit: ${directory}`);
+  }
+  if (!root.isDirectory()) {
+    throw new Error(`Public CSS audit source is not a directory: ${directory}`);
+  }
   const entries = await readdir(directory, { withFileTypes: true });
   for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
     const path = join(directory, entry.name);
+    if (entry.isSymbolicLink()) {
+      throw new Error(`Symbolic link is not permitted in public CSS audit: ${path}`);
+    }
     if (entry.isDirectory()) yield* cssFiles(path);
     else if (entry.isFile() && path.endsWith(".css")) yield path;
   }

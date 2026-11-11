@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { mkdtemp, mkdir, rm, symlink, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 
 import { auditFontSizes, auditPublicStyles } from "./public-font-floor.mjs";
@@ -117,4 +120,54 @@ test("chained constant CSS calc scalar operations must use the final font size",
     ".mixedOps{font-size:calc(2rem / 2 * 2)}",
   ].join("");
   assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
+});
+
+test("public CSS audit rejects linked stylesheet files instead of silently ignoring them", async () => {
+  const root = await mkdtemp(join(tmpdir(), "amaana-css-audit-file-"));
+  try {
+    await mkdir(join(root, "src"));
+    await writeFile(join(root, "hidden.css"), ".bad{font-size:7px}");
+    await symlink(join(root, "hidden.css"), join(root, "src", "linked.css"));
+    await assert.rejects(auditPublicStyles(root), /symbolic link/i);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("public CSS audit rejects linked source directories rather than skipping nested styles", async () => {
+  const root = await mkdtemp(join(tmpdir(), "amaana-css-audit-directory-"));
+  try {
+    await mkdir(join(root, "src"));
+    await mkdir(join(root, "hidden"));
+    await writeFile(join(root, "hidden", "bad.css"), ".bad{font-size:7px}");
+    await symlink(join(root, "hidden"), join(root, "src", "linked"));
+    await assert.rejects(auditPublicStyles(root), /symbolic link/i);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("public CSS audit rejects a linked src root rather than trusting an external tree", async () => {
+  const root = await mkdtemp(join(tmpdir(), "amaana-css-audit-root-"));
+  try {
+    await mkdir(join(root, "alternate-src"));
+    await writeFile(join(root, "alternate-src", "bad.css"), ".bad{font-size:7px}");
+    await symlink(join(root, "alternate-src"), join(root, "src"));
+    await assert.rejects(auditPublicStyles(root), /symbolic link/i);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("public CSS audit still scans ordinary nested CSS and rejects literal small type", async () => {
+  const root = await mkdtemp(join(tmpdir(), "amaana-css-audit-regular-"));
+  try {
+    await mkdir(join(root, "src", "nested"), { recursive: true });
+    await writeFile(join(root, "src", "nested", "bad.css"), ".bad{font-size:7px}");
+    assert.deepEqual(await auditPublicStyles(root), [
+      { path: "src/nested/bad.css", value: "7px" },
+    ]);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });
