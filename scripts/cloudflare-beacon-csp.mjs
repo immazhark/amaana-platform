@@ -58,8 +58,10 @@ export function auditCloudflareBeaconCsp(csp) {
     }
     if (new Set(actual).size !== actual.length) errors.push("Duplicate CSP source");
     for (const source of permitted) {
-      // In development the evaluator exception is optional.
-      if (source === "'unsafe-eval'") continue;
+      // A future reviewed policy may tighten inline scripts; do not make
+      // today's legacy unsafe-inline allowance a permanent requirement.
+      // Development-only unsafe-eval is also optional.
+      if (source === "'unsafe-eval'" || (name === "script-src" && source === "'unsafe-inline'")) continue;
       if (!actual.includes(source)) {
         errors.push("Required " + name + " source missing");
       }
