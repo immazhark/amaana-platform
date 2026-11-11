@@ -75,3 +75,24 @@ test("constant CSS calc arithmetic cannot bypass the public 12px font floor", ()
   ].join("");
   assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
 });
+
+test("same-unit CSS calc additions and subtractions use the computed final font-size", () => {
+  const safe = [
+    ".safeRem{font-size:calc(.5rem + .25rem)}",
+    ".safePx{font-size:calc(20px - 4px)}",
+    ".safeLarge{font-size:calc(11px + 2px)}",
+    ".safeRemSubtract{font-size:calc(1rem - .125rem)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
+
+  const unsafe = [
+    ".badRem{font-size:calc(.5rem + .2rem)}",
+    ".badPx{font-size:calc(16px - 5px)}",
+    ".negative{font-size:calc(12px - 13px)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(unsafe, "fixture.css"), [
+    { path: "fixture.css", value: "calc(.5rem + .2rem)" },
+    { path: "fixture.css", value: "calc(16px - 5px)" },
+    { path: "fixture.css", value: "calc(12px - 13px)" },
+  ]);
+});
