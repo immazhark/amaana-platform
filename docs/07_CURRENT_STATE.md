@@ -1,3 +1,17 @@
+# Amaana current state — 12 November 2026 IST
+
+Sole implementation writer CHATGPT_ACTIVE; parallel reviewers are read-only. Integration target protected main. Inspected main **b18e1518e938049f12876a069ebfa8e8cfee39cb** (#780). Railway website **f9058056-1c6e-4dc3-96b0-1aa312389330 SUCCESS**; independent uncached public version/readiness HTTP 200 match this SHA/main/production and ready. paymentMode live is configuration evidence, not transaction certification.
+
+Current branch **fix/branch-inventory-canonical-refs-20261112**, base above: correct AF-R079 branch inventory failure on normal origin/HEAD symbolic alias. RED 4/5, GREEN 5/5 native synthetic tests, zero skipped. Corrected read-only full-clone ancestry snapshot: 806 remote branch refs, 567 contained/review-only, 238 unmerged/preserved, 1 main; no deletion approved. Exact-head CI/review/promotion/merge pending.
+
+Only pre-existing open PR **#684**, draft head 1d2918c211a5795202b24614b7b8a6e6131158e9. Preserve financial activation hold: independent recipient ownership, credited-transfer reconciliation, reviewed exact activation scope and release acceptance. General fund ledger/automatic recurring mandates/statutory certificates are not delivered by existing appeal checkout/reminders/ordinary acknowledgements. No live payment tested.
+
+Current canonical accounting: **4 Completed / 56 Implemented / 62 Partial / 25 Not started / 1 Superseded / 1 Not applicable =149**; 143 actionable remaining. No new full-item closures inferred. Sequential exports and detailed bounded audit: [reconciliation](mission-control/2026-11-12-reconciliation.md). Next: finish candidate gates, then R002/R003 advisory/platform verification and R004/R006 focused build/config acceptance. Entire historical branch/source/live audit remains incomplete.
+
+---
+
+## Preserved prior checkpoint (historical)
+
 # Amaana current state — 11 November 2026 IST
 
 **Implementation writer:** CHATGPT_ACTIVE (owner-confirmed sole writer). Preserve all existing safety/release gates. Read-only external inspections and review may operate independently.
