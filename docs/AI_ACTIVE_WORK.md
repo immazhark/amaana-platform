@@ -2,6 +2,10 @@
 
 ## Current effective checkpoint (supersedes dated handoff details below)
 
+**Current task:** CHATGPT_ACTIVE sole writer, AF-R002/R003 docs-only patched-dependency release reconciliation from main `bd720b5567147dde624cd4d5cf0ce5a7a0fe793d`. Independently public-ready runtime `b18e1518e938049f12876a069ebfa8e8cfee39cb`. Current manifest/lock versions match reviewed GitHub advisories; full exact-head CI `43109665136` and `43117533290` success. Candidate 149 classifications 6/54/62/25/1/1, active 141; final selected CI, independent review, separate ready-state and SHA-guarded merge remain required. #684 financial activation hold unchanged; no other writer or overlapping implementation authorized.
+
+
+
 **Post-#781 safe boundary, 12 November IST:** CHATGPT_ACTIVE sole writer; protected main `f21f8995da138d86d3a4951b0a5f11a9aad4d7df`, tested PR #781 head `655424e1b7fa6516e25bc4a21c422368409b757f`, full CI `43117533290` SUCCESS and separate ready-state `43120830528` SUCCESS, expected-head merge. Railway website/worker deployments SKIPPED for scripts/docs-only merge; public runtime `b18e1518e938049f12876a069ebfa8e8cfee39cb`, main/production/ready. No active task branch currently. Next unblocked source task: AF-R002/R003 patch and runtime-path acceptance; AF-R004/R006 existing storage regression review. Only open PR #684 remains financial-activation held. Historical 149 counts unchanged, 143 actionable. No live financial/provider/infrastructure/cron action performed.
 
 

@@ -6,8 +6,8 @@ This section supersedes the **classification snapshot only** in the dated histor
 
 | Classification | Historical | Verified current | Change |
 |---|---:|---:|---:|
-| Completed | 1 | **4** | +3 |
-| Implemented (source/release acceptance pending) | 59 | **56** | −3 |
+| Completed | 1 | **6** | +5 |
+| Implemented (source/release acceptance pending) | 59 | **54** | −5 |
 | Partial | 61 | **62** | +1 |
 | Not started | 26 | **25** | −1 |
 | Superseded | 1 | **1** | 0 |
@@ -15,16 +15,18 @@ This section supersedes the **classification snapshot only** in the dated histor
 | **Total distinct original IDs** | **149** | **149** | **0** |
 
 Verified item transitions:
+- **AF-R002 → Completed:** GitHub-reviewed GHSA-wq5f-xc86-pv6w patched by pinned `sharp@0.35.5`; released lock and Alpine variant, hosted CI `43109665136` and `43117533290` successful, independent runtime `b18e1518e938049f12876a069ebfa8e8cfee39cb` ready. Covers vulnerable release, not all SVG-input assurances.
+- **AF-R003 → Completed:** GitHub-reviewed GHSA-68fv-2mgg-jv7q patched by sole locked `source-map-js@1.2.2`; same hosted CI and runtime source evidence; retain ongoing dependency monitoring.
 - **AF-R001 → Completed:** security-patched Next.js 16.4.6 in #777, exact-head CI `43079743688`, ready `43084587114`, Railway deployment `72705246-69cc-4956-b9ef-73e1c319ade2` SUCCESS and matching public SHA `f25df78b900dccd3c131a5ed0ad48447572b1dc2`.
 - **AF-R007 → Completed:** server-secret client-bundle scanner negative tests in #777 fast job `130728942837` (names, values, canaries and bypass fixtures), production job `130730418097` scanned 111 built/public files, and matching released/public main above. This does **not** close historic exposure/provider rotation risks (AF-R005 remains Partial).
 - **AF-R011 → Completed:** #778 hosted RED `43086783254` found four `new Function` test-harness sites. Exact-head full CI `43100919160`, separate ready-state `43105246650`, guarded merge `47152209927ae5df8be185af5c0af13ef0658a9b`, Railway deployment `a41c9146-4ec8-40c7-a4c9-b8f3c57d3e3a` SUCCESS and independent public `/api/health/version`+readiness match. Test-only fix; no live payments.
 - **AF-R076 → Partial:** a read-only rendered-browser inspection of `/contact` on 12 November found native readable `mailto:` URLs for four main Contact links and the footer, while a raw page extractor saw Cloudflare-protected URLs before rendering. The original affected URL, no-JavaScript fallback and sitewide coverage remain unverified; no speculative config changes made.
 
-**Latest independently verified source main and public runtime (12 November):** `b18e1518e938049f12876a069ebfa8e8cfee39cb`, branch `main`, environment `production`, readiness `ready`. **Financial boundary:** draft #684 remains unmerged despite successful code CI; independent payee ownership, credited UTR/payment reconciliation and a separately reviewed production activation are required. No FCRA or statutory 80G certificates; maintain domestic INR and private-data locks.
+**Verified source main:** `bd720b5567147dde624cd4d5cf0ce5a7a0fe793d` (script/docs only since last live). **Independently verified production runtime:** `b18e1518e938049f12876a069ebfa8e8cfee39cb`, branch `main`, environment `production`, readiness `ready`; SHA difference is expected. **Financial boundary:** draft #684 remains unmerged despite successful code CI; independent payee ownership, credited UTR/payment reconciliation and a separately reviewed production activation are required. No FCRA or statutory 80G certificates; maintain domestic INR and private-data locks.
 
-**Clean active queue:** [143 actionable rows](mission-control/active-backlog-2026-11-12.csv); [all 149 IDs in original order](mission-control/149-item-status-2026-11-12.csv). [Current bounded source/finance/branch audit and acceptance limits](mission-control/2026-11-12-reconciliation.md). No further full-item reclassification from #780 test coverage alone.
+**Clean active queue:** [141 actionable rows](mission-control/active-backlog-2026-11-12.csv); [all 149 IDs in original order](mission-control/149-item-status-2026-11-12.csv). [Current bounded source/finance/branch audit and acceptance limits](mission-control/2026-11-12-reconciliation.md). No further full-item reclassification from #780 test coverage alone.
 
-**Next unblocked work:** verify AF-R002/R003 dependency/advisory and actual runtime path, AF-R004/AF-R006 storage boundaries, and AF-R008/R009 structured-data rendering before further full-item reclassification. Source implementation, tests, merging, deployment and live acceptance remain separate fields. Historical sections below are dated evidence.
+**Next unblocked work:** verify AF-R004/R006 storage boundary/configuration acceptance (existing partial-credential tests already exist) and AF-R008/R009 structured-data rendering before further reclassification. Source implementation, tests, merging, deployment and live acceptance remain separate fields. Historical sections below are dated evidence.
 
 ---
 
