@@ -38,6 +38,14 @@ test("AF-R015 denies wildcard sources and disappearing checkout transports", asy
   }
 });
 
+test("AF-R015 allows a future reviewed removal of unsafe-inline without relaxing external origins", async () => {
+  const csp = await configuredCsp();
+  assert.ok(csp.includes("script-src 'self' 'unsafe-inline'"));
+  const tightened = csp.replace("script-src 'self' 'unsafe-inline'", "script-src 'self'");
+  assert.notEqual(tightened, csp);
+  assert.deepEqual(auditCloudflareBeaconCsp(tightened), []);
+});
+
 test("AF-R015 rejects duplicated or missing CSP directives without echoing their contents", async () => {
   const csp = await configuredCsp();
   assert.match(auditCloudflareBeaconCsp(csp + "; script-src https://static.cloudflareinsights.com").join(" "), /duplicate/i);
