@@ -16,7 +16,7 @@ test("Faith detail-only CSS belongs to the article page, not the library layout"
 test("Faith library card styling and keyboard focus remain shared by both routes", () => {
   const sharedRules = [
     ".v2-faith-library-item{color:inherit;text-decoration:none}",
-    ".v2-faith-library-action{display:block;margin-top:auto;padding-top:1.5rem;color:var(--v2-gold);font-size:.76rem;letter-spacing:.03em}",
+    ".v2-faith-library-action{display:block;margin-top:auto;padding-top:1.5rem;color:var(--amaana-gold-deep);font-size:.76rem;letter-spacing:.03em}",
     ".v2-faith-library-item:focus-visible{outline:3px solid var(--v2-gold);outline-offset:4px}",
   ];
   for (const rule of sharedRules) expect(sharedCss).toContain(rule);
