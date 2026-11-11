@@ -1,25 +1,51 @@
 import { readFileSync } from "node:fs";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import ts from "typescript";
 
-describe("donation intention validation recovery", () => {
-  it("clears the intention error through the actual fieldset change handler", () => {
-    const source = readFileSync(new URL("./donation-form.tsx", import.meta.url), "utf8");
-    const tree = ts.createSourceFile("donation-form.tsx", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-    let handler: ts.JsxAttribute | undefined;
-    function visit(node: ts.Node) {
-      if (ts.isJsxOpeningElement(node) && node.tagName.getText(tree) === "fieldset" && node.getText(tree).includes('fieldError("givingIntent")')) {
-        handler = node.attributes.properties.find((a): a is ts.JsxAttribute => ts.isJsxAttribute(a) && a.name.getText(tree) === "onChange");
+/** Resolve the JSX handler via TypeScript AST; never transpile and execute source. */
+function intentionRecoveryField(source: string): string | null {
+  const tree = ts.createSourceFile("donation-form.tsx", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let recovery: string | null = null;
+  function visit(node: ts.Node) {
+    if (ts.isJsxOpeningElement(node) && node.tagName.getText(tree) === "fieldset" &&
+        node.getText(tree).includes('fieldError("givingIntent")')) {
+      const handler = node.attributes.properties.find(
+        (attribute): attribute is ts.JsxAttribute =>
+          ts.isJsxAttribute(attribute) && attribute.name.getText(tree) === "onChange",
+      );
+      const initializer = handler?.initializer;
+      if (initializer && ts.isJsxExpression(initializer) && initializer.expression &&
+          ts.isArrowFunction(initializer.expression) && initializer.expression.parameters.length === 0 &&
+          ts.isCallExpression(initializer.expression.body)) {
+        const call = initializer.expression.body;
+        const field = call.arguments[0];
+        if (ts.isIdentifier(call.expression) && call.expression.text === "clearFieldError" &&
+            call.arguments.length === 1 && field && ts.isStringLiteral(field)) {
+          recovery = field.text;
+        }
       }
-      ts.forEachChild(node, visit);
     }
-    visit(tree);
-    expect(handler, "giving intention fieldset needs change recovery").toBeDefined();
-    if (!handler?.initializer || !ts.isJsxExpression(handler.initializer) || !handler.initializer.expression) throw new Error("Missing change expression");
-    const code = ts.transpile(handler.initializer.expression.getText(tree), { target: ts.ScriptTarget.ES2022 });
-    const clear = vi.fn();
-    const change = new Function("clearFieldError", `return (${code.trim().replace(/;$/, "")});`)(clear) as () => void;
-    change();
-    expect(clear.mock.calls).toEqual([["givingIntent"]]);
+    ts.forEachChild(node, visit);
+  }
+  visit(tree);
+  return recovery;
+}
+
+describe("donation intention validation recovery", () => {
+  const source = readFileSync(new URL("./donation-form.tsx", import.meta.url), "utf8");
+
+  it("clears only the giving intention error through the fieldset change handler", () => {
+    expect(intentionRecoveryField(source)).toBe("givingIntent");
+  });
+
+  it("detects a missing handler and a handler clearing the wrong field", () => {
+    expect(intentionRecoveryField(source.replace(
+      'onChange={() => clearFieldError("givingIntent")}',
+      'onChange={() => clearFieldError("amount")}',
+    ))).toBe("amount");
+    expect(intentionRecoveryField(source.replace(
+      'onChange={() => clearFieldError("givingIntent")}',
+      'onChange={() => {}}',
+    ))).toBeNull();
   });
 });
