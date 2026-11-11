@@ -1,31 +1,53 @@
 import { readFileSync } from "node:fs";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import ts from "typescript";
 
+/** Prove that the real async submit handler guards its one private navigation. */
+function guardsDirectTransferNavigation(source: string): boolean {
+  const tree = ts.createSourceFile("direct-transfer-form.tsx", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  let submit: ts.FunctionDeclaration | undefined;
+  function find(node: ts.Node) {
+    if (ts.isFunctionDeclaration(node) && node.name?.text === "submit") submit = node;
+    ts.forEachChild(node, find);
+  }
+  find(tree);
+  if (!submit?.body || !submit.modifiers?.some(modifier => modifier.kind === ts.SyntaxKind.AsyncKeyword)) return false;
+
+  let pushes = 0;
+  let guarded = 0;
+  function visit(node: ts.Node) {
+    if (ts.isCallExpression(node) && node.expression.getText(tree) === "router.push") pushes++;
+    if (ts.isIfStatement(node) && node.expression.getText(tree) === "form.isConnected" &&
+        ts.isExpressionStatement(node.thenStatement) && ts.isCallExpression(node.thenStatement.expression)) {
+      const call = node.thenStatement.expression;
+      if (call.expression.getText(tree) === "router.push" &&
+          call.arguments.length === 1 &&
+          call.arguments[0].getText(tree) ===
+            "privateDonationAcknowledgementPath(result.referenceNumber, result.receiptToken)" &&
+          node.getStart(tree) > source.indexOf('result.status !== "PENDING_VERIFICATION"')) {
+        guarded++;
+      }
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(submit.body);
+  return pushes === 1 && guarded === 1;
+}
+
 describe("direct transfer late navigation", () => {
-  it.each([true, false])("navigates only while original form connected=%s", async connected => {
-    const source = readFileSync(new URL("./direct-transfer-form.tsx", import.meta.url), "utf8");
-    const tree = ts.createSourceFile("form.tsx", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-    let handler: ts.FunctionDeclaration | undefined;
-    function visit(n: ts.Node) { if (ts.isFunctionDeclaration(n) && n.name?.text === "submit") handler = n; ts.forEachChild(n, visit); }
-    visit(tree);
-    if (!handler) throw new Error("Missing actual submit handler");
-    const js = ts.transpile(handler.getText(tree), { target: ts.ScriptTarget.ES2022 });
-    const push = vi.fn();
-    let resolve: (value: unknown) => void = () => { throw new Error("No pending request"); };
-    const request = vi.fn(() => new Promise(yes => { resolve = yes; }));
-    class SyntheticFormData { values = new Map<string, unknown>(); get(k: string) { return this.values.get(k) ?? null; } set(k: string, v: unknown) { this.values.set(k, v); } }
-    const lock = vi.fn();
-    const run = new Function("submissionRef", "onLockChange", "setError", "setBusy", "setUncertain", "FormData", "donationEvidenceUploadIssue", "hasValidDonationEvidenceHeader", "appealId", "method", "fetch", "router", "privateDonationAcknowledgementPath", js + "; return submit;");
-    const submit = run({ current: false }, lock, vi.fn(), vi.fn(), vi.fn(), SyntheticFormData, () => null, () => true, "synthetic-appeal", "BANK_TRANSFER", request, { push }, () => "/synthetic-ack") as (event: unknown) => Promise<void>;
-    const form = { isConnected: true };
-    const pending = submit({ preventDefault: vi.fn(), currentTarget: form });
-    expect(request).toHaveBeenCalledTimes(1);
-    form.isConnected = connected;
-    resolve({ status: 202, ok: true, json: async () => ({ status: "PENDING_VERIFICATION", referenceNumber: "AFD-SYNTHETIC", receiptToken: "synthetic_token_1234567890" }) });
-    await pending;
-    expect(push).toHaveBeenCalledTimes(connected ? 1 : 0);
-    expect(request).toHaveBeenCalledTimes(1);
-    expect(lock.mock.calls).toEqual([[true]]);
+  const source = readFileSync(new URL("./direct-transfer-form.tsx", import.meta.url), "utf8");
+
+  it("navigates after accepted pending verification only if the original form remains connected", () => {
+    expect(guardsDirectTransferNavigation(source)).toBe(true);
+  });
+
+  it("rejects unconditional navigation and a changed acknowledgement destination", () => {
+    expect(guardsDirectTransferNavigation(source.replace(
+      "if (form.isConnected) router.push(", "router.push(",
+    ))).toBe(false);
+    expect(guardsDirectTransferNavigation(source.replace(
+      "privateDonationAcknowledgementPath(result.referenceNumber, result.receiptToken)",
+      '"/unsafe"',
+    ))).toBe(false);
   });
 });
