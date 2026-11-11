@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
 import { waitForPublicOverview } from './helpers/public-overview-ready.mjs';
 
@@ -808,7 +809,9 @@ for (const width of [320, 390]) {
  * This is a CSS rendering regression, not a live programme publication test.
  */
 const programmeCampaignCss = readFileSync(
-  new URL('../src/app/our-work/[slug]/campaign.css', import.meta.url),
+  process.env.AMAANA_APP_WORKSPACE
+    ? join(process.env.AMAANA_APP_WORKSPACE, 'src/app/our-work/[slug]/campaign.css')
+    : new URL('../src/app/our-work/[slug]/campaign.css', import.meta.url),
   'utf8',
 );
 
