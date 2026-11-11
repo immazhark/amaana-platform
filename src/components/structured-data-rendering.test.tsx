@@ -2,14 +2,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AppealStructuredData } from "./appeal-structured-data";
 import { BreadcrumbStructuredData } from "./breadcrumb-structured-data";
+import { PublicContentStructuredData } from "./public-content-structured-data";
 import { StructuredData } from "./structured-data";
 
 afterEach(() => vi.unstubAllEnvs());
 
 const harmfulText = "</script><script>alert('x')</script>&>\u2028\u2029";
 
-function extractJsonLd(markup: string) {
-  const match = markup.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
+function extractJsonLd(markup: string, requireEscapedLineSeparators = true) {
+  const match = markup.match(/<script type="application\/ld\+json"(?:\s+[^>]*)?>([\s\S]*?)<\/script>/);
   const serialized = match?.[1];
   if (serialized === undefined) throw new Error("Expected JSON-LD script tag");
   expect(markup.match(/<script/g)).toHaveLength(1);
@@ -22,8 +23,12 @@ function extractJsonLd(markup: string) {
   expect(serialized).toContain("\\u003c");
   expect(serialized).toContain("\\u003e");
   expect(serialized).toContain("\\u0026");
-  expect(serialized).toContain("\\u2028");
-  expect(serialized).toContain("\\u2029");
+  // Dynamic public content normalizes whitespace before serialization. Other
+  // entry points preserve separators and must still escape them literally.
+  if (requireEscapedLineSeparators) {
+    expect(serialized).toContain("\\u2028");
+    expect(serialized).toContain("\\u2029");
+  }
   return JSON.parse(serialized) as Record<string, unknown>;
 }
 
@@ -99,6 +104,51 @@ function readSchema(markup: string) {
   if (!content) throw new Error("Expected JSON-LD");
   return JSON.parse(content);
 }
+
+
+describe("public content JSON-LD runtime and serialization boundary", () => {
+  it("escapes a rendered Article and omits private images and invalid calendar dates", () => {
+    const markup = renderToStaticMarkup(<PublicContentStructuredData
+      type="Article"
+      title={harmfulText}
+      description={harmfulText}
+      path="/stories/synthetic-reviewed"
+      publishedAt="2026-02-30"
+      modifiedAt="2026-02-30"
+      imageUrl="/api/private/photo.jpg"
+    />);
+    expect(markup).toContain('data-public-content-schema="Article"');
+    const schema = extractJsonLd(markup, false);
+    const normalizedText = harmfulText.trim().replace(/\s+/g, " ");
+    expect(schema["@context"]).toBe("https://schema.org");
+    expect(schema["@id"]).toBe("https://amaanafoundation.org/stories/synthetic-reviewed#content");
+    expect(schema.name).toBe(normalizedText);
+    expect(schema.description).toBe(normalizedText);
+    expect(schema).not.toHaveProperty("image");
+    expect(schema).not.toHaveProperty("datePublished");
+    expect(schema).not.toHaveProperty("dateModified");
+  });
+
+  it("rejects malformed runtime props and private locations without emitting any script", () => {
+    const valid = {
+      type: "Article" as const,
+      title: "Reviewed article",
+      description: "Approved public summary",
+      path: "/stories/reviewed",
+    };
+    for (const [label, override] of [
+      ["non-string title", { title: 42 }],
+      ["unapproved schema type", { type: "Person" }],
+      ["unexpected private field", { accessToken: "synthetic-private" }],
+      ["private route", { path: "/admin/appeals" }],
+      ["double-encoded private route", { path: "/%2561dmin/appeals" }],
+      ["too many keywords", { keywords: Array(51).fill("topic") }],
+    ] as const) {
+      const input = { ...valid, ...override } as unknown as Parameters<typeof PublicContentStructuredData>[0];
+      expect(renderToStaticMarkup(<PublicContentStructuredData {...input} />), label).toBe("");
+    }
+  });
+});
 
 describe("canonical JSON-LD entity identity", () => {
   it.each([
