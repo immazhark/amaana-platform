@@ -258,6 +258,32 @@ function legacyStaticAssetBytes(buildDir, asset) {
   return measuredBytes(stat.size, "bundle");
 }
 
+/** Inspect each generated client-reference segment without following symlinks.
+ * A missing file preserves the normal unavailable-attribution fallback.
+ * A broken link must not silently masquerade as a missing manifest.
+ */
+function clientReferenceManifestExists(buildDir, page) {
+  const segments = ["server", "app", ...page.slice(1).split("/")];
+  segments[segments.length - 1] += "_client-reference-manifest.js";
+  let current = buildDir;
+  for (let index = 0; index < segments.length; index += 1) {
+    current = join(current, segments[index]);
+    let entry;
+    try { entry = lstatSync(current); }
+    catch (error) {
+      if (error?.code === "ENOENT") return false;
+      throw error;
+    }
+    if (entry.isSymbolicLink()) {
+      throw new Error("Symbolic links are not supported in client-reference manifests");
+    }
+    if (index === segments.length - 1 ? !entry.isFile() : !entry.isDirectory()) {
+      throw new Error("Invalid client-reference manifest path");
+    }
+  }
+  return true;
+}
+
 function run() {
   const buildDir = join(process.cwd(), ".next");
   if (existsSync(buildDir) && lstatSync(buildDir).isSymbolicLink()) {
@@ -284,7 +310,9 @@ function run() {
     if (pages.some(page => !validAppPage(page))) throw new Error("Unsafe App Router page path");
     const clientPath = page => join(buildDir, "server", "app", page.slice(1) + "_client-reference-manifest.js");
     result.jsRouteAttributionAvailable = false;
-    result.cssRouteAttributionAvailable = pages.every(page => existsSync(clientPath(page)));
+    // Validate every page, even when an earlier manifest is absent.
+    // Array.every would otherwise skip a symlink in a later route.
+    result.cssRouteAttributionAvailable = pages.map(page => clientReferenceManifestExists(buildDir, page)).every(Boolean);
     if (result.cssRouteAttributionAvailable) {
       result.cssMetric = "client-reference-assigned-uncompressed-css-bytes";
       result.cssRoutes = summarizeClientReferenceCss(appPaths,
