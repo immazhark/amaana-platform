@@ -57,3 +57,17 @@ test("AF-R019 admin text actions use readable light ink while sidebar retains go
       `Admin light-content action text below 4.5:1 on ${surface}`);
   }
 });
+
+test("AF-R019 Impact principle numbers remain readable against both pale gradient endpoints", () => {
+  const css = appCss("impact.css");
+  assert.equal(declaration(css, ".v2-impact-philosophy", "background"),
+    "linear-gradient(135deg,#f7f3eb,#fffdf8)");
+  assert.equal(declaration(css, ".v2-impact-principles span", "color"),
+    "var(--af-color-gold-ink)");
+  for (const surface of ["#f7f3eb", "#fffdf8"]) {
+    assert.ok(contrast(inkToken("gold-ink"), surface) >= 4.5,
+      `Impact principle numbers must meet 4.5:1 on ${surface}`);
+  }
+  assert.ok(contrast(inkToken("gold-500"), "#f7f3eb") < 3,
+    "The original bright brand gold cannot serve as body text on this pale surface");
+});
