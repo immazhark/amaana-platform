@@ -22,7 +22,7 @@ function guardsDirectTransferNavigation(source: string): boolean {
       const call = node.thenStatement.expression;
       if (call.expression.getText(tree) === "router.push" &&
           call.arguments.length === 1 &&
-          call.arguments[0].getText(tree) ===
+          call.arguments[0]?.getText(tree) ===
             "privateDonationAcknowledgementPath(result.referenceNumber, result.receiptToken)" &&
           node.getStart(tree) > source.indexOf('result.status !== "PENDING_VERIFICATION"')) {
         guarded++;

@@ -18,9 +18,10 @@ function intentionRecoveryField(source: string): string | null {
           ts.isArrowFunction(initializer.expression) && initializer.expression.parameters.length === 0 &&
           ts.isCallExpression(initializer.expression.body)) {
         const call = initializer.expression.body;
+        const field = call.arguments[0];
         if (ts.isIdentifier(call.expression) && call.expression.text === "clearFieldError" &&
-            call.arguments.length === 1 && ts.isStringLiteral(call.arguments[0])) {
-          recovery = call.arguments[0].text;
+            call.arguments.length === 1 && field && ts.isStringLiteral(field)) {
+          recovery = field.text;
         }
       }
     }

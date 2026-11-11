@@ -8,8 +8,10 @@ function protectsAcknowledgementEffect(source: string): boolean {
   let effect: ts.ArrowFunction | undefined;
   function find(node: ts.Node) {
     if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) &&
-        node.expression.text === "useEffect" && node.arguments.length >= 1 &&
-        ts.isArrowFunction(node.arguments[0])) effect = node.arguments[0];
+        node.expression.text === "useEffect") {
+      const callback = node.arguments[0];
+      if (callback && ts.isArrowFunction(callback)) effect = callback;
+    }
     ts.forEachChild(node, find);
   }
   find(tree);

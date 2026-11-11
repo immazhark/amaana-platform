@@ -8,24 +8,26 @@ function hasGuardedReadyTransition(source: string): boolean {
   let transitions = 0;
   let cancelled = false;
   function visit(node: ts.Node) {
+    const frameCallback = ts.isCallExpression(node) ? node.arguments[0] : undefined;
     if (ts.isCallExpression(node) && node.expression.getText(tree) === "window.cancelAnimationFrame" &&
-        node.arguments.length === 1 && node.arguments[0].getText(tree) === "frame") {
+        node.arguments.length === 1 && node.arguments[0]?.getText(tree) === "frame") {
       cancelled = true;
     }
     if (ts.isCallExpression(node) && node.expression.getText(tree) === "window.requestAnimationFrame" &&
-        node.arguments.length === 1 && ts.isArrowFunction(node.arguments[0]) &&
-        ts.isBlock(node.arguments[0].body)) {
-      for (const statement of node.arguments[0].body.statements) {
+        node.arguments.length === 1 && frameCallback && ts.isArrowFunction(frameCallback) &&
+        ts.isBlock(frameCallback.body)) {
+      for (const statement of frameCallback.body.statements) {
         if (!ts.isIfStatement(statement) || statement.expression.getText(tree) !== "window.Razorpay" ||
             !ts.isBlock(statement.thenStatement)) continue;
         for (const guarded of statement.thenStatement.statements) {
           if (!ts.isExpressionStatement(guarded) || !ts.isCallExpression(guarded.expression) ||
               guarded.expression.expression.getText(tree) !== "setPhase") continue;
           const updater = guarded.expression.arguments[0];
+          const parameter = updater && ts.isArrowFunction(updater) ? updater.parameters[0] : undefined;
           if (!updater || !ts.isArrowFunction(updater) || updater.parameters.length !== 1 ||
-              !ts.isIdentifier(updater.parameters[0].name) ||
+              !parameter || !ts.isIdentifier(parameter.name) ||
               !ts.isConditionalExpression(updater.body)) continue;
-          const current = updater.parameters[0].name.text;
+          const current = parameter.name.text;
           const expression = updater.body;
           if (ts.isBinaryExpression(expression.condition) &&
               expression.condition.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken &&
