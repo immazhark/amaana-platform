@@ -24,10 +24,10 @@ test("Faith library card styling and keyboard focus remain shared by both routes
 });
 
 test("AF-R019 Faith library action ink stays legible on pale paper and cream cards", () => {
-  const declarations = [...sharedCss.matchAll(/\\.v2-faith-library-action\\s*\\{([^}]*)\\}/g)];
+  const declarations = [...sharedCss.matchAll(/\.v2-faith-library-action\s*\{([^}]*)\}/g)];
   expect(declarations.length).toBeGreaterThan(0);
   const lastRule = declarations.at(-1)?.[1] ?? "";
-  expect(lastRule).toMatch(/(?:^|;)\\s*color:\\s*var\\(--amaana-gold-deep\\)/);
+  expect(lastRule).toMatch(/(?:^|;)\s*color:\s*var\(--amaana-gold-deep\)/);
   const brandCss = readFileSync(new URL("../brand.css", import.meta.url), "utf8");
   const globalCss = readFileSync(new URL("../globals.css", import.meta.url), "utf8");
   expect(brandCss).toContain("--amaana-gold-deep: var(--af-color-gold-ink)");
