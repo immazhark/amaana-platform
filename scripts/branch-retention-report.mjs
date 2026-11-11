@@ -57,13 +57,13 @@ export function collectLocalBranchRetention(cwd = process.cwd()) {
   try { main = git(cwd, ['rev-parse', '--verify', mainRef + '^{commit}']); }
   catch { throw new Error('Missing verified local origin/main; no branch actions taken'); }
   const mainSha = main.stdout.trim();
-  const lines = git(cwd, ['for-each-ref', '--format=%(refname:short) %(objectname)', 'refs/remotes/origin']).stdout.trim().split('\n').filter(Boolean);
+  const lines = git(cwd, ['for-each-ref', '--format=%(refname) %(objectname)', 'refs/remotes/origin']).stdout.trim().split('\n').filter(Boolean);
   if (!lines.length) throw new Error('Local origin refs are missing');
   const refs = [];
   for (const line of lines) {
-    const match = /^(origin\/\S+) ([a-f0-9]{40})$/.exec(line);
+    const match = /^(refs\/remotes\/origin\/\S+) ([a-f0-9]{40})$/.exec(line);
     if (!match) throw new Error('Unexpected remote ref format');
-    const name = match[1].slice('origin/'.length);
+    const name = match[1].slice('refs/remotes/origin/'.length);
     if (name === 'HEAD') continue; // Symbolic alias, not a branch.
     const containment = git(cwd, ['merge-base', '--is-ancestor', match[2], mainSha], { allowNotAncestor: true });
     refs.push({ branch: name, sha: match[2], contained: containment.status === 0 });
