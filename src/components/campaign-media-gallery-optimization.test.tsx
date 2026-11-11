@@ -49,6 +49,18 @@ describe("campaign gallery managed image optimization", () => {
     expect(html).toContain('alt="Volunteers preparing community relief supplies"');
   });
 
+  it("optimizes an approved directly supplied first-party absolute managed image", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "");
+    const html = renderToStaticMarkup(<CampaignMediaGallery items={[
+      { id: "direct-managed", url: "https://amaanafoundation.org/media/2026/approved.webp",
+        alt: "Reviewed distribution supplies", width: 1200, height: 800 },
+    ]} />);
+    expect(html).toContain("/_next/image?url=%2Fmedia%2F2026%2Fapproved.webp");
+    expect(html).not.toContain('src="https://amaanafoundation.org/media/2026/approved.webp"');
+    expect(html).toContain('alt="Reviewed distribution supplies"');
+  });
+
   it("does not claim that faces are blurred from free-form alt or caption text", () => {
     const html = renderToStaticMarkup(<CampaignMediaGallery items={[{
       id: "privacy-claim-unreviewed",

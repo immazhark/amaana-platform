@@ -385,3 +385,25 @@ for (const width of [390, 1440]) {
     await expect(parent).toHaveClass(/active/);
   });
 }
+
+test('Mobile menu stays closed after a history return to its previous open route', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/about');
+  const toggle = page.getByRole('navigation', { name: 'Primary navigation', exact: true }).getByRole('button', { name: /navigation menu/ });
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.locator('body')).toHaveClass(/af-menu-lock/);
+  await page.evaluate(() => window.history.pushState(null, '', '/impact'));
+  await expect(page).toHaveURL(/\/impact$/);
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('body')).not.toHaveClass(/af-menu-lock/);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/about$/);
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('body')).not.toHaveClass(/af-menu-lock/);
+  await toggle.click();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await page.keyboard.press('Escape');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(toggle).toBeFocused();
+});

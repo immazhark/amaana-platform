@@ -11,25 +11,33 @@ function attr(attributes, name) {
   return null;
 }
 
-/** Links inside HTML template contents are inert until a script adopts them.
- * Keep a lightweight quote-aware tag scan so nested or unclosed templates do
- * not inflate initial rendered stylesheet attribution.
+/** Tokenize tags once so attribute text cannot open comments or inert bodies.
+ * This audit observes script-enabled HTML; template and noscript links are inert.
  */
-function withoutInertTemplates(markup) {
-  const tags = /<(\/?)([a-z][a-z0-9:_-]*)(?=[\t\n\f\r />])((?:[^"'<>]|"[^"]*"|'[^']*')*)>/gi;
-  let depth = 0;
-  let from = 0;
-  let visible = "";
-  for (const match of markup.matchAll(tags)) {
-    if (match[2].toLowerCase() !== "template") continue;
-    if (match[1]) {
-      if (depth && --depth === 0) from = match.index + match[0].length;
-    } else {
-      if (depth === 0) visible += markup.slice(from, match.index);
-      depth += 1;
+function* activeOpeningTags(markup) {
+  const tags = /<!--[\s\S]*?(?:-->|$)|<(\/?)([a-z][a-z0-9:_-]*)(?=[\t\n\f\r />])((?:[^"'<>]|"[^"]*"|'[^']*')*)>/gi;
+  const rawNames = new Set(["script", "style", "title", "textarea", "xmp", "noembed", "noframes", "noscript"]);
+  let templateDepth = 0;
+  let match;
+  while ((match = tags.exec(markup)) !== null) {
+    if (match[0].startsWith("<!--")) continue;
+    const name = match[2].toLowerCase();
+    if (name === "template") {
+      if (match[1]) templateDepth = Math.max(0, templateDepth - 1);
+      else templateDepth += 1;
+      continue;
     }
+    if (match[1]) continue;
+    if (rawNames.has(name)) {
+      const closing = new RegExp(`</${name}\\s*>`, "gi");
+      closing.lastIndex = tags.lastIndex;
+      const end = closing.exec(markup);
+      if (!end) return;
+      tags.lastIndex = closing.lastIndex;
+      continue;
+    }
+    if (templateDepth === 0) yield [match[0], name, match[3]];
   }
-  return depth ? visible : visible + markup.slice(from);
 }
 
 /** Resolve same-origin Next CSS referenced by rendered public HTML. */
@@ -38,16 +46,7 @@ export function stylesheetsInHtml(html, origin = ORIGIN) {
   const site = new URL(origin);
   if (!/^https?:$/.test(site.protocol) || site.username || site.password) throw new Error("Origin must use HTTP(S) without credentials");
   const unique = new Set();
-  // Commented-out (including unterminated) links are not rendered resources.
-  // Raw-text/RCDATA bodies cannot contain active stylesheet links.
-  // Stop at the matching closing element so later genuine links remain visible.
-  const renderedMarkup = withoutInertTemplates(html.replace(/<!--[\s\S]*?(?:-->|$)/g, "")
-    // This audit measures the script-enabled page, not no-JS fallbacks.
-    .replace(/<(script|style|title|textarea|xmp|noembed|noframes|noscript)(?=[\t\n\f\r />])[^>]*>[\s\S]*?(?:<\/\1\s*>|$)/gi, ""));
-  // Consume every complete opening tag, including quoted attributes, so a
-  // link-shaped attribute value cannot become a standalone resource tag.
-  const tags = /<([a-z][a-z0-9:_-]*)(?=[\t\n\f\r />])((?:[^"'<>]|"[^"]*"|'[^']*')*)>/gi;
-  for (const match of renderedMarkup.matchAll(tags)) {
+  for (const match of activeOpeningTags(html)) {
     if (match[1].toLowerCase() !== "link") continue;
     const rel = attr(match[2], "rel");
     const raw = attr(match[2], "href");
@@ -95,6 +94,24 @@ export async function auditPublicRouteCss({ fetchImpl = fetch, routes = PUBLIC_R
   const site = new URL(ORIGIN);
   const entries = [];
   const sizes = new Map();
+  // Validate and snapshot the entire inventory before any network access.
+  // A later invalid entry must not permit earlier requests or duplicate rows.
+  if (!Array.isArray(routes) || routes.length === 0) throw new Error("Invalid public route inventory");
+  const canonicalRoutes = [...routes];
+  const seenRoutes = new Set();
+  for (const route of canonicalRoutes) {
+    if (typeof route !== "string" || !/^\/(?!\/)/.test(route) ||
+        route.includes("//") || route.includes("%") ||
+        /[?#\\\s\u0000-\u001F\u007F]/u.test(route) ||
+        (route !== "/" && route.endsWith("/")) ||
+        route.split("/").some(segment => segment === "." || segment === "..") ||
+        seenRoutes.has(route)) {
+      throw new Error("Invalid public route: " + String(route));
+    }
+    // Require the supplied pathname to be the URL actually requested.
+    if (new URL(route, site).pathname !== route) throw new Error("Invalid public route: " + route);
+    seenRoutes.add(route);
+  }
   async function request(url) {
     // Never permit an external hop before validating the target origin.
     const response = await fetchImpl(url, { redirect: "manual", signal: AbortSignal.timeout(15000) });
@@ -103,10 +120,7 @@ export async function auditPublicRouteCss({ fetchImpl = fetch, routes = PUBLIC_R
     if (!response.url || new URL(response.url).origin !== site.origin) throw new Error("Public route CSS audit unexpected origin at " + url);
     return response;
   }
-  for (const route of routes) {
-    if (typeof route !== "string" || !/^\/(?!\/)/.test(route) || route.includes("..") || route.includes("?") || route.includes("#") || route.includes("\\")) {
-      throw new Error("Invalid public route: " + route);
-    }
+  for (const route of canonicalRoutes) {
     const pageUrl = new URL(route, site);
     if (pageUrl.origin !== site.origin) throw new Error("Invalid public route: " + route);
     const html = await (await request(pageUrl.href)).text();

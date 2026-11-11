@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { mkdtemp, mkdir, rm, symlink, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import test from "node:test";
 
 import { auditFontSizes, auditPublicStyles } from "./public-font-floor.mjs";
@@ -54,4 +57,117 @@ test("font shorthand uses font-size, never its smaller line-height, for the mini
     ".inherit{font:inherit}",
   ].join("");
   assert.deepEqual(auditFontSizes(css, "fixture.css"), []);
+});
+
+test("constant CSS calc arithmetic cannot bypass the public 12px font floor", () => {
+  const bad = [
+    ".multiplied{font-size:calc(1rem * .5)}",
+    ".divided{font-size:calc(1rem / 2)}",
+    ".inverse{font-size:calc(2 * .3rem)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(bad, "fixture.css"), [
+    { path: "fixture.css", value: "calc(1rem * .5)" },
+    { path: "fixture.css", value: "calc(1rem / 2)" },
+    { path: "fixture.css", value: "calc(2 * .3rem)" },
+  ]);
+
+  const safe = [
+    ".enlarged{font-size:calc(11px * 2)}",
+    ".same{font-size:calc(1rem / 1)}",
+    ".inverse{font-size:calc(2 * .75rem)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
+});
+
+test("same-unit CSS calc additions and subtractions use the computed final font-size", () => {
+  const safe = [
+    ".safeRem{font-size:calc(.5rem + .25rem)}",
+    ".safePx{font-size:calc(20px - 4px)}",
+    ".safeLarge{font-size:calc(11px + 2px)}",
+    ".safeRemSubtract{font-size:calc(1rem - .125rem)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
+
+  const unsafe = [
+    ".badRem{font-size:calc(.5rem + .2rem)}",
+    ".badPx{font-size:calc(16px - 5px)}",
+    ".negative{font-size:calc(12px - 13px)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(unsafe, "fixture.css"), [
+    { path: "fixture.css", value: "calc(.5rem + .2rem)" },
+    { path: "fixture.css", value: "calc(16px - 5px)" },
+    { path: "fixture.css", value: "calc(12px - 13px)" },
+  ]);
+});
+
+test("chained constant CSS calc scalar operations must use the final font size", () => {
+  const unsafe = [
+    ".multiplied{font-size:calc(1rem * .5 * .5)}",
+    ".divided{font-size:calc(1rem / 2 / 2)}",
+    ".mixedOps{font-size:calc(16px * 2 / 4)}",
+    ".zeroDivisor{font-size:calc(1rem * 2 / 0)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(unsafe, "fixture.css").map(({ value }) => value), [
+    "calc(1rem * .5 * .5)",
+    "calc(1rem / 2 / 2)",
+    "calc(16px * 2 / 4)",
+    "calc(1rem * 2 / 0)",
+  ]);
+
+  const safe = [
+    ".scaled{font-size:calc(10px * 2 * 2)}",
+    ".remScaled{font-size:calc(.5rem * 2 * 2)}",
+    ".mixedOps{font-size:calc(2rem / 2 * 2)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
+});
+
+test("public CSS audit rejects linked stylesheet files instead of silently ignoring them", async () => {
+  const root = await mkdtemp(join(tmpdir(), "amaana-css-audit-file-"));
+  try {
+    await mkdir(join(root, "src"));
+    await writeFile(join(root, "hidden.css"), ".bad{font-size:7px}");
+    await symlink(join(root, "hidden.css"), join(root, "src", "linked.css"));
+    await assert.rejects(auditPublicStyles(root), /symbolic link/i);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("public CSS audit rejects linked source directories rather than skipping nested styles", async () => {
+  const root = await mkdtemp(join(tmpdir(), "amaana-css-audit-directory-"));
+  try {
+    await mkdir(join(root, "src"));
+    await mkdir(join(root, "hidden"));
+    await writeFile(join(root, "hidden", "bad.css"), ".bad{font-size:7px}");
+    await symlink(join(root, "hidden"), join(root, "src", "linked"));
+    await assert.rejects(auditPublicStyles(root), /symbolic link/i);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("public CSS audit rejects a linked src root rather than trusting an external tree", async () => {
+  const root = await mkdtemp(join(tmpdir(), "amaana-css-audit-root-"));
+  try {
+    await mkdir(join(root, "alternate-src"));
+    await writeFile(join(root, "alternate-src", "bad.css"), ".bad{font-size:7px}");
+    await symlink(join(root, "alternate-src"), join(root, "src"));
+    await assert.rejects(auditPublicStyles(root), /symbolic link/i);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+test("public CSS audit still scans ordinary nested CSS and rejects literal small type", async () => {
+  const root = await mkdtemp(join(tmpdir(), "amaana-css-audit-regular-"));
+  try {
+    await mkdir(join(root, "src", "nested"), { recursive: true });
+    await writeFile(join(root, "src", "nested", "bad.css"), ".bad{font-size:7px}");
+    assert.deepEqual(await auditPublicStyles(root), [
+      { path: "src/nested/bad.css", value: "7px" },
+    ]);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
 });

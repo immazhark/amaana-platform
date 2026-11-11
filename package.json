@@ -52,14 +52,14 @@
     "audit:admin-edge": "node scripts/audit-admin-edge-coverage.test.mjs && node scripts/audit-admin-edge-coverage.mjs",
     "security:client-bundle": "node scripts/check-client-secret-boundary.mjs",
     "security:public-env": "node scripts/check-public-env-secret-names.mjs",
-    "stylelint:governed": "npx --yes stylelint@17.16.0 src/app/donate/donate-audit.module.css"
+    "stylelint:governed": "npx --yes stylelint@17.16.0 src/app/donate/donate-audit.module.css src/components/donation-methods.module.css src/components/direct-transfer-form.module.css src/components/donation-form.module.css"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1128.0",
     "@aws-sdk/s3-request-presigner": "3.1128.0",
     "@prisma/client": "6.12.0",
     "lenis": "1.3.26",
-    "next": "16.4.2",
+    "next": "16.4.6",
     "prisma": "6.12.0",
     "react": "19.1.1",
     "react-dom": "19.1.1",
@@ -72,7 +72,7 @@
     "@types/react-dom": "19.1.9",
     "@vitest/coverage-v8": "5.0.5",
     "eslint": "9.35.0",
-    "eslint-config-next": "16.4.2",
+    "eslint-config-next": "16.4.6",
     "rolldown": "1.2.15",
     "typescript": "5.9.2",
     "vite": "8.2.4",

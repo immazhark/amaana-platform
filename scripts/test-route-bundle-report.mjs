@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -629,3 +629,178 @@ test("AF-R047 rejects malformed public route labels before reading client-refere
     assert.deepEqual(report.routes, [route], "Normal App Router labels remain accepted");
   }
 });
+
+
+test("AF-R047 rejects doubled Next asset-prefix separators without rejecting canonical assets", () => {
+  const cssEntry = path => referenceSource("/page", {
+    "[project]/src/app/layout": [{ path, inlined: false }],
+  });
+  for (const path of ["/_next//static/css/site.css", "_next//static/css/site.css"]) {
+    assert.throws(() => reporter.summarizeClientReferenceCss(
+      { "/page": "/" }, () => cssEntry(path), () => 11,
+    ), /Unsafe client-reference CSS asset path/, path);
+  }
+  for (const path of ["/_next//static/chunks/app.js", "_next//static/chunks/app.js"]) {
+    assert.throws(() => reporter.summarizeClientReferenceJs(
+      { "/page": "/" }, page => jsReferenceSource(page, {
+        "[project]/src/app/layout": [path],
+      }), [], () => 13,
+    ), /Unsafe JavaScript asset path/, path);
+    assert.throws(() => reporter.summarizeClientReferenceJs(
+      { "/page": "/" }, page => jsReferenceSource(page, {}), [path], () => 13,
+    ), /Unsafe JavaScript asset path/, path);
+  }
+  assert.equal(reporter.summarizeClientReferenceCss(
+    { "/page": "/" }, () => cssEntry("/_next/static/css/site.css"), () => 11,
+  )[0].cssBytes, 11);
+  assert.equal(reporter.summarizeClientReferenceJs(
+    { "/page": "/" }, page => jsReferenceSource(page, {
+      "[project]/src/app/layout": ["/_next/static/chunks/app.js"],
+    }), [], () => 13,
+  )[0].jsBytes, 13);
+});
+
+for (const [label, entries] of [
+  ["sibling page", { "[project]/src/app/other/page": ["static/chunks/other.js"] }],
+  ["unrelated layout", { "[project]/src/app/other/layout": [] }],
+  ["unrelated error", { "[project]/src/app/global-error": [] }],
+]) {
+  for (const shared of [[], ["static/chunks/runtime.js"]]) {
+    test(`AF-R047 rejects unmatched nonempty JS map: ${label}, shared=${shared.length}`, () => {
+      let measured = false;
+      assert.throws(() => reporter.summarizeClientReferenceJs(
+        { "/donate/page": "/donate" },
+        page => jsReferenceSource(page, entries), shared,
+        () => { measured = true; return 100; },
+      ), /No matching client-reference JavaScript entries/);
+      assert.equal(measured, false, "Mismatched attribution must fail before measuring shared assets");
+    });
+  }
+}
+
+test("AF-R047 preserves empty JS maps and matching empty ancestor entries", () => {
+  for (const entries of [{}, { "[project]/src/app/layout": [] }]) {
+    const rows = reporter.summarizeClientReferenceJs(
+      { "/donate/page": "/donate" }, page => jsReferenceSource(page, entries),
+      ["static/chunks/runtime.js"], () => 100,
+    );
+    assert.deepEqual(rows, [{ route: "/donate", appPath: "/donate/page", jsBytes: 100, scriptCount: 1 }]);
+  }
+});
+
+for (const kind of ["js", "css", "directory", "root"]) {
+  test(`AF-R047 rejects symlinked static build assets: ${kind}`, () => {
+    const directory = mkdtempSync(join(tmpdir(), "amaana-symlink-assets-"));
+    try {
+      const build = join(directory, ".next");
+      const actual = join(directory, "synthetic-assets");
+      mkdirSync(build);
+      mkdirSync(actual);
+      writeFileSync(join(actual, "asset.js"), "synthetic");
+      writeFileSync(join(actual, "asset.css"), "synthetic");
+      writeFileSync(join(build, "app-path-routes-manifest.json"), JSON.stringify({ "/page": "/" }));
+      if (kind === "root") {
+        symlinkSync(actual, join(build, "static"), "dir");
+      } else {
+        mkdirSync(join(build, "static"));
+        symlinkSync(kind === "directory" ? actual : join(actual, `asset.${kind}`),
+          join(build, "static", kind === "directory" ? "nested" : `asset.${kind}`),
+          kind === "directory" ? "dir" : "file");
+      }
+      const cli = fileURLToPath(new URL("./report-route-bundles.mjs", import.meta.url));
+      const result = spawnSync(process.execPath, [cli, "--json"], {
+        cwd: directory, encoding: "utf8", timeout: 5000,
+      });
+      assert.equal(result.status, 1, "Symlinked assets must not produce a successful byte report");
+      assert.equal(result.stdout, "");
+      assert.match(result.stderr, /Symbolic links are not supported in static build assets/);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+}
+
+for (const kind of ["file", "parent-directory", "static-root", "build-root"]) {
+  test(`AF-R047 legacy build-manifest rejects symlinked static asset path: ${kind}`, () => {
+    const directory = mkdtempSync(join(tmpdir(), "amaana-legacy-manifest-symlink-"));
+    try {
+      const actual = join(directory, "synthetic-outside");
+      const build = join(directory, ".next");
+      const manifest = JSON.stringify({ pages: { "/page": ["static/chunks/asset.js"] } });
+      mkdirSync(join(actual, "chunks"), { recursive: true });
+      writeFileSync(join(actual, "chunks", "asset.js"), "synthetic outside bytes");
+      if (kind === "build-root") {
+        mkdirSync(join(actual, "static", "chunks"), { recursive: true });
+        writeFileSync(join(actual, "static", "chunks", "asset.js"), "synthetic outside bytes");
+        writeFileSync(join(actual, "app-build-manifest.json"), manifest);
+        symlinkSync(actual, build, "dir");
+      } else {
+        mkdirSync(build);
+        writeFileSync(join(build, "app-build-manifest.json"), manifest);
+        if (kind === "static-root") {
+          symlinkSync(actual, join(build, "static"), "dir");
+        } else {
+          mkdirSync(join(build, "static"));
+          if (kind === "parent-directory") {
+            symlinkSync(join(actual, "chunks"), join(build, "static", "chunks"), "dir");
+          } else {
+            mkdirSync(join(build, "static", "chunks"));
+            symlinkSync(join(actual, "chunks", "asset.js"),
+              join(build, "static", "chunks", "asset.js"), "file");
+          }
+        }
+      }
+      const cli = fileURLToPath(new URL("./report-route-bundles.mjs", import.meta.url));
+      const result = spawnSync(process.execPath, [cli, "--json"], {
+        cwd: directory, encoding: "utf8", timeout: 5000,
+      });
+      assert.equal(result.status, 1, "Legacy manifest attribution must not follow a symlink");
+      assert.equal(result.stdout, "", "Failed reports must not emit a partial JSON audit");
+      assert.match(result.stderr, /Symbolic links are not supported in static build assets/);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+}
+
+for (const kind of ["file", "broken-file", "app-directory", "server-directory"]) {
+  test(`AF-R047 rejects symlinked client-reference manifest paths: ${kind}`, () => {
+    const directory = mkdtempSync(join(tmpdir(), "amaana-client-manifest-symlink-"));
+    const build = join(directory, ".next");
+    const out = join(directory, "external-manifests");
+    const cli = fileURLToPath(new URL("./report-route-bundles.mjs", import.meta.url));
+    try {
+      mkdirSync(join(build, "static/css"), { recursive: true });
+      mkdirSync(join(build, "static/chunks"), { recursive: true });
+      mkdirSync(out, { recursive: true });
+      writeFileSync(join(build, "app-path-routes-manifest.json"), JSON.stringify({ "/page": "/" }));
+      writeFileSync(join(build, "static/css/root.css"), "body{}");
+      writeFileSync(join(build, "static/chunks/site.js"), "void 0");
+      const payload = referenceSource("/page", {
+        "[project]/src/app/layout": [{ path: "static/css/root.css", inlined: false }],
+      });
+      const filename = "page_client-reference-manifest.js";
+      if (kind === "file" || kind === "broken-file") {
+        mkdirSync(join(build, "server/app"), { recursive: true });
+        if (kind === "file") writeFileSync(join(out, filename), payload);
+        symlinkSync(join(out, filename), join(build, "server/app", filename), "file");
+      } else if (kind === "app-directory") {
+        mkdirSync(join(build, "server"), { recursive: true });
+        writeFileSync(join(out, filename), payload);
+        symlinkSync(out, join(build, "server/app"), "dir");
+      } else {
+        mkdirSync(join(out, "app"), { recursive: true });
+        writeFileSync(join(out, "app", filename), payload);
+        symlinkSync(out, join(build, "server"), "dir");
+      }
+      const result = spawnSync(process.execPath, [cli, "--json"], {
+        cwd: directory, encoding: "utf8", timeout: 5000,
+      });
+      assert.equal(result.status, 1, "Untrusted manifest links must never yield a successful audit");
+      assert.equal(result.stdout, "", "No partial route-byte report may be emitted");
+      assert.match(result.stderr, /Symbolic links are not supported in client-reference manifests/);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+}

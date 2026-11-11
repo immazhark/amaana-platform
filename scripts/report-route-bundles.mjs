@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync, lstatSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -8,6 +8,8 @@ import { pathToFileURL } from "node:url";
  */
 function normalizedStaticAsset(value) {
   if (typeof value !== "string") return null;
+  // Reject empty segments before stripping _next/ or its leading slash.
+  if (value.includes("//")) return null;
   const normalized = value.replace(/^\/?_next\//, "").replace(/^\//, "");
   if (!/^static\/[A-Za-z0-9_./-]+\.(?:js|css)$/.test(normalized)) return null;
   // Distinct manifest strings can resolve to the same on-disk file.
@@ -209,6 +211,11 @@ export function summarizeClientReferenceJs(appPaths, readManifest, rootMainFiles
       matched.add(entry);
       for (const script of paths) assets.add(script);
     }
+    // A nonempty map with only sibling/error entries cannot establish this
+    // route's assignment. Shared runtime alone must not disguise the mismatch.
+    if (Object.keys(manifest.entryJSFiles).length && !matched.size) {
+      throw new Error("No matching client-reference JavaScript entries");
+    }
     let jsBytes = 0;
     for (const asset of assets) {
       if (!sizes.has(asset)) {
@@ -224,16 +231,64 @@ export function summarizeClientReferenceJs(appPaths, readManifest, rootMainFiles
 
 function walkBuildAssets(directory, root = directory) {
   if (!existsSync(directory)) throw new Error("Next.js static asset directory is missing");
+  const directoryStat = lstatSync(directory);
+  if (directoryStat.isSymbolicLink()) throw new Error("Symbolic links are not supported in static build assets");
+  if (!directoryStat.isDirectory()) throw new Error("Next.js static asset path is not a directory");
   return readdirSync(directory, { withFileTypes: true }).flatMap(item => {
     const path = join(directory, item.name);
+    if (item.isSymbolicLink()) throw new Error("Symbolic links are not supported in static build assets");
     if (item.isDirectory()) return walkBuildAssets(path, root);
     if (!item.isFile() || !/\.(js|css)$/.test(item.name)) return [];
     return [{ path: path.slice(root.length + 1).replaceAll("\\", "/"), bytes: statSync(path).size }];
   });
 }
 
+/** Check each generated static path segment; statSync follows symlinks silently. */
+function legacyStaticAssetBytes(buildDir, asset) {
+  let current = buildDir;
+  let stat;
+  for (const segment of asset.split("/")) {
+    current = join(current, segment);
+    stat = lstatSync(current);
+    if (stat.isSymbolicLink()) {
+      throw new Error("Symbolic links are not supported in static build assets");
+    }
+  }
+  if (!stat?.isFile()) throw new Error("Next.js static asset path is not a file");
+  return measuredBytes(stat.size, "bundle");
+}
+
+/** Inspect each generated client-reference segment without following symlinks.
+ * A missing file preserves the normal unavailable-attribution fallback.
+ * A broken link must not silently masquerade as a missing manifest.
+ */
+function clientReferenceManifestExists(buildDir, page) {
+  const segments = ["server", "app", ...page.slice(1).split("/")];
+  segments[segments.length - 1] += "_client-reference-manifest.js";
+  let current = buildDir;
+  for (let index = 0; index < segments.length; index += 1) {
+    current = join(current, segments[index]);
+    let entry;
+    try { entry = lstatSync(current); }
+    catch (error) {
+      if (error?.code === "ENOENT") return false;
+      throw error;
+    }
+    if (entry.isSymbolicLink()) {
+      throw new Error("Symbolic links are not supported in client-reference manifests");
+    }
+    if (index === segments.length - 1 ? !entry.isFile() : !entry.isDirectory()) {
+      throw new Error("Invalid client-reference manifest path");
+    }
+  }
+  return true;
+}
+
 function run() {
   const buildDir = join(process.cwd(), ".next");
+  if (existsSync(buildDir) && lstatSync(buildDir).isSymbolicLink()) {
+    throw new Error("Symbolic links are not supported in static build assets");
+  }
   const manifestPath = join(buildDir, "app-build-manifest.json");
   let result;
   if (existsSync(manifestPath)) {
@@ -242,9 +297,7 @@ function run() {
       metric: "manifest-assigned-uncompressed-bytes",
       routeAttributionAvailable: true,
       routes: summarizeAppRouteBundles(manifest.pages, asset => {
-        const size = statSync(join(buildDir, asset)).size;
-        if (!Number.isFinite(size) || size < 0) throw new Error(`Invalid bundle size: ${asset}`);
-        return size;
+        return legacyStaticAssetBytes(buildDir, asset);
       }),
     };
   } else {
@@ -257,7 +310,9 @@ function run() {
     if (pages.some(page => !validAppPage(page))) throw new Error("Unsafe App Router page path");
     const clientPath = page => join(buildDir, "server", "app", page.slice(1) + "_client-reference-manifest.js");
     result.jsRouteAttributionAvailable = false;
-    result.cssRouteAttributionAvailable = pages.every(page => existsSync(clientPath(page)));
+    // Validate every page, even when an earlier manifest is absent.
+    // Array.every would otherwise skip a symlink in a later route.
+    result.cssRouteAttributionAvailable = pages.map(page => clientReferenceManifestExists(buildDir, page)).every(Boolean);
     if (result.cssRouteAttributionAvailable) {
       result.cssMetric = "client-reference-assigned-uncompressed-css-bytes";
       result.cssRoutes = summarizeClientReferenceCss(appPaths,

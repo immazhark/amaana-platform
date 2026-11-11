@@ -76,7 +76,19 @@ export default async function DonationsPage({ searchParams }: Props) {
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
   const donations = await prisma.donation.findMany({
     where,
-    include: { appeal: { select: { title: true } } },
+    select: {
+      id: true,
+      referenceNumber: true,
+      donorName: true,
+      donorEmail: true,
+      givingIntent: true,
+      paymentMethod: true,
+      amount: true,
+      refundedAmount: true,
+      status: true,
+      createdAt: true,
+      appeal: { select: { title: true } },
+    },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     skip: pagination.skip,
     take: pagination.pageSize,
@@ -153,7 +165,7 @@ export default async function DonationsPage({ searchParams }: Props) {
       <ol className="history">
         {unmatchedCriticalEvents.map(event => <li key={event.id}>
           <strong>{event.eventType}</strong>
-          <span>{event.processedAt.toLocaleString("en-IN")}</span>
+          <span>{event.processedAt.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</span>
           <small>{event.providerEventId}</small>
         </li>)}
       </ol>
@@ -180,7 +192,7 @@ export default async function DonationsPage({ searchParams }: Props) {
           <td>{formatINR(donation.amount.toNumber())}</td>
           <td>{formatINR(donation.refundedAmount.toNumber())}</td>
           <td><span className="status-badge">{donation.status}</span></td>
-          <td>{donation.createdAt.toLocaleDateString("en-IN")}</td>
+          <td>{donation.createdAt.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })}</td>
         </tr>)}</tbody>
       </table>
       {donations.length === 0 && <p className="empty-state">No donations match this view.</p>}

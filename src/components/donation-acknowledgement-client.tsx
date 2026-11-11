@@ -16,6 +16,7 @@ export function DonationAcknowledgementClient({ reference }: { reference: string
 
   useEffect(() => {
     let controller: AbortController | undefined;
+    let active = true;
     const frame = window.requestAnimationFrame(() => {
       setRecord(undefined);
       const resolvedToken = parsePrivateDonationAcknowledgementLocation(window.location.search, window.location.hash)
@@ -45,13 +46,14 @@ export function DonationAcknowledgementClient({ reference }: { reference: string
           if (!isAcknowledgementResponse(body, reference)) throw new Error("Invalid private acknowledgement");
           return body;
         })
-        .then(result => setRecord(result.found ? result : null))
+        .then(result => { if (active) setRecord(result.found ? result : null); })
         .catch(error => {
-          if (error?.name !== "AbortError") setRecord("error");
+          if (active && error?.name !== "AbortError") setRecord("error");
         });
     });
 
     return () => {
+      active = false;
       window.cancelAnimationFrame(frame);
       controller?.abort();
     };

@@ -22,6 +22,7 @@ export const proposedAdminRouteCoverage = Object.freeze([
   "/admin/home-carousel",
   "/admin/media",
   "/admin/notifications",
+  "/admin/requests",
   "/admin/requests/[id]",
   "/admin/retention",
   "/admin/team",

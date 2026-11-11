@@ -1,4 +1,4 @@
-import { readdir, readFile } from "node:fs/promises";
+import { lstat, readdir, readFile } from "node:fs/promises";
 import { join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -20,8 +20,41 @@ export function auditFontSizes(source, path) {
     // A clamp's first argument is the lower bound. Its middle calc() may
     // legitimately subtract a small length without reducing that bound.
     const clampFloor = !shorthand && /^clamp\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*,/i.exec(value);
-    const measurements = clampFloor
-      ? [clampFloor]
+    // Fold only standalone constant calc products, quotients, and same-unit sums/differences in font-size.
+    // Operand-only scanning misses calc(1rem * .5), while it rejects
+    // calc(11px * 2) despite the computed size being above the floor.
+    // Mixed-unit, nested and dynamic expressions keep the existing audit.
+    const directCalc = !shorthand && /^calc\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*([*/])\s*(-?\d*\.?\d+)\s*\)$/i.exec(value);
+    const reverseCalc = !shorthand && /^calc\(\s*(-?\d*\.?\d+)\s*\*\s*(-?\d*\.?\d+)\s*(rem|px)\s*\)$/i.exec(value);
+    const additiveCalc = !shorthand && /^calc\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*([+-])\s*(-?\d*\.?\d+)\s*\2\s*\)$/i.exec(value);
+    // Fold only literal length-first scalar product chains. Unsupported
+    // nested, mixed-unit and dynamic expressions use the old fallback.
+    const scalarChainCalc = !shorthand &&
+      /^calc\(\s*(-?\d*\.?\d+)\s*(rem|px)((?:\s*[*/]\s*-?\d*\.?\d+){2,})\s*\)$/i.exec(value);
+    const scalarChainValue = scalarChainCalc
+      ? Array.from(scalarChainCalc[3].matchAll(/([*/])\s*(-?\d*\.?\d+)/g))
+        .reduce((result, [, op, number]) => op === "*"
+          ? result * Number(number) : result / Number(number), Number(scalarChainCalc[1]))
+      : null;
+    const computed = directCalc
+      ? (directCalc[3] === "*" ? Number(directCalc[1]) * Number(directCalc[4])
+        : Number(directCalc[1]) / Number(directCalc[4]))
+      : reverseCalc ? Number(reverseCalc[1]) * Number(reverseCalc[2])
+      : additiveCalc ? Number(additiveCalc[1]) + (additiveCalc[3] === "+"
+        ? Number(additiveCalc[4]) : -Number(additiveCalc[4]))
+      : scalarChainCalc ? scalarChainValue
+      : null;
+    if (computed !== null && !Number.isFinite(computed)) {
+      violations.push({ path, value });
+      continue;
+    }
+    const computedUnit = directCalc?.[2] ?? reverseCalc?.[3] ?? additiveCalc?.[2] ?? scalarChainCalc?.[2];
+    const folded = computed !== null && computedUnit
+      ? [[value, String(computed), computedUnit]]
+      : null;
+    const measurements = folded
+      ? folded
+      : clampFloor ? [clampFloor]
       : [...value.matchAll(/(?:^|[^\w.])(-?\d*\.?\d+)\s*(rem|px)\b/gi)];
     // A font shorthand contains a size followed by an optional /line-height.
     // Check its first literal px/rem size only; a smaller line-height is not
@@ -39,9 +72,21 @@ export function auditFontSizes(source, path) {
 }
 
 async function* cssFiles(directory) {
+  // A symlinked root is followed by readdir; a nested symlink is silently
+  // skipped by Dirent.isFile/isDirectory. Both can evade the CSS floor audit.
+  const root = await lstat(directory);
+  if (root.isSymbolicLink()) {
+    throw new Error(`Symbolic link is not permitted in public CSS audit: ${directory}`);
+  }
+  if (!root.isDirectory()) {
+    throw new Error(`Public CSS audit source is not a directory: ${directory}`);
+  }
   const entries = await readdir(directory, { withFileTypes: true });
   for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
     const path = join(directory, entry.name);
+    if (entry.isSymbolicLink()) {
+      throw new Error(`Symbolic link is not permitted in public CSS audit: ${path}`);
+    }
     if (entry.isDirectory()) yield* cssFiles(path);
     else if (entry.isFile() && path.endsWith(".css")) yield path;
   }

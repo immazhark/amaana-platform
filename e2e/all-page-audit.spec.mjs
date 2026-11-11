@@ -76,6 +76,28 @@ for(const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]])fo
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const response=await page.goto(route,{waitUntil:'load'});
  await page.evaluate(async()=>{await document.fonts.ready;});
+ if (route.startsWith('/admin/requests/') && route.split('/').length===4) {
+  // The synthetic authenticated request must keep checkbox titles and helper
+  // text on separate lines with usable control geometry at both breakpoints.
+  const formLayout = await page.locator('.admin-detail-grid form').first().evaluate(form => {
+    const checkbox = form.querySelector('label.checkbox');
+    const span = checkbox?.querySelector('span');
+    const title = span?.querySelector('strong');
+    const description = span?.querySelector('small');
+    const control = checkbox?.querySelector('input[type="checkbox"]');
+    return {
+      formGap: parseFloat(getComputedStyle(form).rowGap),
+      textLayout: span ? getComputedStyle(span).display : '',
+      nameToDescriptionGap: title && description
+        ? description.getBoundingClientRect().top-title.getBoundingClientRect().bottom : -1,
+      controlWidth: control?.getBoundingClientRect().width ?? 0,
+    };
+  });
+  expect(formLayout.formGap,'form controls need distinct groups and breathing room').toBeGreaterThanOrEqual(10);
+  expect(formLayout.textLayout,'checkbox title and helper text must stack').toBe('grid');
+  expect(formLayout.nameToDescriptionGap,'checkbox helper text must not collide with label').toBeGreaterThanOrEqual(4);
+  expect(formLayout.controlWidth,'checkbox must have a usable visible target').toBeGreaterThanOrEqual(18);
+ }
  const overflowDetails=await page.evaluate(horizontalOverflowDetails);
  const metrics=await page.evaluate(()=>{
   const visible=n=>n.getBoundingClientRect().width>0&&!n.closest('[hidden],[inert],[aria-hidden="true"]');
@@ -100,7 +122,7 @@ for(const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]])fo
  fs.writeFileSync(path.join(directory,slug+'.json'),JSON.stringify({route,sourceRoutes,status:response?.status(),finalPath:new URL(page.url()).pathname,width,height,metrics,overflowDetails,textResizeOverflow,textResizeDetails,violations,incomplete:audit.incomplete.map(i=>({id:i.id,targets:i.nodes.map(n=>n.target)})),errors},null,2));
  const expectedStatus=route==='/donate/synthetic-ui-audit'?404:200;
  expect(response?.status(),route).toBe(expectedStatus);
- expect(new URL(page.url()).pathname,route).toBe(route==='/our-work/medical-financial-assistance'?'/programmes/medical-financial-relief':route);
+ expect(new URL(page.url()).pathname,route).toBe(route==='/admin/requests'?'/admin':route==='/our-work/medical-financial-assistance'?'/programmes/medical-financial-relief':route);
  if(!route.startsWith('/browser-acceptance/')){expect(metrics.headings,route).toHaveLength(1);expect(metrics.headings.join(' ')).not.toMatch(/platform is temporarily unavailable|page could not complete/i);}
  expect(metrics.overflow,`${route}: ${JSON.stringify(overflowDetails)}`).toBe(false);expect(textResizeOverflow,`200% text resizing: ${route}: ${JSON.stringify(textResizeDetails)}`).toBe(false);expect(metrics.oversizedH2,route).toEqual([]);expect(metrics.brokenAnchors,route).toEqual([]);expect(errors,route).toEqual([]);
  expect(violations.filter(v=>['serious','critical'].includes(v.impact)),route).toEqual([]);
@@ -113,7 +135,9 @@ for (const [device,width,height] of [['compact-mobile',320,844],['mobile',390,84
   test(`source-rendered root interruption ${device}`, async ({page}) => {
     await page.setViewportSize({width,height});
     const html = '<!doctype html>'+renderErrorSource('src/app/global-error.tsx');
-    await page.goto('/about');await page.setContent(html);
+    // Use a script-free origin document. Hydrating /about can mutate the isolated
+    // recovery fixture after setContent and duplicate its action during zoom.
+    await page.goto('/robots.txt');await page.setContent(html);
     expect(await page.evaluate(()=>document.documentElement.clientWidth),'standalone recovery viewport').toBe(width);
     const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag2aaa']).analyze();
     const geometry=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth+1,heading:document.querySelector('h1')?.textContent}));
@@ -122,6 +146,7 @@ for (const [device,width,height] of [['compact-mobile',320,844],['mobile',390,84
     await page.screenshot({path:path.join(directory,`${evidenceName}.jpg`),type:'jpeg',quality:65,fullPage:true});
     fs.writeFileSync(path.join(directory,`${evidenceName}.json`),JSON.stringify({route:'global-error.tsx',evidence:'Source-rendered isolated layout; recovery callback is reviewed in source, not exercised by this static render.',width,height,geometry,violations:audit.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}))},null,2));
     expect(geometry.overflow).toBe(false);
+    await expect(page.getByRole('button',{name:'Try again →',exact:true})).toHaveCount(1);
     await expect(page.getByRole('button',{name:'Try again →',exact:true})).toBeVisible();
     expect(audit.violations.filter(v=>['serious','critical'].includes(v.impact))).toEqual([]);
     await page.addStyleTag({content:'html { font-size: 200% !important; }'});

@@ -1,0 +1,7364 @@
+{
+  "observed_date_ist": "2026-11-09",
+  "baseline": "9a97017200b6780a671f6186d30a22c1bf58d912",
+  "branch_count": 735,
+  "counts": {
+    "behind": 505,
+    "diverged": 228,
+    "ahead": 1,
+    "identical": 1
+  },
+  "deletions_performed": 0,
+  "branches": [
+    {
+      "name": "af-r012-appeal-private-view-20261029",
+      "sha": "51518f0bc0703eb1f4966693ebdf38a0ca6dc5b7",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "af-r019-stories-contrast-20261029",
+      "sha": "1bcf52c1c4dfbfe62a402613ef4a94605a6e0903",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 794,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "af-r024-font-floor-20261029",
+      "sha": "cf24babc35e8e74a186cc160e32fe58b6b730170",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 794,
+      "files": 5,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "af-r025-impact-leading-20261029",
+      "sha": "7b7504898845fd0db0a224670285dd487453d839",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 794,
+      "files": 6,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "align/policy-assistance-notices",
+      "sha": "18f8b6fdd726299dfbe3ed392311b05fa4cb2347",
+      "status": "diverged",
+      "ahead": 6,
+      "behind": 4008,
+      "files": 6,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "align/seo-structured-data",
+      "sha": "dcc0207d5c47264986ec9f085675160ccd1a7fdc",
+      "status": "diverged",
+      "ahead": 13,
+      "behind": 4007,
+      "files": 12,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "audit/phase1-codebase-gap-analysis",
+      "sha": "c4fd9f582788e600e7857ee8602cc27d1e580bf4",
+      "status": "diverged",
+      "ahead": 11,
+      "behind": 3736,
+      "files": 5,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "audit/post-pr41-launch-hardening",
+      "sha": "47f684aacab94fe71fa2f5ce9d2e3db610912e14",
+      "status": "diverged",
+      "ahead": 27,
+      "behind": 3936,
+      "files": 16,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "audit/public-media-boundary-hardening",
+      "sha": "8ce54e97173db7be851450268e389b8c3af77181",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3929,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "build/admin-rbac-v1",
+      "sha": "d3633c37b2f19fc14db3d2558f5742c1dfa80ecf",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 4505,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "build/appeal-workflow-v1",
+      "sha": "f7aefa31ba76bf99472cee3a48ef91197e4e727a",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 4504,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "build/content-seo-v1",
+      "sha": "7199228ef5077a7c8fbcdbd7c1e9435f34a0bb86",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 4502,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "build/donations-razorpay-v1",
+      "sha": "2a29c5ae845bf6ae30034436ea8659818d8a629a",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 4503,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "build/foundation-v1",
+      "sha": "e11b38cef9839610d93fccec330ddfbac148a99b",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 4507,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "build/intake-backend-v1",
+      "sha": "d044ce7b650cee6c5c77ce14bb77ef79e0ef8311",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 4506,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "build/launch-readiness-v1",
+      "sha": "e7780fee041d6f88fb1373f5ce7ef88ec4568806",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 4501,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "build/low-cost-staging",
+      "sha": "c7628f78eaaaae1e328b32000273000c347f2ebd",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 4499,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "build/multi-method-donations",
+      "sha": "24da96c8c5ea126096a6609c3ead623a2b845ebd",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2424,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "candidate/launch-readiness-2026-09-18",
+      "sha": "69b4e2fd5698b050ae8dcf7d712588a1d1167ca4",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3459,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "chore/ai-continuity-protocol",
+      "sha": "08737b7ac9597b24196def0aeca92f2b8a35f563",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 4019,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "chore/atomic-pr-governance-20261017",
+      "sha": "60f3a44ec0e98dcd8bbb8b652a02763b27f4012f",
+      "status": "diverged",
+      "ahead": 12,
+      "behind": 1572,
+      "files": 9,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "chore/change-aware-ci-20261001",
+      "sha": "bfef5816858b6c18200e1974d11612b4629b8bf5",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2369,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "chore/continuity-after-pr46",
+      "sha": "d4098a7bb408194ba256684dfef387f256cb6c87",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3926,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "chore/interaction-a11y-lint-20261102",
+      "sha": "f8281eae90e38fe3fdd78895dcb57cd1320c0d19",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 418,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "chore/launch-readiness-20261006",
+      "sha": "5526b9f25ea71b8097ffe8bd1b5b75430ad838d4",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2109,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "chore/production-release-record-20261013",
+      "sha": "49bdc627836195f0ad47fd1dcd9796a6106038a2",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 1577,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "chore/public-asset-reference-audit-20261011",
+      "sha": "a0e308b40bc3e72041555a9d7dd789d17a17e3da",
+      "status": "diverged",
+      "ahead": 5,
+      "behind": 1824,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "chore/refresh-resend-dns-actions-20261009",
+      "sha": "0c46c130c43dbf17591c767e5bbabf67f7c48f0b",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 1883,
+      "files": 1,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "chore/remove-unused-motion-runtime-20261023",
+      "sha": "9886400511a54c3e9897be7d29aab4458396dcdf",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1071,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "chore/resend-dns-actions-on-optimized-ci-20261009",
+      "sha": "d7c25053f73b3461628860ee35e8146c638c0b0b",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1879,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "chore/resend-dns-diagnostic-20261008",
+      "sha": "c47da531852740f019e0c1bf3866852546238cea",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1893,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "chore/source-a11y-import-cycle-lint-20261029",
+      "sha": "4accc962495696d08a818000cc1a846bd3a4ee23",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 434,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "chore/unused-stylesheet-cleanup-20261023",
+      "sha": "3a05b42b02efcbc0ebc3a81188facad79fdb1d88",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1088,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "ci/enable-remediation-pr-checks-20261011",
+      "sha": "0d95a916affed988209342486be0b8df3efcd008",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 1827,
+      "files": 1,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "ci/pr-production-build-gate-20261010",
+      "sha": "7145e348146a08e8b6c4a0a63df471e97f9f3d7f",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 1847,
+      "files": 1,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "ci/scope-resend-diagnostic-workflow-20261009",
+      "sha": "a3a04a0feb9b9aff118b5bdbc6b50056e6025d30",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1881,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "ci/validate-dns-diagnostic-syntax-20261008",
+      "sha": "652762e9f09d0f5f40226cc1b33719df9268c6c6",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1891,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "compliance/provisional-12a-domain-readiness",
+      "sha": "84451906228d2d2501f2ceb147033f7290bd14c0",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3672,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "content/curated-gallery-20260930",
+      "sha": "2767c72855b20e1aea073a355424418d5622659d",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2475,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "content/curated-gallery-batch-publish-20260930",
+      "sha": "648560ee19fe20d7094e9a902b6850de09fb935e",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2413,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "content/curated-gallery-publication-20260930",
+      "sha": "f049914bc526e53a535c3b511107bc2bb1d0e78b",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2419,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "content/mr-khaja-public-information-20261107",
+      "sha": "1c4104600d3126b259047a110c5ea0ba1d979052",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 86,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/appeals-pattern-final-delivery-20261003",
+      "sha": "4cbcdc99b54040b8a0b86c58ea3fc2bbed756bfb",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2294,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/assistance-progress-delivery-20261003",
+      "sha": "208ccec31055a04485bc6261158417870ed40c0f",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2323,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/carousel-delivery-checkpoint-20261001",
+      "sha": "29f3e98051ee41de4d36f6d46eea48a9265e778d",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2374,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/codex-owner-handoff-20261109",
+      "sha": "02db2a515d0d017b5a0c887a0ceac8bf56c253cf",
+      "status": "ahead",
+      "ahead": 1,
+      "behind": 0,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/companion-panel-delivery-20261003",
+      "sha": "168572741b90da5ca612c8c17f0fd40615868150",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2315,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/donate-sponsorship-delivery-20261003",
+      "sha": "3c364327e9dbf115f863cfedca275e17befd5465",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2305,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/feature-delivery-tracker-20261025",
+      "sha": "e4978ad1f9135966ddf94fe383a2636a96522e5c",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 931,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/final-release-evidence-20261007",
+      "sha": "c85cec40d0b3945f34c5c93eafdb948f09272c77",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1905,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/heading-footer-delivery-20261002",
+      "sha": "26e99b84ba1a2d62012805b5ac0fecfa098721ca",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2348,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/home-banner-delivery-20261003",
+      "sha": "51f9b20d3f0856d45b7d17bad4403e5e10de5820",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2285,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/home-carousel-delivery-20261003",
+      "sha": "59dfd2a5d3f69950323d07f7813046ab5328b7c9",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2280,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/home-carousel-edge-delivery-20261004",
+      "sha": "d7d64c94e4f9a455365d429cbdb594eddeaac84d",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2276,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/initiative-banners-delivery-20261004",
+      "sha": "13924921fbbc80de9a3a40327b448576f7428734",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2256,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/legacy-build-branch-retention-review-20261025",
+      "sha": "f815e7e60d7d92c01508808286844718679653cc",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 880,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/mark-historical-release-checkpoints-20261011",
+      "sha": "125e312e75ab940ad5f1c9d0a6dafe4b2dd30a31",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 1825,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/master-war-footing-reconciliation-20261020",
+      "sha": "349e6eef48b20d6acbe4da2ca4eedd2734940865",
+      "status": "diverged",
+      "ahead": 5,
+      "behind": 1273,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/mission-control-149-acceleration-20261025",
+      "sha": "604d695efd28cc0134bb93e9bad7a9f0af2fb351",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 893,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/navigation-audit-delivery-20261003",
+      "sha": "cb69ea985b6af272d0b676368c2534a147b34e6d",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2319,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/owner-surface-delivery-20261003",
+      "sha": "9840ebd2547a61899e72f5d62c8505d49bec1c4c",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2300,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/payment-scroll-checkpoint-20261012",
+      "sha": "3e41cdd00eea13f43c3c2a435efcf3c2c59c8293",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1795,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/policy-audit-delivery-20261003",
+      "sha": "8a471b6d222aee0a621031b67f6208a6658d7bc1",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2327,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/premium-carousel-delivery-20261004",
+      "sha": "44fed7e25298d57972252a1db8cb350e86bf8619",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2265,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/public-media-readiness-evidence",
+      "sha": "b43cd90421dafb14ec53e2f6808e36bb82d30d33",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3653,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/railway-index-test-deploy-reconciliation-20261025",
+      "sha": "de5e7f082ab35a20966ba67a42e62b7253c032d1",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 878,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/reconcile-current-project-state",
+      "sha": "59b0267c65e360f7216ae16e56ecd2772eeb5515",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 4016,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/reconcile-production-readiness-20261009",
+      "sha": "2191be11b0c9b24c2e31898b764fcc53e52415b9",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1876,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/refresh-release-evidence-20261008",
+      "sha": "08aee78b7d80635f04b938d72f75e7c8c3a2e6bc",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1899,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/release-evidence-20261007",
+      "sha": "5391096045ea337cb6fba4c60ce1a1681cfb8a83",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1930,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/release-readiness-normalization-20261007",
+      "sha": "372afdbc40004e78498e42658df52f4a7dbc88cf",
+      "status": "diverged",
+      "ahead": 7,
+      "behind": 1914,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/release-source-runtime-clarity-20261025",
+      "sha": "cc38684066aea2a14dce39238d632d4df0442498",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 883,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/remediation-work-checkpoint-20261012",
+      "sha": "b233dc0e73e3a5041e8aebaae312e4ab8b133bac",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1804,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/section-hierarchy-delivery-20261003",
+      "sha": "a5381a08a7c3db2fe1146b2969d65c95b96989e1",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2309,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/site-experience-delivery-final-20261005",
+      "sha": "498d840d483bfe14e8f08a3594e45403ed427511",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2245,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/site-regression-delivery-20261004",
+      "sha": "19de814103b4b5e506b2ef6ac68a05c398ad540b",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2260,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/sitewide-banner-delivery-20261002",
+      "sha": "39c0dcc590eaba8bd3f953123cfa461b570d18df",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2343,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/staging-acceptance-evidence-2026-09-18",
+      "sha": "c8c83ed0576d5ff1e5f66f19aa3908bc04c8b35d",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3618,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/ui-audit-delivery-20261002",
+      "sha": "47589109c077f11fef398e655b06983b329385b3",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2335,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/ui-followup-delivery-20261003",
+      "sha": "4d7b98c01f2c3f904ec6c67333ce445fd69b1a72",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2331,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "docs/verified-release-434-and-css-guidance-20261025",
+      "sha": "0e7f9f9779ab2e36c2f259a64d7fca4aa38a8ba1",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 903,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/admin-edge-coverage-audit-20261026",
+      "sha": "b1caf0765aafdf2d71c44f0536b2b370ea57c9fc",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 828,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/af-domestic-upi-qr-reviewed-fallback-20261107",
+      "sha": "b42792e2bbbe3d0a51eb7f80ce04026824b6fa11",
+      "status": "diverged",
+      "ahead": 8,
+      "behind": 114,
+      "files": 5,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/af-r071-donate-safe-loading-20261106",
+      "sha": "5ffd14cb9e7cb1d9717e594b914f98e8774cc828",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 166,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/af-r071-route-loading-experience-20261019",
+      "sha": "db4f7c13076ab005805eddf7f764cc849c16cf05",
+      "status": "diverged",
+      "ahead": 19,
+      "behind": 1288,
+      "files": 12,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/af-r083-reviewed-amount-presets-20261019",
+      "sha": "a1868031b66f6a881ce672ed1d07d84e9ca2dd2a",
+      "status": "diverged",
+      "ahead": 65,
+      "behind": 1288,
+      "files": 33,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/af-r087-published-impact-donor-proof-20261019",
+      "sha": "2b08c547fb26c5ce91f3b05edb819509800a76d0",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 1292,
+      "files": 9,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/af-r093-legacy-giving-enquiry-20261019",
+      "sha": "3ac68d9864056eb0deb0ae0824336ce260694cca",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 1289,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/aggregate-digest-contract-20261026",
+      "sha": "48d02cd5489728e705d6d0c9df28239a990a55da",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 474,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/appeal-discovery-pagination-20261030",
+      "sha": "0d3f97cd8b51ee4acc80bbf77038c103cc8de7c2",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 469,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/approved-svg-backgrounds",
+      "sha": "9a61d663169d5e752fe12745cc834f819ec2a7ad",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 2661,
+      "files": 14,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/assistance-verification-gate",
+      "sha": "3749586ca4283218660d6d500c7e4286ac3e4d71",
+      "status": "diverged",
+      "ahead": 7,
+      "behind": 4009,
+      "files": 7,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/css-coverage-sampled-unobserved-ratio-20261103",
+      "sha": "a1fff21382d03f648fcf77a09ba07ef85c286f84",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 316,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/eid-impact-explorer-20261018",
+      "sha": "a57f4f7c8e1ff7b4e51183b9455887c8ca08961d",
+      "status": "diverged",
+      "ahead": 12,
+      "behind": 1486,
+      "files": 7,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/finance-monthly-reconciliation-export-20261020",
+      "sha": "11f60387bb3f5f8fec8b9f181d7176781bb9495e",
+      "status": "diverged",
+      "ahead": 5,
+      "behind": 1274,
+      "files": 5,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/home-carousel-editor-20261003",
+      "sha": "9ef0f45ed0bd2bc1ca9fecc92f62640899effdf9",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2282,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/impact-evidence-comparison-20261018",
+      "sha": "d07edf975c7bd9d62501a0e4841bd77ab39eb7a3",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1387,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/impact-programme-discovery-20261018",
+      "sha": "52d61adcd94188f9659e40eb0c69d0a66669d205",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1468,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/manual-giving-planner-20261017",
+      "sha": "a5d90b009f078d03ecd44bfb399a135372162365",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1425,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/media-consent-governance",
+      "sha": "81edba0698d607f819ca361e4cc1415d0912eaae",
+      "status": "diverged",
+      "ahead": 5,
+      "behind": 4006,
+      "files": 5,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/mr-khaja-reviewed-appeal-page-20261107",
+      "sha": "90d221317c92abb6a22717bf582f2663adbb12a1",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 69,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/private-feedback-enquiry-20261017",
+      "sha": "34aaf7ea848a01194a93eaa7a227bef59e90833f",
+      "status": "diverged",
+      "ahead": 14,
+      "behind": 1486,
+      "files": 9,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/public-appeal-search-20261026",
+      "sha": "fd4be0003d5b703042697dc9e8d3507d9c278472",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 802,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/public-discovery-route-loading-20261029",
+      "sha": "1cf36948849cb3eb33da30bf02a990b95aa462f3",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 679,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/public-initiative-search-20261026",
+      "sha": "48e9534042f6eaa1abc352d758ac8b54a7d693a0",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 842,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/public-media-archive-pagination-20261020",
+      "sha": "a9854f7019b0167121787d889aa759744511e781",
+      "status": "diverged",
+      "ahead": 33,
+      "behind": 1274,
+      "files": 20,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/public-route-loading-shells-20261024",
+      "sha": "05880482996dbb73e3ca0d809328465e7ad2fa59",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 947,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/public-schema-live-audit-20261026",
+      "sha": "5ea27f1836a5e002822f402f66ef6f0134545b9a",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 432,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/public-team-directory-admin-20261019",
+      "sha": "68f9fd9164ca3a28b72b4a1679c46155b085bef8",
+      "status": "diverged",
+      "ahead": 28,
+      "behind": 1276,
+      "files": 24,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/published-edition-index-20261024",
+      "sha": "ea71fd01da766428483b8726343aec15f3e9c235",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 955,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/r071-public-route-loading-20261012",
+      "sha": "9c3879db863bb1046d12f5c59bee115e9888e17c",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 1763,
+      "files": 14,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/reconcile-public-route-loading-five-20261031",
+      "sha": "72e35999356fa3ebaf60b3ff1cba8f524c688748",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 559,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/retention-review-workflow",
+      "sha": "b63e375d0fe42cf516b0cbe23f4701d0bce5707b",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 4005,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/reviewed-faith-search-20261026",
+      "sha": "d98fb1ea9a67ae69ee6820222b0a4ed69539ffce",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 799,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/reviewed-locales-foundation-20261020",
+      "sha": "79aa6e527286f48eb551395633aba23d6c8fc250",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 417,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/site-experience-polish-20261004",
+      "sha": "8ff82a0757d72526a57b9aadf1498bef09c7df16",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2252,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/special-giving-policy-draft-20261026",
+      "sha": "75dae8b54e1e2d600f932200c2189b91dea9f88a",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 424,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/stories-discovery-20261026",
+      "sha": "30e763dfd3ecfd4ae81677b75316c4cde4caee62",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 837,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/taleem-sponsorship-enquiry-20261017",
+      "sha": "9f74e6d38005e4bc60418227c380a04c9f383d29",
+      "status": "diverged",
+      "ahead": 8,
+      "behind": 1486,
+      "files": 6,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/unified-body-carousels-20261001",
+      "sha": "9f60f018e19d5a4b3fbae2d11de1977af0ceb5de",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2376,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/verification-faq-public-evidence-20261024",
+      "sha": "6e80dfeaf5628f8eb7ce981a2feab86de37e41b1",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 958,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/visitor-experience-release-20261018",
+      "sha": "37c027522687798c1707ee3e6a612bb40c6637e6",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1476,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/volunteer-enquiry-20261017",
+      "sha": "7656fede129f0808d5a9a8f79ff3ebac5a0adc0d",
+      "status": "diverged",
+      "ahead": 28,
+      "behind": 1486,
+      "files": 10,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "feat/work-to-impact-journey-20261018",
+      "sha": "ae3bfd0ae9115a9c99bafe3626239ca3cd08863d",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1448,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-appeal-editor-inline-feedback-20261107",
+      "sha": "a3893b82599969abf3ebc2912fbdba85cd3c360e",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 76,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-appeal-inline-feedback-reconciled-20261108",
+      "sha": "7abd9ba173c3d961b9c2b055e204cefec0e9b199",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 44,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-appeal-retention-ist-timestamps-20261108",
+      "sha": "f9c43318433a916ba392c3e16bc2b6157c024768",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 25,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-appeals-staff-name-only-projection-20261109",
+      "sha": "735d5dc85b05de5a5aed4180f5a9fc085467dcbf",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 2,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-assistance-assignee-name-only-20261109",
+      "sha": "048c609d7959155c4f4594c393321926fa079783",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 2,
+      "files": 6,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-assistance-queue-404-linked-appeal-20261107",
+      "sha": "625e6b579649c9fa4b92ef13b8d3d0429b880442",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 95,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-assistance-queue-ist-dates-20261108",
+      "sha": "291400ce4b409e00126bfab4ede700208f8619a6",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 37,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-assistance-review-ist-timeline-20261108",
+      "sha": "0c40884ca3be533915149b56b03a760b8e72dcf4",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 37,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-carousel-error-boundary-20261012",
+      "sha": "3eb244ffdbc1ce90b01447a26fa080f1724e05cd",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 1823,
+      "files": 5,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-content-bypass-20261026",
+      "sha": "b572d0140fffc5ecad53568934a57c332d770adc",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 816,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-curated-preview-new-tab-20261102",
+      "sha": "2ca1df953e456c0e913454d3cf0c9b169a61bd89",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 497,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-donation-detail-ist-20261028",
+      "sha": "490926aaca7cdb34a3732b9b8031a71d9bc63071",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-donation-form-duplicates-20261019",
+      "sha": "08e3b526b1f7d84d0955f25ef444f3e017e0338f",
+      "status": "diverged",
+      "ahead": 6,
+      "behind": 1282,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-donation-list-ist-date-20261108",
+      "sha": "8140ddddeb9abf74b2a94e385ac392f3b0bc2e96",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 29,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-donation-reconciliation",
+      "sha": "af398f0ba4a553c99e1358c5a277f3cee27841de",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 3710,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-filter-empty-recovery-20261027",
+      "sha": "f6881073cab795195cce8d29f27a26a1d19dbefe",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-form-accessibility-spacing-20261107",
+      "sha": "4196fc1a84bd8b1a38ab1610742477217187c785",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 80,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-login-admission-20261019",
+      "sha": "be9a5481d14a237cc1238de53effc13b2d76c650",
+      "status": "diverged",
+      "ahead": 10,
+      "behind": 1302,
+      "files": 11,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-login-hardening",
+      "sha": "3931883876ee920ddd85ca62570fac16a77df7af",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 3729,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-login-scalar-fields-20261019",
+      "sha": "7ce2477d91702e071e60509690a8aeb96a0f56b8",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 1281,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-login-throttle",
+      "sha": "76d774c2a19a007e93e63009e997f47ab0bafa13",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3724,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-media-appeal-workflow-clarity-20261108",
+      "sha": "aaccb058d5c0e5c27b5ac0040c885127f3b3cecb",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 53,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-media-filter-empty-20261027",
+      "sha": "dbcd93de30c99f302ec8cc99fe7b6de09a2c7db0",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 523,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-media-lifecycle-integrity",
+      "sha": "c48a31001d76d5f67bc76f167fb7fea96123cc2c",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 3705,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-media-linked-content-title-projection-20261109",
+      "sha": "277ccafcbf0487849a2c3b130d78c8daffd94438",
+      "status": "diverged",
+      "ahead": 6,
+      "behind": 2,
+      "files": 8,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-new-tab-announcements-20261029",
+      "sha": "5afeb1b84a147e7e6f2d2825953f95199bfd9c64",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 723,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-new-tab-labels-recovery-20261030",
+      "sha": "0e071102d768804a42bad67937ef786ca74b03f1",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 768,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-operational-dates-ist-20261029",
+      "sha": "02c32f5289c8290265e1fcb71b88c85ea21599ce",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 730,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-pagination-input-20261023",
+      "sha": "e3a0fe1962be255b5177c86bbccb1a51214223c5",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1094,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-preview-tab-and-a11y-lint-20261029",
+      "sha": "399bdf51d84e9ac0b9d4e034e977f892c06af759",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 717,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-rbac-shell-routing",
+      "sha": "43b5aee10999b081741215360fc8c775a40d51fa",
+      "status": "diverged",
+      "ahead": 7,
+      "behind": 3985,
+      "files": 5,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-retention-label-associations-20261026",
+      "sha": "d191a1a16c45d1eedc053a86d9d40b7cdbe49f39",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 818,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-retention-review-after-ist-20261108",
+      "sha": "32fef2857e6bb657f2badf2b40394f89767b7217",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 9,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-retention-review-date-validation-20261109",
+      "sha": "e0452fdb7c49fc3a19a570ae4a2fc13e617f1600",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 7,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-review-dates-ist-20261027",
+      "sha": "4e6c2c2e9101e4a8e8e16e419ab2048d2911bc35",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-route-group-inventory-20261029",
+      "sha": "f5c7caa8cd2210377c683c451994158fa34020ed",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 554,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-session-token-shape-20261018",
+      "sha": "d589b0ff56f1b37b19dba5a52f9f144a3bc79f3d",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 1304,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/admin-unmatched-payment-event-ist-20261108",
+      "sha": "4baffcf3afa16ae90d18622201baf0a8c139b763",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 21,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/af-r019-admin-text-button-contrast-20261106",
+      "sha": "55a27617604c05aa88ee3f7710d5eb7509bcb7d4",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 142,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/af-r025-home-recognition-heading-leading-20261106",
+      "sha": "73467b5be4b63b559f1d210f9900d8f3575aa98d",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 132,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/af-r047-legacy-sibling-layout-integrity-20261106",
+      "sha": "a98c167f1117a39d20f49b3cc7e0cb569a2c6c40",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 193,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/af-r047-malformed-layout-assets-20261105",
+      "sha": "9ff0502a155b6a3819a5e88c85a7b0dcdd4403fc",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 248,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/af-r047-noncanonical-build-asset-alias-20261106",
+      "sha": "f603e8ca5d4f4678ef3b936a5cdcf8deca66792d",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 135,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/af-r047-noncanonical-page-route-20261106",
+      "sha": "5bbd143326806112b6734e95b127f4b278166332",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 128,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/af-r047-route-label-integrity-20261106",
+      "sha": "26e3eafcb86130b87503f5150a0bd78f0401553f",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 119,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/af-r052-reviewed-media-archive-20261020",
+      "sha": "0f48f19c94a668af6f48abf829206833add9787c",
+      "status": "diverged",
+      "ahead": 12,
+      "behind": 1274,
+      "files": 11,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/af-r053-image-dimensions-20261019",
+      "sha": "f5def2062efd844574f2acbb3fb1ef5a006b1860",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 1285,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/af-r057-ignore-inert-html-styles-20261106",
+      "sha": "b4410638202f34e08428b87680c9fd8514f4e7c6",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 115,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/af-r057-public-css-route-preflight-20261106",
+      "sha": "8d5aef4cfc3d3d52270c4e39acdce184a9bffe6e",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 110,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/af-r057-quoted-context-openers-20261107",
+      "sha": "a9e1970775549492dad37620269930f0eeedb309",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 78,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/af-r068-css-coverage-fragment-alias-20261106",
+      "sha": "010553b0551fa273ec85abe5375840d6b8dbb6a0",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 155,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/af-r092-invalid-public-progress-20261106",
+      "sha": "0e9a48ce53f3917988e3fa275140e16ea9ef2907",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 182,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/all-route-audit-20261005",
+      "sha": "14bff87cb76354c688bf79bbe0f71d9352d8ff85",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2174,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/am05-admin-eyebrow-contrast-20261011",
+      "sha": "20fd1e9dff31519f6f446a574f41cff9eba2a0a1",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 1828,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/am05-impact-contact-initiative-contrast-20261011",
+      "sha": "63d3fa4fe5cb91a1c7edc9c816e1c654a047f193",
+      "status": "diverged",
+      "ahead": 5,
+      "behind": 1837,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/am05-muted-text-contrast-20261011",
+      "sha": "351073b40dacb2699ab8f34076f09f0e7520d6d6",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 1845,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/am05-policy-contrast-token-20261011",
+      "sha": "d031fff42fcc45b29bd422c1160bb0636e660af4",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 1844,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/am11-assistance-step-validation-20261011",
+      "sha": "dacaa356ebd417947d37670fd1260aea7e12453a",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 1843,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/am11-donation-error-focus-stability-20261011",
+      "sha": "5096fa912309908fc602c6a8d53e0aa1584703da",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 1838,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/am11-donation-focus-raf-race-20261011",
+      "sha": "6f6f4ebab64eb8b94fc7fad0f4fee6443080aa32",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 1830,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/am11-donation-native-validation-feedback-20261011",
+      "sha": "33a9cb70690d95d5430e0d2fc295f174126f2b9d",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 1841,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/am11-donation-server-field-focus-20261011",
+      "sha": "93d40decf22abcdb6ad46171d626d63430b909e1",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 1839,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/am11-stable-validation-focus-20261011",
+      "sha": "ab6407761be596086d8b175b64aee7f52231c992",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 1842,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/am15-appeal-faith-labels-20261011",
+      "sha": "91652510aba11b4a84e5d2f0a2299d3599978752",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 1834,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/am15-contact-social-labels-20261011",
+      "sha": "b40a550238b272a36ea5750505db5729d83467a0",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 1840,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/am15-gallery-enlarge-label-20261011",
+      "sha": "99c894727d3edb298c44fd108d7de5682ee865ab",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 1835,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/am15-header-brand-label-20261011",
+      "sha": "d33aeddce5c92569c254d612ea25bb193ce9d3bc",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 1828,
+      "files": 1,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/am15-impact-tile-label-20261011",
+      "sha": "8c4762fef3bffd6d368116b78cb59d9e88d1b362",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 1833,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/am15-participation-action-name-20261011",
+      "sha": "7786a1d4776c66e3e3b04cfcc8a43a196004cfa9",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 1832,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/am15-public-media-link-label-20261011",
+      "sha": "2c7fd290258633efc49d29f2fe8f4be4987ff267",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 1836,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/am15-stories-archive-label-20261011",
+      "sha": "81763557a7098ccb31530f492a1a9a16b75bc925",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 1831,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/am21-homepage-meta-description-20261011",
+      "sha": "50f19788cfeb971e0acd2364bd8b800ec730a21f",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 1846,
+      "files": 1,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/analytics-integrity-local-day",
+      "sha": "cd4bf52bbf5bd6e5207f75dc790843af577b8c2f",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3974,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/appeal-card-reduced-motion-current-main-20261102",
+      "sha": "4cc4c6afd3269c537c2ef04a0982fa41374cb17e",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 489,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/appeal-card-reduced-motion-hover-20261029",
+      "sha": "52354c85b0c50ed108dba21d9edcba99c3439b90",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 524,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/appeal-card-text-contrast-20261026",
+      "sha": "68cdf1d5ee1c549abea6ace647eb1fc02cad83c1",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 795,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/appeal-consent-display-guard",
+      "sha": "3444813c357910ea18c3f582fec63407cc580ce3",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3953,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/appeal-detail-ist-dates-20261029",
+      "sha": "2340732280dceea402ecd33c0558664e285eeb16",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 724,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/appeal-private-verification-permission-20261028",
+      "sha": "4066500d444e301a2c2b5f8feea876491f195456",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 733,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/appeal-publication-verification-gate",
+      "sha": "36444051030cac7bd8a3bdd677fa65a888618bea",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3958,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/appeal-share-identity-feedback-20261105",
+      "sha": "099658605c77c0cdbe78259eb6bb8f471b4a4e7d",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 219,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/appeal-sharing-recovery-20261021",
+      "sha": "e440b3a45b0c247864bd31513505756df39f05ad",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1210,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/appeal-target-closure",
+      "sha": "421c1f6768802afc5eeb2d0a30bcd9077e5eabc6",
+      "status": "diverged",
+      "ahead": 14,
+      "behind": 4015,
+      "files": 10,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/appeal-update-contrast-20261027",
+      "sha": "e0b8e72c6f79c04af47a77fe19cfdd4157230d26",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/appeal-update-ist-dates-20261027",
+      "sha": "037b16018d8a2f48240ab9d4b2627a9b82d46a0b",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/appeal-update-privacy-review",
+      "sha": "d329359703645f7a1509a60801ea76f2cb2638b3",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3943,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/appeal-update-publication-recovery",
+      "sha": "21a1df5bdf1cdb5829b83ea3a7d8b3a260930af9",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 3704,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/appeals-method-contrast-20261027",
+      "sha": "dba2bd4411c57f8285001d04cb942eb0d0bc47e0",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 792,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/appeals-pattern-layer-20261003",
+      "sha": "946d82652b52a0d68f5179f886b6bbc8a0d179ba",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2296,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/approved-background-artwork",
+      "sha": "0814fec9c640ed4998f3dcfcd0de0bbf3df1d39d",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 3739,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/architecture-nplus1-css-governance-20261010",
+      "sha": "025a8247cbc395928f4d41948c69234b9bd36664",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1581,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/archive-unavailable-media-pages-20261030",
+      "sha": "7964bc88b9ad26fab65a240806aacf14e1d01ab6",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 670,
+      "files": 14,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/artwork-nested-directory-budget-20261029",
+      "sha": "e56d2935e5cf1939e585b2188fd1e9039afc3c82",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 705,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/assistance-admin-workflow-guards",
+      "sha": "4ee4a22442b94f76afac8d8c8df7d9a212b340a1",
+      "status": "diverged",
+      "ahead": 5,
+      "behind": 4012,
+      "files": 5,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/assistance-evidence-preflight-20261019",
+      "sha": "beb1097b4abcc3df12919e2ca144d73a51dfb950",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 1284,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/assistance-followup-focus-after-render-20261108",
+      "sha": "918b4e8a2e8f1cccf51dfe1718cb5813b7abd578",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 17,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/assistance-label-readability-20261012",
+      "sha": "8f1882b20c56d873ac3f47bbd13849aa32ac25ae",
+      "status": "diverged",
+      "ahead": 5,
+      "behind": 1781,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/assistance-multipart-body-limit",
+      "sha": "bdbb3f2572957372e5b37f75522900cf0fb0351d",
+      "status": "diverged",
+      "ahead": 6,
+      "behind": 3706,
+      "files": 6,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/assistance-multipart-deadline-20261018",
+      "sha": "b536f60d9ae473cc6db823b83d6b007ee9496a72",
+      "status": "diverged",
+      "ahead": 8,
+      "behind": 1486,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/assistance-notification-channel",
+      "sha": "6ce3a33b3bfa609d4ed3197a0928cfd42bf6bf64",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 4010,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/assistance-persistence-uncertainty-20261018",
+      "sha": "9db9902529473e700a59038af681633c13568cbd",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1321,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/assistance-submit-recovery-20261018",
+      "sha": "d33b07e3a2ec3462424923bd44eb313e3d24789f",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1378,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/assistance-tracking-rate-limit-20261017",
+      "sha": "f9229bc062f600c85241d5ff027b501b3316ef1b",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1487,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/assistance-transfer-validation-20261013",
+      "sha": "fe1367670d838dd12ca107e116dc8a3840642882",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1625,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/atomic-admin-password-rehash-20261019",
+      "sha": "7a8d8fead9c5ef4ac9af75703b0557dc82029606",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 1293,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/atomic-rate-limits",
+      "sha": "ab69f5ede0731eefd659594290f51a0bc1d44a55",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 3735,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/audit-harness-native-loading-20261025",
+      "sha": "bbf6db62ee86063e2a03f709d1168c2f2c6f0d17",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 920,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/background-artwork-cache-version",
+      "sha": "e5c4d843c915297e537ec4fe9c7e183ee1859df7",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 2660,
+      "files": 1,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/background-composition-scale",
+      "sha": "69b945dbb87f203719d2025b586c72e683762ae6",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2653,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/bounded-body-reused-chunk-integrity-20261019",
+      "sha": "603c90328ebc9719a13f874f5d7d2078b7c78d4d",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 1296,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/bounded-prayer-provider-response-20261019",
+      "sha": "be6306c5223112c7531887a241c18f27562aaaab",
+      "status": "diverged",
+      "ahead": 8,
+      "behind": 1296,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/bounded-razorpay-provider-response-20261019",
+      "sha": "734e0cd2119d3c45de3c414c017081abaeae8ad2",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 1298,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/bounded-s3-media-acquisition-20261019",
+      "sha": "7085378dea82841552f3b9cc7a23c575d0838557",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 1293,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/bounded-scrypt-credentials-20261019",
+      "sha": "fde990a6f2f788fd6c100aae98d12d8adae6f35f",
+      "status": "diverged",
+      "ahead": 5,
+      "behind": 1302,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/calendar-year-domain-20261026",
+      "sha": "5652a921cc81b65448a022e84a79b844a4fa875d",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 846,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/canonical-cause-runtime-reconciliation",
+      "sha": "a3b1fcbbd8ab7c9b6f7b37f1075b21a044077b55",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 3991,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/canonical-display-font-20261008",
+      "sha": "6e5e788547b65ffde3100a8511f7f35583a8222c",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1901,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/canonical-factual-locks-2026-09-15",
+      "sha": "ac7ae66b4694edd5d4772b991fe5dc008e12a39b",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 4019,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/canonical-factual-locks-v2",
+      "sha": "f73957e4eb629eae834cfe290e92776c62069437",
+      "status": "diverged",
+      "ahead": 8,
+      "behind": 4017,
+      "files": 7,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/canonical-pathway-backslash-navigation-20261029",
+      "sha": "23712510c2ebd14bec2da125ea074dd98a511e71",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 531,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/canonical-runtime-factual-regressions",
+      "sha": "54db076a204c1358d65d54579bad5621c338baf9",
+      "status": "diverged",
+      "ahead": 7,
+      "behind": 4004,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/carousel-aria-semantics-20261006",
+      "sha": "918db2432a2044eedb64f752d9ae1888f1851703",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2135,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/carousel-diagnostics-rebased-20261012",
+      "sha": "6858983a68e08ce66b8bab3beaaab732a2c5e390",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 1821,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/carousel-frame-rearm-on-slide-change-20261024",
+      "sha": "0501c47482a3631760ae5381574dc03a61df1fc4",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 976,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/carousel-interaction-recovery-20261021",
+      "sha": "84bde5b68a7ff68018512d4eeef5ee6ef75ba79c",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1228,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/carousel-keyboard-after-drag-20261023",
+      "sha": "932689e077385a0488095c8f961fcc35fa4d6d8a",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1101,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/carousel-pointer-lifecycle-20261023",
+      "sha": "69447d7a7e8a47d8cac35499ea5e4d84c29b1ed9",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1024,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/carousel-shrinking-slides-index-20261020",
+      "sha": "c83b905b39251ae82890508f70f9c94a44df898e",
+      "status": "diverged",
+      "ahead": 13,
+      "behind": 1271,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/carousel-stable-slide-identity-20261021",
+      "sha": "e6c03745e1c024f957f1c918d8a63e150252eaab",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1243,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/checkout-order-body-deadline-20261018",
+      "sha": "80d975a099fbe6a49e72a3a0fdd95520d6ae27d2",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1516,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/checkout-outcome-recovery-20261013",
+      "sha": "4f1c3befe8bc7f22a71734f949502bc231445ce4",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1606,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/ci-integration-branch-coverage-20261011",
+      "sha": "d5893b31e057c7f0830f1924e1e6246c3b56f8ca",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 1823,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/ci-integration-push-gate-20261012",
+      "sha": "cbf45c2f25951d0850b0eaf57cadbc189543c855",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1817,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/client-bundle-secret-value-guard-20261010",
+      "sha": "097c475c7eee792f5fadfe1b6dba377ad242b0c6",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 1849,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/client-static-secret-scan-symlink-text-20261029",
+      "sha": "1438570febdecccb82f66396cda2f8b30e784544",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 683,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/companion-and-assistance-link-context-20261028",
+      "sha": "7bbcbd9082d97560955bc7d8520c2b58d2b68df4",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 792,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/companion-copy-feedback-order-20261027",
+      "sha": "eb54e748a68b6a0b4958e3224c159ae9fe6e8227",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/companion-copy-reading-identity-20261107",
+      "sha": "07eb2ee03cd7db1e4dc24fc49c982eca512369dc",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 40,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/companion-mobile-menu-escape-20261027",
+      "sha": "1766b9c3700e9e657f1eb1a5aa4ff86fe1e4c26b",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/companion-panel-a11y-20261003",
+      "sha": "b94d81bec44b368ff584b8a1dab3f0bb2d679c75",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2317,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/completed-aid-gallery-media-20261005",
+      "sha": "b362087fec7b599f03af092c262d0b6f9b508406",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 2152,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/compliance-hold-contrast-20261027",
+      "sha": "cabee58165a431a880934849d67937b97acd130c",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/consolidated-a11y-regression-20261012",
+      "sha": "14269adceb87ffff673ba32d989eb1cce54970cc",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1579,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/contact-protocol-native-links-20261020",
+      "sha": "e58dd5caca7cab7029a4c185a02e579754b8037b",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 1271,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/cross-browser-smoke-worker-budget-20261102",
+      "sha": "f7d2482e6106b17335c3c35deaf0c291b3c43805",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 381,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/css-audit-ignore-inert-comments-20261104",
+      "sha": "7c457a67c5358f160e83bfd23fb7c8bb411f5d50",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 285,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/css-audit-ignore-script-rawtext-20261104",
+      "sha": "587c56492618ff4fbee8f355c33d8e3d7f1911aa",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 267,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/css-audit-inert-rawtext-20261105",
+      "sha": "31014d1f7b3fe34c0f6767faf619b3a8cb89bb2d",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 233,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/css-audit-quoted-link-attributes-20261105",
+      "sha": "3263766da80a77881432bc9a7e407ad035ccb985",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 231,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/css-budget-headroom-20261007",
+      "sha": "5872e90f10fcf0c95884d1d04bf47f2e8007eed2",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1934,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/css-timing-fragment-identity-20261105",
+      "sha": "85b307ebb08f8b6548af63d19e84e78621600c73",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 225,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/curated-gallery-finalize-deadline-20261018",
+      "sha": "c036304e2e5b535a031143fb20ce7589bd854639",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1461,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/curated-gallery-upload-ingress-20261018",
+      "sha": "1f3e84dbbc6cd20a476c288a4b5665212928c841",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 1486,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/curated-import-validation-bundle",
+      "sha": "1cc8b221ac564843fedd92adeb7d9d785aee3e13",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2381,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/database-financial-invariants",
+      "sha": "98d3c82aa1e5546412278fe3ae96cb6b2dde7a1a",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 3701,
+      "files": 1,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/default-social-share-image",
+      "sha": "02c6c540ac383eb72cdbc0c779f909de91d169ac",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3922,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/dependency-audit-hardening-20261007",
+      "sha": "5388764b119caf719bf00fa9b4e834e463328efd",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1922,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/direct-copy-feedback-order-20261027",
+      "sha": "c2eb36ca92a20c074d1db1637b02bc511f0702bf",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/direct-editorial-heading-leading-20261104",
+      "sha": "675b142670f0e1dabad04c21121b3a3bc10034c6",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 297,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/direct-transfer-anonymity-parse-20261018",
+      "sha": "bfc226281fdcafb28f9e19b6e22245029c49c574",
+      "status": "diverged",
+      "ahead": 14,
+      "behind": 1487,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/direct-transfer-copy-feedback-20261019",
+      "sha": "5c8d95a80a8f7f484a60f6b2393ba25f3fded6db",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 1302,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/direct-transfer-feedback-20261013",
+      "sha": "9f829d3bb884b356e232a364c5a1228b9f6df5a5",
+      "status": "diverged",
+      "ahead": 1104,
+      "behind": 1572,
+      "files": 300,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/direct-transfer-uncertain-response-20261018",
+      "sha": "e1b9e427fb6e9b110a602a1283f5d7a298104a73",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1324,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/discovery-stable-page-order-20261030",
+      "sha": "ee6f10b96e76ec5f8021bece38f8dd2685809cb0",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 670,
+      "files": 8,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/documentary-image-alt-classification-20261021",
+      "sha": "cf949e8dc5515e587e49462c14e4a1d6107260d3",
+      "status": "diverged",
+      "ahead": 21,
+      "behind": 1259,
+      "files": 8,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/donate-heading-alignment-20261003",
+      "sha": "fa0f6e2a5ed1f72885141614563437cac22627ab",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2307,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/donation-acknowledgement-outage-20261018",
+      "sha": "5ae21ef3fc5fcecd6a3ece774fcefb200ba89445",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1364,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/donation-acknowledgement-rate-limit-20261017",
+      "sha": "fd988f4c22df3e8e1fe737511ea183dc337b9821",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1566,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/donation-acknowledgement-states",
+      "sha": "c00ca2fd79ff4692e1bd7ad8ca1c283a1731e0b1",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 4013,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/donation-confirm-body-timeout-20261018",
+      "sha": "b2f12e6154656ae0e3437b4806805482b8a10df1",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1375,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/donation-confirm-persisted-status",
+      "sha": "03d7b207c42d17524769ab2664b52be25956c7ba",
+      "status": "diverged",
+      "ahead": 6,
+      "behind": 3708,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/donation-label-ci-coverage-20261012",
+      "sha": "668e1f21ec537a3fda6a32b9c838c903c91c91f4",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1770,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/donation-order-identity-boundary-20261012",
+      "sha": "306878199337082db82465394561135d7cdb9f1e",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 1823,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/donation-order-provider-uncertainty-20261018",
+      "sha": "56f2a2037e976ce0ae8b51ebc5f05e3e1217ae48",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1319,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/donation-order-uncertainty-20261018",
+      "sha": "cb9718b596dc312e0943e2b213cea05027d552c1",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1347,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/donation-radio-error-focus-20261011",
+      "sha": "ee74cdb485a761118d8401706b42e66d1c98f89e",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 1823,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/donation-radio-focus-release-20261012",
+      "sha": "6d425583526ab5ebebf07cda8bdc02c62a955363",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1816,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/donation-remaining-cap",
+      "sha": "46d1a9a28be26bb4ee02ddf375f13aa70cf4a0d8",
+      "status": "diverged",
+      "ahead": 10,
+      "behind": 4014,
+      "files": 8,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/donor-checkout-appeal-responsive-20261108",
+      "sha": "7882f3fb0ba42b16245d2a5b6519594fc48eb53b",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 61,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/enforce-client-secret-scan-in-build-20261010",
+      "sha": "914286c1d2fec4775c745e27a4b8586517ca2f7f",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 1848,
+      "files": 1,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/failed-payment-attempt-binding-20261012",
+      "sha": "d7ac3501e429a0f6e247be033a22f5e362e82a6f",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 1823,
+      "files": 7,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/failed-payment-identity-validation-20261012",
+      "sha": "d42795ca043e7a218f7f68be9ce0f6007a70fab0",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 1823,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/faith-action-contrast-20261027",
+      "sha": "a05d139d5ad0e634fef14a8c4d53eb7213b8b53f",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/faith-detail-citation-gate-20261030",
+      "sha": "a7427b4639b54b002a6b91fcc918e8735dc5e795",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 672,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/faith-detail-ist-dates-20261027",
+      "sha": "3c3be69527004aa260ee21db3fbd741b42c62eb3",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 792,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/faith-discovery-citation-gate-20261030",
+      "sha": "486bd8e786d776444c14e3394ce735aee5893368",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 673,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/faith-invalid-review-date-20261030",
+      "sha": "a3b0fe7c5a9b3fc94956abc8c6e3fb32e36ac0ce",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 670,
+      "files": 10,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/faith-media-citation-gates-20261030",
+      "sha": "a659f8b777f60705d420434621ea5548b3ecc201",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 573,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/faith-publication-review-gate",
+      "sha": "d2b907350fe1c696a11ed6c7574118f85cf9ea94",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3969,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/faith-related-citation-gates-20261030",
+      "sha": "85f60ffb8e4a4712f16e32e34879a9709789f2b1",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 583,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/faith-reviewed-pagination-20261030",
+      "sha": "daa5b2993ed70591a330392904541302d3c9ce7a",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 675,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/faith-sitemap-citation-gate-20261030",
+      "sha": "a52483dc4d9ca4397b63f78adaaf355e378c11d0",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 670,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/feedback-bidi-controls-20261027",
+      "sha": "4730233317e783facf8e711d46b7718d2bb46666",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/feedback-partial-query-recovery-20261027",
+      "sha": "d3c75252e5a7fe68cf908da84dea6acf9f6c00f8",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/feedback-query-error-intent-20261024",
+      "sha": "22d3ba48989ef1d7dd5716e6a60003f41ab5b834",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 971,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/final-js-budget-headroom-20261006",
+      "sha": "9dff44c8828b195a86bed2cd98d595f3159a30dc",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2130,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/final-seo-social-runtime-audit",
+      "sha": "cae757e097dfa1b6c2ddd838e4d340931a098dc8",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3610,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/financial-ingress-hardening-20261018",
+      "sha": "ba97aeb53d8d774897fdd6e1766527e73852ae65",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1456,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/footer-kolkata-copyright-year-20261028",
+      "sha": "6ee90708f4f57129190cadd7d8bf8f3ac7c01350",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/footer-official-social-channels-20261104",
+      "sha": "a272dfa44a967c5dd1fd05bed411917ff753653b",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 256,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/form-feedback-accessibility",
+      "sha": "ffc6717e53437432b606db775ac422d9a6747748",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3966,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/gallery-backed-public-carousels-20261006",
+      "sha": "2834a7e54feaa8860461927a4caf74cfca80a8e4",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 2152,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/gallery-blank-caption-semantics-20261029",
+      "sha": "dc512a2b55952c8e74c0776dca2d1a1c6a538e9c",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 702,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/gallery-cleanup-lint-20261013",
+      "sha": "b5ff59ed93a2c99c4006f66f3fafbe806c361ebd",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1748,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/gallery-direct-props-url-alt-boundary-20261102",
+      "sha": "e9318b07e83044d6725e4b515feb338e07ada485",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 350,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/gallery-error-boundary-release-20261012",
+      "sha": "c3221b3102bb52f4957a077b4a08fef6a6e69a3d",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1816,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/gallery-graphic-classifier-20261021",
+      "sha": "2c5af5af989d0ba1c893c5c786519d018f0e0928",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1230,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/gallery-original-opener-focus-20261027",
+      "sha": "6e607a44ad311cc04eab0113fe038f9d0f7d5e21",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/gallery-privacy-claim-from-unverified-caption-20261020",
+      "sha": "b53c9beeeef16bb09313dd2220b8b0412f4f8fc3",
+      "status": "diverged",
+      "ahead": 14,
+      "behind": 1272,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/gallery-publication-error-disclosure-20261012",
+      "sha": "daa39f87949cc0c391a83d2110999b73191a64c6",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 1823,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/gallery-reopen-focus-20261020",
+      "sha": "7afd34bffd6032dd843b39dae973b85d6cdbbb34",
+      "status": "diverged",
+      "ahead": 5,
+      "behind": 1261,
+      "files": 5,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/gallery-selection-lifecycle-20261013",
+      "sha": "62a721f36752b5077e402de339deae67ee83d16b",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1750,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/generated-artwork-budget-20261013",
+      "sha": "f3ab3447e8d07ba9ff1607910d5b0b8c856f20e6",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1741,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/governance-policy-label-size-20261012",
+      "sha": "8cf457efbc2408526a51b79af76d3b7b0ace1185",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1782,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/heading-decoration-cleanup-20261006",
+      "sha": "1605afcc4e155925d629dedd5e90093753c9c10e",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2097,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/hide-staging-acceptance-admin-records-20261031",
+      "sha": "c752b8e4ac1ceaec9da7148afd9689adf4d230e4",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 735,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/home-banner-composition-20261003",
+      "sha": "3ecc6b492350bc2cc0053e569917fd88967bb3de",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2287,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/home-carousel-edge-blend-20261004",
+      "sha": "a56bbbf0a4e05ea72be7e93dad4e5b92ea795bae",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2278,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/home-carousel-fallback-assets-20261006",
+      "sha": "2babeb341964569944e81efd8140e30dafd083cb",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 2096,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/home-carousel-input-validation-20261020",
+      "sha": "010cf6a2ac61e8d803fbe0d4a420493a28c574b2",
+      "status": "diverged",
+      "ahead": 6,
+      "behind": 1262,
+      "files": 7,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/home-cta-private-route-boundary-20261022",
+      "sha": "2a1766dda3496beb4799e76b567e1fa4fad264c6",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1127,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/homepage-active-appeals-only",
+      "sha": "84bcbf908d9db47b38ed1e6ca7d5945a49022756",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 3989,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/homepage-appeal-expiry-cache-20261021",
+      "sha": "acda67439d0392b4e482a2865b2b52c33bbfa4ec",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1174,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/impact-documented-metric-completeness-20261029",
+      "sha": "534be1b0d2588117692f990eab7a8b13f4d04db0",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 568,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/impact-filter-error-description-20261027",
+      "sha": "3c9ed38d71a020c70c6200c132fa1f06f6f8a3d5",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 762,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/impact-witness-renderable-selection-20261020",
+      "sha": "2e7bf31f927bc76415dac36c0d06b3547d327874",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 1268,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/independent-security-retention-job-20261018",
+      "sha": "8ccb638be840ce783bf8e138f1799188aa152f43",
+      "status": "diverged",
+      "ahead": 7,
+      "behind": 1303,
+      "files": 7,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/initiative-detail-narrative-20261001",
+      "sha": "04a7b0f28138982bce8d5fa82e28e7d1983b0235",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2360,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/initiative-gallery-render-qa-20260930",
+      "sha": "ef289dd01115a03e73daa6aac595b1c5327bdba3",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2405,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/initiative-photo-banners-20261004",
+      "sha": "f13ab2a8b3b67192242b8b8f4688d97a980fcba6",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2258,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/integrate-public-accessibility-five-20261030",
+      "sha": "fcad0e8aa74aad156c39612e625c3cea82187d74",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 785,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/integrate-record-stories-presentation-20261030",
+      "sha": "7f1658ac03053e5d1f1826482d2d88e7704196d1",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 775,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/ist-record-dates-recovery-20261030",
+      "sha": "e16b452a6c54e46d1dc2a3e04ec7137747d987e7",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 753,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/js-budget-after-aria-20261006",
+      "sha": "dc451fd617de29841ac969827c8796324f27c6e1",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2132,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/js-budget-headroom-post-aria-20261006",
+      "sha": "2cd5ae8f0436cefdf27048b8c0772e881cf0ab6e",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 2134,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/js-budget-regression-20261006",
+      "sha": "3c307274cd3bbe5f4c95c797fa0bbe8be020d542",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 2143,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/js-timing-fragment-identity-20261105",
+      "sha": "6c93e9b539dd114143385686ea2e845a9c079088",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 226,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/jsonld-calendar-integrity-20261023",
+      "sha": "a7240c3f3f375f8c24ec989f01b70d39d980905e",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1050,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/keyboard-scroll-handoff-20261012",
+      "sha": "ffd2b81ff8e2b3aa72f15b3977b9ebc5f6a1c04d",
+      "status": "diverged",
+      "ahead": 6,
+      "behind": 1784,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/l2-gallery-and-polish-20261006",
+      "sha": "c0e76063317295bce95296e40c6a56924e4f2516",
+      "status": "diverged",
+      "ahead": 15,
+      "behind": 2152,
+      "files": 8,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/launch-readiness-pending-verification-20261006",
+      "sha": "d64f63a64f52f30b045d284a91a9d5e8e97a8d57",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2107,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/launch-readiness-test-truth-20261006",
+      "sha": "cfa6cd031dd6ba170c533f51e15548b43135878d",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2105,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/lenis-destroy-fail-closed-20261102",
+      "sha": "408f0bd38f00c8efad411c1461981968694c0ba4",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 333,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/lenis-native-handoff-root-classes-20261102",
+      "sha": "3594435921c92f69b6f62e584bd63bd4a882befb",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 379,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/lenis-native-timer-teardown-20261105",
+      "sha": "00a5f37ca6f1316e16d8597b95d245dae26116ef",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 227,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/lenis-navigation-capture-20261102",
+      "sha": "586f933f15c51355586ce4aaed985d8628445fe0",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 341,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/lenis-route-handoff-wheel-race-20261104",
+      "sha": "7440eb5dc33f3a26f5f5abff70e0f9998c54d40c",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 253,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/live-home-canonical-schema-audit-20261103",
+      "sha": "5fd241707c28180499762a16265518efd815ebb4",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 329,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/live-rail-pause-20261023",
+      "sha": "1cf68f76e80a0cc4ca6d8bb9bf7384230a94ec01",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1080,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/managed-media-readiness-20261013",
+      "sha": "d95ef0ae8466c9a2ecb2f913b5f18716f40ac34e",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1617,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/media-create-edit-boundary-integration-20261019",
+      "sha": "fe39e049a831f952de49cf4b10655c3398f1eaa2",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 1276,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/media-create-input-boundary-20261019",
+      "sha": "865c32cb436ed7d5d26723a312b4ee5fe1be4139",
+      "status": "diverged",
+      "ahead": 23,
+      "behind": 1277,
+      "files": 9,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/media-credential-pair-integrity-20261010",
+      "sha": "dc3b4a002e9a36069d22cbea47d15a24b249b947",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 1850,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/media-publication-input-20261019",
+      "sha": "cee1bfe169525fa8b0a73be0902527bc353b5feb",
+      "status": "diverged",
+      "ahead": 6,
+      "behind": 1277,
+      "files": 9,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/media-review-labels-20261026",
+      "sha": "802e89038ddc83d2689625c6ef133bee76f60bff",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 816,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/media-source-label-contrast-20261027",
+      "sha": "071e91a67371247ed8cf5439622400d6bffd3179",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/migration-advisory-lock-retry",
+      "sha": "4ec3ffebe27100645f44b3ec061d1d90ed57f9ed",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3615,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/mobile-background-copy-contrast",
+      "sha": "76ac633a1af8ded0d9477f79c7cd9309f88ce02e",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 2659,
+      "files": 1,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/mobile-footer-nojs-navigation-20261028",
+      "sha": "7e261508de8248d942c74ae7e1c1cca48980b453",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 790,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/mobile-header-nojs-navigation-20261028",
+      "sha": "5259c4a3291403ff14c680910c8369209329ab09",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/mobile-menu-focus-recovery-20261023",
+      "sha": "a0c40cef5e2154e9bd97f4b5a6dbf60434a3d038",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1097,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/mobile-menu-route-return-reconciled-20261108",
+      "sha": "23ece08ec39da8c1daa96788f31424b929596db7",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 49,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/mobile-menu-route-return-state-20261107",
+      "sha": "c42332a1d82562caada8a40807e6806a41a3a397",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 78,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/mobile-menu-wheel-20261026",
+      "sha": "94fd96d26447d1e1aa07fbbba39c511dae4d3ec8",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 791,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/mobile-profile-method-fail-closed-20261103",
+      "sha": "a6620dfadb47e028580e06d79596ba24b5599958",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 326,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/motion-press-recovery-20261023",
+      "sha": "1cf68f76e80a0cc4ca6d8bb9bf7384230a94ec01",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1080,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/native-keyboard-shortcuts-20261023",
+      "sha": "95b6e3e1ba636ddeb99737475cfc437c2e8e1694",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1067,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/navigation-audit-20261003",
+      "sha": "52fa5a362270cf2a52f9408cdbfa65b48e9d5dc4",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2321,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/navigation-capture-target-20261024",
+      "sha": "c61b285d9d0035bceb52e1663483f93cc9a942e4",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 933,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/navigation-indicator-without-skeletons-20261020",
+      "sha": "088edc7651425caacd083e82f6b15010c3c97414",
+      "status": "diverged",
+      "ahead": 9,
+      "behind": 1274,
+      "files": 6,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/navigation-progress-clear-stale-state-20261020",
+      "sha": "4532ca24ff16b6178b5b7424a1d522f0555487a6",
+      "status": "diverged",
+      "ahead": 6,
+      "behind": 1268,
+      "files": 6,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/next-16-3-8-security-20261007",
+      "sha": "aeb4b56fe89c66d56ffcbb2635e529308dd3046a",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1984,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/next-public-build-environment",
+      "sha": "b14a01859b70d6b577b38204675e250653237e5e",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3604,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/notification-attempt-claim-20261013",
+      "sha": "5bd3a8551ee23995af8620136d89fe7bb75c30ea",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1604,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/notification-auth-byte-length-20261012",
+      "sha": "8b8d9841a49f4269133d78a32cf4487c163fbe8d",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 1823,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/notification-auth-utf8-20261012",
+      "sha": "60385bf6cfefdcaa18a666d40e95ff05d20513b6",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1816,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/notification-cron-isolation-20261012",
+      "sha": "db592f3dbee3541669a73797d469a54fbfd5e2d5",
+      "status": "diverged",
+      "ahead": 5,
+      "behind": 1823,
+      "files": 9,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/notification-cron-safe-defaults-20261024",
+      "sha": "48f55d79d1a12a0f05f6759d79a7570aa450df42",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 937,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/notification-display-ist-20261027",
+      "sha": "1f7b861bfed74693f630ea353ae1e5f00cfbc23e",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/notification-recovery-inputs-20261028",
+      "sha": "837a34ac2609e8f626318ec653a726192d016164",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 414,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/notification-worker-cancellation-20261018",
+      "sha": "28d8b5ef9419fa57642efd8ce23f7450d56f0fb9",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1372,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/notification-worker-containment-20261013",
+      "sha": "24847b1551abe0448d246e4f71b23265b89fc8a7",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 1447,
+      "files": 7,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/notification-worker-rebased-20261012",
+      "sha": "3e906429ba1830107cf2ac12c7ffea6d399e7eb8",
+      "status": "diverged",
+      "ahead": 7,
+      "behind": 1821,
+      "files": 7,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/oct5-owner-audit-followup-20261006",
+      "sha": "0ee700cdbe9a6008b0d77fb9e98e3c7be5b89c96",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2144,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/our-work-canonical-outcome-projection-20261029",
+      "sha": "dfba47d76bc0a23ed5fa14ed6d732e740e3a6204",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 684,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/our-work-filter-privacy-20261018",
+      "sha": "7e770eff4a6260daf6ab52bbe36ed04dd451f1b2",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1436,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/our-work-metadata-root-scale-20261018",
+      "sha": "a90666300d2a769962c813eb78778eb7d77b58af",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1376,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/owner-nine-surfaces-20261004",
+      "sha": "bc9fcb99908cb3883a382646f1a07748d75ad20b",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2271,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/owner-screenshot-polish-20261001",
+      "sha": "477ca2df52e9109806e590addee059acf1bcafce",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2371,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/owner-surface-polish-20261003",
+      "sha": "7cbbf6b7e97fcc35acb52fdb0db1be8950602b38",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2302,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/p0-security-remediation-20261010",
+      "sha": "3414858b3f325ee120b702e66109b6f67cfac87a",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1578,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/page-hero-title-leading-20261103",
+      "sha": "add9f6c9ad7e84d4b6cc7fbc9b1eeda18460011b",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 321,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/parked-r016-csp-image-origin-20261013",
+      "sha": "7360f9f7eb7233baad719f273d3fee89982930fd",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1638,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/participation-appeals-patterns-20261003",
+      "sha": "43d61649724a64bff3df015a9173f253443ccbe0",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2298,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/participation-contact-appeals-20261001",
+      "sha": "95cd72d3ed94f803a8380f3b11b65206d2fafd55",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2356,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/payment-confirmation-identity-20261011",
+      "sha": "ebe7d51673b5ab6e8b835988dcc12ac848c657c1",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 1823,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/payment-confirmation-identity-20261012",
+      "sha": "174321587e46be509d62e852be71e11058a05469",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1816,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/payment-lifecycle-completion-batch",
+      "sha": "8775fde89b809e6262e0b0c6c05ad51fb09c7c8f",
+      "status": "diverged",
+      "ahead": 10,
+      "behind": 3707,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/policy-navigation-20261003",
+      "sha": "0bf13028804bdb67045c41ef660d66eb65329b08",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2329,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/policy-sidebar-native-scroll-20261102",
+      "sha": "a89538aef03302377b89d1c4c86371b3eb4cdbec",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 501,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/policy-trailing-separator-20261003",
+      "sha": "8c12f027e443f24002f6aef306b1a9d5a1e94a97",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2291,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/portfolio-year-selection-20261021",
+      "sha": "cc4158c504a84e1c1ad9ea32cd3ca6cb38d83979",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1227,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/post-merge-release-regressions-20261005",
+      "sha": "b71d2086cc288721ae5e2207101428c174c66f03",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2163,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/preexisting-lint-gate",
+      "sha": "55fdb0dc90753bc0065e8affd6afc7df5cd3e496",
+      "status": "diverged",
+      "ahead": 6,
+      "behind": 4019,
+      "files": 5,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/premium-carousel-artwork-20261004",
+      "sha": "6320b7d082b15164942831711d0a8bd9e2cccf85",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2267,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/prisma-runtime-client",
+      "sha": "ce0073a0094ec243772f8e37154b38a2d67700ea",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 4495,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/privacy-rate-limit-pepper-isolation",
+      "sha": "e17cbfb71d0a78b65da5a4d787e7e96f6e735a70",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 3987,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/private-assistance-response-headers",
+      "sha": "623795146e9ca9ba8871ba6f77943f1acff37fd7",
+      "status": "diverged",
+      "ahead": 6,
+      "behind": 3934,
+      "files": 5,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/private-credential-recovery",
+      "sha": "dc017f8e1cb6e6309da55c0c2faf908b1c50a74d",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 2938,
+      "files": 1,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/private-document-access-audit",
+      "sha": "670ee8a16a98b7053fe64fb270860c2665e52d49",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 4011,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/private-donation-ack-date-ist-20261027",
+      "sha": "15c52b687f7c1f506b288dc39a2833f9f781b51d",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/private-donation-ack-fragment",
+      "sha": "afff9b43506f2679e0e3a1f9ab6ad3b560071614",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3978,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/private-donation-response-validation-20261019",
+      "sha": "273ebd8d671ad7c54f24425413c436832a0f0de8",
+      "status": "diverged",
+      "ahead": 8,
+      "behind": 1283,
+      "files": 6,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/private-ingress-consolidation-20261018",
+      "sha": "fc4f8b527cdbd47a767e59bac0d0e777414673e3",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1474,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/private-response-referrer-policy-20261017",
+      "sha": "d33a95216dd4cc742d7f7c2fe97a6c3c8422cc7d",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1507,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/private-review-input-and-lookup-boundaries-20261028",
+      "sha": "97b04d1c0f9e11f8e67accc322e11df0578245f6",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/private-state-label-readability-20261012",
+      "sha": "fdc1ca9b9af19de79ba68fe3f80b703cbb0274b3",
+      "status": "diverged",
+      "ahead": 5,
+      "behind": 1781,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/private-tracking-ist-20261027",
+      "sha": "5a5ccb4c99b1573fb087338f6607825dbbecf3c3",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/private-tracking-response-validation-20261019",
+      "sha": "2500a012fbf62abbd1190a7ad5f5fe91ace8edd9",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 1283,
+      "files": 5,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/private-tracking-token-fragments",
+      "sha": "17e7d01fc1aa9264999b3a5293dabde464467d9e",
+      "status": "diverged",
+      "ahead": 14,
+      "behind": 3986,
+      "files": 8,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/production-payment-mode-guard",
+      "sha": "5e5bd1c689616bffb110d9ea9cbdf2c553634905",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 3990,
+      "files": 1,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/programme-category-canonical-routes",
+      "sha": "fa56e703a8bb8da12062339383ad57b3e6a31df7",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3993,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/programme-category-hero-responsive-sizes-20261102",
+      "sha": "f3385e09e6413289502552b6ce099dcbcdc42341",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 360,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/programme-closing-alignment-20261004",
+      "sha": "105b62e05f514091c346dfde55e38ef06ecc5b0e",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2250,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/programme-continuous-pattern-20261005",
+      "sha": "f223b69b5b05fc9608b475ce9c37c5f90a644f28",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2247,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/programme-hero-preload-20261027",
+      "sha": "a95deec5c1a9674ff8d079b545ca38da17442a31",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/programme-hub-gallery-media-20261005",
+      "sha": "746687f23d98aef53f67cec51f688c6ff061a7b4",
+      "status": "diverged",
+      "ahead": 6,
+      "behind": 2152,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-analytics-static-routes-20261027",
+      "sha": "a53c89e1ce97f6fd4b6dfb9e0ff7ae3d07c8f968",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-artwork-budget-safe-integers-20261029",
+      "sha": "a085e1355e7c2b992f1ea507a3bf11cfd2ca2d43",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 515,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-assets-secret-boundary-20261030",
+      "sha": "6e635e531d1513f78b3c9d6d3e0b78b962e71da7",
+      "status": "diverged",
+      "ahead": 5,
+      "behind": 670,
+      "files": 16,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-controls-20261003",
+      "sha": "3d9ac4705d643f93d914d4337d6a8045b8050783",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2325,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-discovery-raw-query-bound-20261029",
+      "sha": "4ee1865cce409640c663b293d0bed1e233b28faa",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 536,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-discovery-whitespace-matching-20261029",
+      "sha": "c0da111ead36799f812d7c2d77697346929c1d12",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 490,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-enquiry-tracking-parity-20261024",
+      "sha": "c7c687ce9d52de8d01778171166c85d7851f8bc3",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 965,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-env-media-secret-guard-20261029",
+      "sha": "6d077dbda2a8133b1af9b860b5c1e6b9b06447c1",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 368,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-font-shorthand-floor-20261102",
+      "sha": "58082262d6c7d86e7257d0775325e05427db291b",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 347,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-gallery-dimensions-20261019",
+      "sha": "4760f4ec3b9544cbe69d7a1d3eddbcf3e36392da",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 1278,
+      "files": 6,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-gallery-source-dimensions-20261019",
+      "sha": "fcaea7eaad7dbfe120837a9e01b85252078dab28",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 1279,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-image-caption-whitespace-20261029",
+      "sha": "5856e1512403823d907acbef060f0e8f34673356",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 504,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-image-dimensions-cap-20261021",
+      "sha": "b8d21ff655bba3104c8d589724818dd32c0fc1d3",
+      "status": "diverged",
+      "ahead": 9,
+      "behind": 1260,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-image-dimensions-malformed-input-20261102",
+      "sha": "0ce88337837b2a4a504a4185e82e7746c55e32fc",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 528,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-image-invalid-metadata-fallback-20261029",
+      "sha": "f47de8ce26702d8ebc39014dd8daf8dc64cdbbd3",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 709,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-link-and-faith-motion-a11y-20261029",
+      "sha": "ed29601f2e0a3e524c3b191df24c6a147be298f1",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 719,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-link-faith-reduced-motion-20261102",
+      "sha": "4a274b9f022bb1aa5f353fdbdedb6d7adc695e51",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 490,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-locale-malformed-entries-20261102",
+      "sha": "cfc60943edef9b0f5facd78783d9059d30a79f80",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 375,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-media-acceptance-runtime",
+      "sha": "97bf11765ca726962910dd6f6076dac3f6c013fd",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3659,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-media-blank-link-label-20261029",
+      "sha": "df7d2d13fa69ad78b7fe6e5e9a306924c8581888",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 714,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-media-bounded-cleanup-20261019",
+      "sha": "59b933666ee9b8cbd302d941024b3421e12ab23c",
+      "status": "diverged",
+      "ahead": 8,
+      "behind": 1299,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-motion-followup-20261029",
+      "sha": "ca46583cea4108784a664c91e4f80e72fb9cc388",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 696,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-navigation-current-page-20261025",
+      "sha": "8dc4c0b7da92d240bef5475071b90443a9b39e0f",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 927,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-new-tab-announcements-20261028",
+      "sha": "aa1e760d02a425e4a8e1065f1363f3e3b82cfc13",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 762,
+      "files": 5,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-page-data-lint-cleanup",
+      "sha": "511ddcc61287d4795478b00b3f147bebfd0ff9a3",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 3933,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-plaintext-secret-scan-20261030",
+      "sha": "c387d60409bf0e6bc45f19feb962530870db9886",
+      "status": "diverged",
+      "ahead": 12,
+      "behind": 670,
+      "files": 19,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-query-copy-feedback-recovery-20261031",
+      "sha": "a72dd89a9656a26199993e7e1d1871096717ee13",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 759,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-readability-batch-20261012",
+      "sha": "cb6e097b9bc582d2e7ff4b3171ef004639a9303f",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 1781,
+      "files": 24,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-route-own-key-20261021",
+      "sha": "bbbdd9e7376156115327e0273b898d03e9a4adb9",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1249,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-schema-batch-20261020",
+      "sha": "b09ecf191e51fbfb286d86d4ccc7ac41ebb0ea39",
+      "status": "diverged",
+      "ahead": 6,
+      "behind": 1263,
+      "files": 19,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-schema-path-boundary-20261022",
+      "sha": "b2131dec93c97be4ca2685063f2ff0b075de74d0",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1136,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-seo-social-metadata",
+      "sha": "900fef70765115760ce78baef52251d026f698e6",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3634,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-source-index-20261013",
+      "sha": "050c623a68d92c03c8805faaeddc1d0c9c4337f3",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1744,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/public-storage-boundaries-20261013",
+      "sha": "0c6954858d5ff8fbe01770e5702572a5dd7777d5",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1752,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/published-edition-duplicate-year-20261024",
+      "sha": "d55331accae4a1e50ab66d00048dc15c6d09b2da",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 941,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/queued-companion-text-scaling-20261013",
+      "sha": "50f7def54324a0d6a94ce705f44c687faeab2e14",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 1759,
+      "files": 5,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/queued-css-budget-telemetry-20261012",
+      "sha": "3d08528293c1ea118b4108afba827f2387830cfc",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 1762,
+      "files": 12,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/queued-css-telemetry-privacy-20261012",
+      "sha": "e4a750bfa24ac4f9ddc72f7d077d6339bc058bb6",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 1762,
+      "files": 15,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/r024-companion-text-scaling-20261013",
+      "sha": "fdab2ad9381e47e3ba5b3e339c8e9a8b6e698982",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1756,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/rail-320-mobile-content-reflow-20261102",
+      "sha": "782c5415179ca6501fe46d9b9f5583e84149b3e2",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 342,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/railway-runtime-predeploy-public-env-import-20261102",
+      "sha": "6ac9ea4f8b871b0fe8f4cf6d6b4fd0d0311bc865",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 365,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/railway-storage-compatibility",
+      "sha": "4cfb79f0f4c319938c8761f4148bc4da9a9e50db",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 4497,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/railway-watch-source-test-boundary-20261025",
+      "sha": "ed7d0d6f61fd64215cc04bcab6d32dfd7771c5b0",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 870,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/razorpay-checkout-stream-error-retry-20261018",
+      "sha": "495c456d52d8fdc1db260b70dce8af2cf8332c0d",
+      "status": "diverged",
+      "ahead": 5,
+      "behind": 1486,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/razorpay-malformed-appeal-balance-20261017",
+      "sha": "8a93b948ed5636a58f349ddf548cd7ad1952572d",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1543,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/razorpay-order-identity-20261012",
+      "sha": "e88a3761f2e2cff25dc6b6ab7f641ca9275f6414",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1816,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/razorpay-payload-validation-20261012",
+      "sha": "61723e719019b83d2f26aa5c865a51ab0a343206",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1816,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/razorpay-payment-response-validation-20261012",
+      "sha": "1437d1add8de128bc12547b0d7a201df533669ef",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 1823,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/razorpay-redirect-boundary-20261019",
+      "sha": "06c66c9a7cf7ba7ec5d7c3c75fc7c4d36d59c959",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 1302,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/razorpay-refund-cap-reconciliation-20261017",
+      "sha": "a08d223e52272e5d2e2c99926e7636fd5e9beba9",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1526,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/razorpay-webhook-body-limit",
+      "sha": "9acfe0de1de58ec9d9042ce1d8c1571f3205beaf",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 3709,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/razorpay-webhook-ingress-deadline-20261018",
+      "sha": "a536d2e4fd307e1e10cf827d63376dee35511ec0",
+      "status": "diverged",
+      "ahead": 20,
+      "behind": 1487,
+      "files": 7,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/receipt-body-deadline-20261017",
+      "sha": "b26a3a801b5b2c75b58e9d8086dc321709f20301",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1531,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/reconcile-admin-record-presentation-20261030",
+      "sha": "605be358209da8544f1b00c66f8d36b65d14352a",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 780,
+      "files": 6,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/reconcile-discovery-stable-order-20261031",
+      "sha": "594cdf5cb7983b36b8ee2d4529661cd307ccbc1b",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 741,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/reconcile-faith-appeals-contrast-20261030",
+      "sha": "e8d617c2ced14b26826b63b2a869d199829f990b",
+      "status": "diverged",
+      "ahead": 9,
+      "behind": 789,
+      "files": 8,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/reconcile-faith-discovery-citation-20261031",
+      "sha": "c7de3dc303a3bbb4d1a9b2172a3210ca6f7706c5",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 738,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/reconcile-faith-record-citation-loader-20261031",
+      "sha": "29abcf5a89420824c5befb552784b99b1815b250",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 720,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/reconcile-faith-sitemap-citation-20261031",
+      "sha": "8b97d2c532e38804e55742c60483eb7e9ec1cd6b",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 749,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/reconcile-media-archive-unavailable-pages-20261031",
+      "sha": "bf16827fb2a32abd95ae605f479ffa4017b4e5e4",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 729,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/reconcile-navigation-keyboard-focus-20261030",
+      "sha": "8f617a93e085acf655a5ad55aacc572d50ff43e4",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 788,
+      "files": 11,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/reconcile-pagehero-fallback-cascade-20261030",
+      "sha": "1fac53f731c0682190e3977edcf0d00d416f0e45",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 781,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/reconcile-public-accessibility-three-20261031",
+      "sha": "d304d6d977af3da33114ef823d5ee08dd183f99c",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 745,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/reconcile-public-contrast-four-20261030",
+      "sha": "1c3e4de4d80baf85b5f99e282cf11b12d87f8007",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 788,
+      "files": 15,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/reconcile-public-font-and-impact-leading-20261030",
+      "sha": "869e3230e43d0533701c2eca3cf35a4b70f66b08",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 788,
+      "files": 8,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/reconcile-public-ist-detail-dates-20261030",
+      "sha": "a75b25010119a2d06b2c99a75a8f6bf7ec456592",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 788,
+      "files": 8,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/reconcile-public-reduced-motion-20261030",
+      "sha": "72a355048a2dd91824e8550fddb30cd2c023c6c2",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 778,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/reconcile-stories-label-contrast-20261030",
+      "sha": "0291d56d1338b35f925ad60ba046d33505d47d24",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 780,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/reconcile-story-programme-blank-options-20261031",
+      "sha": "331c9eb768975f564a15b47936e5c7f9ea490bf8",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 725,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/recover-faith-media-archive-citation-20261101",
+      "sha": "a383ade60e4e192535053c7ea331b9716fd8de58",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 581,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/refund-accounting-invariants",
+      "sha": "34c534e32801c6adfb674cb5a5ac8077572a6c0c",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3729,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/refund-entity-idempotency",
+      "sha": "3905897c4fb2f3f1b47ddbc619cbaf23f0e3e5cb",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 2939,
+      "files": 9,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/remaining-aria-groups-20261006",
+      "sha": "b2dfbb1723e34a1495179aeb18476389be8db522",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2115,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/remaining-oct5-audit-20261005",
+      "sha": "08f4ab47f9543d915ca488f0f09e8e6f85ab2d45",
+      "status": "diverged",
+      "ahead": 10,
+      "behind": 2152,
+      "files": 6,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/render-acceptance-css-budget",
+      "sha": "28a82f1d3fbbfc7fcc33b23f477eda756e519444",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 2573,
+      "files": 11,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/request-body-cancellation-20261013",
+      "sha": "3219bdf7951a067c077c4f8d0a9d0ca2708151af",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1574,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/request-cache-initiative-lookup-20261021",
+      "sha": "3ac96f33601329e63f87a9d99dd13ea34bd3bd2f",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1240,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/request-detail-ist-dates-20261029",
+      "sha": "7db0f8dc853b0721ea634db89388ad720f31e349",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 725,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/request-review-preserve-status-20261027",
+      "sha": "f229931d63559403d217943ec3dbf57d17ef9762",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 792,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/resend-dns-authority-diagnostics-20261009",
+      "sha": "c1d61a42a74e60a526ef7e86fa11061de9c7d65a",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 1885,
+      "files": 1,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/resend-dns-script-trigger-20261009",
+      "sha": "90e46347c6be75f95f369eeab613f5d5f1609bf0",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 1884,
+      "files": 1,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/resend-dns-workflow-activation-20261009",
+      "sha": "b5c1dc6643943c2f8077d76c1b6886d6fd1f122f",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 1886,
+      "files": 1,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/resend-exact-dkim-20261008",
+      "sha": "425a1a4195bf5bbbe7c1f5e7624df18050975419",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1889,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/resend-provider-response-boundary-20261019",
+      "sha": "d8d559f89f87d0cb6f6f890d18774393e11ce09e",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 1295,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/responsive-acceptance-sweep",
+      "sha": "1543e744a2b0c5f81d68a4e3cc026cc9dcc38b91",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 3992,
+      "files": 6,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/retention-filter-query-20261026",
+      "sha": "b84210604f58bb35fa4475446c0b5a34b1e35b3b",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 808,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/retention-hold-delete-claim-20261028",
+      "sha": "7db0f8dc853b0721ea634db89388ad720f31e349",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 725,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/retention-pending-claim-ui-20261029",
+      "sha": "e6857ac49e2d45e186992f798e807c0372f94247",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 731,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/retire-query-token-tracking",
+      "sha": "144e4f05d16cce202875c8c108197aa55b5f7810",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3940,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/root-error-typography-20261023",
+      "sha": "9f02a1c61cd3258eb1c804f73516c4de12a8d709",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1091,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/route-attribution-malformed-pages-20261104",
+      "sha": "06511cd3573a9fb9dd752ff8b1d2c6e7986fa901",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 272,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/route-boundaries-p2-20261007",
+      "sha": "260f6aabfffb866e41d20c5124d149fc4f004ffd",
+      "status": "diverged",
+      "ahead": 8,
+      "behind": 1933,
+      "files": 6,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/route-bundle-invalid-size-20261028",
+      "sha": "d0ea8161e9d39781d2319b8724c9fbc734a313b0",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 709,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/route-client-reference-total-overflow-20261029",
+      "sha": "73e1d4d34eaccf76ffa0c6fbfc1c644b821f38ff",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 706,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/route-css-audit-redirect-guard-20261025",
+      "sha": "0c3a740c9c27e1af543749a47947767bfa0d1898",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 897,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/route-css-safe-byte-totals-20261029",
+      "sha": "0311fdc717d6b6116ed5928e796296d46178b610",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 493,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/route-js-sibling-attribution-20261029",
+      "sha": "9230c08a203e423b64c9739edfb991c0f25ea177",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 488,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/route-report-closed-output-20261029",
+      "sha": "e2a715a65820c3b44db3056b680c705af1e7e9bd",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 701,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/route-report-invalid-page-values-20261105",
+      "sha": "54ad7b8f0fddb812c5f0cdb40dd5057d31e3151b",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 232,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/runtime-sitemap-indexing-20261006",
+      "sha": "38af522cbda438183e6a27388a6a840221b00797",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2113,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/schema-audit-ignore-script-rawtext-angle-20261104",
+      "sha": "fcb06c4c7d467d6fa79ab51fb45a27db7bb3eda5",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 261,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/screenshot-led-ui-remediation",
+      "sha": "ad86938f992adfe81b01890d88e4b12f9da2b012",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2524,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/scroll-keyboard-import-race-20261011",
+      "sha": "b82628ec87eec8f15cfe44c5c958225c05bbe868",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 1823,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/section-headings-footer-spacing-20261002",
+      "sha": "d837253610ce26e07c5784c21d0edaae84d101ad",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2350,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/section-hierarchy-alignment-20261003",
+      "sha": "69f93b5e3ace613a4e5ec16daab598354e7efc52",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2311,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/sensitive-appeal-breadcrumb-privacy-20261021",
+      "sha": "29fcbb1031b1168b5bc49d8836274f1c8530d267",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1200,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/seo-acceptance-generated-image-urls",
+      "sha": "1463632e25e25133fcce4e5104122762f6cc96fe",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3606,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/seo-acceptance-url-normalization",
+      "sha": "14dbe74e97ce78cedfc86e1407355a6af9195a64",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3608,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/seo-launch-hardening-20261006",
+      "sha": "5ed6850712239f6e977991483a0a59c99ddf877e",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2111,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/server-action-media-upload-limit",
+      "sha": "c55428b026c4ab4ee343a2a157bf127e0d0734c7",
+      "status": "diverged",
+      "ahead": 5,
+      "behind": 3702,
+      "files": 5,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/settled-payment-confirmation-20261017",
+      "sha": "78ce18f604aae683d1a98645bac32ec081a4f8cc",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1571,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/shared-chrome-label-readability-20261012",
+      "sha": "edfad5fa0fa8c4d72c42e3eee1d7fe22fdd15233",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 1781,
+      "files": 8,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/shared-section-heading-leading-20261104",
+      "sha": "5e412601b2a2aefbba23b3b0ffaf3d39ba97671d",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 303,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/site-chrome-footer-hero-20260930",
+      "sha": "309977100a2d8a88eecdbf43925d9183a570223a",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2383,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/site-controls-reduced-motion-20261029",
+      "sha": "6553e367188817b6db7e659535a91c0f97f4d2f2",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 699,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/site-indexing-official-origin-20261021",
+      "sha": "53d2a504290fc8bad24294a123dfa188de63758c",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1255,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/site-regression-audit-20261004",
+      "sha": "8ddb7cb4ae640e8d728ec1e95f0d43f71672e43e",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2262,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/sitemap-legacy-programme-exclusion",
+      "sha": "59e7eda15f09cc85145d7f25cb687d924eb9c926",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 3989,
+      "files": 1,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/sitemap-sensitive-appeals",
+      "sha": "9298dc81d0d184c8669f7c0b3f6ddb86a542082c",
+      "status": "diverged",
+      "ahead": 6,
+      "behind": 3935,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/sitewide-l1-banners-20261002",
+      "sha": "494421b4e727ff65314b7ac82f9f91d273926b37",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2345,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/source-map-js-cve-20261007",
+      "sha": "7aaf7c87cb88a159e6a4e8a9b9245113a4a4d03c",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1928,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/staging-acceptance-gating",
+      "sha": "cd4be082ef245f9feee9acca9ae33b691031c96f",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3620,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/staging-acceptance-seed-owner",
+      "sha": "be7920a999291d6c416b0509a75f3e5de86bde26",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3677,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/standalone-faith-invalid-review-date-20261030",
+      "sha": "2fc568f5f1236783153f40c62b890ee51ce2e18d",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 788,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/standalone-mobile-nojs-navigation-20261030",
+      "sha": "5e3c78dd9df1320ed5b81610248ba1e4913255c8",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 788,
+      "files": 8,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/standalone-public-secret-boundary-20261030",
+      "sha": "6ee09e095d9ceff146d75816b12a8cde6a80a98d",
+      "status": "diverged",
+      "ahead": 9,
+      "behind": 791,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/standalone-team-native-length-20261030",
+      "sha": "423a6accc0426c4abe2290569e087ceb276bb195",
+      "status": "diverged",
+      "ahead": 6,
+      "behind": 790,
+      "files": 5,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/stories-gallery-reduced-motion-20261029",
+      "sha": "63ccbfda1e4a33c9186221885374f1a0b83941ed",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 700,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/stories-ist-date-20261026",
+      "sha": "de48e9c56af269539f35b238a68e6f16cd0eeb83",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 791,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/story-blank-programme-options-20261029",
+      "sha": "822ac92dcb0107ad689188fbf00caf789196f972",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 693,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/story-filter-error-description-20261027",
+      "sha": "9c81dc522d5baa97dedb0e3b3797316419473ce3",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 762,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/story-public-programme-label-consistency-20261029",
+      "sha": "ffe9e3e0de4d77d8229013e3930098876c454739",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 554,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/structured-data-serializer-unification-20261018",
+      "sha": "f3d8fb8b4f87b6baa46c126de50721eaed1380a8",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1318,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/team-empty-photo-upload-20261020",
+      "sha": "5e59e334f59119556d52f97b34f2395f05e4c047",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 1268,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/team-native-length-validation-20261030",
+      "sha": "6561390797d62450553ebe2d824126d50c587fb3",
+      "status": "diverged",
+      "ahead": 6,
+      "behind": 670,
+      "files": 19,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/team-removal-dialog-a11y-copy-20261020",
+      "sha": "77f18f308a832309fc4af5265a92627ed699e8e5",
+      "status": "diverged",
+      "ahead": 6,
+      "behind": 1265,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/telemetry-ingress-read-deadlines-20261018",
+      "sha": "b8e051c48c0a7f8bcbc16b3801418adb1cf5c771",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1314,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/touch-press-ownership-20261023",
+      "sha": "2bad2521e7b0bdc0628eeffae95ec529e49affab",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1032,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/transfer-outcome-recovery-20261013",
+      "sha": "a1adbe802a9f6ac6d94b584015487bfeb6d65904",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1609,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/transfer-proof-preflight-20261017",
+      "sha": "e37dd487d68afd934deb698375cc01b5af2287d1",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1536,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/trusted-ingress-client-ip-20261019",
+      "sha": "367b2212114180d0a668980e9efc3205a6d9cf59",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 1302,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/ui-consistency-audit-20261002",
+      "sha": "b60aa42e8e8002095c9bdbdf6ed800207a6710c8",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2337,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/ui-consistency-dedupe",
+      "sha": "fdbc3a24ba15b9a88e7bd518acaad18feb411ffe",
+      "status": "diverged",
+      "ahead": 7,
+      "behind": 3938,
+      "files": 7,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/ui-consistency-dedupe-v2",
+      "sha": "e7234e8856c5b0b8b34b8229a68aa965bbbde23d",
+      "status": "diverged",
+      "ahead": 6,
+      "behind": 3937,
+      "files": 7,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/ui-followup-audit-20261002",
+      "sha": "93ee64399a30f834314c5cc56627e45231b7f38e",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2333,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/volunteer-enquiry-malformed-query-20261027",
+      "sha": "7b1c302de861faefe3045de190fd19eef3a31725",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/webhook-event-envelope-validation-20261019",
+      "sha": "01172fa268f77bd5af3ad1cb4c48c16eb850eb33",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 1293,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/webhook-failed-identity-20261012",
+      "sha": "8a3ffec148f3b8757a0b7b45909c17c9de00afc8",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1811,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/webhook-financial-state-validation-20261017",
+      "sha": "fe039b83a681268220dda021775cb3d64569e592",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1521,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/webhook-retry-scope",
+      "sha": "f2c61d185495eb7632e69c5232ce4b8b74c34baf",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 2940,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/work-combined-family-filter-20261026",
+      "sha": "b44a3e1525d1be446d107724877a394b428af808",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 805,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/work-filter-focus-contrast-20261027",
+      "sha": "3c3636edaae65d7b687ea4c3b7690484894a1f55",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/work-identity-image-fallback-20261027",
+      "sha": "b36d1048ab004d0798b2ca1b65d516dce2226565",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/work-portfolio-heading-separators-20261020",
+      "sha": "e421d383f48b55381081c9af101cc40ca96d7abe",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 1268,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/work-search-family-dedup-20261029",
+      "sha": "6d6d99cb9e7a102d9a2a79f165a7c7cc359812b5",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 548,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/zero-defect-p0-performance-20261007",
+      "sha": "f57ce09eac930b8a7806e1372b8e5e7a98bfaed7",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2045,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/zero-defect-p1-audit-closure-20261007",
+      "sha": "5be1a68dea9e4a0ae101dea375a679c57a0e537b",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2034,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/zero-defect-p2-closure-20261007",
+      "sha": "388f78082e62d1efed97f85651d3cbc410750fa7",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2006,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/zero-defect-typescript-strictness-20261007",
+      "sha": "2de8ca7ee6e1213fd5381230a04f9d6d20ea0c1a",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1941,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "fix/zod-resource-exhaustion-20261024",
+      "sha": "cab0d8e86b501e0580feca7ceacf26592600e4e1",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 988,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "hardening/launch-rehearsal-readiness",
+      "sha": "f3355097c0e6ab37f16bab01992b7d977496ceb6",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3801,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "hardening/public-media-review-register",
+      "sha": "438c8fbfcec9b12f96892415c8989217284d83eb",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3812,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "hardening/runtime-deps-prune-20261007",
+      "sha": "37c5df534e70f4a32975df14ab9529f485400e67",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1915,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "infra/public-media-proxy",
+      "sha": "59c24e584adb6b855456be8cdfbbb468cd6e4f36",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3666,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "integrate/verified-draft-fixes-20261028",
+      "sha": "f97f398e31ce8cc5cf142e56d1f2ff5f138ac912",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 737,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "main",
+      "sha": "9a97017200b6780a671f6186d30a22c1bf58d912",
+      "status": "identical",
+      "ahead": 0,
+      "behind": 0,
+      "files": 0,
+      "error": false,
+      "protected": true
+    },
+    {
+      "name": "ops/admin-audit-history",
+      "sha": "8bc2479f70b49caa0f896b234f8df96a131c515a",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3685,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "ops/manual-resend-dns-20261008",
+      "sha": "4b5baa2aa6e75fd6241d0ef6b303403d7b716d03",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1887,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "ops/public-media-one-shot-acceptance",
+      "sha": "e32bbc156bfbd3e5c82de4cf4f6a94d6ff27f82c",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3656,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "ops/public-media-storage-acceptance",
+      "sha": "a310fd1209fac8318fdd5adf5f611fca6a6c55c1",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3663,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "ops/recovery-evidence-2026-09-18",
+      "sha": "5668c26f277023d9fe8603a5e61edbf0fb50f756",
+      "status": "diverged",
+      "ahead": 5,
+      "behind": 3652,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "ops/recovery-evidence-rebased-2026-09-18",
+      "sha": "347cf6a2fe1cae2bb218d3280ab075773ee306de",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3629,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "ops/runtime-staging-acceptance",
+      "sha": "20f4bca07437af420ab1865501a6d85866a810da",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3623,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "ops/staging-payment-ack-acceptance",
+      "sha": "497573743ba53ba09c9bdd2d7f6ddb194055e675",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3679,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/admin-list-display-projections-20261029",
+      "sha": "6b8f63f8928976bb7dd57277da9270eebb881168",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 729,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/admin-list-pagination",
+      "sha": "b7bcc2ee25b6ca50fc08a67506599524479d8b0b",
+      "status": "diverged",
+      "ahead": 5,
+      "behind": 3700,
+      "files": 5,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/admin-query-and-selection-recovery-20261030",
+      "sha": "94ce4f973a92cc977ff827b4866e653b8dd54ec4",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 772,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/admin-query-indexes",
+      "sha": "a053ef9a68c34fc4412841b45c348617cd24923f",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3689,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/af-r057-appeal-card-css-route-scope-20261106",
+      "sha": "fd06aae69410e97a494a0821e49a22aaaef2abba",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 185,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/appeal-editor-projections-20261027",
+      "sha": "4cb6da8bf6bc0e6a94ae93ab74ab2e6ffa9c9310",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/appeals-active-index-query-20261022",
+      "sha": "d450e405da268efa4f9d603ccad4011b4b0075bd",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1165,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/appeals-completed-aid-media-scope-20261028",
+      "sha": "2d4cb3f66e539582952a97c67a5896ce3a2b57a0",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/appeals-retired-hero-css-20261029",
+      "sha": "d530b5ba720266577e233890caf19d9f852a3016",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 721,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/browser-css-transfer-evidence-20261027",
+      "sha": "0e088b9de416491d51fadde84e8be7380d9fd57f",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 703,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/browser-nextjs-js-resource-timing-20261102",
+      "sha": "05b7b49b2b4d015389bbfcf4c97f00a04a589313",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 338,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/carousel-capture-once-20261024",
+      "sha": "463d0738ba29790f010e49e2d2578a676494f0a7",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 991,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/ci-analytics-hardening",
+      "sha": "326d0d2728ec66dab34df92573dbba88ee78d6f1",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3692,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/ci-scoped-pr-acceptance-20261017",
+      "sha": "b90933526d39d5e11182634d98337075d4a324af",
+      "status": "diverged",
+      "ahead": 6,
+      "behind": 1288,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/companion-clock-single-format-20261023",
+      "sha": "5b9daf3548c0020b272144738db693e16227d033",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1003,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/companion-daily-calendar-cache-20261023",
+      "sha": "2e8e3f214a19c05c4f18d365941859c10306c0d1",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1014,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/companion-minute-update-20261026",
+      "sha": "c9d5fe18a916aef8b8606cf1687b3a829c212032",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 814,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/discovery-query-normalization-20261029",
+      "sha": "ed4280f8fa7a42c6ed62a6ca78d677719a9a1c1c",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 470,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/drop-orphaned-transparency-folio-css-20261027",
+      "sha": "bea72de828147b216c4d1ca355466ea9f208f6b9",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 434,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/faith-detail-route-css-20261029",
+      "sha": "49d5d19fcbb53370999270e39eae81acd6390b26",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 716,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/faith-visible-media-20261027",
+      "sha": "78eb27428af6df189a9b5a49a2c4c1d895e77095",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/home-appeal-payability-projection-20261022",
+      "sha": "f447cb54d342941b93b298b701d78e1f9fc03586",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1149,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/impact-identity-media-projection-20261021",
+      "sha": "820dd61f1d998107fbe669944749e4d6d3e8e2a7",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1191,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/impact-programme-one-pass-classification-20261029",
+      "sha": "90d415939d17a8a16578ab751e5b2c0ba5df190a",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 494,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/initiative-public-relations-projection-20261022",
+      "sha": "9263af5c990cd946f24ccc73e3d45051936f9674",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1122,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/media-viewer-option-queries-20261027",
+      "sha": "79f6b7dd006929b54473fd5f887bca752c88c5dc",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/mobile-profile-harness-20261026",
+      "sha": "ace2fb1fcbb16d28abd31017ad06374f52030f6d",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 825,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/next16-route-css-attribution-20261025",
+      "sha": "1d1ff742f6c3404e4f6f6f8fc1eef9044729e9d3",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 852,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/next16-route-js-attribution-20261025",
+      "sha": "3e2a0169f0e33895c98f1a0a780c3488011cb590",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 850,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/our-work-unused-initiative-css-20261029",
+      "sha": "c36093538931cdf673202ca34407350107931887",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 722,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/public-delivery-hardening",
+      "sha": "15dd3aa6352a7cf0d962f8ddbdc2c89e9d31f86f",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3842,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/public-media-archive-first-page-count-20261022",
+      "sha": "96abe0cfe8acde3e92ceed30945f91cff4d24950",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1105,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/public-route-css-observation-20261025",
+      "sha": "c91c0861fe218166ebd46e2411fbc34c5d0da7eb",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 910,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/remove-unused-faith-hero-css-20261023",
+      "sha": "9e06cef6f8237471d8794c5dba3ca8cc6b241ec3",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1085,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/request-detail-user-projection-20261027",
+      "sha": "6a73968417a21ff1b54223d0a1aed7d2af285f94",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/responsive-local-public-media",
+      "sha": "21490c231f6f1ead907b90f724cb1c9578acd387",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3919,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/retired-detail-hero-css-20261023",
+      "sha": "a1c3827b1d1dc7799cd77bf0dd8e3f64c8a66a1a",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1086,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/route-css-recovery-20261030",
+      "sha": "964323b8c961dc175984b9c071ea2befe59ac920",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 764,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/stories-media-page-bound-20261026",
+      "sha": "9b2555802a988f1b916804327a2b900823ca9fbe",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 831,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "perf/team-reorder-bounded-writes-20261103",
+      "sha": "c8c8f7f7a9a1e2e6b972582d38c7ded7b4f2240f",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 311,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "phase-public-site-rebuild",
+      "sha": "a6def67423b2bde4203548026acd0b5f67ca5eae",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1872,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "polish/homepage-seam-carousel-20261005",
+      "sha": "c66b9e6855ba4843393b9a520ec16c482ebb9c48",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2155,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "qa/curated-gallery-render-reconciliation-20260930",
+      "sha": "525b0f280d63547090e252659283b9932d62dc80",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2409,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "refactor/page-hero-fallback-cascade-20261026",
+      "sha": "01ad1983a9ba29f64f0f8f309c4b3a1138c0a541",
+      "status": "diverged",
+      "ahead": 3,
+      "behind": 794,
+      "files": 5,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "rehearsal/rollback-baseline-2026-09-18",
+      "sha": "4f7cbafb87e8c7d75fd7191d7bcc7a83c9320a3d",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3603,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "release/owner-approved-cutover-20261009",
+      "sha": "169162193d4ec66abd60ec8470efe6813f21153b",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1873,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "security/guard-s3-access-key-ids-20261011",
+      "sha": "ec6c012c6467b58d5d12945d1a263cc733372a36",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 1826,
+      "files": 1,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/admin-anonymous-access-boundaries-20261012",
+      "sha": "7bee20371842149140da74d70433d16795d114ba",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 1823,
+      "files": 1,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/admin-boundary-route-inventory-20261025",
+      "sha": "c186d2c2ee37a6f19a65eda04abdc3d8855de31d",
+      "status": "diverged",
+      "ahead": 5,
+      "behind": 892,
+      "files": 4,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/admin-document-authorization-20261026",
+      "sha": "461222553ade9f339da3e540e12d1aa7ace748a9",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 480,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/admin-media-carousel-session-denials-20261028",
+      "sha": "11042770ec0be4e71bbc1759126e1a803162ca38",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/admin-operational-simulation",
+      "sha": "7db1aec2a9db5a108c5e87ceebc84439c76e1f25",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3818,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/admin-route-guard-comment-spoof-20261104",
+      "sha": "ce3416a5c04d21bf25911c2a6250a5c1d6b0d870",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 276,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/admin-session-expiry-boundaries-20261025",
+      "sha": "28d42a5ce560bbb0f7df9ba5e022e646aa92b36e",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 854,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/af-r007-database-admin-secret-values-20261105",
+      "sha": "c57729579d0e7689b6fab717eb2d80b4e6e043be",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 237,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/af-r012-action-nested-guard-decoy-20261106",
+      "sha": "25ad873e98e360faf84390efab327b70f593848e",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 212,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/af-r012-async-export-action-inventory-20261106",
+      "sha": "61b5695ea080208b08edb218a08cf9aa297dcce3",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 206,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/af-r012-conditional-guard-failclosed-20261106",
+      "sha": "6b2008eaa5a63ddf07c638ec8e90145ddf78a9c2",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 161,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/af-r012-donation-detail-permission-boundaries-20261108",
+      "sha": "b7e3d4cf8c8c2d05adb3a443241d593f4539e07f",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 37,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/af-r012-exported-api-const-guard-20261106",
+      "sha": "70ac217c9eb66b2d8ecb15b47c8c6ef455369528",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 202,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/af-r012-exported-handler-guards-20261105",
+      "sha": "04ff4d005aa665dc54733f4926d3272060b498f7",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 241,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/af-r012-optional-loop-guard-inventory-20261106",
+      "sha": "adfeac7ed1c7b20e3aa3c9e093f5fc0f35179868",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 134,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/af-r012-optional-loop-switch-guards-20261106",
+      "sha": "35953be3dec15f50cfab8caed67d768cb48da385",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 123,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/af-r012-private-document-download-boundaries-20261108",
+      "sha": "c454f905aec68bc86287f9c9c62056b29f895d9e",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 12,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/af-r012-retention-action-deny-before-mutation-20261109",
+      "sha": "8508530644cecc9e4331c4108981351184746141",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 2,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/af-r012-retention-page-permission-before-reads-20261109",
+      "sha": "8fa0ac8a16286b5e2149e2e83d242de17ef37cea",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/af-r012-try-exit-guard-inventory-20261106",
+      "sha": "1686512a2b56299ac131e9c0e377094849e5561c",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 149,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/af-r012-ts-wrapped-action-guards-20261106",
+      "sha": "1885c5f391066733d236b386aa30ee0bddaf4414",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 105,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/af-r012-unreachable-admin-guard-20261106",
+      "sha": "3aeb6af8ce4c036e9389d031c13a03c8dce4a616",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 178,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/af-r047-css-unmatched-manifest-entry-20261106",
+      "sha": "3d1b258bea41daa45e40d2a05aab98968dd4acaa",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 216,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/af-r048-cls-session-overflow-20261106",
+      "sha": "18154a8de18b4ead4fd34b6b7b6ec3f0d863ddab",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 189,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/af-r069-label-association-lint-20261106",
+      "sha": "26becd7872ce9f65813aceeb2ba924a6610797a7",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 197,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/af-r080-inert-css-title-20261105",
+      "sha": "282bcabb8148a2d400591b37dc27797ce3cfd711",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 244,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/am07-csp-payment-security-20261011",
+      "sha": "441dd3f939a9046a6238e7b3eb43a35232e45d8a",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 1827,
+      "files": 1,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/am07-csp-razorpay-contract-20261011",
+      "sha": "4be51fa87e94926fa4753535700cf6108282ee41",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 1827,
+      "files": 1,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/am07-csp-security-synced-20261011",
+      "sha": "ef92c91c9c145ebc83e3143e7f3edaca1b4d1b77",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 1823,
+      "files": 1,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/am11-assistance-rapid-navigation-20261011",
+      "sha": "7d62f24a265fed1ec1d9203d79634626be066a45",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 1829,
+      "files": 1,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/appeal-action-authorization-20261026",
+      "sha": "f52ba9c0ad3df6c538bcb43634f6147ab6397bd0",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 848,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/assistance-action-authorization-20261027",
+      "sha": "abdaa3ed37779bc1ee958add8c0b291880d21824",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 793,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/browser-e2e-accessibility",
+      "sha": "5113aa0af742547c6829d5821dd5ee67971b51c0",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3861,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/document-retention-authorization-20261026",
+      "sha": "a008c84deeb9e9f43c8dd4960ffcdd324d35b37e",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 816,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/donation-assistance-journeys",
+      "sha": "4279035c0b3a7e18b9e09d966c8d25bf2f05fc01",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3828,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/donation-reconciliation-authorization-20261026",
+      "sha": "ff3aba49e52cf5b75aef7a36caf6c0625b773cb8",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 816,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/notification-authorization-boundaries-20261026",
+      "sha": "125f1e0b0e7f2a303b0b964de274cc46fa9c3373",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 833,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/password-work-factor-ceilings-20261012",
+      "sha": "02ef12c05643835e60b687b53893fd03d7ea81c2",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 1600,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/private-record-access-boundaries-20261012",
+      "sha": "bb55b290f1fc63b49c291d6651572d02dce7937b",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 1823,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/public-critical-text-resize-20261104",
+      "sha": "9403b8c1fc676845e8f4b352294f297fac3726c5",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 291,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/public-exposure-boundaries-20261025",
+      "sha": "29abca0d02c0aa99f63bd48bf5d34cccac0fe23d",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 901,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/public-llms-index-contract-20261025",
+      "sha": "31daf54bbe6737f37454b0f3ab03c424b37bd51b",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 887,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/railway-iac-inert-cron-preview-20261025",
+      "sha": "bee2d9fd236516da9aef1c846551e91d6dc0c5a9",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 865,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/railway-iac-parity-preflight-20261025",
+      "sha": "d0757f2f4b96505de115a0bcda80001d842ba574",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 868,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/railway-iac-worker-parity-20261025",
+      "sha": "b558bfe1bbd9250bc6584fb8a37a6019e820ed4f",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 857,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/route-css-rule-usage-20261026",
+      "sha": "0783d6272a4a48d33e80bab800f6afde8fb0b84b",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 420,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/staging-launch-acceptance",
+      "sha": "c839a49fff3d552e3c7a3f0bcb9416d474d63e26",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3949,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "test/team-actions-authorization-20261026",
+      "sha": "ae34830242ae7ca5e1ca69c05cb94fcf34ed398e",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 821,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "ui/about-origin-media",
+      "sha": "46067828a9f2296260d9f53f25f255e38ea334ed",
+      "status": "diverged",
+      "ahead": 4,
+      "behind": 3713,
+      "files": 3,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "ui/admin-appeal-update-unpublish",
+      "sha": "001f30c08ec619ab152bbf5484a6c6119a9d6000",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 3703,
+      "files": 1,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "ui/appeals-completed-case-media",
+      "sha": "9a82f9be03a61ae12b9ac8f10d5eb62bcc542510",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 3714,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "ui/get-involved-hero-media",
+      "sha": "08748696c9fa474c4719465a75c2c4d0e13546ef",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 3711,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "ui/hierarchical-page-heroes",
+      "sha": "5ac879a563d0b6fcda78605c8b48b44c10d3b617",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3874,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "ui/homepage-programme-media",
+      "sha": "08cedc83e93a182cd6e3b552de22d8a2c4fd1097",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3718,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "ui/impact-hero-media",
+      "sha": "55f43bed8f35386055af4d0d6955208c70247206",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 3715,
+      "files": 1,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "ui/our-work-hero-media",
+      "sha": "1fbe84d4a14c8b13c6e10409b4941d37ab67dec2",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3716,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "ui/taleem-sponsorship-hero-media",
+      "sha": "d992b844d468db5fe9509a0739aed77e1a005544",
+      "status": "diverged",
+      "ahead": 2,
+      "behind": 3712,
+      "files": 2,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "wip/pr282-cwv-failclosed-20261012",
+      "sha": "5d42437bc4e12799f0b51b01ba7966c7d209642b",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 1764,
+      "files": 9,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "wip/private-fund-ledger-handoff-20261014",
+      "sha": "134fe1d7218e25dfe21fb2991d7f468bf667ce95",
+      "status": "diverged",
+      "ahead": 254,
+      "behind": 1572,
+      "files": 214,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "work/background-assets-correction-2026-09-18",
+      "sha": "258351293468a9d64dfeae94282143f0a2009be2",
+      "status": "diverged",
+      "ahead": 1,
+      "behind": 3459,
+      "files": 6,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "work/backgrounds-razorpay-readiness-2026-09-18",
+      "sha": "b4b0a1b022a4d02443ecd39e8936e07593bd11c5",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3400,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "work/launch-readiness-batch-2026-09-18",
+      "sha": "a32bddca8390b6d22f46389fcdff5f2ea3f1adab",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3460,
+      "files": 0,
+      "error": false,
+      "protected": false
+    },
+    {
+      "name": "work/uiux-audit-2026-09-19",
+      "sha": "39207a86c705e031f2ff25f2f10ba2c2b476d19f",
+      "status": "behind",
+      "ahead": 0,
+      "behind": 3291,
+      "files": 0,
+      "error": false,
+      "protected": false
+    }
+  ]
+}

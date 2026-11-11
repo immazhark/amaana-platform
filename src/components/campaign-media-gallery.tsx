@@ -5,7 +5,7 @@ import { UIIcon } from "./ui-icon";
 
 import Image from "next/image";
 import { getPublicImageDimensions } from "@/lib/public-image-dimensions";
-import { isCspCompatiblePublicImageUrl, isPrivateAppMediaUrl, normalizeSafePublicMediaUrl } from "@/lib/public-media";
+import { getPublicImageOptimizationUrl, isCspCompatiblePublicImageUrl, isPrivateAppMediaUrl, normalizeSafePublicMediaUrl } from "@/lib/public-media";
 import { adjacentGalleryId } from "@/lib/gallery-selection";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import styles from "./campaign-media-gallery.module.css";
@@ -21,10 +21,6 @@ export type CampaignGalleryItem = {
   width?: number | null;
   height?: number | null;
 };
-
-function canOptimizeLocally(url: string) {
-  return url.startsWith("/media/") || url.startsWith("/brand/");
-}
 
 export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }) {
   const safeItems = useMemo(() => {
@@ -136,6 +132,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
         {safeItems.map((item, index) => {
           const graphicAsset = item.graphicArtwork === true;
           const { width, height } = getPublicImageDimensions(item);
+          const optimizedSrc = getPublicImageOptimizationUrl(item.url);
                     return (
           <figure className={`${styles.card} ${graphicAsset ? styles.graphicCard : ""}`} key={item.id}>
             <button
@@ -145,7 +142,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
               onClick={event => { openerRef.current = event.currentTarget; setActiveId(item.id); }}
               aria-label={`Enlarge image ${index + 1} of ${safeItems.length}: ${item.alt ?? "programme photograph"}`}
             >
-              {canOptimizeLocally(item.url) ? <Image src={item.url} alt={item.alt ?? ""} width={width} height={height} sizes="(max-width: 900px) 50vw, 33vw" loading="lazy" /> : <img src={item.url} alt={item.alt ?? ""} width={width} height={height} loading="lazy" decoding="async" />}
+              {optimizedSrc ? <Image src={optimizedSrc} alt={item.alt ?? ""} width={width} height={height} sizes="(max-width: 900px) 50vw, 33vw" loading="lazy" /> : <img src={item.url} alt={item.alt ?? ""} width={width} height={height} loading="lazy" decoding="async" />}
               <span className={styles.openLabel}>Enlarge</span>
             </button>
             {item.caption ? <figcaption>{item.caption}</figcaption> : null}
@@ -156,6 +153,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
 
       {active ? (() => {
         const { width, height } = getPublicImageDimensions(active);
+        const optimizedSrc = getPublicImageOptimizationUrl(active.url);
                 return (
         <div className={styles.backdrop} role="presentation" onPointerDown={event => {
           if (event.currentTarget === event.target) close();
@@ -173,7 +171,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
               <span id={dialogTitleId} aria-live="polite" aria-atomic="true">Image {activeIndex + 1} of {safeItems.length}: {active.alt ?? "programme photograph"}</span>
               <button ref={closeRef} type="button" onClick={close}>Close</button>
             </div>
-            {canOptimizeLocally(active.url) ? <Image className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} sizes="90vw" /> : <img className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} />}
+            {optimizedSrc ? <Image className={styles.fullImage} src={optimizedSrc} alt={active.alt ?? ""} width={width} height={height} sizes="90vw" /> : <img className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} />}
             {active.caption ? <p id={dialogCaptionId} className={styles.caption}>{active.caption}</p> : null}
             {safeItems.length > 1 ? (
               <div className={styles.controls}>

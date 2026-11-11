@@ -32,7 +32,13 @@ function isActivePath(pathname: string, href: string) {
 export function SiteHeader() {
   const [openForPath, setOpenForPath] = useState<string | null>(null);
   const pathname = usePathname();
-  const open = openForPath === pathname;
+  const [observedPath, setObservedPath] = useState(pathname);
+  // History/programmatic navigation must retire the old route's menu state.
+  if (observedPath !== pathname) {
+    setObservedPath(pathname);
+    setOpenForPath(null);
+  }
+  const open = observedPath === pathname && openForPath === pathname;
   const toggleRef = useRef<HTMLButtonElement>(null);
   const mobileNavRef = useRef<HTMLElement>(null);
   const closeMenu = () => setOpenForPath(null);

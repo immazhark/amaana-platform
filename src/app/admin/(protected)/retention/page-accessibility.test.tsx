@@ -109,3 +109,74 @@ it("announces both private document tabs while preserving each record link", asy
     expect(anchor).toContain('Open private document ↗<span class="sr-only"> (opens in a new tab)</span>');
   }
 });
+
+
+describe("retention review-after date on non-India servers", () => {
+  it.each([
+    ["2027-01-01T00:00:00.000Z", "1/1/2027"],
+    ["2027-06-01T00:00:00.000Z", "1/6/2027"],
+  ])("preserves the selected India review day for %s", async (reviewAfter, expectedDay) => {
+    vi.stubEnv("TZ", "America/Los_Angeles");
+    try {
+      mocks.documents.mockResolvedValue([documentRows[0]]);
+      mocks.events.mockResolvedValue([{
+        id: "synthetic-review",
+        entityType: "AssistanceRequest",
+        entityId: "synthetic-request-1",
+        action: "assistance.document_retention_reviewed",
+        metadata: { documentId: "synthetic-one", reason: "Synthetic reason", reviewAfter },
+        createdAt: new Date("2026-12-31T18:31:00.000Z"),
+        actor: { name: "Synthetic reviewer" },
+      }]);
+      const html = renderToStaticMarkup(await RetentionReviewPage({ searchParams: Promise.resolve({}) }));
+      expect(html).toContain(`review after ${expectedDay}`);
+      expect(mocks.permission).toHaveBeenCalledWith("assistance.approve");
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+});
+
+describe("private retention page authorization precedes all evidence queries", () => {
+  it.each([
+    { caseName: "anonymous", message: "Authentication required", params: {} },
+    { caseName: "wrong role in eligible view", message: "Permission denied", params: { state: "eligible" } },
+    { caseName: "expired session in active view", message: "Session expired", params: { state: "active", page: "2" } },
+    { caseName: "revoked reviewer on later page", message: "Access revoked", params: { page: "3" } },
+    { caseName: "malformed filter", message: "Authentication required", params: { state: "unrecognized", page: "-9" } },
+    { caseName: "far-page query", message: "Permission denied", params: { state: "eligible", page: "999999" } },
+  ])("blocks $caseName before database access", async ({ message, params }) => {
+    mocks.permission.mockRejectedValueOnce(new Error(message));
+
+    await expect(RetentionReviewPage({ searchParams: Promise.resolve(params) })).rejects.toThrow(message);
+
+    expect(mocks.permission).toHaveBeenCalledExactlyOnceWith("assistance.approve");
+    expect(mocks.count).not.toHaveBeenCalled();
+    expect(mocks.documents).not.toHaveBeenCalled();
+    expect(mocks.events).not.toHaveBeenCalled();
+  });
+
+  it("does not start any private query while permission verification is pending", async () => {
+    let grantPermission: ((value: { id: string }) => void) | undefined;
+    const pendingPermission = new Promise<{ id: string }>(resolve => {
+      grantPermission = resolve;
+    });
+    mocks.permission.mockReturnValueOnce(pendingPermission);
+    mocks.documents.mockResolvedValue([]);
+
+    const render = RetentionReviewPage({ searchParams: Promise.resolve({ state: "eligible" }) });
+
+    expect(mocks.count).not.toHaveBeenCalled();
+    expect(mocks.documents).not.toHaveBeenCalled();
+    expect(mocks.events).not.toHaveBeenCalled();
+
+    if (!grantPermission) throw new Error("Permission test promise was not initialised");
+    grantPermission({ id: "synthetic-reviewer" });
+    await render;
+
+    expect(mocks.permission).toHaveBeenCalledExactlyOnceWith("assistance.approve");
+    expect(mocks.count).toHaveBeenCalledTimes(3);
+    expect(mocks.documents).toHaveBeenCalledTimes(1);
+    expect(mocks.events).not.toHaveBeenCalled();
+  });
+});

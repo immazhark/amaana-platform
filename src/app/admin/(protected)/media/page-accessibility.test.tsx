@@ -6,7 +6,7 @@ vi.mock("@/lib/auth", () => ({ requirePermission: mocks.permission, hasPermissio
 vi.mock("@/lib/prisma", () => ({ prisma: {
   mediaAsset: { count: mocks.count, groupBy: mocks.empty, findMany: mocks.assets },
   cause: { findMany: mocks.empty }, initiative: { findMany: mocks.empty },
-  story: { findMany: mocks.empty }, faithContent: { findMany: mocks.empty }, auditEvent: { findMany: mocks.reviews },
+  story: { findMany: mocks.empty }, faithContent: { findMany: mocks.empty }, appeal: { findMany: mocks.empty }, auditEvent: { findMany: mocks.reviews },
 } }));
 vi.mock("@/lib/storage", () => ({ getPublicMediaStorageReadiness: () => ({ uploadReady: false }) }));
 vi.mock("@/components/curated-gallery-importer", () => ({ CuratedGalleryImporter: () => null }));
@@ -53,7 +53,7 @@ describe("media card accessible labels", () => {
 
 
 it("announces each media asset tab without changing its URL", async () => {
-  mocks.assets.mockResolvedValue(assets.map(asset => ({ ...asset, publicUrl: `https://example.invalid/${asset.id}.webp` })));
+  mocks.assets.mockResolvedValue(assets.map(asset => ({ ...asset, isPublic: true, publicUrl: `https://example.invalid/${asset.id}.webp` })));
   const html = renderToStaticMarkup(await AdminMediaPage({ searchParams: Promise.resolve({}) }));
   for (const asset of assets) {
     const anchor = [...html.matchAll(/<a\b[^>]*>[\s\S]*?<\/a>/g)].map(match => match[0]).find(link => link.includes(`href="https://example.invalid/${asset.id}.webp"`));
@@ -71,9 +71,41 @@ it.each([
     expect(Intl.DateTimeFormat().resolvedOptions().timeZone).toBe(process.env.AMAANA_EXPECT_TEST_ZONE);
   }
   mocks.reviews.mockResolvedValue([{
-    entityId: "synthetic-one", metadata: {}, createdAt: new Date(instant), actor: { name: "Synthetic reviewer" },
+    entityId: "synthetic-one", action: "media.privacy_reviewed", metadata: {}, createdAt: new Date(instant), actor: { name: "Synthetic reviewer" },
   }]);
   const html = renderToStaticMarkup(await AdminMediaPage({ searchParams: Promise.resolve({}) }));
   expect(html).toContain(`Reviewed by Synthetic reviewer on ${date} (IST).`);
   expect(mocks.permission).toHaveBeenCalledWith("content.view");
+});
+
+it("does not advertise a reserved URL on an unpublished media record", async () => {
+  mocks.assets.mockResolvedValue(assets.map(asset => ({ ...asset, isPublic: false, publicUrl: `/media/${asset.id}.webp` })));
+  const html = renderToStaticMarkup(await AdminMediaPage({ searchParams: Promise.resolve({}) }));
+  for (const asset of assets) {
+    expect(html).not.toContain(`href="/media/${asset.id}.webp"`);
+  }
+  expect(html).toContain("Private review: the image URL is not publicly accessible until approved.");
+});
+
+it("selects only linked content titles for media cards", async () => {
+  mocks.assets.mockResolvedValue([{
+    ...assets[0],
+    initiative: { title: "Synthetic linked initiative" },
+    story: null,
+    cause: null,
+    faithContent: null,
+  }]);
+
+  const html = renderToStaticMarkup(await AdminMediaPage({ searchParams: Promise.resolve({}) }));
+
+  expect(mocks.permission).toHaveBeenCalledWith("content.view");
+  expect(mocks.assets).toHaveBeenCalledWith(expect.objectContaining({
+    select: expect.objectContaining({
+      cause: { select: { title: true } },
+      initiative: { select: { title: true } },
+      story: { select: { title: true } },
+      faithContent: { select: { title: true } },
+    }),
+  }));
+  expect(html).toContain("Synthetic linked initiative");
 });
