@@ -17,23 +17,28 @@ describe("AF-R001 Next.js supported security baseline", () => {
       packages: Record<string, { version?: string; dependencies?: Record<string, string>; devDependencies?: Record<string, string>; optionalDependencies?: Record<string, string> }>;
     };
     const version = manifest.dependencies.next;
+    expect(typeof version).toBe("string");
+    if (!version) throw new Error("Next.js dependency is not declared");
     const parsed = /^(\d+)\.(\d+)\.(\d+)$/.exec(version);
     expect(parsed, "Use an exact version, not a semver range").not.toBeNull();
-    const [major, minor, patch] = parsed!.slice(1).map(Number);
+    if (!parsed) throw new Error("Next.js version must be an exact semantic version");
+    const major = Number(parsed[1]);
+    const minor = Number(parsed[2]);
+    const patch = Number(parsed[3]);
     expect(
       major > 16 || (major === 16 && (minor > 4 || (minor === 4 && patch >= 6))),
       "Next.js 16.4.2 predates the seven November 2026 security fixes; use 16.4.6 or a later supported stable release",
     ).toBe(true);
 
     expect(manifest.devDependencies["eslint-config-next"]).toBe(version);
-    expect(lock.packages[""].dependencies?.next).toBe(version);
-    expect(lock.packages[""].devDependencies?.["eslint-config-next"]).toBe(version);
-    expect(lock.packages["node_modules/next"].version).toBe(version);
-    expect(lock.packages["node_modules/eslint-config-next"].version).toBe(version);
-    expect(lock.packages["node_modules/@next/env"].version).toBe(version);
-    expect(lock.packages["node_modules/@next/eslint-plugin-next"].version).toBe(version);
+    expect(lock.packages[""]?.dependencies?.next).toBe(version);
+    expect(lock.packages[""]?.devDependencies?.["eslint-config-next"]).toBe(version);
+    expect(lock.packages["node_modules/next"]?.version).toBe(version);
+    expect(lock.packages["node_modules/eslint-config-next"]?.version).toBe(version);
+    expect(lock.packages["node_modules/@next/env"]?.version).toBe(version);
+    expect(lock.packages["node_modules/@next/eslint-plugin-next"]?.version).toBe(version);
 
-    const swc = lock.packages["node_modules/next"].optionalDependencies ?? {};
+    const swc = lock.packages["node_modules/next"]?.optionalDependencies ?? {};
     for (const [name, declared] of Object.entries(swc)) {
       if (!name.startsWith("@next/swc-")) continue;
       expect(declared).toBe(version);
