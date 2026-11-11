@@ -136,6 +136,8 @@ jobs:
         run: node --test scripts/test-public-data-boundaries.mjs
       - name: Guard client-bundle secret scanner behavior
         run: node --test scripts/test-client-secret-boundary.mjs
+      - name: Guard Cloudflare analytics CSP denial without relaxing Razorpay checkout
+        run: node --experimental-strip-types --test scripts/test-cloudflare-beacon-csp.mjs
       - name: Enforce audited muted text contrast
         run: node --test scripts/test-audited-muted-contrast.mjs
       - name: Guard public CSS minimum type size
