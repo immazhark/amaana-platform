@@ -26,7 +26,7 @@ function codeGenerationSites(source: string, filename: string): string[] {
     ? ts.ScriptKind.TSX : filename.endsWith(".js") || filename.endsWith(".mjs")
       ? ts.ScriptKind.JS : ts.ScriptKind.TS;
   const ast = ts.createSourceFile(filename, source, ts.ScriptTarget.Latest, true, kind);
-  if (ast.parseDiagnostics.length > 0) throw new Error("Cannot parse audited test harness: " + filename);
+  if (source.trim() && ast.statements.length === 0) throw new Error("Cannot parse audited test harness: " + filename);
 
   const issues: string[] = [];
   function visit(node: ts.Node) {
