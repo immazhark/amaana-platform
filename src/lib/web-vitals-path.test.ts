@@ -35,7 +35,20 @@ describe("privacy-safe public performance route grouping", () => {
 describe("Web Vitals cross-route privacy boundary", () => {
   it("allows a sampled document while it remains on the same public page", () => {
     expect(canRecordWebVitalOnCurrentRoute("/about", "/about")).toBe(true);
-    expect(canRecordWebVitalOnCurrentRoute("/appeals/:slug", "/appeals/an-appeal")).toBe(true);
+    expect(canRecordWebVitalOnCurrentRoute("/appeals/an-appeal", "/appeals/an-appeal")).toBe(true);
+  });
+  it("does not equate different public documents just because their slugs share an anonymous bucket", () => {
+    for (const section of ["appeals", "stories", "our-work", "programmes", "faith-and-reflections"]) {
+      const original = `/${section}/first-document`;
+      const later = `/${section}/second-document`;
+      expect(normalizePublicWebVitalPath(original)).toBe(normalizePublicWebVitalPath(later));
+      expect(canRecordWebVitalOnCurrentRoute(original, original)).toBe(true);
+      expect(canRecordWebVitalOnCurrentRoute(original, later)).toBe(false);
+      expect(canRecordWebVitalOnCurrentRoute(original, later, true)).toBe(false);
+    }
+  });
+  it("does not interpret a normalized aggregation token as the original document pathname", () => {
+    expect(canRecordWebVitalOnCurrentRoute("/appeals/:slug", "/appeals/real-document")).toBe(false);
   });
   it("stops the reporter when navigation changes to a private or different section", () => {
     expect(canRecordWebVitalOnCurrentRoute("/about", "/donate")).toBe(false);
