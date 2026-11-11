@@ -17,3 +17,26 @@ export function canRecordWebVitalOnCurrentRoute(
     && currentPathname === initialDocumentPathname
     && normalizePublicWebVitalPath(initialDocumentPathname) !== null;
 }
+
+/**
+ * The browser document lives across client-side route transitions. Once its
+ * original page is left, later metrics cannot be attributed to a return visit,
+ * even if that return restores the exact initial pathname.
+ */
+export function createWebVitalDocumentGuard(initialDocumentPathname: string | null) {
+  let leftOriginalDocument = false;
+
+  return {
+    observeRoute(currentPathname: string | null): boolean {
+      if (currentPathname !== null && currentPathname !== initialDocumentPathname) {
+        leftOriginalDocument = true;
+      }
+      return !leftOriginalDocument
+        && canRecordWebVitalOnCurrentRoute(initialDocumentPathname, currentPathname ?? "");
+    },
+    canRecord(currentPathname: string, automatedBrowser = false): boolean {
+      return !leftOriginalDocument
+        && canRecordWebVitalOnCurrentRoute(initialDocumentPathname, currentPathname, automatedBrowser);
+    },
+  };
+}
