@@ -1,5 +1,32 @@
 # Amaana Master Reconciled Execution Plan — War-Footing Revision
 
+## Current verified 149-item status overlay — 12 November 2026 IST
+
+This section supersedes the **classification snapshot only** in the dated historical sections below. All 149 original item IDs and historical classifications remain preserved. It is an evidence-limited audit, not a declaration that every item was comprehensively re-tested.
+
+| Classification | Historical | Verified current | Change |
+|---|---:|---:|---:|
+| Completed | 1 | **4** | +3 |
+| Implemented (source/release acceptance pending) | 59 | **56** | −3 |
+| Partial | 61 | **62** | +1 |
+| Not started | 26 | **25** | −1 |
+| Superseded | 1 | **1** | 0 |
+| Not applicable | 1 | **1** | 0 |
+| **Total distinct original IDs** | **149** | **149** | **0** |
+
+Verified item transitions:
+- **AF-R001 → Completed:** security-patched Next.js 16.4.6 in #777, exact-head CI `43079743688`, ready `43084587114`, Railway deployment `72705246-69cc-4956-b9ef-73e1c319ade2` SUCCESS and matching public SHA `f25df78b900dccd3c131a5ed0ad48447572b1dc2`.
+- **AF-R007 → Completed:** server-secret client-bundle scanner negative tests in #777 fast job `130728942837` (names, values, canaries and bypass fixtures), production job `130730418097` scanned 111 built/public files, and matching released/public main above. This does **not** close historic exposure/provider rotation risks (AF-R005 remains Partial).
+- **AF-R011 → Completed:** #778 hosted RED `43086783254` found four `new Function` test-harness sites. Exact-head full CI `43100919160`, separate ready-state `43105246650`, guarded merge `47152209927ae5df8be185af5c0af13ef0658a9b`, Railway deployment `a41c9146-4ec8-40c7-a4c9-b8f3c57d3e3a` SUCCESS and independent public `/api/health/version`+readiness match. Test-only fix; no live payments.
+- **AF-R076 → Partial:** a read-only rendered-browser inspection of `/contact` on 12 November found native readable `mailto:` URLs for four main Contact links and the footer, while a raw page extractor saw Cloudflare-protected URLs before rendering. The original affected URL, no-JavaScript fallback and sitewide coverage remain unverified; no speculative config changes made.
+
+**Protected source main and public runtime:** `47152209927ae5df8be185af5c0af13ef0658a9b`, branch `main`, environment `production`, readiness `ready`. **Financial boundary:** draft #684 remains unmerged despite successful code CI; independent payee ownership, credited UTR/payment reconciliation and a separately reviewed production activation are required. No FCRA or statutory 80G certificates; maintain domestic INR and private-data locks.
+
+**Next unblocked work:** verify AF-R002/R003 dependency/advisory and actual runtime path, AF-R004/AF-R006 storage boundaries, and AF-R008/R009 structured-data rendering before further full-item reclassification. Source implementation, tests, merging, deployment and live acceptance remain separate fields. Historical sections below are dated evidence.
+
+---
+
+
 ## Verified engineering checkpoint — 25 October 2026 (#433 runtime, #434 tooling)
 
 The current live website is PR #433 merge SHA `b033e99982caaeb295726bf19df64ca1ffa7f7a3`: full CI `40129948886`, ready-state `40133153027`, Railway `a8d650de-9e24-4569-81d8-58d2b81e297b` SUCCESS, public version exact and readiness ready. Latest main commit `771cba2e0c0cfe364962bc8db0f43581f8d958e2` merges PR #434 (read-only route CSS measurement): full CI `40133473638`, ready-state `40136256260` passed. Railway `5d749e49-9b1a-4881-be8d-dd1a19f7e5b0` SKIPPED because only `scripts/**` and `.github/**` changed and neither matches runtime website watch patterns. Do not represent #434 as a runtime release. The authoritative measurement procedure is `docs/PUBLIC_ROUTE_CSS_MEASUREMENT.md`. AF-R057/AF-R068 route/state CSS coverage and AF-R042 physical accessibility evidence remain open; no actual LCP/INP/CLS measured by #434. Historic 149: 1 Completed, 59 Implemented, 61 Partial, 26 Not started, 1 Superseded, 1 Not applicable; unchanged. All historic sections below preserve their original evidence time and must not be mistaken for the latest release.

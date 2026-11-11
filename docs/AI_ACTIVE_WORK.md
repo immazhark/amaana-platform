@@ -1,4 +1,14 @@
-# Amaana implementation ownership — 11 November 2026 IST
+# Amaana implementation ownership — 12 November 2026 IST
+
+## Current effective checkpoint (supersedes dated handoff details below)
+
+**CHATGPT_ACTIVE** is the sole authorized repository implementation writer. Protected integration target: `main`. Release main `47152209927ae5df8be185af5c0af13ef0658a9b` merged PR #778 from exact head `58521d6047548d4c47956638736c7c4ae3dba258` after hosted RED `43086783254`, full exact-head CI `43100919160` (fast, database, production, browser, verify SUCCESS), separate ready-state `43105246650` (plan, readiness, verify SUCCESS), no unresolved review threads, and guarded SHA merge. Railway website deployment `a41c9146-4ec8-40c7-a4c9-b8f3c57d3e3a` SUCCESS at the merge SHA; independent public version/ready match `main`/`production` and `ready`. This was **test-only**; no payment/provider, schema, auth/RBAC, CSP, secret, cron or infrastructure change.
+
+Current scope: sequential evidence-led 149-item reconciliation, including AF-R002/R003/R004/R006/R008/R009; no new runtime branch is authorized by this note. Four verified classification changes (historical → current): AF-R001 Implemented → Completed, AF-R007 Implemented → Completed, AF-R011 Implemented → Completed, AF-R076 Not started → Partial. Current distribution: **4 Completed, 56 Implemented, 62 Partial, 25 Not started, 1 Superseded, 1 Not applicable = 149 distinct IDs**. AF-R076 Contact/footer in a JS-rendered browser shows native `mailto:`; original broken route and no-JS acceptance remain unverified. Source-implemented items without full evidence remain pending.
+
+Finance: draft PR #684 remains unmerged. New QR fallback needs independent receiving-owner/credited-transfer reconciliation, separately approved live activation scope and separate release gates. Existing Razorpay is not modified; live transaction verification was not performed. Notification worker remains parked.
+
+The entries below are preserved historical transfer context, **not** the latest task/PR/deployment status.
 
 State: **CHATGPT_ACTIVE**. The owner explicitly confirmed that the Codex session has stopped and authorized this ChatGPT session as sole repository implementation writer. One writer; independent reviewer activity stays read-only. Protected `main` remains the integration target.
 
@@ -10,6 +20,6 @@ PRs observed on handoff: #753 initially draft, head `216f2bc35cead55e47f80f1568f
 
 Railway production project `amaana-platform-staging`: website latest observed deployment `aeccc2f8-eb93-4ba4-8da7-3445e89df5c6` SLEEPING, built from `03667a783ac1f42db4f880f29a6b864421c4e6ec`; worker schedule `0 0 1 1 *` parked, preview historical failed, three buckets, no staged environment changes. SLEEPING is not itself failed; independently verified public version/readiness remains pending. Do not force deployment for source/runtime SHA alignment.
 
-Current task: AF-R011 test-only audit-harness containment (#778), branch fix/af-r011-no-dynamic-test-execution-20261112, base protected main f25df78b900dccd3c131a5ed0ad48447572b1dc2. Owner CHATGPT_ACTIVE; no competing writer observed. Hosted fail-first CI 43086783254, fast job 130753233550, reported four actual `new Function` sites: direct-transfer-navigation, donation-acknowledgement-lifecycle, donation-checkout-phase, donation-intention-reset. Replace all four test-only executable-source harnesses with source-bound TypeScript AST checks and negative synthetic mutations. No application, payment, webhook, DB, auth, CSP, public media, Railway or donor-data change. Validate fresh exact-head full CI, independent review, separate ready-state and SHA-guarded merge; public runtime separately after watched src/** release. Keep #684 activation held pending independent payee/routing/approval. Preserve original 149 unique items; derived ledger is evidence-only.
+Historical last in-flight task: AF-R011 (#778), completed and merged as recorded in the current effective checkpoint above.
 
 Previous Codex-active coordination content is preserved in Git history at blob `ee410bec8898e888ed419884fc83998a0863bb3e`; see accompanying handoff ledger for previous release evidence.
