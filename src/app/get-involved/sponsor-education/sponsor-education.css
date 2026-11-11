@@ -14,7 +14,7 @@
 .taleem-school{padding-block:clamp(3.75rem,6.5vw,6rem);color:#fffdf8;background:#2f4c7a var(--amaana-pattern) 0 0/104px 104px}
 .taleem-school-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.95fr);gap:clamp(2rem,4vw,4.5rem);align-items:start}
 .taleem-school .v2-section-label{color:#f0d56b;margin:0 0 1rem}
-.taleem-school h2,.taleem-closing h2{margin:0;font:500 clamp(2.45rem,4.6vw,3.5rem)/1.06 var(--af-font-display);letter-spacing:-.035em;text-wrap:balance}
+.taleem-school h2,.taleem-closing h2{margin:0;font:500 clamp(2.45rem,4.6vw,3.5rem)/1.14 var(--af-font-display);letter-spacing:-.035em;text-wrap:balance}
 .taleem-school-grid>div:last-child p{color:rgb(255 253 248 / 85%);line-height:1.75}
 .taleem-school-grid>div:last-child .taleem-school-lead{margin-top:0;color:#fffdf8;font:500 clamp(1rem,1.6vw,1.18rem)/1.75 var(--af-font-body,Arial,sans-serif)}
 .taleem-school .v2-button{margin-top:1rem}
