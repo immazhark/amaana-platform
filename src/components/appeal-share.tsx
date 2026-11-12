@@ -29,8 +29,23 @@ export async function runAppealShare(
   }
 }
 
+const publicShareOrigin = "https://amaanafoundation.org";
+
+function canonicalAppealShareUrl(path: unknown): string {
+  if (typeof path !== "string" || !path.startsWith("/") || path.startsWith("//") ||
+      path.includes("\\") || /[\u0000-\u001f\u007f]/.test(path)) return publicShareOrigin + "/";
+  try {
+    const url = new URL(path, publicShareOrigin);
+    if (url.origin !== publicShareOrigin || url.username || url.password) return publicShareOrigin + "/";
+    // URL queries may carry private record references; an outward share uses only its pathname.
+    return publicShareOrigin + url.pathname;
+  } catch {
+    return publicShareOrigin + "/";
+  }
+}
+
 export function AppealShare({ title, summary, path }: AppealShareProps) {
-  const canonicalUrl = `https://amaanafoundation.org${path[0] === "/" && path[1] !== "/" ? path : "/"}`;
+  const canonicalUrl = canonicalAppealShareUrl(path);
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`${title}\n\n${summary}\n\n${canonicalUrl}`)}`;
   const identity = JSON.stringify([title, summary, canonicalUrl]);
   const actionId = useRef(0);
