@@ -1,5 +1,9 @@
 # Amaana handoff ledger
 
+## 12 November 2026 IST — owner-directed Codex parallel implementation transfer
+
+Owner explicitly appointed Codex and requested independent parallel coding agents. CODEX_ACTIVE leads integration; separate isolated disjoint branches may implement in parallel under the current directive. Preserve #817/#818 and their exact-head evidence, financial #684 hold, protected checks and 149-item accounting. This supersedes earlier one-writer wording only for the coordinated team. Source base 6bd58c74252227dbce68ed35fa3d160f5f423078; Railway SUCCESS at that SHA; direct public HTTP returned 403. No financial, schema, infrastructure or notification activation.
+
 ## 12 November 2026 IST — independent carousel initial index regression
 
 Sole writer CHATGPT_ACTIVE; branch fix/scroll-carousel-nonfinite-start-20261112, from main 99fef460d493d21629f83f9612c33808e8ca8ec8. Independent draft #814 participation-link guard runs GREEN CI in parallel. This branch first adds synthetic ScrollCarousel NaN/Infinity/fractional initial-index tests at f6a003bb567ae7417d8be6c013096f70e7b87c8c; source unchanged until hosted RED proves failure. After reproducible RED, only finite/truncated initial index clamp is in scope. Full exact-head CI, separate promotion and guarded merge mandatory. No finance/payment, private identity, media publication, auth, schema, secrets, or infra change; old 149-item classifications unchanged. Current main runtime was live-verified at 99fef460d493d21629f83f9612c33808e8ca8ec8 before these draft changes.

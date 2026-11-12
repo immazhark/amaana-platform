@@ -1,5 +1,15 @@
 # Amaana implementation ownership — 12 November 2026 IST
 
+## Current owner directive — 12 November 2026 IST
+
+**Implementation lead: CODEX_ACTIVE.** Mohammed Mazhar Khan explicitly transferred repository ownership to this Codex session and authorized multiple implementation agents on independent enhancements/fixes. This supersedes the older single implementation-writer constraint for this coordinated team only. Each agent uses an isolated task branch/worktree with disjoint declared files; Codex coordinates shared files, exact-head acceptance and serialized protected SHA-guarded integration. No agent edits another agent's branch. Other sessions are not authorized to write concurrently.
+
+**Base:** protected main `6bd58c74252227dbce68ed35fa3d160f5f423078`. Existing #817 (story discovery relation guard) and #818 (Story/Faith detail relation guard) passed full exact-head CI at `119c78f0faae0aac335642067375583d28d8138d` / `ae6a6ed919bd6c42c3ae3dcca0fe7342ee083288`; ready-state promotion remains separate. Independent new tracks: public discovery/search, keyboard accessibility, and read-only audit tooling, each constrained to reproduced low-risk defects. Waiting CI never blocks another track. Existing required checks are retained.
+
+**Financial hold:** #684 remains draft until independent payee/UTR validation and separately scoped production activation. No live infrastructure, secrets, auth/RBAC, payment/webhook, schema, media publication or notification activation is authorized by this transfer. Canonical 149 counts remain 12 Completed / 48 Implemented / 62 Partial / 25 Not started / 1 Superseded / 1 Not applicable, active 135; no new closure claim.
+
+**Runtime:** Railway deployment `87b78136-8781-47f2-9a71-d9933b0dc344` SUCCESS at base SHA, website online. Independent HTTP version/readiness returned 403 in this workspace; public runtime acceptance remains unverified here. Rollback for each task is a narrow reviewed revert. Prior checkpoints below are historical.
+
 ## Current bounded implementation — public participation-link protocol safety (12 November 2026 IST)
 
 **Sole implementation writer:** CHATGPT_ACTIVE. **Task branch:** `fix/participation-card-safe-links-20261112`, from main `99fef460d493d21629f83f9612c33808e8ca8ec8`. PRs #810/#811/#812 have passed full and separate ready-state CI, merged behind expected-head protection, and reached Railway SUCCESS and independent public identity `99fef460d493d21629f83f9612c33808e8ca8ec8` (readiness ready). Source and deployment SHA match. Original #807/#808/#809 closed as superseded; their branches preserved. Finance #684 remains held.
