@@ -1,5 +1,9 @@
 # Amaana handoff ledger
 
+## 12 November 2026 IST — independent carousel initial index regression
+
+Sole writer CHATGPT_ACTIVE; branch fix/scroll-carousel-nonfinite-start-20261112, from main 99fef460d493d21629f83f9612c33808e8ca8ec8. Independent draft #814 participation-link guard runs GREEN CI in parallel. This branch first adds synthetic ScrollCarousel NaN/Infinity/fractional initial-index tests at f6a003bb567ae7417d8be6c013096f70e7b87c8c; source unchanged until hosted RED proves failure. After reproducible RED, only finite/truncated initial index clamp is in scope. Full exact-head CI, separate promotion and guarded merge mandatory. No finance/payment, private identity, media publication, auth, schema, secrets, or infra change; old 149-item classifications unchanged. Current main runtime was live-verified at 99fef460d493d21629f83f9612c33808e8ca8ec8 before these draft changes.
+
 ## 12 November 2026 IST — #805/#806 protected release and three clean independent successors
 
 Sole implementation writer CHATGPT_ACTIVE. PR #805 `b3d6ec34a0353ed9c68453e21b0bbbf63ea01dc4` passed full CI `43197255250` and ready-state `43210128728`; protected merge `1e536c50e50674720750d49aac71f2a41ac21592` corrects persistent mobile footer accordion state. PR #806 `00fc4feedb7cf52d10e1597a61a757d9c6ff1281` passed full CI `43195217606` and promotion `43210136576`; protected merge `1815c2692efea5937b4cc7db5be9fed2f974f4dc` rejects query-bearing URLs from public JSON-LD. Railway release `5b3c814a-8924-4035-ab1e-8419b2f65c31` SUCCESS, independently live-verifed main/version matched and readiness ready; no real payment exercised.
