@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { normalizeStructuredDataSiteUrl, serializeStructuredData } from "@/lib/structured-data";
 import { publicAppealShareCopy } from "@/lib/public-appeal-share";
 
@@ -9,13 +10,18 @@ type AppealStructuredDataProps = {
   highlySensitive?: boolean;
 };
 
-export function AppealStructuredData({
-  slug,
-  title,
-  summary,
-  isOpen,
-  highlySensitive = false,
-}: AppealStructuredDataProps) {
+const appealSchema = z.object({
+  slug: z.string().min(1).max(200).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  title: z.string().min(1).max(300).refine(value => value.trim().length > 0),
+  summary: z.string().min(1).max(5_000).refine(value => value.trim().length > 0),
+  isOpen: z.boolean(),
+  highlySensitive: z.boolean().optional(),
+}).strict();
+
+export function AppealStructuredData(props: AppealStructuredDataProps) {
+  const parsed = appealSchema.safeParse(props);
+  if (!parsed.success) return null;
+  const { slug, title, summary, isOpen, highlySensitive = false } = parsed.data;
   const siteUrl = normalizeStructuredDataSiteUrl();
   const appealUrl = `${siteUrl}/appeals/${slug}`;
   const { title: safeTitle, summary: safeSummary } = publicAppealShareCopy(title, summary, highlySensitive);
