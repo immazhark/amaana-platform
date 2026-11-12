@@ -1,0 +1,9 @@
+# AF-R080 — Public sitemap database slug boundary (12 November 2026 IST)
+
+**Writer:** CHATGPT_ACTIVE, sole repository implementation writer. **Scope:** this one source hardening task, separate from docs-only #803, financial #684 and merged discovery #802. Starting main `cbb113a1fdc44bc2a9ef7f0bd36eb08ecf5097ac`.
+
+**Reproduction:** `src/app/sitemap.ts` maps Published/verified DB rows directly to `/our-work/${slug}`, `/stories/${slug}`, `/faith-and-reflections/${slug}`, and `/appeals/${slug}`. Existing status, consent and confidentiality filters are important but do not validate the string value of a historical/imported slug. Mocked published records with query delimiter, `../`, fragment delimiter, or encoded slash would produce malformed, misleading discovery URLs. This is a potential source guard gap, not a claim that such records currently exist or have been indexed.
+
+**RED first:** `src/app/crawl-metadata.test.ts` adds a synthetic fixture with four malformed published slugs and four valid counterparts. Guard must exclude invalid while retaining valid, retaining existing indexing-disabled behavior. **GREEN to implement only after RED is verified:** add a strict canonical hyphenated slug predicate with the same format already used by existing public routing/structured-data guards, and filter DB sitemap entries before interpolation. No DB migration, schema, taxpayer/payment logic, publication toggles, media, production state or private record access. Keep appeal and faith review gates unchanged.
+
+**Acceptance:** exact-head fast/typecheck/lint, browser, production, database and security CI; independent review, separate ready-state, expected-head protected merge, then Railway SHA and public readiness. AF-R080 remains Not started/Partial pending complete rich-results live acceptance; do not close the original backlog row for this narrow guard. Rollback only this predicate, filtered maps and isolated tests/documentation.
