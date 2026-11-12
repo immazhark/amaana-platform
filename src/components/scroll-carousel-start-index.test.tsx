@@ -2,11 +2,12 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { ScrollCarousel } from "./scroll-carousel";
 
-function renderStartingAt(startAt: number) {
+function renderStartingAt(startAt: number, includeThird = false) {
   return renderToStaticMarkup(
     <ScrollCarousel label="Synthetic programme slides" startAt={startAt}>
       <p key="first">First reviewed slide</p>
       <p key="second">Second reviewed slide</p>
+      {includeThird ? <p key="third">Third reviewed slide</p> : null}
     </ScrollCarousel>,
   );
 }
@@ -24,7 +25,7 @@ describe("public carousel initial index boundary", () => {
   );
 
   it("truncates fractional initial positions before choosing an accessible slide", () => {
-    const html = renderStartingAt(1.75);
+    const html = renderStartingAt(1.75, true);
     expect(html).toContain('aria-valuenow="2"');
     expect(html).not.toContain('aria-valuenow="2.75"');
   });
