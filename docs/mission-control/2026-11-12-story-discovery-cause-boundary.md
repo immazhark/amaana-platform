@@ -7,3 +7,9 @@
 **Minimal GREEN scope:** one null-safe nested cause status check. No changes to user search, pagination, approved status logic, story copy, share links or media selection. No donor records, payment/UTR, tax, private media, auth/RBAC, schema, CSP, secrets, worker or infrastructure changes. Preserve existing public story approvals and privacy locks. The historical 149 classifications remain unchanged.
 
 **Release:** full exact-head fast/database/browser/production/final CI, independent review, separate ready-state verification, protected expected-head merge; verify Railway merged SHA and public version/readiness separately. A narrow scoped revert is the rollback. Only one repository writer; parallel review/test jobs may run independently.
+
+## Hosted RED and scoped GREEN evidence
+
+**Test-only head:** `9bb867862f684db82d3f0c485a6d94148d003885`. Hosted RED run `43262676719` fast job `131337937257` failed both added synthetic missing-cause relation cases with `TypeError: Cannot read properties of null (reading 'status')` at `src/lib/story-discovery.ts:8`. Other 2,985 tests passed (20 skipped). This proves the null dereference in source; no real published malformed record or beneficiary exposure was found.
+
+**GREEN source commit:** `8be73fb06d85330c543b968dde2926247e2b4b70`. Only nested `cause.status` check now uses an optional chain; the existing explicit published-state gates, direct published cause fallback, draft-name restrictions, search and pagination stay unchanged. Full GREEN exact-head CI and separate ready-state are required before any protected merge. Deployment and public readiness are independent later checks.
