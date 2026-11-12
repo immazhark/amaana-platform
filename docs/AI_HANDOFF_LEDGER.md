@@ -1,5 +1,12 @@
 # Amaana handoff ledger
 
+## 12 November 2026 IST — #805/#806 protected release and three clean independent successors
+
+Sole implementation writer CHATGPT_ACTIVE. PR #805 `b3d6ec34a0353ed9c68453e21b0bbbf63ea01dc4` passed full CI `43197255250` and ready-state `43210128728`; protected merge `1e536c50e50674720750d49aac71f2a41ac21592` corrects persistent mobile footer accordion state. PR #806 `00fc4feedb7cf52d10e1597a61a757d9c6ff1281` passed full CI `43195217606` and promotion `43210136576`; protected merge `1815c2692efea5937b4cc7db5be9fed2f974f4dc` rejects query-bearing URLs from public JSON-LD. Railway release `5b3c814a-8924-4035-ab1e-8419b2f65c31` SUCCESS, independently live-verifed main/version matched and readiness ready; no real payment exercised.
+
+Original #807/#808/#809 passed full and ready-state CI but conflicted on stale shared active-work header after #806 merge. Clean successors #810/#811/#812 preserve byte-identical source/test files and dedicated scope notes, omit stale shared header patch and require fresh exact-head full+ready gates, protected merges, distinct deployments and live verification. Do not delete old branches. Original 149-item totals unchanged: 12 Completed, 48 Implemented, 62 Partial, 25 Not started, 1 Superseded, 1 Not applicable; 135 active. #684 financial activation held. This is a docs-only coordination update; no runtime/provider/schema/private-data changes.
+
+
 ## 12 November 2026 IST — independent AF-FUNNEL public route source track
 
 Sole implementation writer CHATGPT_ACTIVE; branch `fix/af-funnel-static-discovery-paths-20261112`, base `164712b0eb1a2c54db4deb4f3b1283dc4cbdaaaa`. Four published static discovery URLs were excluded from anonymous page views/Web Vitals. RED test commit `1db2c2df7ad33f74267da1225b34e8492b5dbdfa`, source regex reproduced all four exclusions; GREEN `8355a88ca1357b422137b1b7fa93dbf79a87db63` expands exact static allowlist only, retaining nested/private exclusions. Fresh exact-head release CI, ready-state and protected merge required. This is not full AF-FUNNEL closure. No donor, payment, private data, schema, auth, media, credentials, worker or infrastructure changes. #799 previously merged; #800/#801 remain independent acceptance candidates, #684 financially held.
