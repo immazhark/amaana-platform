@@ -1,5 +1,13 @@
 # Source, finance and backlog reconciliation — 12 November 2026 IST
 
+## AF-R004 — verified missing server-only marker closure (12 November 2026 IST)
+
+The original P0 defect was the lack of an explicit server-only import on the module that initializes private/public S3 clients. Current `src/lib/storage.ts` starts with `import "server-only";`. The `scripts/test-public-data-boundaries.mjs` fail-closed guard checks that this is a real first statement (not a comment or later import) and deliberately removes/relocates it to show the negative test catches the defect. #784 full CI `43128164786` and separate ready-state `43132279837` passed; guarded merge `3c227d267dfc5ba65a2afa242a7bda0fd667d282` shipped this boundary. Both file blob SHAs are identical between that merge and inspected main `ab8e5e3d9229bd1abd6747f9cde7c4e77930a393`. Independently live-ready later release `d435cdf6bb027808eaf4f937b5ed74f26e919efc` included the unchanged files. This closes **only the exact missing explicit import**. It is not provider-credential validation, a client-import proof across every bundle, or a privacy/media approval. AF-R005 and AF-R006 remain separate.
+
+If this docs-only PR is fully accepted and merged, the original 149 become **12 Completed, 48 Implemented, 62 Partial, 25 Not started, 1 Superseded, 1 Not applicable**; clean active queue **135** (28 P0 / 72 P1 / 35 P2). No runtime change, storage operation, secret read, payment, schema or infrastructure change. Rollback: revert only the four narrow register/coordination files.
+
+---
+
 ## 12 November 2026 IST — AF-N17 bounded P0 error-handler closure
 
 **AF-N17 (P0) Implemented → Completed:** Inspected `src/app/media/[year]/[filename]/route.ts` at protected main `3af06b98cbe37a9e427da8d1fe001e6d9d5cab43`. The `prisma.mediaAsset.findFirst` publication-eligibility lookup is **inside the response try/catch**, so an injected database exception does not bypass the route error boundary. `src/app/media/[year]/[filename]/route.test.ts` simulates a rejected publication lookup and asserts: HTTP 503, `Cache-Control: no-store`, `Retry-After: 60`, `X-Robots-Tag: noindex, nofollow, noarchive`, empty body, and zero object-storage reads. Full exact-head #794 CI `43148647335` passed fast/database/production/browser/final verify; #794 ready-state `43151379635` passed, SHA-guarded merge `7bab5d566e772a50eb21c62b1ba36a75a4a18769` and Railway/public exact SHA/readiness separately verified. These specific route and test files are unchanged between `7bab5d566e772a50eb21c62b1ba36a75a4a18769` and `3af06b98cbe37a9e427da8d1fe001e6d9d5cab43`, whose newer code only modifies unrelated Team hero CSS/tests.
