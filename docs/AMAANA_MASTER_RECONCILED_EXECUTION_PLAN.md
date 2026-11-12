@@ -6,8 +6,8 @@ This section supersedes the **classification snapshot only** in the dated histor
 
 | Classification | Historical | Verified current | Change |
 |---|---:|---:|---:|
-| Completed | 1 | **8** | +7 |
-| Implemented (source/release acceptance pending) | 59 | **52** | −7 |
+| Completed | 1 | **10** | +9 |
+| Implemented (source/release acceptance pending) | 59 | **50** | −9 |
 | Partial | 61 | **62** | +1 |
 | Not started | 26 | **25** | −1 |
 | Superseded | 1 | **1** | 0 |
@@ -15,6 +15,8 @@ This section supersedes the **classification snapshot only** in the dated histor
 | **Total distinct original IDs** | **149** | **149** | **0** |
 
 Verified item transitions:
+- **AF-R009 → Completed:** original JSON-LD serializer unsafe-script character defect fixed by `serializeStructuredData()` escaping <, >, &, U+2028/U+2029; full CI `43137396702` plus independent live read-only eight-route JSON-LD parser checks passed. Scope excludes future unsupported schema publishers.
+- **AF-N08 → Completed:** cron Bearer credential compares byte lengths before `timingSafeEqual`; synthetic multibyte mismatches return 401 without side effects; full CI `43137396702` passed. Worker remains parked, no live notifications.
 - **AF-R010 → Completed:** no current raw `innerHTML` writes in identified e2e fixtures; current exact-head browser CI `43128164786` succeeded; separate `setContent` synthetic fixture permitted.
 - **AF-N09 → Completed:** gallery route constant generic private HTTP500 plus bounded errorName-only logs, synthetic negative tests of injected faults, full exact-head CI `43128164786` passed; not a public-media privacy closure (#785).
 - **AF-R002 → Completed:** GitHub-reviewed GHSA-wq5f-xc86-pv6w patched by pinned `sharp@0.35.5`; released lock and Alpine variant, hosted CI `43109665136` and `43117533290` successful, independent runtime `b18e1518e938049f12876a069ebfa8e8cfee39cb` ready. Covers vulnerable release, not all SVG-input assurances.
@@ -26,7 +28,7 @@ Verified item transitions:
 
 **Verified current source main:** `3c227d267dfc5ba65a2afa242a7bda0fd667d282` (docs/scripts/test-only since last live). **Independently verified production runtime:** `b18e1518e938049f12876a069ebfa8e8cfee39cb`, branch `main`, environment `production`, readiness `ready`; SHA difference is expected. **Financial boundary:** draft #684 remains unmerged despite successful code CI; independent payee ownership, credited UTR/payment reconciliation and a separately reviewed production activation are required. No FCRA or statutory 80G certificates; maintain domestic INR and private-data locks.
 
-**Clean active queue:** [139 actionable rows](mission-control/active-backlog-2026-11-12.csv); [all 149 IDs in original order](mission-control/149-item-status-2026-11-12.csv). [Current bounded source/finance/branch audit and acceptance limits](mission-control/2026-11-12-reconciliation.md). No further full-item reclassification from #780 test coverage alone.
+**Clean active queue:** [137 actionable rows](mission-control/active-backlog-2026-11-12.csv); [all 149 IDs in original order](mission-control/149-item-status-2026-11-12.csv). [Current bounded source/finance/branch audit and acceptance limits](mission-control/2026-11-12-reconciliation.md). No further full-item reclassification from #780 test coverage alone.
 
 **Next unblocked work:** verify AF-R004/R006 storage boundary/configuration acceptance (existing partial-credential tests already exist) and AF-R008/R009 structured-data rendering before further reclassification. Source implementation, tests, merging, deployment and live acceptance remain separate fields. Historical sections below are dated evidence.
 

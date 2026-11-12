@@ -1,5 +1,18 @@
 # Source, finance and backlog reconciliation — 12 November 2026 IST
 
+## 12 November 2026 IST — AF-R009 and AF-N08 bounded security defect closure
+
+**AF-R009 (P0) Implemented → Completed:** In current main `6e5dbf1bbdb353ecbac88c71d91df833d94d0b2c`, `serializeStructuredData()` JSON encodes and escapes `<`, `>`, `&`, U+2028 and U+2029. Focused `structured-data.test.ts` and `structured-data-rendering.test.tsx` cover the script-breakout payload, private path exclusion and round-trip correctness. Live read-only parsed JSON-LD/unsafe-character checks were completed on eight public routes (`/`, `/about`, `/impact`, `/donate`, `/stories`, `/team`, `/medical-support/mr-khaja`, `/our-work/eid-gift-kits`); no invalid JSON, unsafe literal `<>&` or raw U+2028/U+2029 detected. This closes the named serializer escaping defect only, not every future route or runtime-shape defect. AF-R008 was independently merged in #788.
+
+**AF-N08 (P0) Implemented → Completed:** `src/lib/cron-authorization.ts` now compares **UTF-8 byte lengths** of the configured and presented Bearer credentials before `timingSafeEqual`. `src/app/api/jobs/notifications/route.test.ts` tests fully-multibyte, mixed-byte and other multibyte mismatches return private HTTP401 with no retention/email action, and an exact matching multibyte credential remains accepted. No live cron or notification activation was attempted or needed to confirm the isolated exception fix.
+
+**Exact release evidence:** `src/lib/structured-data.ts`, `src/lib/cron-authorization.ts` and the referenced tests are unchanged between the latest independently live-ready website source `b18e1518e938049f12876a069ebfa8e8cfee39cb` and current main `6e5dbf1bbdb353ecbac88c71d91df833d94d0b2c` (GitHub commit comparison). Full #788 exact-head CI `43137396702` passed plan/fast/database/production/browser/verify; separate ready-state `43141026663` succeeded and SHA-guarded merge `6e5dbf1bbdb353ecbac88c71d91df833d94d0b2c` completed. The live website was checked separately at `b18e1518e938049f12876a069ebfa8e8cfee39cb` main/production/ready. This does not imply the notification worker was activated.
+
+**Reconciled original 149:** 10 Completed / 50 Implemented / 62 Partial / 25 Not started / 1 Superseded / 1 Not applicable. **Active queue 137** (P0 30, P1 72, P2 35). AF-R024 Team route fix is independently in draft PR #789 with full exact-head checks running. Financial PR #684 and media privacy #785 remain independent. This candidate changes docs/CSV only and requires its own CI, ready-state and guarded merge; no code, payment, donor data, public-media publication, schema, secrets, cron or infrastructure activation.
+
+---
+
+
 ## 12 November 2026 IST — AF-R010 and AF-N09 verified bounded closures
 
 - **AF-R010 Completed (P0):** Fresh source at merged main `3c227d267dfc5ba65a2afa242a7bda0fd667d282` has no `innerHTML` references in `e2e/visual-system.spec.mjs` and no assignment to `innerHTML` in `e2e/all-page-audit.spec.mjs`. `head.innerHTML()` only reads HTML. `page.setContent` remains for an isolated source-rendered synthetic error fixture and is outside the prohibited raw DOM write. Full exact-head browser acceptance, production, database, fast and verify CI `43128164786` SUCCESS after historical fix; test fixtures unchanged from deployed source.
