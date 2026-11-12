@@ -19,6 +19,26 @@ afterEach(() => {
   mocks.story.mockReset();
 });
 
+it("keeps a reviewed story public without leaking an invalid related initiative", async () => {
+  mocks.story.mockResolvedValue({
+    slug: "synthetic-reviewed-story",
+    title: "Synthetic reviewed field note",
+    summary: "Approved summary",
+    body: "Approved narrative",
+    sourceNote: null,
+    publishedAt: null,
+    updatedAt: new Date("2026-11-12T00:00:00.000Z"),
+    mediaAssets: [],
+    initiative: { status: "PUBLISHED", title: "Synthetic unchecked initiative", slug: "unchecked", cause: null },
+    cause: { status: "DRAFT", title: "Private unpublished programme" },
+  });
+  const html = renderToStaticMarkup(await StoryPage({ params: Promise.resolve({ slug: "synthetic-reviewed-story" }) }));
+  expect(html).toContain("Approved narrative");
+  expect(html).not.toContain("Private unpublished programme");
+  expect(html).not.toContain("Synthetic unchecked initiative");
+  expect(html).not.toContain("View this initiative");
+});
+
 it("shows the Asia/Kolkata publication day in the public Story hero", async () => {
   vi.stubEnv("TZ", "UTC");
   mocks.story.mockResolvedValue({
