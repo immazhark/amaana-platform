@@ -62,6 +62,25 @@ describe("public structured data", () => {
     });
   });
 
+  it("refuses query-bearing public schema routes without leaking preview or private token parameters", () => {
+    for (const path of [
+      "/stories/reviewed?preview=synthetic-private-token",
+      "/our-work/eid-gift-kits?utm_source=test",
+      "/transparency?reference=synthetic-record",
+    ]) {
+      expect(normalizeStructuredDataPath(path), path).toBeNull();
+      expect(buildPublicStructuredData({
+        type: "WebPage",
+        title: "Reviewed public content",
+        description: "Synthetic public description",
+        path,
+      }, "https://amaanafoundation.org"), path).toBeNull();
+    }
+    // Existing approved fragment semantics remain deliberately unchanged.
+    expect(normalizeStructuredDataPath("/stories/reviewed#details"))
+      .toBe("/stories/reviewed#details");
+  });
+
   it("normalizes allowed HTTPS origins and rejects unsafe configured origins", () => {
     expect(normalizeStructuredDataSiteUrl("https://preview.example.org/path?query=1#fragment"))
       .toBe("https://preview.example.org");
