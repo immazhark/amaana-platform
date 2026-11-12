@@ -9,8 +9,15 @@ type FooterNavGroupProps = {
 };
 
 export function FooterNavGroup({ label, children }: FooterNavGroupProps) {
-  const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const [openForPath, setOpenForPath] = useState<string | null>(null);
+  const [observedPath, setObservedPath] = useState(pathname);
+  // Shared App Router footers persist across routes; retire a previous open group.
+  if (observedPath !== pathname) {
+    setObservedPath(pathname);
+    setOpenForPath(null);
+  }
+  const open = observedPath === pathname && openForPath === pathname;
   const id = `footer-nav-${useId().replaceAll(":", "")}`;
   const links = Children.map(children, child => {
     if (!isValidElement<{ href?: string; "aria-current"?: "page" }>(child)) return child;
@@ -28,7 +35,7 @@ export function FooterNavGroup({ label, children }: FooterNavGroupProps) {
           className="footer-nav-toggle"
           aria-expanded={open}
           aria-controls={id}
-          onClick={() => setOpen(value => !value)}
+          onClick={() => setOpenForPath(current => current === pathname ? null : pathname)}
         >
           <span>{label}</span>
           <span className="footer-nav-toggle-icon" aria-hidden="true">{open ? "–" : "+"}</span>
