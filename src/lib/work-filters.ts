@@ -8,7 +8,7 @@ function yearsFor(item: DatedInitiative): number[] {
   if (item.startYear === null) return item.endYear === null ? [] : [item.endYear];
   const end = item.endYear ?? item.startYear;
   // Malformed ranges must not create unbounded allocations or invented dates.
-  if (end < item.startYear || end - item.startYear > 100) return [item.startYear];
+  if (end < item.startYear || end - item.startYear > 100) return [];
   return Array.from({ length: end - item.startYear + 1 }, (_, index) => item.startYear! + index);
 }
 

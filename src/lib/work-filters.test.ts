@@ -227,3 +227,36 @@ it("matches published initiative copy with collapsed whitespace without changing
   expect(result.results[0]?.initiatives[0]?.slug).toBe("winter");
   expect(programmes[0]?.initiatives[0]?.title).toBe("Winter\t  support");
 });
+
+it("does not turn malformed published date ranges into single-year filter claims", () => {
+  const initiatives = [
+    { slug: "reversed", year: null, startYear: 2026, endYear: 2024 },
+    { slug: "oversized", year: null, startYear: 1900, endYear: 2026 },
+    { slug: "reviewed", year: 2025, startYear: null, endYear: null },
+  ];
+  const programmes = [{ slug: "relief", initiatives }];
+  const result = filterWork(programmes, {});
+  expect(result.years).toEqual([2025]);
+  expect(result.results[0]?.initiatives).toEqual(initiatives);
+  for (const year of ["2026", "1900"]) {
+    expect(filterWork(programmes, { year })).toMatchObject({
+      invalid: true, year: "", results: [], count: 0,
+    });
+  }
+  expect(filterWork(programmes, { year: "2025" }).results[0]?.initiatives)
+    .toEqual([initiatives[2]]);
+});
+
+it("preserves explicit years, open single-year endpoints and supported inclusive ranges", () => {
+  const initiatives = [
+    { slug: "explicit", year: 2027, startYear: 2026, endYear: 2024 },
+    { slug: "start-only", year: null, startYear: 2026, endYear: null },
+    { slug: "end-only", year: null, startYear: null, endYear: 2025 },
+    { slug: "range", year: null, startYear: 2023, endYear: 2024 },
+  ];
+  const programmes = [{ slug: "relief", initiatives }];
+  expect(filterWork(programmes, {}).years).toEqual([2027, 2026, 2025, 2024, 2023]);
+  for (const [year, expected] of [["2027", initiatives[0]], ["2026", initiatives[1]], ["2025", initiatives[2]], ["2024", initiatives[3]]] as const) {
+    expect(filterWork(programmes, { year }).results[0]?.initiatives).toEqual([expected]);
+  }
+});
