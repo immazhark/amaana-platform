@@ -76,6 +76,28 @@ describe("appeal sharing recovery", () => {
     await expect(runAppealShare(appeal, "copy")).resolves.toBe("Copy unavailable. Select the URL below.");
   });
 
+  it("does not include query strings or fragments from a public appeal share path", () => {
+    const html = renderToStaticMarkup(<AppealShare
+      title={appeal.title}
+      summary={appeal.summary}
+      path="/appeals/verified-education?reference=synthetic-private#notes"
+    />);
+    expect(html).toContain("https%3A%2F%2Famaanafoundation.org%2Fappeals%2Fverified-education");
+    expect(html).not.toContain("synthetic-private");
+    expect(html).not.toContain("%3Freference");
+    expect(html).not.toContain("%23notes");
+  });
+
+  it("does not share backslash-based protocol-relative paths as external destinations", () => {
+    const html = renderToStaticMarkup(<AppealShare
+      title={appeal.title}
+      summary={appeal.summary}
+      path={"/\\malicious.example/appeals/fake"}
+    />);
+    expect(html).not.toContain("malicious.example");
+    expect(html).toContain("https%3A%2F%2Famaanafoundation.org%2F");
+  });
+
   it("never shares an external origin when a malformed route path begins with two slashes", () => {
     const html = renderToStaticMarkup(<AppealShare
       title={appeal.title}
