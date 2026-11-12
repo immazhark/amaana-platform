@@ -1,5 +1,13 @@
 # Amaana current state — 12 November 2026 IST
 
+**Current single-writer task:** AF-R002/R003 bounded security reconciliation from protected main `bd720b5567147dde624cd4d5cf0ce5a7a0fe793d` (no app code changes). Verified released versions from main/runtime lock; exact-head hosted CI `43109665136` and `43117533290` passed production audit/build; Railway/public runtime `b18e1518e938049f12876a069ebfa8e8cfee39cb`, production and ready. Docs-only closure candidate changes two original IDs to Completed; proposed counts 6 Completed / 54 Implemented / 62 Partial / 25 Not started / 1 Superseded / 1 Not applicable =149 and active 141. These counts are not marked merged until this candidate passes selected CI, independent review, separate ready-state and guarded merge. Financial PR #684 remains held; no provider/donor/secret/infra/cron activation.
+
+---
+
+## Historical checkpoints retained
+
+# Amaana current state — 12 November 2026 IST
+
 **Source:** protected main `f21f8995da138d86d3a4951b0a5f11a9aad4d7df` after PR #781 expected-head guarded merge; candidate head `655424e1b7fa6516e25bc4a21c422368409b757f`, full exact-head CI `43117533290` all required jobs SUCCESS, distinct ready-state `43120830528` promotion/verify SUCCESS, no unresolved review threads. Delivered: normal-clone remote HEAD parser correction (native RED 4/5, GREEN 5/5), read-only 806-ref retention inventory (567 contained, 238 preserved unmerged, 1 main), 149 original-ID and 143 active-ID reconciled exports. No branch deletion.
 
 **Runtime:** Railway website `f9058056-1c6e-4dc3-96b0-1aa312389330` SUCCESS at `b18e1518e938049f12876a069ebfa8e8cfee39cb`; #781 website `6dab37b9-2fc3-4342-a567-a9f5c2064f78` SKIPPED and notification worker `04f0e2b4-6503-4175-8aab-02c84dee1bc8` SKIPPED. Independent fresh public version/readiness return `b18e1518e938049f12876a069ebfa8e8cfee39cb`, main, production, paymentMode live and ready. Source/runtime divergence is valid; do not force rollout.
