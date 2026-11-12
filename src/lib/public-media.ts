@@ -17,7 +17,8 @@ export const IDENTITY_MEDIA_SORT_ORDER = -1000;
 const PUBLIC_MEDIA_RELATIVE_ORIGIN = "https://amaana.invalid";
 
 export function normalizeSafePublicMediaUrl(value: string | null | undefined) {
-  const raw = value?.trim();
+  if (typeof value !== "string") return null;
+  const raw = value.trim();
   if (!raw || /[\\\u0000-\u001F\u007F\s]/.test(raw)) return null;
 
   try {

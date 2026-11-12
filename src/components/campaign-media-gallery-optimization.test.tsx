@@ -131,4 +131,21 @@ describe("campaign gallery managed image optimization", () => {
     expect(html).toContain('src="https://cdn.amaana.example/2026/outreach.webp"');
     expect(html).not.toContain("/_next/image?");
   });
+
+  it("fails closed for malformed JS gallery items without dropping reviewed entries", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const html = renderToStaticMarkup(<CampaignMediaGallery items={[
+      { id: "number-url", url: 42 as unknown as string, alt: "Numeric bad URL" },
+      { id: "invalid-alt", url: "/media/invalid-alt.webp", alt: 27 as unknown as string },
+      { id: "", url: "/media/empty-id.webp", alt: "Unstable empty identifier" },
+      { id: "missing-object", url: "/media/blank.webp", alt: { trim: () => "forged" } as unknown as string },
+      { id: "reviewed", url: "/media/reviewed.webp", alt: "Reviewed programme supplies" },
+    ]} />);
+    expect(html).toContain("Enlarge image 1 of 1: Reviewed programme supplies");
+    expect(html).toContain('alt="Reviewed programme supplies"');
+    for (const unsafe of ["Numeric bad URL", "invalid-alt.webp", "Unstable empty identifier", "blank.webp"]) {
+      expect(html).not.toContain(unsafe);
+    }
+  });
+
 });
