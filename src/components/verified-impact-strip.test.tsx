@@ -3,6 +3,29 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { VerifiedImpactStrip } from "./verified-impact-strip";
 
 describe("published-only donation trust evidence", () => {
+  it("omits malformed runtime metric collections and entries without suppressing verified outcomes", () => {
+    for (const invalid of [null, undefined, { length: 1 }, "not-a-public-collection"]) {
+      const markup = renderToStaticMarkup(
+        <VerifiedImpactStrip items={invalid as unknown as Parameters<typeof VerifiedImpactStrip>[0]["items"]} />
+      );
+      expect(markup).toBe("");
+    }
+
+    const entries = [
+      null,
+      undefined,
+      { slug: "malformed-title", title: 10, value: "111", label: "not reviewed" },
+      { slug: "malformed-metric", title: "Forged metric", value: { trim: () => "999" }, label: "not reviewed" },
+      { slug: "malformed-label", title: "Forged label", value: "999", label: 7 },
+      { slug: "reviewed-outcome", title: "Approved programme evidence", value: "42", label: "recorded items" },
+    ] as unknown as Parameters<typeof VerifiedImpactStrip>[0]["items"];
+    const html = renderToStaticMarkup(<VerifiedImpactStrip items={entries} />);
+    expect(html).toContain("/our-work/reviewed-outcome");
+    expect(html).toContain("42");
+    expect(html).not.toContain("999");
+    expect(html).not.toContain("malformed");
+  });
+
   it("never fabricates totals when the published projection has no metrics", () => {
     const output = renderToStaticMarkup(<VerifiedImpactStrip items={[]} />);
     expect(output).toBe("");
