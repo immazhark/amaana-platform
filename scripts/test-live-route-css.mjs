@@ -656,7 +656,7 @@ test("AF-R057 rejects duplicate routes rather than reporting a route twice", asy
     routes: ["/", "/"],
     fetchImpl: async url => {
       visited.push(url);
-      return { ok: true, status: 200, url, text: async () => "" };
+      return { ok: true, status: 200, url, headers: { get: () => "text/html" }, text: async () => "" };
     },
   }), /Invalid public route/);
   assert.deepEqual(visited, [], "Duplicate route input must fail before requesting a page");
@@ -668,7 +668,7 @@ test("AF-R057 keeps canonical root and nested public routes measurable", async (
     routes: ["/", "/impact", "/our-work/2026"],
     fetchImpl: async url => {
       visited.push(url);
-      return { ok: true, status: 200, url, text: async () => "" };
+      return { ok: true, status: 200, url, headers: { get: () => "text/html" }, text: async () => "" };
     },
   });
   assert.deepEqual(report.routes.map(row => row.route), ["/", "/impact", "/our-work/2026"]);
