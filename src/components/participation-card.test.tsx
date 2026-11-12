@@ -18,6 +18,36 @@ const paths: ParticipationPath[] = [
 ];
 
 describe("participation card destination semantics", () => {
+  it("does not render participation links with unsafe or malformed runtime destinations", () => {
+    const unsafe = [
+      "javascript:alert('private')",
+      "data:text/html,<script>alert(1)</script>",
+      "http://insecure.example.invalid",
+      "//external.example.invalid/path",
+      "/\\\\external.example.invalid",
+      "https://user:password@example.invalid/path",
+      "https://example.invalid/\nmalformed",
+      "  /contact  ",
+      "",
+      null,
+    ];
+    const invalidPaths = unsafe.map((href, index) => ({
+      ...paths[2]!,
+      marker: `unsafe-${index}`,
+      title: `Reject unsafe destination ${index}`,
+      href,
+    })) as unknown as ParticipationPath[];
+    const html = renderToStaticMarkup(<ParticipationCards paths={[paths[2]!, paths[0]!, paths[1]!, paths[3]!, ...invalidPaths]} />);
+    expect(html).toContain('href="/request-assistance"');
+    expect(html).toContain('href="mailto:amaanafoundation24@gmail.com');
+    expect(html).toContain('href="tel:+919908002694"');
+    expect(html).toContain('href="https://www.instagram.com/amaanafoundation/"');
+    expect(html).not.toContain("Reject unsafe destination");
+    expect(html).not.toContain("javascript:");
+    expect(html).not.toContain("data:text/html");
+    expect(html).not.toContain("insecure.example.invalid");
+  });
+
   it("uses native anchors for email and telephone actions while keeping SPA links internal", () => {
     const html = renderToStaticMarkup(<ParticipationCards paths={paths} />);
     const anchors = [...html.matchAll(/<a\b[^>]*>/g)].map(match => match[0]);
