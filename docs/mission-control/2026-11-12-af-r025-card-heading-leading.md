@@ -1,0 +1,7 @@
+# AF-R025 — shared programme/card heading leading (12 November 2026 IST)
+
+The shared CSS selector `":is(.v2-initiative-row,.v3-work-card,.canonical-pathways,.v2-stories-card,.v2-appeal-card) h3"` in `src/app/experience-finish.css` uses a tight unitless h3 leading of 1.08. Long editorial card titles in the approved public components can wrap, and the established 1.12–1.24 heading range is not enforced for this selector. This is separate from #791 canonical article desktop h2 and #792 Team hero h1, with no overlapping source/tests.
+
+RED: new focused Vitest source test fails on the exact existing 1.08 rule. Playwright uses the checked-in real global CSS and synthetic wrapped long heading at 320 and 390px; it checks computed leading, >1.45 lines and viewport containment without fabricating impact/programme records.
+
+GREEN: change only `line-height:1.08` to `1.14` within the existing shared h3 selector; preserve typography family, weight, layout, branding, copy, data, and motion behavior. No dependencies. Full exact-head CI/browser/typecheck/production/security/db, separate ready state and SHA-guarded merge required. Source CSS changes trigger website deployment; independently verify public SHA, readiness and representative card layouts. AF-R025 remains Partial pending full global zoom and real assistive technology acceptance. No finance/media/RBAC/schema/cron/CSP/provider or donor operations. Rollback revert bounded commit.
