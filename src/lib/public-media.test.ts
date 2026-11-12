@@ -179,4 +179,15 @@ describe("public media safety", () => {
     expect(selectGalleryPublicImage([graphic])).toBe(graphic);
   });
 
+
+  it("rejects malformed runtime URL types without executing forged trim methods", () => {
+    for (const value of [42, true, [], Symbol("media"), { href: "/media/forged.webp" }]) {
+      expect(normalizeSafePublicMediaUrl(value as unknown as string)).toBeNull();
+    }
+    const forged = { trim: vi.fn(() => "/media/forged.webp") };
+    expect(normalizeSafePublicMediaUrl(forged as unknown as string)).toBeNull();
+    expect(forged.trim).not.toHaveBeenCalled();
+    expect(normalizeSafePublicMediaUrl("/media/reviewed.webp")).toBe("/media/reviewed.webp");
+  });
+
 });
