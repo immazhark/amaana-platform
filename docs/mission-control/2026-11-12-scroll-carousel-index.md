@@ -7,3 +7,9 @@
 **RED:** New synthetic server-rendered component test covers non-finite inputs, fractional input and normal bounded integer behavior. The test must fail on current code before production-source changes. Existing positive integer semantics must remain.
 
 **GREEN proposal:** Clamp a finite, truncated index; fall back to first slide for non-finite input. No changes to keyboard navigation, carousel drag, auto-rotation, accessibility copy, styling, media, privacy, donors, payments, schemas or infrastructure. No new dependencies. Require exact-head full CI, separate ready-state, protected SHA merge, Railway and independent public version/ready checks. Rollback only the isolated source/test/documentation changes. Original 149-item counts unchanged.
+
+## Hosted RED and scoped GREEN
+
+- Test-only head `9d51c2e97fdacbcb0aed1d0b919715828c4f074f` failed hosted CI `43221542173`: exactly two added SSR cases for NaN and positive Infinity failed. The markup showed `NaN / 2`, `aria-valuenow="NaN"`, and no active slide for NaN; positive Infinity incorrectly selected the second slide. Six existing/new compatible cases passed.
+- The initial fractional test with only two slides was insufficiently sensitive because max-index clamping incidentally produced an integer. Test commit `2ef8f9f92fb21de9763f0b16235a48dcea6ce35a` added a third slide for the fractional case; at baseline, 1.75 with three slides gives progress 2.75 instead of slide 2.
+- GREEN source commit `7b39d40577ffdd307cd296e476d4d20ef7b5a879` changes only the initial state calculation to finite truncated input or zero. Integer clamping and keyboard/drag/rotation logic remain unchanged. The new complete exact-head checks and separate ready-state are still mandatory.
