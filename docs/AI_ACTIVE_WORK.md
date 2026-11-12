@@ -1,5 +1,11 @@
 # Amaana implementation ownership — 12 November 2026 IST
 
+## Current bounded task — safe public story programme context (12 November 2026 IST)
+
+**Sole repository implementation writer:** CHATGPT_ACTIVE. **Task branch:** `fix/story-discovery-nested-public-cause-20261112` from main `6bd58c74252227dbce68ed35fa3d160f5f423078`. PR #815 was protected-merged at `de6d8c4a38b5b3a4dfcbac542361d815fdaf1c92`, #816 was merged at `6bd58c74252227dbce68ed35fa3d160f5f423078`; both full and separate ready-state gates were green. Railway latest website release still BUILDING at the time of claim; live public verification must remain separate. #684 financial UPI/QR branch remains held.
+
+**Scoped defect hypothesis:** `publishedStoryProgrammeContext` dereferences `story.initiative.cause.status` for a published initiative without checking its nested `cause` at runtime, causing a synchronous public story index render error on malformed projection. RED-first synthetic test must demonstrate a missing nested relation and verify that only an explicitly published direct cause is used as fallback; draft cause names must remain private. Once hosted RED is demonstrated, implement the smallest safe optional-nested guard. Do not modify publication criteria, programme text/metrics, donor records, payment, privacy media, auth/RBAC, schema, CSP, secrets, cron or live infrastructure. Exact-head full CI, review, separate ready-state and guarded merge required. Roll back scoped source/test/docs. No changes to 149-item ledger classifications.
+
 ## Current bounded implementation — public participation-link protocol safety (12 November 2026 IST)
 
 **Sole implementation writer:** CHATGPT_ACTIVE. **Task branch:** `fix/participation-card-safe-links-20261112`, from main `99fef460d493d21629f83f9612c33808e8ca8ec8`. PRs #810/#811/#812 have passed full and separate ready-state CI, merged behind expected-head protection, and reached Railway SUCCESS and independent public identity `99fef460d493d21629f83f9612c33808e8ca8ec8` (readiness ready). Source and deployment SHA match. Original #807/#808/#809 closed as superseded; their branches preserved. Finance #684 remains held.
