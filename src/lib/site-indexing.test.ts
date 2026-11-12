@@ -33,6 +33,17 @@ describe("shouldAllowIndexing", () => {
     expect(shouldAllowIndexing(appUrl, "true", "production")).toBe(false);
   });
 
+  it.each([
+    "https://amaanafoundation.org/preview",
+    "https://amaanafoundation.org/admin",
+    "https://www.amaanafoundation.org/path",
+    "https://amaanafoundation.org/?preview=true",
+    "https://amaanafoundation.org/#draft",
+    "https://www.amaanafoundation.org/?utm_source=preview",
+  ])("rejects non-root, query-bearing or fragment-bearing indexing origins: %s", appUrl => {
+    expect(shouldAllowIndexing(appUrl, "true", "production")).toBe(false);
+  });
+
   it("keeps the default HTTPS port and trailing slash eligible", () => {
     expect(shouldAllowIndexing("https://amaanafoundation.org:443/", "true", "production")).toBe(true);
     expect(shouldAllowIndexing("https://www.amaanafoundation.org/", "true", "production")).toBe(true);
