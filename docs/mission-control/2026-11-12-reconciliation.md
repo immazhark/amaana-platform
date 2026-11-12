@@ -1,5 +1,16 @@
 # Source, finance and backlog reconciliation — 12 November 2026 IST
 
+## 12 November 2026 IST — AF-N17 bounded P0 error-handler closure
+
+**AF-N17 (P0) Implemented → Completed:** Inspected `src/app/media/[year]/[filename]/route.ts` at protected main `3af06b98cbe37a9e427da8d1fe001e6d9d5cab43`. The `prisma.mediaAsset.findFirst` publication-eligibility lookup is **inside the response try/catch**, so an injected database exception does not bypass the route error boundary. `src/app/media/[year]/[filename]/route.test.ts` simulates a rejected publication lookup and asserts: HTTP 503, `Cache-Control: no-store`, `Retry-After: 60`, `X-Robots-Tag: noindex, nofollow, noarchive`, empty body, and zero object-storage reads. Full exact-head #794 CI `43148647335` passed fast/database/production/browser/final verify; #794 ready-state `43151379635` passed, SHA-guarded merge `7bab5d566e772a50eb21c62b1ba36a75a4a18769` and Railway/public exact SHA/readiness separately verified. These specific route and test files are unchanged between `7bab5d566e772a50eb21c62b1ba36a75a4a18769` and `3af06b98cbe37a9e427da8d1fe001e6d9d5cab43`, whose newer code only modifies unrelated Team hero CSS/tests.
+
+This **only** closes the original defect where the publication DB lookup could escape error handling. It does **not** certify that every public photo has a reviewed face-redacted and EXIF/GPS-stripped derivative; issue #785 remains active. No real media, donor, provider, secret or database record was touched during this audit.
+
+Original 149-item accounting after this docs candidate **if merged**: 11 Completed / 49 Implemented / 62 Partial / 25 Not started / 1 Superseded / 1 Not applicable. Active 136 = 29 P0 /72 P1 /35 P2. Current main source `3af06b98cbe37a9e427da8d1fe001e6d9d5cab43`, last verified public runtime `7bab5d566e772a50eb21c62b1ba36a75a4a18769`; source/runtime SHAs must remain separate until newer deployments succeed. Docs/CSV only, no app behavior, schema, finance, media or infrastructure change.
+
+---
+
+
 ## 12 November 2026 IST — AF-R009 and AF-N08 bounded security defect closure
 
 **AF-R009 (P0) Implemented → Completed:** In current main `6e5dbf1bbdb353ecbac88c71d91df833d94d0b2c`, `serializeStructuredData()` JSON encodes and escapes `<`, `>`, `&`, U+2028 and U+2029. Focused `structured-data.test.ts` and `structured-data-rendering.test.tsx` cover the script-breakout payload, private path exclusion and round-trip correctness. Live read-only parsed JSON-LD/unsafe-character checks were completed on eight public routes (`/`, `/about`, `/impact`, `/donate`, `/stories`, `/team`, `/medical-support/mr-khaja`, `/our-work/eid-gift-kits`); no invalid JSON, unsafe literal `<>&` or raw U+2028/U+2029 detected. This closes the named serializer escaping defect only, not every future route or runtime-shape defect. AF-R008 was independently merged in #788.
