@@ -698,3 +698,31 @@ test("AF-R057 quoted openers inside inert content do not expose inert CSS", () =
     `<!-- <div data-example="<script>">${fake} -->${real}`,
   ]) assert.deepEqual(stylesheetsInHtml(markup), ["https://amaanafoundation.org/_next/static/real.css"]);
 });
+
+
+test("AF-R057 rejects absent or non-HTML route MIME instead of reporting zero CSS", async () => {
+  for (const contentType of [null, "", "application/json", "text/plain", "text/htmlish", "application/xhtml+xml"]) {
+    let reads = 0;
+    let requests = 0;
+    await assert.rejects(auditPublicRouteCss({ routes: ["/"], fetchImpl: async url => {
+      requests += 1;
+      return { ok: true, status: 200, url,
+        headers: { get: () => contentType },
+        text: async () => { reads += 1; return "{}"; },
+      };
+    } }), /Route response is not HTML/, String(contentType));
+    assert.equal(requests, 1, "Do not fetch CSS from a rejected page");
+    assert.equal(reads, 0, "Do not parse a non-HTML body as a valid route sample");
+  }
+});
+
+test("AF-R057 retains text/html media types with case and charset parameters", async () => {
+  for (const contentType of ["text/html", "TEXT/HTML; charset=UTF-8", "text/html ;charset=utf-8"]) {
+    const result = await auditPublicRouteCss({ routes: ["/"], fetchImpl: async url => ({
+      ok: true, status: 200, url, headers: { get: () => contentType },
+      text: async () => "<html><head></head><body>Public page</body></html>",
+    }) });
+    assert.equal(result.routes[0].cssBytes, 0);
+    assert.equal(result.routes[0].stylesheetCount, 0);
+  }
+});
