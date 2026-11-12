@@ -230,3 +230,29 @@ test("AF-R080 ignores harmless tag-like text inside ordinary JavaScript", () => 
   assert.equal(result.status, "STRUCTURE_VALID_EXTERNAL_ACCEPTANCE_PENDING");
   assert.equal(result.canonical, `${origin}/`);
 });
+
+
+test("canonical-like custom elements do not establish a canonical URL", () => {
+  for (const name of ["link-card", "link:canonical"]) {
+    const onlyCustom = page().replace('<link rel="canonical"', `<${name} rel="canonical"`);
+    assert.throws(() => analyzePublicSchemaHtml("/", onlyCustom), /canonical URL/);
+    const withCustom = page(graph, `${origin}/`, `<${name} rel="canonical" href="https://other.invalid/">`);
+    assert.equal(analyzePublicSchemaHtml("/", withCustom).canonical, `${origin}/`);
+  }
+});
+
+test("meta-like custom elements do not create a noindex directive", () => {
+  for (const name of ["meta-note", "meta:robots"]) {
+    const html = page(graph, `${origin}/`, `<${name} name="robots" content="noindex">`);
+    assert.equal(analyzePublicSchemaHtml("/", html).indexingDirective, "NO_EXPLICIT_NOINDEX");
+  }
+});
+
+test("genuine canonical and robots tags retain HTML whitespace and self-closing forms", () => {
+  const html = page(graph, `${origin}/`, '<meta\nname="robots" content="noindex"/>')
+    .replace('<link rel="canonical"', '<link\nrel="canonical"')
+    .replace('href="https://amaanafoundation.org/">', 'href="https://amaanafoundation.org/"/>');
+  const result = analyzePublicSchemaHtml("/", html);
+  assert.equal(result.canonical, `${origin}/`);
+  assert.equal(result.indexingDirective, "NOINDEX");
+});
