@@ -5,7 +5,7 @@ export const STORY_PAGE_SIZE = 12;
 
 /** Display only published, nonblank programme context; never reveal draft cause names. */
 export function publishedStoryProgrammeContext(story: PublicStory): string | null {
- const initiativeCause = story.initiative?.status === "PUBLISHED" && story.initiative.cause.status === "PUBLISHED"
+ const initiativeCause = story.initiative?.status === "PUBLISHED" && story.initiative.cause?.status === "PUBLISHED"
    ? story.initiative.cause.title : null;
  if (initiativeCause?.trim()) return initiativeCause;
  const directCause = story.cause?.status === "PUBLISHED" ? story.cause.title : null;
