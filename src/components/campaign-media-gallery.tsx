@@ -24,6 +24,7 @@ export type CampaignGalleryItem = {
 
 export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }) {
   const safeItems = useMemo(() => {
+    if (!Array.isArray(items)) return [];
     const seenUrls = new Set<string>();
     const seenIds = new Set<string>();
     return items.flatMap(item => {
