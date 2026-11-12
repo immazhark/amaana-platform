@@ -1,3 +1,11 @@
+# Current state — 12 November 2026 IST
+
+**Latest protected main:** `6e5dbf1bbdb353ecbac88c71d91df833d94d0b2c` after #788 AF-R008 JSON-LD runtime validation: full CI `43137396702` all jobs SUCCESS, ready-state `43141026663` successful, guarded merged. Source and deployed SHA need separate public check following the merge. Canonical backlog still 8 Completed / 52 Implemented / 62 Partial / 25 Not started / 1 Superseded / 1 Not applicable =149, 139 active. **Next bounded implementation:** AF-R024 audit gap on Team route: JSX inline CSS bypasses CSS-only typography floor audit; preserve unchanged CSS in route stylesheet and add targeted test. This candidate is not merged until exact-head review/CI/ready-state/guarded merge. PR #684 and privacy issue #785 are independent holds. One writer CHATGPT_ACTIVE; no live donor/media/finance/secret/infrastructure actions.
+
+---
+
+## Previous operational state retained
+
 # Amaana current state — 12 November 2026 IST
 
 **Current reconciliation candidate:** Protected merged source `3c227d267dfc5ba65a2afa242a7bda0fd667d282` after #784 full exact-head CI `43128164786` SUCCESS and ready-state `43132279837` SUCCESS. Website and parked worker deployments SKIPPED (only test code changed); public runtime `b18e1518e938049f12876a069ebfa8e8cfee39cb`, main/production/ready independently verified. Two historic, already-shipped scope closures AF-R010 (test fixture raw innerHTML assignment) and AF-N09 (private generic gallery HTTP500) are being reconciled via docs-only PR. **Candidate counts, pending new PR's CI/review/ready-state/merge:** 8 Completed/52 Implemented/62 Partial/25 Not started/1 Superseded/1 Not applicable=149; active 139 (P0 32/P1 72/P2 35). Only open financial PR #684 remains on separate QR activation hold; media derivative privacy issue #785 open. No live provider, donor, media, schema, auth, cron, CSP or infrastructure changes.
