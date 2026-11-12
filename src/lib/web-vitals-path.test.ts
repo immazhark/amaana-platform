@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { canRecordWebVitalOnCurrentRoute, createWebVitalDocumentGuard, normalizePublicWebVitalPath } from "./web-vitals-path";
 
 describe("privacy-safe public performance route grouping", () => {
-  it.each(["/", "/about", "/appeals", "/stories", "/our-work", "/impact", "/compliance"])(
+  it.each(["/", "/about", "/team", "/appeals", "/stories", "/our-work", "/impact", "/impact/compare", "/get-involved/volunteer", "/compliance"])(
     "preserves static public route %s", path => {
       expect(normalizePublicWebVitalPath(path)).toBe(path);
     },

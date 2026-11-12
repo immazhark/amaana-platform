@@ -9,6 +9,12 @@ describe("isTrackablePublicPath", () => {
     expect(isTrackablePublicPath("/stories/a-story")).toBe(true);
     expect(isTrackablePublicPath("/faith-and-reflections/a-reminder")).toBe(true);
     expect(isTrackablePublicPath("/appeals/verified-need")).toBe(true);
+    for (const path of ["/team", "/get-involved/volunteer", "/impact/compare"]) {
+      expect(isTrackablePublicPath(path), path).toBe(true);
+      expect(normalizePublicAnalyticsPath(path)).toBe(path);
+      expect(shouldRecordPublicPageView(path, false, path)).toBe(true);
+      expect(shouldRecordPublicPageView(path, true, path)).toBe(false);
+    }
   });
 
   it("does not track sensitive, admin or malformed routes", () => {
@@ -17,6 +23,9 @@ describe("isTrackablePublicPath", () => {
     expect(isTrackablePublicPath("/donations/ABC123")).toBe(false);
     expect(isTrackablePublicPath("/admin")).toBe(false);
     expect(isTrackablePublicPath("/our-work/not valid")).toBe(false);
+    for (const path of ["/team/private", "/impact/compare/case", "/get-involved/volunteer/application"]) {
+      expect(isTrackablePublicPath(path), path).toBe(false);
+    }
   });
 });
 
