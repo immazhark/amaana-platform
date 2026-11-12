@@ -158,7 +158,7 @@ export function analyzePublicSchemaHtml(path, html) {
   const head = /<head\b[^>]*>([\s\S]*?)<\/head\s*>/i.exec(visibleHtml);
   if (!head) throw new Error("Public head markup is missing");
   const headWithoutJsonScripts = head[1].replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, "");
-  const canonicals = [...headWithoutJsonScripts.matchAll(/<link\b([^>]*)>/gi)]
+  const canonicals = [...headWithoutJsonScripts.matchAll(/<link(?=[\t\n\f\r />])([^>]*)>/gi)]
     .filter(tag => attribute(tag[1], "rel")?.toLowerCase() === "canonical")
     .map(tag => attribute(tag[1], "href"));
   const expectedCanonical = `${origin}${path}`;
@@ -183,7 +183,7 @@ export function analyzePublicSchemaHtml(path, html) {
       website.url !== origin || website.publisher?.["@id"] !== expectedIds[0]) {
     throw new Error("Public structured-data organization identity mismatch");
   }
-  const noindex = [...visibleHtml.matchAll(/<meta\b([^>]*)>/gi)]
+  const noindex = [...visibleHtml.matchAll(/<meta(?=[\t\n\f\r />])([^>]*)>/gi)]
     .some(tag => ["robots", "googlebot", "bingbot"].includes(attribute(tag[1], "name")?.toLowerCase()) &&
       /(?:^|[,\s])noindex(?:$|[,\s])/i.test(attribute(tag[1], "content") ?? ""));
   return {
