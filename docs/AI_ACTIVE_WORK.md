@@ -1,6 +1,10 @@
 # Amaana implementation ownership — 12 November 2026 IST
 
-## Current effective checkpoint (supersedes dated handoff details below)
+## Active bounded implementation — 12 November 2026 IST (latest)
+
+**Writer:** CHATGPT_ACTIVE, one repository writer; independent PR reviews/CI may proceed in parallel. **Branch:** `fix/khaja-approved-target-hero-20261112`, starting main `d435cdf6bb027808eaf4f937b5ed74f26e919efc` after the guarded merges of #791/#795. **Scope:** make the already-approved ₹5,00,000 *fundraising target* visible in the existing Mr. Khaja informational hero without implying certified medical costs, remaining balance, Zakat eligibility or active case checkout. RED: isolated browser regression on the informational route; GREEN: minimal existing PageHero description change. Do not alter the owner-reviewed case content, any financial endpoints/QR, bank/UPI, public media, secret, schema, worker, production settings or donor records. PRs #793/#797 remain independent release candidates and #684 is financially blocked. Complete fresh exact-head browser/fast/production/database/security and separate ready-state gates before protected merge. Rollback: revert only the new test and hero content. No production activation authorized.
+
+## Prior coordination checkpoints (dated history; superseded by the active bounded implementation above)
 
 **Current implementation task (12 November IST):** Sole writer CHATGPT_ACTIVE; after #788 guarded merge `6e5dbf1bbdb353ecbac88c71d91df833d94d0b2c`, bounded AF-R024 route typography audit coverage on `fix/af-r024-team-inline-css-audit-20261112`. RED: source inline `<style>` (3,406 CSS characters) bypasses the existing `scripts/public-font-floor.mjs` scan of `src/**/*.css`. GREEN candidate extracts identical scoped CSS into `src/app/team/team.css`, imports it in the Team route, removes inline style and adds a fail-first Vitest source-boundary regression. No visual redesign or new dependency; actual compilation/browser/layout and CSS budget await exact-head checks. Financial #684 and privacy #785 independent; no financial/provider/auth/schema/media/cron/infra change.
 
