@@ -46,7 +46,10 @@ export function ScrollCarousel({
   const navigation = useRef<number | null>(null);
   const drag = useRef<{pointerId:number; x:number; scroll:number; moved:boolean} | null>(null);
   const suppressClick = useRef(false);
-  const [activeIndex, setActiveIndex] = useState(() => Math.min(Math.max(startAt, 0), Math.max(slideCount - 1, 0)));
+  const [activeIndex, setActiveIndex] = useState(() => {
+    const initial = Number.isFinite(startAt) ? Math.trunc(startAt) : 0;
+    return Math.min(Math.max(initial, 0), Math.max(slideCount - 1, 0));
+  });
   const visibleIndex = Math.min(activeIndex, Math.max(0, slideCount - 1));
   const activeIndexRef = useRef(activeIndex);
   const activeSlideRef = useRef<HTMLDivElement | null>(null);
