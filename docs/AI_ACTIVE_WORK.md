@@ -1,5 +1,9 @@
 # Amaana implementation ownership — 12 November 2026 IST
 
+## Latest scoped task — 12 November 2026 IST
+
+**Single writer:** CHATGPT_ACTIVE. **Branch:** `docs/af-r004-storage-server-only-acceptance-20261112` from main `ab8e5e3d9229bd1abd6747f9cde7c4e77930a393`. AF-R004 *evidence-only* source/release reconciliation: verify the original server-only storage defect's first-statement marker, mutation-sensitive guard, exact source/test blob continuity and #784 full/ready CI; adjust only the canonical 149-row status overlay and active queue if evidence supports named-scope closure. No S3/secret/RBAC/media/payment/provider/schema/runtime/infra change. **Previous source task:** draft #799 `fix/khaja-approved-target-hero-20261112`, GREEN head `fec5917d589c1880f3c161d6bf3501512753055c`; full hosted CI browser pending, no ready-state/merge. #797 merged and deployed outcome pending; #684 financial hold remains. Keep one code writer and distinct PR heads; rollback narrow docs-only revert.
+
 ## Current effective checkpoint (supersedes dated handoff details below)
 
 **Current implementation task (12 November IST):** Sole writer CHATGPT_ACTIVE; after #788 guarded merge `6e5dbf1bbdb353ecbac88c71d91df833d94d0b2c`, bounded AF-R024 route typography audit coverage on `fix/af-r024-team-inline-css-audit-20261112`. RED: source inline `<style>` (3,406 CSS characters) bypasses the existing `scripts/public-font-floor.mjs` scan of `src/**/*.css`. GREEN candidate extracts identical scoped CSS into `src/app/team/team.css`, imports it in the Team route, removes inline style and adds a fail-first Vitest source-boundary regression. No visual redesign or new dependency; actual compilation/browser/layout and CSS budget await exact-head checks. Financial #684 and privacy #785 independent; no financial/provider/auth/schema/media/cron/infra change.
