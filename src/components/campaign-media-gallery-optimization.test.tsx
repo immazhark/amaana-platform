@@ -132,6 +132,25 @@ describe("campaign gallery managed image optimization", () => {
     expect(html).not.toContain("/_next/image?");
   });
 
+  it("fails closed for malformed runtime gallery collections rather than crashing public pages", () => {
+    for (const malformed of [
+      null,
+      undefined,
+      "not-a-collection",
+      { 0: { id: "forged", url: "/media/forged.webp", alt: "Forged media" }, length: 1 },
+    ]) {
+      const html = renderToStaticMarkup(
+        <CampaignMediaGallery items={malformed as unknown as Parameters<typeof CampaignMediaGallery>[0]["items"]} />
+      );
+      expect(html, String(malformed)).toBe("");
+    }
+
+    const valid = renderToStaticMarkup(<CampaignMediaGallery items={[{
+      id: "reviewed", url: "/media/reviewed.webp", alt: "Reviewed gallery photo",
+    }]} />);
+    expect(valid).toContain("Enlarge image 1 of 1: Reviewed gallery photo");
+  });
+
   it("fails closed for malformed JS gallery items without dropping reviewed entries", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
     const html = renderToStaticMarkup(<CampaignMediaGallery items={[
