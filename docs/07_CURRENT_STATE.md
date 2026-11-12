@@ -1,5 +1,13 @@
 # Amaana current state — 12 November 2026 IST
 
+**Current reconciliation candidate:** Protected merged source `3c227d267dfc5ba65a2afa242a7bda0fd667d282` after #784 full exact-head CI `43128164786` SUCCESS and ready-state `43132279837` SUCCESS. Website and parked worker deployments SKIPPED (only test code changed); public runtime `b18e1518e938049f12876a069ebfa8e8cfee39cb`, main/production/ready independently verified. Two historic, already-shipped scope closures AF-R010 (test fixture raw innerHTML assignment) and AF-N09 (private generic gallery HTTP500) are being reconciled via docs-only PR. **Candidate counts, pending new PR's CI/review/ready-state/merge:** 8 Completed/52 Implemented/62 Partial/25 Not started/1 Superseded/1 Not applicable=149; active 139 (P0 32/P1 72/P2 35). Only open financial PR #684 remains on separate QR activation hold; media derivative privacy issue #785 open. No live provider, donor, media, schema, auth, cron, CSP or infrastructure changes.
+
+---
+
+## Preserved earlier checkpoints
+
+# Amaana current state — 12 November 2026 IST
+
 **Current single-writer task:** AF-R002/R003 bounded security reconciliation from protected main `bd720b5567147dde624cd4d5cf0ce5a7a0fe793d` (no app code changes). Verified released versions from main/runtime lock; exact-head hosted CI `43109665136` and `43117533290` passed production audit/build; Railway/public runtime `b18e1518e938049f12876a069ebfa8e8cfee39cb`, production and ready. Docs-only closure candidate changes two original IDs to Completed; proposed counts 6 Completed / 54 Implemented / 62 Partial / 25 Not started / 1 Superseded / 1 Not applicable =149 and active 141. These counts are not marked merged until this candidate passes selected CI, independent review, separate ready-state and guarded merge. Financial PR #684 remains held; no provider/donor/secret/infra/cron activation.
 
 ---
