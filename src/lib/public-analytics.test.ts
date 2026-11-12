@@ -15,6 +15,14 @@ describe("isTrackablePublicPath", () => {
       expect(shouldRecordPublicPageView(path, false, path)).toBe(true);
       expect(shouldRecordPublicPageView(path, true, path)).toBe(false);
     }
+
+    // These are published static discovery pages, never donation/case identifiers.
+    for (const path of ["/recognition", "/partner", "/get-involved/sponsor-education", "/get-involved/monthly-giving"]) {
+      expect(isTrackablePublicPath(path), path).toBe(true);
+      expect(normalizePublicAnalyticsPath(path)).toBe(path);
+      expect(shouldRecordPublicPageView(path, false, path)).toBe(true);
+      expect(shouldRecordPublicPageView(path, true, path)).toBe(false);
+    }
   });
 
   it("does not track sensitive, admin or malformed routes", () => {
@@ -23,7 +31,7 @@ describe("isTrackablePublicPath", () => {
     expect(isTrackablePublicPath("/donations/ABC123")).toBe(false);
     expect(isTrackablePublicPath("/admin")).toBe(false);
     expect(isTrackablePublicPath("/our-work/not valid")).toBe(false);
-    for (const path of ["/team/private", "/impact/compare/case", "/get-involved/volunteer/application"]) {
+    for (const path of ["/team/private", "/impact/compare/case", "/get-involved/volunteer/application", "/recognition/private", "/partner/private", "/get-involved/sponsor-education/child", "/get-involved/monthly-giving/receipt"]) {
       expect(isTrackablePublicPath(path), path).toBe(false);
     }
   });

@@ -1,5 +1,9 @@
 # Amaana handoff ledger
 
+## 12 November 2026 IST — independent AF-FUNNEL public route source track
+
+Sole implementation writer CHATGPT_ACTIVE; branch `fix/af-funnel-static-discovery-paths-20261112`, base `164712b0eb1a2c54db4deb4f3b1283dc4cbdaaaa`. Four published static discovery URLs were excluded from anonymous page views/Web Vitals. RED test commit `1db2c2df7ad33f74267da1225b34e8492b5dbdfa`, source regex reproduced all four exclusions; GREEN `8355a88ca1357b422137b1b7fa93dbf79a87db63` expands exact static allowlist only, retaining nested/private exclusions. Fresh exact-head release CI, ready-state and protected merge required. This is not full AF-FUNNEL closure. No donor, payment, private data, schema, auth, media, credentials, worker or infrastructure changes. #799 previously merged; #800/#801 remain independent acceptance candidates, #684 financially held.
+
 Historical entries preserved in [prior ledger](archive/AI_HANDOFF_LEDGER-before-codex-20261111.md).
 
 # Amaana implementation ownership — 11 November 2026 IST

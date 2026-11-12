@@ -1,4 +1,4 @@
-const trackablePublicPath = /^\/(?:$|about$|team$|contact$|get-involved$|get-involved\/volunteer$|governance$|how-we-verify$|impact$|impact\/compare$|transparency$|compliance$|privacy$|terms$|donation-policy$|refund-policy$|appeals(?:\/[a-z0-9-]+)?$|our-work(?:\/[a-z0-9-]+)?$|programmes(?:\/[a-z0-9-]+)?$|stories(?:\/[a-z0-9-]+)?$|faith-and-reflections(?:\/[a-z0-9-]+)?$)/;
+const trackablePublicPath = /^\/(?:$|about$|team$|recognition$|partner$|contact$|get-involved$|get-involved\/volunteer$|get-involved\/sponsor-education$|get-involved\/monthly-giving$|governance$|how-we-verify$|impact$|impact\/compare$|transparency$|compliance$|privacy$|terms$|donation-policy$|refund-policy$|appeals(?:\/[a-z0-9-]+)?$|our-work(?:\/[a-z0-9-]+)?$|programmes(?:\/[a-z0-9-]+)?$|stories(?:\/[a-z0-9-]+)?$|faith-and-reflections(?:\/[a-z0-9-]+)?$)/;
 
 const hyderabadDateFormatter = new Intl.DateTimeFormat("en-GB", {
   timeZone: "Asia/Kolkata",
