@@ -18,6 +18,7 @@ export function shouldAllowIndexing(
     // which are not part of the official public indexing origin.
     return url.protocol === "https:"
       && !url.username && !url.password && !url.port
+      && url.pathname === "/" && !url.search && !url.hash
       && INDEXABLE_HOSTS.has(url.hostname.toLowerCase());
   } catch {
     return false;
