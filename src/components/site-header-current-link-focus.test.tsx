@@ -15,7 +15,7 @@ import { SiteHeader } from "./site-header";
 
 afterEach(() => { state.writes.mockClear(); state.focus.mockClear(); state.ref = 0; });
 
-type LinkProps = { href: string; onClick: (event: object) => void; children?: ReactNode; id?: string };
+type LinkProps = { href: string; onClick?: (event: object) => void; children?: ReactNode; id?: string };
 function links(node: ReactNode): ReactElement<LinkProps>[] {
   if (Array.isArray(node)) return node.flatMap(links);
   if (!isValidElement<LinkProps>(node)) return [];
@@ -31,6 +31,7 @@ function mobileLinks(pathname: string) {
   return links(nav);
 }
 function click(link: ReactElement<LinkProps>, modifiers: object = {}) {
+  if (!link.props.onClick) throw new Error("Expected mobile link click handler");
   link.props.onClick({ currentTarget: { pathname: link.props.href }, button: 0, ...modifiers });
 }
 

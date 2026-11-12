@@ -4,7 +4,7 @@ import { UIIcon } from "./ui-icon";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { type MouseEvent, useEffect, useRef, useState } from "react";
 import styles from "./site-header.module.css";
 
 const primaryLinks = [
@@ -45,6 +45,12 @@ export function SiteHeader() {
   const closeMenuAndRestoreFocus = () => {
     setOpenForPath(null);
     toggleRef.current?.focus();
+  };
+
+  const closeMobileMenu = (event: MouseEvent<HTMLAnchorElement>) => {
+    closeMenu();
+    if (event.currentTarget.pathname === pathname && !event.defaultPrevented && event.button === 0 &&
+        !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) toggleRef.current?.focus();
   };
 
   useEffect(() => {
@@ -131,16 +137,16 @@ export function SiteHeader() {
           <div className="mobile-menu-primary">
             {primaryLinks.map(([label, href]) => {
               const active = isActivePath(pathname, href);
-              return <Link className={active ? "active" : undefined} href={href} key={href} onClick={closeMenu} aria-current={pathname === href ? "page" : active ? "location" : undefined}>{label}</Link>;
+              return <Link className={active ? "active" : undefined} href={href} key={href} onClick={closeMobileMenu} aria-current={pathname === href ? "page" : active ? "location" : undefined}>{label}</Link>;
             })}
           </div>
           <div className="mobile-menu-secondary">
             {secondaryLinks.map(([label, href]) => {
               const active = isActivePath(pathname, href);
-              return <Link className={active ? "active" : undefined} href={href} key={href} onClick={closeMenu} aria-current={pathname === href ? "page" : active ? "location" : undefined}>{label}</Link>;
+              return <Link className={active ? "active" : undefined} href={href} key={href} onClick={closeMobileMenu} aria-current={pathname === href ? "page" : active ? "location" : undefined}>{label}</Link>;
             })}
           </div>
-          <Link className="button af-support-cta" href="/donate" onClick={closeMenu} aria-current={pathname === "/donate" ? "page" : isActivePath(pathname, "/donate") ? "location" : undefined}>Donate</Link>
+          <Link className="button af-support-cta" href="/donate" onClick={closeMobileMenu} aria-current={pathname === "/donate" ? "page" : isActivePath(pathname, "/donate") ? "location" : undefined}>Donate</Link>
         </div>
       </nav>
       <noscript>
