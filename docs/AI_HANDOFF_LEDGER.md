@@ -3,6 +3,9 @@
 ## 12 November 2026 IST — owner-directed Codex parallel implementation transfer
 
 Owner explicitly appointed Codex and requested independent parallel coding agents. CODEX_ACTIVE leads integration; separate isolated disjoint branches may implement in parallel under the current directive. Preserve #817/#818 and their exact-head evidence, financial #684 hold, protected checks and 149-item accounting. This supersedes earlier one-writer wording only for the coordinated team. Source base 6bd58c74252227dbce68ed35fa3d160f5f423078; Railway SUCCESS at that SHA; direct public HTTP returned 403. No financial, schema, infrastructure or notification activation.
+## 12 November 2026 IST — independent public story/faith detail relation validation
+
+**Sole implementation writer:** CHATGPT_ACTIVE. Branch `fix/public-detail-related-cause-boundary-20261112`, from main `6bd58c74252227dbce68ed35fa3d160f5f423078`, independent from draft #817's Story discovery helper; no shared application/test/coordination files. On Story and Faith detail pages, a published linked initiative's `cause.status` is dereferenced without runtime presence validation. Synthetic RED-first tests at commits `9f3b4fffb80668345d5051e150d89f822082d506` and `6ad3b810fe377bae011225d2faf3daf0dda81012` require invalid missing causes not to crash public pages or link unverified programme context. After hosted RED: minimal nested optional check on the two detail pages; preserve reviewed title/body, existing publication guards and no new references. Full exact-head CI, separate ready-state, protected merge, Railway/public identity. No donor/payments, private media, RBAC, schema, CSP, secrets, cron or live infrastructure changes. 149 classifications unchanged. The previous #815/#816 have been source-merged and public-runtime-verified separately.
 
 ## 12 November 2026 IST — independent carousel initial index regression
 
