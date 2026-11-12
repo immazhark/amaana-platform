@@ -2,6 +2,12 @@
 
 ## Current effective checkpoint (supersedes dated handoff details below)
 
+**Current implementation task — AF-R008 (12 November IST):** Sole writer CHATGPT_ACTIVE; draft PR #788 on `fix/af-r008-structured-data-runtime-guards-20261112`, original GREEN head `eb2d6b2fd745ca1734c02ae1e6731770885e81cf` after RED `aa0d9f6b732943b7d6003448f222149199cce4a2` failed 15/17 synthetic invalid-prop cases in hosted CI `43135777404` (lint/typecheck succeeded). New Zod fail-closed guards in two public JSON-LD renderers; 17/17 targeted tests GREEN and 2957 total tests passed/20 pre-existing skipped in fast suite `43136151498`, production/database successful, browser gate pending. Protected main advanced to `4e6a19911afa4957f1e745416be97cb8c62fe2cd` after docs-only PR #786 (full CI `43133771123`, ready `43137138249` SUCCESS; Railway SKIPPED); reconcile branch using normal ancestry preserving docs and source. No finance/provider, schema, privacy media, secrets, CSP or cron activation. #684 remains financial hold; #785 privacy source gap remains open. Canonical 149: 8 Completed/52 Implemented/62 Partial/25 Not started/1 Superseded/1 Not applicable; active 139. AF-R008 remains Implemented until full release and runtime acceptance.
+
+**Current task (12 November IST):** sole writer CHATGPT_ACTIVE; docs-only original-ID evidence reconciliation AF-R010 / AF-N09, base main `3c227d267dfc5ba65a2afa242a7bda0fd667d282`; website live `b18e1518e938049f12876a069ebfa8e8cfee39cb`/ready. Proposed 149-state 8 Completed/52 Implemented/62 Partial/25 Not started/1 Superseded/1 Not applicable; active 139. No new status is merged until task CI, independent review, separate ready-state and expected-head merge. PR #684 finance held, privacy issue #785 separate, no parallel implementation writer.
+
+
+
 **Current task:** CHATGPT_ACTIVE sole writer, AF-R002/R003 docs-only patched-dependency release reconciliation from main `bd720b5567147dde624cd4d5cf0ce5a7a0fe793d`. Independently public-ready runtime `b18e1518e938049f12876a069ebfa8e8cfee39cb`. Current manifest/lock versions match reviewed GitHub advisories; full exact-head CI `43109665136` and `43117533290` success. Candidate 149 classifications 6/54/62/25/1/1, active 141; final selected CI, independent review, separate ready-state and SHA-guarded merge remain required. #684 financial activation hold unchanged; no other writer or overlapping implementation authorized.
 
 
