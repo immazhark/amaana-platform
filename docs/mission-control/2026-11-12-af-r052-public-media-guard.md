@@ -1,0 +1,9 @@
+# AF-R052 — PublicMedia malformed runtime projection fail-closed boundary
+
+Date: 12 November 2026 IST. Scope: existing public-media rendering, **not** a new asset approval, donor claim or identity/redaction acceptance.
+
+**RED:** `PublicMedia` trusts TypeScript-only `PublicMediaAsset` property shapes before invoking `canRenderPublicMedia()` and `caption?.trim()`. At runtime a malformed numeric public URL, object alt or object caption can throw in server rendering or execute a forged `trim()` method; unknown media kinds and invalid IDs can also reach rendering. New synthetic Vitest SSR tests assert malformed entries render nothing without throwing/side effects, and valid approved image output remains unchanged. The unmodified source fails these tests (e.g. numeric publicUrl triggers `TypeError` through `value?.trim()`; forged caption trimming is called; invalid ID is accepted).
+
+**GREEN:** Pre-check a small known media-kind set, nonblank string ID, nullable/string-only title, caption, alt, external and public URL, plus optional safe-integer positive sourceYear. Reject malformed runtime metadata before media/url/template code. All valid records pass through the identical existing CSP, private-route, reviewed-media and dimension gates; no new allowed asset origin or publication path. Distinct from #794, which protects generic URL normalization and campaign-gallery item projection. Existing full rendering remains unchanged for valid inputs.
+
+**Required:** RED sensitivity/targeted GREEN, exact-head fast/typecheck/lint, browser/database/production/security, independent review, separate ready-state and SHA-guarded merge; source under src may trigger Railway website deployment. Verify public SHA, readiness, and media negative gates post-rollout. AF-R052 stays Partial and identifiable faces require separate face-redacted, GPS/EXIF-stripped derivative review under issue #785. No auth, payments, recipients, schema, cron, CSP or infrastructure changes.
