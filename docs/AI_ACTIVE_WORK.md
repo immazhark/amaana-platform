@@ -2,6 +2,10 @@
 
 ## Current effective checkpoint (supersedes dated handoff details below)
 
+**Current task (12 November IST):** sole writer CHATGPT_ACTIVE; docs-only original-ID evidence reconciliation AF-R010 / AF-N09, base main `3c227d267dfc5ba65a2afa242a7bda0fd667d282`; website live `b18e1518e938049f12876a069ebfa8e8cfee39cb`/ready. Proposed 149-state 8 Completed/52 Implemented/62 Partial/25 Not started/1 Superseded/1 Not applicable; active 139. No new status is merged until task CI, independent review, separate ready-state and expected-head merge. PR #684 finance held, privacy issue #785 separate, no parallel implementation writer.
+
+
+
 **Current task:** CHATGPT_ACTIVE sole writer, AF-R002/R003 docs-only patched-dependency release reconciliation from main `bd720b5567147dde624cd4d5cf0ce5a7a0fe793d`. Independently public-ready runtime `b18e1518e938049f12876a069ebfa8e8cfee39cb`. Current manifest/lock versions match reviewed GitHub advisories; full exact-head CI `43109665136` and `43117533290` success. Candidate 149 classifications 6/54/62/25/1/1, active 141; final selected CI, independent review, separate ready-state and SHA-guarded merge remain required. #684 financial activation hold unchanged; no other writer or overlapping implementation authorized.
 
 

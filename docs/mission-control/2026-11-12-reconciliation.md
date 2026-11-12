@@ -1,5 +1,17 @@
 # Source, finance and backlog reconciliation — 12 November 2026 IST
 
+## 12 November 2026 IST — AF-R010 and AF-N09 verified bounded closures
+
+- **AF-R010 Completed (P0):** Fresh source at merged main `3c227d267dfc5ba65a2afa242a7bda0fd667d282` has no `innerHTML` references in `e2e/visual-system.spec.mjs` and no assignment to `innerHTML` in `e2e/all-page-audit.spec.mjs`. `head.innerHTML()` only reads HTML. `page.setContent` remains for an isolated source-rendered synthetic error fixture and is outside the prohibited raw DOM write. Full exact-head browser acceptance, production, database, fast and verify CI `43128164786` SUCCESS after historical fix; test fixtures unchanged from deployed source.
+- **AF-N09 Completed (P1):** `src/app/api/admin/media/curated-gallery/publish/route.ts` catches exceptions and returns constant `Curated gallery publication failed safely.`, HTTP 500 and private no-store/noindex headers. It logs only a bounded error name, not exception message or stack. `error-boundary.test.ts` injects synthetic auth/runtime/database exceptions and non-Error failures and preserves origin/permission/authentication guards; latest full exact-head fast/production CI `43128164786` SUCCESS. No privileged publish endpoint was invoked live and no real media was changed.
+
+Both fixed source paths are unchanged between last deployed source `b18e1518e938049f12876a069ebfa8e8cfee39cb` and merged source `3c227d267dfc5ba65a2afa242a7bda0fd667d282` (only docs/scripts/test changed); Railway website #784 `e2838175-8cdf-4975-b113-6258db92c6a3` SKIPPED, and independently verified public `/api/health/version` main/production `b18e1518e938049f12876a069ebfa8e8cfee39cb` and `/api/health/ready` ready. #784 exact head `41149c499a98e06f602264694afabd00d2b237e5`, full CI `43128164786` SUCCESS, separate ready-state `43132279837` SUCCESS, guarded merge `3c227d267dfc5ba65a2afa242a7bda0fd667d282`.
+
+**Original 149 IDs:** 8 Completed / 52 Implemented / 62 Partial / 25 Not started / 1 Superseded / 1 Not applicable. **Active 139** (P0 32, P1 72, P2 35). These closures do **not** resolve arbitrary HTML injection, asset-level media privacy issue #785, financial PR #684, or AF-R004/R006/008/009 pending separate acceptance. This candidate changes only governance documents and CSV records, no application or production behavior.
+
+---
+
+
 ## 12 November 2026 IST — AF-R002/R003 vulnerable-release closure
 
 This addendum supersedes only the AF-R002/R003 classifications and counts below. **AF-R002 Completed:** GitHub-reviewed `GHSA-wq5f-xc86-pv6w` affects `sharp <0.35.5`; the patched release is `0.35.5`. The deployed source manifest and lock pin `sharp@0.35.5` with Alpine musl native variant and `@img/sharp-libvips-linuxmusl-x64@1.3.4`; the upstream sharp advisory describes librsvg 2.63.2 in this patched release. **AF-R003 Completed:** `GHSA-68fv-2mgg-jv7q` affects `source-map-js <1.2.2`; the source lock has only `source-map-js@1.2.2`.
