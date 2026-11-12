@@ -1,5 +1,16 @@
 # Source, finance and backlog reconciliation — 12 November 2026 IST
 
+## 12 November 2026 IST — AF-R002/R003 vulnerable-release closure
+
+This addendum supersedes only the AF-R002/R003 classifications and counts below. **AF-R002 Completed:** GitHub-reviewed `GHSA-wq5f-xc86-pv6w` affects `sharp <0.35.5`; the patched release is `0.35.5`. The deployed source manifest and lock pin `sharp@0.35.5` with Alpine musl native variant and `@img/sharp-libvips-linuxmusl-x64@1.3.4`; the upstream sharp advisory describes librsvg 2.63.2 in this patched release. **AF-R003 Completed:** `GHSA-68fv-2mgg-jv7q` affects `source-map-js <1.2.2`; the source lock has only `source-map-js@1.2.2`.
+
+Full exact-head CI for #780 `43109665136` SUCCESS (fast/production/database/browser/verify). #781 `43117533290` SUCCESS, with `npm run audit:prod` and pruned production dependency checks passed. Railway website `f9058056-1c6e-4dc3-96b0-1aa312389330` SUCCESS at commit `b18e1518e938049f12876a069ebfa8e8cfee39cb`; independent public `/api/health/version` and `/api/health/ready` returned that same main/production SHA and ready. GitHub compare `b18e1518e938049f12876a069ebfa8e8cfee39cb` → `bd720b5567147dde624cd4d5cf0ce5a7a0fe793d` affects only scripts/docs/CSV; manifest, lock and Dockerfile have not changed since the deployed source. Advisory sources: https://github.com/advisories/GHSA-wq5f-xc86-pv6w and https://github.com/advisories/GHSA-68fv-2mgg-jv7q .
+
+**Updated 149-ID overlay:** 6 Completed, 54 Implemented, 62 Partial, 25 Not started, 1 Superseded, 1 Not applicable. **Active 141:** P0 33, P1 73, P2 35. This closure covers the identified patched-version problems only, not arbitrary SVG security, future CVEs, or live financial acceptance. AF-R004/R005/R006 and held finance PR #684 retain their classifications. No source code, provider, schema, secret, CSP, infrastructure, cron, notification or donor mutation in this docs-only candidate.
+
+---
+
+
 ## Scope and release identity
 
 Base main `b18e1518e938049f12876a069ebfa8e8cfee39cb` (PR #780). Railway website deployment `f9058056-1c6e-4dc3-96b0-1aa312389330` SUCCESS in production `38aede68-35aa-42de-adbc-49802e6d44e4`, service `b40482be-5e5d-48cc-b36b-39beabfd5d5c`. Independent uncached public `/api/health/version` and `/api/health/ready` reads returned HTTP 200, the exact base SHA/main/production/paymentMode live and ready. Direct workspace HTTP returned 403; an independent retrieval path succeeded. Identity/readiness do not certify payment settlement or all user journeys.
