@@ -648,7 +648,7 @@ body{font-weight:var(--af-weight-body)}
 :is(.v2-initiative-row,.v3-work-card,.canonical-pathways,.v2-stories-card,.v2-appeal-card) h3{
   font-family:var(--af-font-display);
   font-weight:500;
-  line-height:1.08;
+  line-height:1.14;
   letter-spacing:-.02em
 }
 
