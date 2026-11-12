@@ -20,7 +20,7 @@ function attribute(raw, name) {
 
 function rootNodes(html) {
   const nodes = [];
-  for (const tag of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)) {
+  for (const tag of html.matchAll(/<script(?=[\t\n\f\r />])([^>]*)>([\s\S]*?)<\/script\s*>/gi)) {
     if (attribute(tag[1], "type")?.toLowerCase() !== "application/ld+json") continue;
     let parsed;
     try { parsed = JSON.parse(tag[2]); }
@@ -90,14 +90,14 @@ function neutralizeQuotedMarkup(html) {
 function stripInertMarkup(html) {
   const withoutComments = neutralizeQuotedMarkup(html.replace(/<!--[\s\S]*?-->/g, ""));
   if (withoutComments.includes("<!--")) throw new Error("Unclosed HTML comment in structured-data document");
-  if (/<plaintext\b/i.test(withoutComments)) {
+  if (/<plaintext(?=[\t\n\f\r />])/i.test(withoutComments)) {
     throw new Error("Unparseable plaintext HTML mode in public document");
   }
   const withoutRawText = withoutComments
-    .replace(/<(style|title|xmp|noembed|noframes)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, "")
-    .replace(/<script\b([^>]*)>[\s\S]*?<\/script\s*>/gi, (full, attrs) =>
+    .replace(/<(style|title|xmp|noembed|noframes)(?=[\t\n\f\r />])[^>]*>[\s\S]*?<\/\1\s*>/gi, "")
+    .replace(/<script(?=[\t\n\f\r />])([^>]*)>[\s\S]*?<\/script\s*>/gi, (full, attrs) =>
       attribute(attrs, "type")?.toLowerCase() === "application/ld+json" ? full : "");
-  const inertTags = /<\/?(template|noscript|textarea|iframe|object|svg)\b[^>]*>/gi;
+  const inertTags = /<\/?(template|noscript|textarea|iframe|object|svg)(?=[\t\n\f\r />])[^>]*>/gi;
   const stack = [];
   let cleaned = "";
   let cursor = 0;
@@ -155,9 +155,9 @@ export function analyzePublicSchemaHtml(path, html) {
     throw new Error("Invalid or oversized public HTML");
   }
   const visibleHtml = stripInertMarkup(html);
-  const head = /<head\b[^>]*>([\s\S]*?)<\/head\s*>/i.exec(visibleHtml);
+  const head = /<head(?=[\t\n\f\r />])[^>]*>([\s\S]*?)<\/head\s*>/i.exec(visibleHtml);
   if (!head) throw new Error("Public head markup is missing");
-  const headWithoutJsonScripts = head[1].replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, "");
+  const headWithoutJsonScripts = head[1].replace(/<script(?=[\t\n\f\r />])[^>]*>[\s\S]*?<\/script\s*>/gi, "");
   const canonicals = [...headWithoutJsonScripts.matchAll(/<link(?=[\t\n\f\r />])([^>]*)>/gi)]
     .filter(tag => attribute(tag[1], "rel")?.toLowerCase() === "canonical")
     .map(tag => attribute(tag[1], "href"));
