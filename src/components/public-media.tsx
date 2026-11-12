@@ -24,6 +24,17 @@ type PublicMediaProps = {
 const defaultResponsiveSizes = "(max-width: 700px) 100vw, (max-width: 1200px) 70vw, 900px";
 
 export function PublicMedia({ asset, priority = false, sizes = defaultResponsiveSizes }: PublicMediaProps) {
+  // Runtime records can be malformed even when TypeScript callers are correct.
+  // Reject them before reading public URLs, optional labels or media-kind branches.
+  if (!asset ||
+      typeof asset.id !== "string" || !asset.id.trim() ||
+      !["IMAGE", "VIDEO", "DOCUMENT", "EXTERNAL_VIDEO"].includes(asset.kind) ||
+      [asset.title, asset.publicUrl, asset.externalUrl, asset.altText, asset.caption].some(
+        field => field != null && typeof field !== "string",
+      ) ||
+      (asset.sourceYear != null && (!Number.isSafeInteger(asset.sourceYear) || asset.sourceYear < 1))) {
+    return null;
+  }
   if (!canRenderPublicMedia(asset)) return null;
   const url = resolvePublicMediaUrl(asset);
   if (!url) return null;
