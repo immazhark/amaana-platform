@@ -26,8 +26,15 @@ function readableEditionTitle(title: string, period: string): string {
 }
 
 export function approvedEditionTimeline(editions: readonly PublishedEdition[]) {
+  if (!Array.isArray(editions)) return [];
   const seen = new Set<string>();
   return editions.flatMap(item => {
+    // An imported runtime row can violate TypeScript's static shape.
+    // Drop only the invalid row; keep the remaining reviewed editions.
+    if (!item || typeof item !== "object" || Array.isArray(item) ||
+        typeof item.slug !== "string" || typeof item.title !== "string" ||
+        (item.primaryMetric != null && typeof item.primaryMetric !== "string") ||
+        (item.primaryMetricLabel != null && typeof item.primaryMetricLabel !== "string")) return [];
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item.slug) || seen.has(item.slug)) return [];
     const from = validYear(item.year) ? item.year : validYear(item.startYear) ? item.startYear : null;
     const until = validYear(item.year) ? item.year : validYear(item.endYear) ? item.endYear : from;
