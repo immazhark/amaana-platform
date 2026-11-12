@@ -1,7 +1,7 @@
 .team-page{background:var(--af-color-canvas);color:var(--af-color-text)}
 .team-hero{padding:clamp(4rem,8vw,7rem) 0 clamp(2.5rem,5vw,4rem);border-bottom:1px solid var(--af-color-border)}
 .team-hero-label{margin:0 0 1.15rem;color:var(--af-color-gold-ink);font-size:.8rem;letter-spacing:.2em;font-weight:800}
-.team-hero h1{max-width:15ch;margin:0;font:500 clamp(2.8rem,6.5vw,5.5rem)/1.05 var(--af-font-display);letter-spacing:-.045em;text-transform:uppercase}
+.team-hero h1{max-width:15ch;margin:0;font:500 clamp(2.8rem,6.5vw,5.5rem)/1.14 var(--af-font-display);letter-spacing:-.045em;text-transform:uppercase}
 .team-intro{max-width:66ch;margin:1.6rem 0 2rem;color:var(--af-color-muted);font-size:clamp(1.05rem,1.6vw,1.24rem);line-height:1.8}
 .team-gold-rule{display:block;height:2px;width:clamp(5rem,18vw,11rem);background:var(--af-color-gold-500)}
 .team-content{padding-block:clamp(2.5rem,6vw,5rem) clamp(4rem,8vw,7rem)}
