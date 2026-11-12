@@ -873,3 +873,27 @@ for (const width of [320, 390]) {
     }
   });
 }
+
+// AF-R025: the >1400px canonical override must not compress real public editorial headings.
+for (const width of [1440, 1920]) {
+  test(`canonical About headings retain readable desktop leading at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+    const response = await page.goto('/about', { waitUntil: 'domcontentloaded' });
+    expect(response?.ok()).toBe(true);
+    const heading = page.locator('.canonical-article .canonical-block h2').first();
+    await expect(heading).toBeVisible();
+    const metric = await heading.evaluate(node => {
+      const style = getComputedStyle(node);
+      const height = parseFloat(style.lineHeight);
+      const size = parseFloat(style.fontSize);
+      const rect = node.getBoundingClientRect();
+      return { ratio: height / size, left: rect.left, right: rect.right };
+    });
+    expect(metric.ratio).toBeGreaterThanOrEqual(1.12);
+    expect(metric.ratio).toBeLessThanOrEqual(1.24);
+    expect(metric.left).toBeGreaterThanOrEqual(-1);
+    expect(metric.right).toBeLessThanOrEqual(width + 1);
+  });
+}
