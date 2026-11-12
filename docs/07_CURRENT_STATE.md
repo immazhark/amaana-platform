@@ -1,13 +1,5 @@
 # Amaana current state — 12 November 2026 IST
 
-**Source main at this coordination candidate:** `6e5dbf1bbdb353ecbac88c71d91df833d94d0b2c`, merged #788 AF-R008 runtime Zod validation with full CI `43137396702`, separate ready-state `43141026663` and SHA-guarded merge. Independently live-ready runtime was `b18e1518e938049f12876a069ebfa8e8cfee39cb`; separate deployment identity verification remains required for the newer source. **Proposed evidence-only AF-R009/AF-N08 security closure**: 10 Completed, 50 Implemented, 62 Partial, 25 Not started, 1 Superseded, 1 Not applicable=149; 137 active, P0 30/P1 72/P2 35. Not merged until this PR's CI/review/ready-state and guard. Independent AF-R024 UI code PR #789 under same sole writer CHATGPT_ACTIVE. PR #684 financial hold, privacy #785 open. No live provider/media/donor/cron/schema/secret/infrastructure actions.
-
----
-
-## Earlier verified state
-
-# Amaana current state — 12 November 2026 IST
-
 **Current reconciliation candidate:** Protected merged source `3c227d267dfc5ba65a2afa242a7bda0fd667d282` after #784 full exact-head CI `43128164786` SUCCESS and ready-state `43132279837` SUCCESS. Website and parked worker deployments SKIPPED (only test code changed); public runtime `b18e1518e938049f12876a069ebfa8e8cfee39cb`, main/production/ready independently verified. Two historic, already-shipped scope closures AF-R010 (test fixture raw innerHTML assignment) and AF-N09 (private generic gallery HTTP500) are being reconciled via docs-only PR. **Candidate counts, pending new PR's CI/review/ready-state/merge:** 8 Completed/52 Implemented/62 Partial/25 Not started/1 Superseded/1 Not applicable=149; active 139 (P0 32/P1 72/P2 35). Only open financial PR #684 remains on separate QR activation hold; media derivative privacy issue #785 open. No live provider, donor, media, schema, auth, cron, CSP or infrastructure changes.
 
 ---
