@@ -6,7 +6,7 @@ import { canExposePublicAppeal } from "@/lib/public-environment";
 import { PUBLIC_STATIC_ROUTES } from "@/lib/public-routing";
 import { publishedProgrammeCategoryPaths } from "@/lib/sitemap-programme-categories";
 import { shouldAllowIndexing } from "@/lib/site-indexing";
-import { canListAppealInSitemap } from "@/lib/sitemap-privacy";
+import { canListAppealInSitemap, isCanonicalSitemapSlug } from "@/lib/sitemap-privacy";
 import { isLegacyOurWorkSlug } from "@/lib/our-work-routing";
 
 const configuredBase = process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org";
@@ -54,7 +54,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   ]);
 
-  const canonicalInitiatives = initiatives.filter(item => !isLegacyOurWorkSlug(item.slug));
+  const canonicalInitiatives = initiatives.filter(item => isCanonicalSitemapSlug(item.slug) && !isLegacyOurWorkSlug(item.slug));
   const publishedInitiativeSlugs = new Set(canonicalInitiatives.map(item => item.slug));
   const availableProgrammeCategoryPaths = publishedProgrammeCategoryPaths(publishedInitiativeSlugs);
 
@@ -67,7 +67,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
 
   const searchableAppeals = appeals.filter(item =>
-    canExposePublicAppeal(item)
+    isCanonicalSitemapSlug(item.slug)
+    && canExposePublicAppeal(item)
     && canExposeAppealArchive({
       appealStatus: item.status,
       hasAssistanceRequest: Boolean(item.assistanceRequest),
@@ -79,8 +80,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     ...staticPages,
     ...canonicalInitiatives.map(item => ({ url: `${base}/our-work/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "monthly" as const, priority: 0.8 })),
-    ...stories.map(item => ({ url: `${base}/stories/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "monthly" as const, priority: 0.75 })),
-    ...faithContent.filter(isPublicFaithReviewComplete).map(item => ({ url: `${base}/faith-and-reflections/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "monthly" as const, priority: 0.7 })),
+    ...stories.filter(item => isCanonicalSitemapSlug(item.slug)).map(item => ({ url: `${base}/stories/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "monthly" as const, priority: 0.75 })),
+    ...faithContent.filter(item => isCanonicalSitemapSlug(item.slug) && isPublicFaithReviewComplete(item)).map(item => ({ url: `${base}/faith-and-reflections/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "monthly" as const, priority: 0.7 })),
     ...searchableAppeals.map(item => ({ url: `${base}/appeals/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "weekly" as const, priority: 0.85 })),
   ];
 }
