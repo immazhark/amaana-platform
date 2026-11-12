@@ -1,5 +1,11 @@
 # Amaana implementation ownership — 12 November 2026 IST
 
+## Current bounded implementation — public participation-link protocol safety (12 November 2026 IST)
+
+**Sole implementation writer:** CHATGPT_ACTIVE. **Task branch:** `fix/participation-card-safe-links-20261112`, from main `99fef460d493d21629f83f9612c33808e8ca8ec8`. PRs #810/#811/#812 have passed full and separate ready-state CI, merged behind expected-head protection, and reached Railway SUCCESS and independent public identity `99fef460d493d21629f83f9612c33808e8ca8ec8` (readiness ready). Source and deployment SHA match. Original #807/#808/#809 closed as superseded; their branches preserved. Finance #684 remains held.
+
+**Task:** the shared `ParticipationCards` public component currently routes any non-HTTPS, non-mailto, non-tel href through Next Link, without rejecting unsafe protocols or protocol-relative destinations. Add synthetic fail-first regression for `javascript:`, `data:`, insecure `http:`, protocol-relative and malformed hrefs; preserve existing internal, HTTPS, mailto and tel behavior. Fix only the public-link boundary on a dedicated branch after RED evidence. No real private data, media, tax, payments, RBAC, schema, secrets, infrastructure or notifications changed. Require exact-head full CI and separate ready-state, independent review, SHA-guarded merge, Railway/public acceptance. Revert small component/tests/docs for rollback. Do not reclassify any of the 149 original backlog items for this narrow hardening.
+
 ## Verified active release boundary — 12 November 2026 IST (supersedes older dated sections)
 
 **Writer:** CHATGPT_ACTIVE, sole coordinated implementation writer; parallel QA/CI/research only. **Current protected main:** `1815c2692efea5937b4cc7db5be9fed2f974f4dc`, guarded #806 merge after #805 `1e536c50e50674720750d49aac71f2a41ac21592`. Full exact-head and separate ready-state CI passed for both PRs. Railway deployment `5b3c814a-8924-4035-ab1e-8419b2f65c31` SUCCESS, independent public version SHA matched main and /api/health/ready returned ready. This certifies release identity, not real donation or full journey acceptance.
