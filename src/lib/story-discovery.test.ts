@@ -1,5 +1,32 @@
 import { expect, it } from "vitest";
 import { publishedStoryProgrammeContext, selectStoryDiscovery } from "./story-discovery";
+it("does not crash or expose an unpublished programme when a published initiative projection lacks its nested cause", () => {
+  const missingRelation = {
+    title: "Reviewed story",
+    summary: "Public narrative",
+    initiative: { status: "PUBLISHED", cause: null },
+    cause: { title: "Internal unpublished programme", status: "DRAFT" },
+  } as unknown as Parameters<typeof publishedStoryProgrammeContext>[0];
+
+  expect(publishedStoryProgrammeContext(missingRelation)).toBeNull();
+  const selected = selectStoryDiscovery([missingRelation], {});
+  expect(selected.programmes).toEqual([]);
+  expect(selected.results).toEqual([missingRelation]);
+  expect(JSON.stringify(selected.programmes)).not.toContain("Internal unpublished");
+});
+
+it("uses a reviewed direct cause when a published initiative projection has no nested cause", () => {
+  const missingRelation = {
+    title: "Reviewed story",
+    summary: "Public narrative",
+    initiative: { status: "PUBLISHED", cause: null },
+    cause: { title: "Reviewed education", status: "PUBLISHED" },
+  } as unknown as Parameters<typeof publishedStoryProgrammeContext>[0];
+  expect(publishedStoryProgrammeContext(missingRelation)).toBe("Reviewed education");
+  expect(selectStoryDiscovery([missingRelation], { programme: "Reviewed education" }))
+    .toMatchObject({ invalid: false, count: 1, programmes: ["Reviewed education"] });
+});
+
 it("combines public context and search with bounded pagination", () => {
   const records = Array.from({length: 25}, (_, i) => ({id:String(i),title:`Winter ${i}`,summary:"Community relief",cause:{title:"Relief",status:"PUBLISHED"}}));
   expect(selectStoryDiscovery(records,{q:"community",programme:"Relief",page:"2"})).toMatchObject({page:2,totalPages:3,count:25});
