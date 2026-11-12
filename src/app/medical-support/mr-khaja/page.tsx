@@ -66,7 +66,10 @@ export default async function MrKhajaPublicInformationPage() {
       className="page-hero--long-title"
       eyebrow="Family medical assistance request · Hyderabad"
       title={info.title}
-      description={<p>{info.summary}</p>}
+      description={<>
+        <p>{info.summary}</p>
+        <p><strong>Foundation-approved fundraising target: {formatINR(info.requestedINR)}.</strong> This is not an independently certified medical estimate. Dedicated checkout for this request is not yet active.</p>
+      </>}
       actions={[
         { label: "Enquire about support in India", href: "/contact" },
         { label: "Browse reviewed appeals", href: "/appeals", secondary: true },
