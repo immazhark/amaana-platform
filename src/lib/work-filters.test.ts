@@ -227,3 +227,22 @@ it("matches published initiative copy with collapsed whitespace without changing
   expect(result.results[0]?.initiatives[0]?.slug).toBe("winter");
   expect(programmes[0]?.initiatives[0]?.title).toBe("Winter\t  support");
 });
+
+it("does not turn malformed published date ranges into single-year filter claims", () => {
+  const initiatives = [
+    { slug: "reversed", year: null, startYear: 2026, endYear: 2024 },
+    { slug: "oversized", year: null, startYear: 1900, endYear: 2026 },
+    { slug: "reviewed", year: 2025, startYear: null, endYear: null },
+  ];
+  const programmes = [{ slug: "relief", initiatives }];
+  const result = filterWork(programmes, {});
+  expect(result.years).toEqual([2025]);
+  expect(result.results[0]?.initiatives).toEqual(initiatives);
+  for (const year of ["2026", "1900"]) {
+    expect(filterWork(programmes, { year })).toMatchObject({
+      invalid: true, year: "", results: [], count: 0,
+    });
+  }
+  expect(filterWork(programmes, { year: "2025" }).results[0]?.initiatives)
+    .toEqual([initiatives[2]]);
+});
