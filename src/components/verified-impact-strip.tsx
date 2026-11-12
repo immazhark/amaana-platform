@@ -50,7 +50,12 @@ export function VerifiedImpactStrip({ items, headingId = "published-outcomes-hea
   items: readonly VerifiedImpactItem[];
   headingId?: string;
 }) {
-  const visible = items.filter(item =>
+  const visible = (Array.isArray(items) ? items : []).filter(item =>
+    item != null && typeof item === "object" && !Array.isArray(item) &&
+    typeof item.slug === "string" &&
+    typeof item.title === "string" &&
+    typeof item.value === "string" &&
+    typeof item.label === "string" &&
     /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item.slug) &&
     item.title.trim().length > 0 &&
     item.value.trim().length > 0 &&
