@@ -46,7 +46,7 @@ export function normalizeStructuredDataPath(path: string) {
   // WHATWG URL resolution collapses dot segments before the privacy checks.
   // Inspect supplied path segments first, including nested percent encoding,
   // so a story cannot claim a different page's canonical URL.
-  const rawPath = value.split(/[?#]/, 1)[0];
+  const rawPath = value.split(/[?#]/, 1)[0] ?? "";
   for (const rawSegment of rawPath.split("/")) {
     let segment = rawSegment;
     for (let depth = 0; depth < 8; depth++) {
