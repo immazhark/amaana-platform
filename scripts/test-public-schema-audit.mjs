@@ -256,3 +256,32 @@ test("genuine canonical and robots tags retain HTML whitespace and self-closing 
   assert.equal(result.canonical, `${origin}/`);
   assert.equal(result.indexingDirective, "NOINDEX");
 });
+
+
+test("script-like custom elements cannot supply a JSON-LD identity graph", () => {
+  for (const name of ["script-data", "script:json"]) {
+    const html = page().replace('<script type="application/ld+json">', `<${name} type="application/ld+json">`);
+    assert.throws(() => analyzePublicSchemaHtml("/", html), /identity nodes/);
+  }
+});
+
+test("head-like custom elements cannot supply the public document head", () => {
+  for (const name of ["head-note", "head:metadata"]) {
+    assert.throws(() => analyzePublicSchemaHtml("/", page().replace("<head>", `<${name}>`)), /head markup/);
+  }
+});
+
+test("custom elements with inert-tag prefixes retain active identity markup", () => {
+  for (const name of ["template-card", "noscript-note", "textarea-field", "iframe-card", "object-card", "svg-icon", "plaintext-card"]) {
+    const html = page().replace("<body>", `<body><${name}>`).replace("</body>", `</${name}></body>`);
+    assert.equal(analyzePublicSchemaHtml("/", html).status, "STRUCTURE_VALID_EXTERNAL_ACCEPTANCE_PENDING", name);
+  }
+});
+
+test("raw-text custom element prefixes do not conceal active private JSON-LD", () => {
+  const privateSchema = JSON.stringify({ "@context": "https://schema.org", "@type": "Article", url: `${origin}/admin/private` });
+  for (const name of ["style", "title", "xmp", "noembed", "noframes"]) {
+    const custom = `<${name}-panel><script type="application/ld+json">${privateSchema}</script><${name}>Child</${name}></${name}-panel>`;
+    assert.throws(() => analyzePublicSchemaHtml("/", page().replace("<body>", `<body>${custom}`)), /Private route/, name);
+  }
+});
