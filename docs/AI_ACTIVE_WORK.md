@@ -1,5 +1,15 @@
 # Amaana implementation ownership — 12 November 2026 IST
 
+## Verified release checkpoint — 13 November 2026 IST (latest)
+
+**Writer:** CHATGPT_ACTIVE after explicit owner-directed Codex → ChatGPT handoff in #827. **Source protected main:** `07f76c7745f1d78c0f21b209dac4566380c1e576` after five SHA-guarded PR merges. Four independent bounded source fixes: #823 gallery Shift+Tab root focus (merge `28f9d21d2874a22aeb182e47b01a6b53451395f9`; full CI `43279109875`, ready-state `43412125079`); #824 schema-observer custom-element tag boundaries (merge `6ba1dc152cf2469205e43c8df63ca1ace668202f`; full `43279587397`, ready `43412129793`); #825 CSS route observer HTML MIME guard (merge `0942404357b0979402b20a86e2f62262d6d5ba53`; full `43283784046`, ready `43412135961`); #826 carousel keyboard Resume while retaining focus (merge `5e52652bb7f058b8ab38f493015ef24d940db1c1`; full `43283887910`, ready `43412141360`). Each had no unresolved review threads and used expected-head merge. #827 docs coordination (merge `07f76c7745f1d78c0f21b209dac4566380c1e576`; full `43412045055`, separate ready `43412559547`). No branch deletions or protection bypasses.
+
+**Railway:** website deployment `df96b137-a55d-422c-8e69-821ed670d675` SUCCESS and online at source `5e52652bb7f058b8ab38f493015ef24d940db1c1`, 1/1 running replica. The subsequent #827 documentation-only source `07f76c7745f1d78c0f21b209dac4566380c1e576` website deployment `343c5cb6-903f-4fb3-947e-92f7b45b365a` correctly SKIPPED under watch rules. Do not infer a missing runtime change or force a rollout. Independent public /api/health/version and /api/health/ready retrieval was unavailable via this session's web fetch; mark LIVE_HTTP_UNVERIFIED, not failure. Historical preview remains offline; worker parked. No live payments or donor notifications.
+
+**Remaining open PR:** #684 QR-only domestic giving candidate remains DRAFT and unmerged, despite successful code CI. Independent Axis Bank/NPCI payee ownership attestation, actual credited UTR reconciliation and separately scoped activation authorization are not complete. Do not merge or activate. No 80G certificate or foreign giving claims. No new item closures: canonical 149 = 12 Completed, 48 Implemented, 62 Partial, 25 Not started, 1 Superseded, 1 Not applicable; active 135.
+
+**Next independent coding direction:** select an unclaimed bounded current-main P1 source defect after checking overlap; RED-first synthetic regression, smallest correction, full CI, separate promotion and guarded merge. Finance/case routing and Railway IaC investigations may continue read-only in parallel; infra apply and direct-payment activation remain protected. Roll back each merged fix by its narrow reviewed revert; preserve release history. Older dated sections below are historical.
+
 
 ## Current owner directive — 13 November 2026 IST (supersedes prior CODEX_ACTIVE coordination)
 
