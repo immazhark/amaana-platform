@@ -40,7 +40,9 @@ export function safeHomeHref(value: string) {
 /** Accept JSON numbers and nonempty numeric form strings without coercing other values. */
 export function parseHomeNumericInput(value: unknown): number {
   if (typeof value === 'number') return value;
-  return typeof value === 'string' && value.trim() ? Number(value) : NaN;
+  if (typeof value !== 'string') return NaN;
+  const text = value.trim();
+  return /^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(text) ? Number(text) : NaN;
 }
 function normalizeHomeSchedule(value: string): string {
   if (!value) return '';
