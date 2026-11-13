@@ -197,6 +197,23 @@ test("redirects and unexpected transport origins fail before schema acceptance",
   }
 });
 
+test("oversized HTML streaming audit rejects even when cancellation never settles", async () => {
+  const fakeFetch = async target => {
+    const stream = new ReadableStream({
+      start(controller) { controller.enqueue(new Uint8Array(2_100_000)); },
+      cancel() { return new Promise(() => {}); },
+    });
+    const response = new Response(stream, { status: 200, headers: { "Content-Type": "text/html" } });
+    Object.defineProperty(response, "url", { value: target });
+    return response;
+  };
+  const outcome = await Promise.race([
+    auditPublicSchema(fakeFetch).then(() => "accepted", error => String(error)),
+    new Promise(resolve => setTimeout(() => resolve("audit stalled"), 100)),
+  ]);
+  assert.match(outcome, /Public document exceeds size limit/);
+});
+
 test("non-HTML, absent-body and oversized transport responses fail closed", async () => {
   for (const fixture of [
     { body: page(), headers: { "Content-Type": "text/plain" } },

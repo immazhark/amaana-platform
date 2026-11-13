@@ -209,7 +209,9 @@ async function readHtmlLimited(response) {
       chunks.push(value);
     }
   } catch (error) {
-    await reader.cancel().catch(() => {});
+    // A broken producer may never settle cancellation. Preserve the original
+    // size or transport error without allowing best-effort cleanup to stall.
+    try { void reader.cancel().catch(() => {}); } catch { /* Best effort. */ }
     throw error;
   } finally {
     reader.releaseLock();
