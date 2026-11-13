@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export default function GlobalError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
     <html lang="en-IN">
@@ -15,8 +17,8 @@ export default function GlobalError({ reset }: { error: Error & { digest?: strin
             <p style={{ maxWidth: "620px", color: "#4d5d72", fontSize: "1.08rem", lineHeight: 1.7 }}>Please try again. No payment password, OTP, UPI PIN or card credential is ever required to report a technical problem.</p>
             <nav aria-label="Recovery options" style={{ marginTop: "1.5rem", display: "flex", flexWrap: "wrap", alignItems: "center", gap: "1rem" }}>
               <button type="button" onClick={reset} style={{ border: 0, minHeight: "48px", padding: ".95rem 1.35rem", background: "#e0b318", color: "#102039", font: "inherit", fontWeight: 800, cursor: "pointer" }}>Try again →</button>
-              <a href="/" style={{ display: "inline-flex", alignItems: "center", minHeight: "48px", padding: ".6rem 0", color: "#102039", fontWeight: 700, textDecoration: "underline" }}>Return home</a>
-              <a href="/contact" style={{ display: "inline-flex", alignItems: "center", minHeight: "48px", padding: ".6rem 0", color: "#102039", fontWeight: 700, textDecoration: "underline" }}>Contact Amaana</a>
+              <Link href="/" style={{ display: "inline-flex", alignItems: "center", minHeight: "48px", padding: ".6rem 0", color: "#102039", fontWeight: 700, textDecoration: "underline" }}>Return home</Link>
+              <Link href="/contact" style={{ display: "inline-flex", alignItems: "center", minHeight: "48px", padding: ".6rem 0", color: "#102039", fontWeight: 700, textDecoration: "underline" }}>Contact Amaana</Link>
             </nav>
           </section>
         </main>
