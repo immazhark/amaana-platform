@@ -726,3 +726,17 @@ test("AF-R057 retains text/html media types with case and charset parameters", a
     assert.equal(result.routes[0].stylesheetCount, 0);
   }
 });
+
+
+test("AF-R057 separates stylesheet rel tokens only on HTML ASCII whitespace", () => {
+  const href = "/_next/static/chunks/rel-token.css";
+  const expected = ["https://amaanafoundation.org" + href];
+  for (const separator of ["\t", "\n", "\f", "\r", " "]) {
+    assert.deepEqual(stylesheetsInHtml(`<link rel="preload${separator}stylesheet" href="${href}">`),
+      expected, `HTML separator U+${separator.codePointAt(0).toString(16)}`);
+  }
+  for (const separator of ["\u000b", "\u00a0", "\u2003", "\ufeff"]) {
+    assert.deepEqual(stylesheetsInHtml(`<link rel="preload${separator}stylesheet" href="${href}">`),
+      [], `Non-HTML separator U+${separator.codePointAt(0).toString(16)} must not invent a stylesheet`);
+  }
+});
