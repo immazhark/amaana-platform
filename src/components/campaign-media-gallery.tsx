@@ -106,7 +106,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
       if (!dialogRef.current?.contains(document.activeElement)) {
         event.preventDefault();
         (event.shiftKey ? last : first).focus();
-      } else if (event.shiftKey && document.activeElement === first) {
+      } else if (event.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current)) {
         event.preventDefault();
         last.focus();
       } else if (!event.shiftKey && document.activeElement === last) {
