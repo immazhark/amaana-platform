@@ -1,3 +1,11 @@
+## 14 November 2026 IST — coordinated audit corrections and protected font audit merge
+
+Coordinator CODEX_ACTIVE under explicit owner-directed parallel coding. Base a936835dd58c210e21dc3bed52a122b1d657c3fc; #854 protected merge dd0fa90d2d367cdaf8909c2fa5e2c9d4ff4e4d15 after full CI 43522240927 and separate promotion 43526227816. Independent review found no blocker. Railway d21709b4-6a0e-48ff-9cbd-abc321427315 SKIPPED; previous a936835 deployment SLEEPING. Public Cloudflare 403 blocks independent runtime certification.
+
+Two isolated agents reproduced and corrected audit-only defects: #858 CSS rel ASCII whitespace, head 4b7ada43a0a9eb5ffc1b8dfddbb7bc12294abe5f, RED vertical-tab case then 92/92 native GREEN; #859 exact HTML MIME essence, head d704b2ff3a8cfa88a5728eda44261bd6e30e0322, RED 29 pass/1 fail then 30/30 GREEN. Both independently reviewed/rerun, published drafts; hosted exact-head acceptance and separate promotion pending. Local full Vitest unavailable without dependencies. Connector publication used after Git HTTPS push lacked credentials; remote heads differ from local commits but preserve exact trees.
+
+#853 held for review of next/link versus native full-document fatal recovery. Preserve #855–857 in-flight candidates. #684 financial activation remains held for independent payee attestation, credited UTR matching and scoped approval; #845 retained RED finance evidence. No payments, secrets, donor data, auth, schema, infrastructure or worker activation. Canonical repository ledger verified 149 unique IDs: 12 Completed / 48 Implemented / 63 Partial / 24 Not started / 1 Superseded / 1 Not applicable; 135 active. Uploaded October CSV is stale. No new full-item closure. Next: finish draft exact-head gates; correct fatal recovery after regression; preserve provider/manual holds. Rollback each narrow two-file correction independently.
+
 # Amaana handoff ledger
 
 ## 13 November 2026 IST — three exact-head source merges and honest AF-N14 progression
