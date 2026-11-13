@@ -155,6 +155,28 @@ describe("public structured data", () => {
       .toBe("https://cdn.example.org/public-approved.webp");
   });
 
+  it("never publishes token-bearing or fragment image references into public JSON-LD", () => {
+    const site = "https://amaanafoundation.org";
+    const candidates = [
+      "/media/2026/reviewed.webp?token=synthetic-private-value",
+      "/media/2026/reviewed.webp#synthetic-fragment",
+      "https://cdn.example.org/reviewed.webp?X-Amz-Signature=synthetic-private-value",
+      "https://cdn.example.org/reviewed.webp#synthetic-fragment",
+    ];
+    for (const imageUrl of candidates) {
+      expect(normalizeStructuredDataImage(imageUrl, site), imageUrl).toBeNull();
+      const data = buildPublicStructuredData({
+        type: "Article", title: "Reviewed account", description: "Public-safe summary",
+        path: "/stories/reviewed", imageUrl,
+      }, site);
+      expect(data, imageUrl).not.toHaveProperty("image");
+    }
+    expect(normalizeStructuredDataImage("/media/2026/reviewed.webp", site))
+      .toBe("https://amaanafoundation.org/media/2026/reviewed.webp");
+    expect(normalizeStructuredDataImage("https://cdn.example.org/reviewed.webp", site))
+      .toBe("https://cdn.example.org/reviewed.webp");
+  });
+
   it("fails closed when runtime JSON-LD input violates the schema", () => {
     expect(buildPublicStructuredData({
       type: "Article",
