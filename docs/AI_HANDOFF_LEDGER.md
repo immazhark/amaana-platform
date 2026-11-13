@@ -1,5 +1,9 @@
 # Amaana handoff ledger
 
+## 13 November 2026 IST — three exact-head source merges and honest AF-N14 progression
+
+ChatGPT-active writer: PR #839 (merge `c6a183d6f82a9a364611d4a8a503111502dc0206`), #840 (merge `86b4192bde8dc100e17b9ef5bba2b3d0a35e18ae`), #841 (merge `a2e71e3fd8d62ea73e2330d76a7684373220082d`) each passed a reproduced RED, correction, all-seven-job GREEN full CI and separate ready-state promotion; protected expected-head merges, no review blockers. Railway website `c7549d83-8d05-45e4-a4db-d14ba57d0510` SUCCESS at `a2e71e3fd8d62ea73e2330d76a7684373220082d`, direct public HTTP readiness/version unverified. Only AF-N14 ledger state changes in this checkpoint: `Not started → Partial`, because #835 fixed one synthetic stream-cancellation hang, not every closed-stream root cause. Canonical 149 preserved (12/48/63/24/1/1), active 135. #684 remains finance-held; no payment, worker, schema, secret, infrastructure or donor data changes. Next coding task must be independent and test-first.
+
 ## 13 November 2026 IST — feedback native-label semantics regression
 
 CHATGPT_ACTIVE claimed `fix/feedback-option-phrasing-20261113` at base `dc216aaa2c5c7ebb656e71d5898d6221cca89a4e`. Reproduce invalid headings/paragraphs/divs inside radio labels with a synthetic server-rendered markup test; make the smallest phrasing-only HTML/CSS fix without changing choice copy, aria associations or mailto privacy boundary. Full CI, separate ready-state and guarded merge required. Other source branches must remain disjoint, #684 financial activation held. No original-149 reclassification.
