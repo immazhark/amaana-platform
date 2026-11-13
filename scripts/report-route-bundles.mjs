@@ -297,6 +297,19 @@ function clientReferenceManifestExists(buildDir, page) {
   return true;
 }
 
+/** Missing optional metadata may fall back; linked or non-file metadata may not. */
+function buildMetadataExists(path) {
+  let entry;
+  try { entry = lstatSync(path); }
+  catch (error) {
+    if (error?.code === "ENOENT") return false;
+    throw error;
+  }
+  if (entry.isSymbolicLink()) throw new Error("Symbolic links are not supported in build metadata");
+  if (!entry.isFile()) throw new Error("Build metadata path is not a file");
+  return true;
+}
+
 function run() {
   const buildDir = join(process.cwd(), ".next");
   if (existsSync(buildDir) && lstatSync(buildDir).isSymbolicLink()) {
@@ -304,7 +317,7 @@ function run() {
   }
   const manifestPath = join(buildDir, "app-build-manifest.json");
   let result;
-  if (existsSync(manifestPath)) {
+  if (buildMetadataExists(manifestPath)) {
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
     result = {
       metric: "manifest-assigned-uncompressed-bytes",
@@ -315,7 +328,7 @@ function run() {
     };
   } else {
     const routesPath = join(buildDir, "app-path-routes-manifest.json");
-    if (!existsSync(routesPath)) throw new Error("App Router route path manifest missing after build");
+    if (!buildMetadataExists(routesPath)) throw new Error("App Router route path manifest missing after build");
     const appPaths = JSON.parse(readFileSync(routesPath, "utf8"));
     result = summarizeUnattributedAppAssets(appPaths, walkBuildAssets(join(buildDir, "static")));
     const pages = Object.keys(appPaths).filter(page => page.endsWith("/page"));
@@ -331,7 +344,7 @@ function run() {
       result.cssRoutes = summarizeClientReferenceCss(appPaths,
         page => readFileSync(clientPath(page), "utf8"), asset => statSync(join(buildDir, asset)).size);
       const buildManifestPath = join(buildDir, "build-manifest.json");
-      result.jsRouteAttributionAvailable = existsSync(buildManifestPath) && pages.every(page =>
+      result.jsRouteAttributionAvailable = buildMetadataExists(buildManifestPath) && pages.every(page =>
         Object.hasOwn(parseClientReferenceManifest(readFileSync(clientPath(page), "utf8"), page), "entryJSFiles"));
       if (result.jsRouteAttributionAvailable) {
         const buildManifest = JSON.parse(readFileSync(buildManifestPath, "utf8"));
