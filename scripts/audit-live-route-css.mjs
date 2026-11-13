@@ -50,7 +50,7 @@ export function stylesheetsInHtml(html, origin = ORIGIN) {
     if (match[1].toLowerCase() !== "link") continue;
     const rel = attr(match[2], "rel");
     const raw = attr(match[2], "href");
-    if (!rel?.toLowerCase().split(/\s+/).includes("stylesheet") || !raw) continue;
+    if (!rel?.toLowerCase().split(/[\t\n\f\r ]+/).includes("stylesheet") || !raw) continue;
     let asset;
     try { asset = new URL(raw.replaceAll("&amp;", "&"), site); }
     catch { continue; }
