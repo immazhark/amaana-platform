@@ -108,6 +108,21 @@ test("unattributed aggregate rejects unmeasured asset sizes instead of producing
   ]), /Invalid aggregate total size/);
 });
 
+test("unattributed build aggregate rejects duplicated paths rather than inflating byte totals", () => {
+  const pages = { "/page": "/" };
+  for (const records of [
+    [{ path: "chunks/shared.js", bytes: 11 }, { path: "chunks/shared.js", bytes: 11 }],
+    [{ path: "css/site.css", bytes: 9 }, { path: "css/site.css", bytes: 13 }],
+  ]) {
+    assert.throws(() => summarizeUnattributedAppAssets(pages, records), /Duplicate aggregate asset path/);
+  }
+  const valid = summarizeUnattributedAppAssets(pages, [
+    { path: "chunks/shared.js", bytes: 11 },
+    { path: "css/site.css", bytes: 13 },
+  ]);
+  assert.deepEqual(valid.aggregate, { jsBytes: 11, cssBytes: 13, totalBytes: 24, assetCount: 2 });
+});
+
 test("parses the Next 16 JSON assignment without executing JavaScript", () => {
   assert.equal(typeof reporter.parseClientReferenceManifest, "function");
   const source = referenceSource('/about/page', { '[project]/src/app/layout': [] });
