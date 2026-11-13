@@ -130,6 +130,20 @@ describe("appeal sharing recovery", () => {
     }
   });
 
+  it("does not carry identifying copy into a fallback homepage share", () => {
+    const html = renderToStaticMarkup(<AppealShare
+      title="Synthetic private beneficiary identity"
+      summary="Synthetic confidential case narrative"
+      path="/admin/appeals"
+    />);
+    const whatsapp = html.match(/href="https:\/\/wa\.me\/\?text=([^"]+)"/)?.[1];
+    expect(whatsapp).toBeDefined();
+    const sharedText = decodeURIComponent(whatsapp ?? "");
+    expect(sharedText).not.toContain("Synthetic private beneficiary identity");
+    expect(sharedText).not.toContain("Synthetic confidential case narrative");
+    expect(sharedText).toContain("https://amaanafoundation.org/");
+  });
+
   it("renders a safe native WhatsApp link with the fully qualified canonical URL", () => {
     const html = renderToStaticMarkup(<AppealShare
       title={appeal.title}
