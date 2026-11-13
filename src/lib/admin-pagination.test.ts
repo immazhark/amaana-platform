@@ -24,6 +24,24 @@ describe("admin pagination", () => {
     expect(parseAdminPage(value)).toBe(1);
   });
 
+  it("never returns unsafe or infinite offsets from unrepresentable item totals", () => {
+    for (const totalItems of [Number.MAX_VALUE, Number.MAX_SAFE_INTEGER + 1]) {
+      const result = getAdminPagination(totalItems, Number.MAX_SAFE_INTEGER, 1);
+      expect(result).toEqual({
+        page: 1,
+        pageSize: 1,
+        totalItems: 0,
+        totalPages: 1,
+        skip: 0,
+        hasPrevious: false,
+        hasNext: false,
+      });
+    }
+    expect(getAdminPagination(120.9, 2, 50)).toMatchObject({
+      totalItems: 120, totalPages: 3, skip: 50,
+    });
+  });
+
   it("bounds requested pages and calculates offsets", () => {
     expect(getAdminPagination(0, 9)).toEqual({
       page: 1,
