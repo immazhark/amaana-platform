@@ -82,6 +82,9 @@ export function summarizeUnattributedAppAssets(appPaths, assets) {
       !Number.isSafeInteger(asset.bytes) || asset.bytes < 0)) {
     throw new Error("Invalid aggregate asset size or path");
   }
+  if (new Set(assets.map(asset => asset.path)).size !== assets.length) {
+    throw new Error("Duplicate aggregate asset path");
+  }
   const jsBytes = measuredBytes(assets.filter(asset => asset.path.endsWith(".js")).reduce((sum, asset) => sum + asset.bytes, 0), "JavaScript total");
   const cssBytes = measuredBytes(assets.filter(asset => asset.path.endsWith(".css")).reduce((sum, asset) => sum + asset.bytes, 0), "CSS total");
   return {

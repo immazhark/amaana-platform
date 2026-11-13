@@ -1,5 +1,9 @@
 # Amaana handoff ledger
 
+## 13 November 2026 IST — independent route bundle duplicate input track
+
+CHATGPT_ACTIVE branch `fix/route-bundle-duplicate-records-20261113` from protected main `2f759111fd2f3f1fac622f7bee75b898709b1571` takes a read-only reporting guard: duplicate aggregate asset records incorrectly count the same build file twice. Add synthetic RED test first; reject duplicate paths without altering valid aggregate byte arithmetic. Separate from #829 JSON-LD image-metadata work; no live runtime, data, money or infrastructure modifications. Require exact-head CI, separate ready-state and guarded merge. Do not reclassify original 149.
+
 ## 13 November 2026 IST — four scoped merges, coordination handoff and Railway release
 
 CHATGPT_ACTIVE accepted explicit ownership transfer and merged #823 `28f9d21d2874a22aeb182e47b01a6b53451395f9`, #824 `6ba1dc152cf2469205e43c8df63ca1ace668202f`, #825 `0942404357b0979402b20a86e2f62262d6d5ba53`, #826 `5e52652bb7f058b8ab38f493015ef24d940db1c1`, and #827 `07f76c7745f1d78c0f21b209dac4566380c1e576`. Each passed full exact-head CI and separate ready-state promotion with no unresolved review threads; source histories preserved. #823/#826 are accessibility behavior corrections, #824/#825 read-only audit accuracy, #827 docs-only ownership coordination. Railway website `df96b137-a55d-422c-8e69-821ed670d675` SUCCESS online for #826 source SHA. #827 website rollout SKIPPED by watch rules; public direct HTTP version/readiness remained unavailable to this session. Open PR #684 remains unmerged and financially blocked. Original 149 = 12/48/62/25/1/1; 135 active. No production data, secret, FCRA, payment, media, cron or IaC mutation. Next: independent scoped source regression with red/green evidence; preserve finance and infrastructure gates.
