@@ -226,7 +226,7 @@ export async function auditPublicSchema(fetchImpl = fetch) {
     const response = await fetchImpl(target, { redirect: "manual", signal: AbortSignal.timeout(12_000),
       headers: { accept: "text/html" } });
     if (response.status !== 200 || response.url !== target ||
-        !response.headers.get("content-type")?.toLowerCase().includes("text/html")) {
+        response.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase() !== "text/html") {
       throw new Error("Unexpected HTTP response/redirect/content type on public route: " + path);
     }
     if (Number(response.headers.get("content-length")) > maxHtmlBytes) {
