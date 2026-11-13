@@ -1,4 +1,4 @@
-import { readFile, readdir } from 'node:fs/promises';
+import { readFile, readdir, lstat } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -31,6 +31,15 @@ function scanForbiddenKeys(value, location = 'register') {
 }
 
 export async function listPublicMediaFiles(root) {
+  let rootStat;
+  try { rootStat = await lstat(root); }
+  catch (error) {
+    if (error?.code === 'ENOENT') return [];
+    throw error;
+  }
+  if (rootStat.isSymbolicLink()) throw new Error('Symlinked public media root is not reviewable');
+  if (!rootStat.isDirectory()) throw new Error('Public media root must be a directory');
+
   const files = [];
   async function walk(directory) {
     let entries;
@@ -43,6 +52,7 @@ export async function listPublicMediaFiles(root) {
 
     for (const entry of entries) {
       const absolute = path.join(directory, entry.name);
+      if (entry.isSymbolicLink()) throw new Error('Symlinked public media entry is not reviewable: ' + path.relative(root, absolute));
       if (entry.isDirectory()) await walk(absolute);
       else if (entry.isFile()) files.push(path.relative(root, absolute).split(path.sep).join('/'));
     }
