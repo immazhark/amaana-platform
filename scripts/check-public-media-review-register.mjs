@@ -39,6 +39,11 @@ export async function listPublicMediaFiles(root) {
   }
   if (rootStat.isSymbolicLink()) throw new Error('Symlinked public media root is not reviewable');
   if (!rootStat.isDirectory()) throw new Error('Public media root must be a directory');
+  // lstat(root) follows an earlier symlinked path segment. Reject the
+  // containing directory too, or an external "public" can pose as ours.
+  if ((await lstat(path.dirname(root))).isSymbolicLink()) {
+    throw new Error('Symlinked public media parent is not reviewable');
+  }
 
   const files = [];
   async function walk(directory) {
