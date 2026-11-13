@@ -37,6 +37,9 @@ function canonicalAppealShareUrl(path: unknown): string {
   try {
     const url = new URL(path, publicShareOrigin);
     if (url.origin !== publicShareOrigin || url.username || url.password) return publicShareOrigin + "/";
+    // Only canonical public appeal details may leave this share control.
+    const slug = url.pathname.startsWith("/appeals/") ? url.pathname.slice("/appeals/".length) : "";
+    if (slug.length > 200 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) return publicShareOrigin + "/";
     // URL queries may carry private record references; an outward share uses only its pathname.
     return publicShareOrigin + url.pathname;
   } catch {
