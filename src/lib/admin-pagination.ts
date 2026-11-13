@@ -7,7 +7,8 @@ export function parseAdminPage(value: string | string[] | undefined) {
 }
 
 export function getAdminPagination(totalItems: number, requestedPage: number, pageSize = ADMIN_PAGE_SIZE) {
-  const safeTotal = Number.isFinite(totalItems) && totalItems > 0 ? Math.floor(totalItems) : 0;
+  const safeTotal = Number.isFinite(totalItems) && totalItems > 0 && totalItems <= Number.MAX_SAFE_INTEGER
+    ? Math.floor(totalItems) : 0;
   const safePageSize = Number.isSafeInteger(pageSize) && pageSize > 0 ? pageSize : ADMIN_PAGE_SIZE;
   const totalPages = Math.max(1, Math.ceil(safeTotal / safePageSize));
   const safeRequestedPage = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
