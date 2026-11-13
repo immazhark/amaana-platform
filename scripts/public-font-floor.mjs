@@ -68,8 +68,14 @@ export function auditFontSizes(source, path) {
     // In a CSS min(), a constant calc() operand below the floor always
     // bounds the chosen result below that floor. Literal-only fallback
     // misses the small result of min(calc(1rem * .5), 1rem).
-    const nestedMinCalc = !shorthand &&
+    const leadingMinCalc = !shorthand &&
       /^min\(\s*calc\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*([*/])\s*(-?\d*\.?\d+)\s*\)\s*,/i.exec(value);
+    // A calc() in min()'s second slot imposes the same upper bound.
+    // Restrict the first operand to a simple constant; dynamic/nested forms
+    // remain for browser computed-style acceptance.
+    const trailingMinCalc = !shorthand &&
+      /^min\(\s*[^(),]+\s*,\s*calc\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*([*/])\s*(-?\d*\.?\d+)\s*\)\s*\)$/i.exec(value);
+    const nestedMinCalc = leadingMinCalc || trailingMinCalc;
     const minCalcValue = nestedMinCalc
       ? (nestedMinCalc[3] === "*"
         ? Number(nestedMinCalc[1]) * Number(nestedMinCalc[4])

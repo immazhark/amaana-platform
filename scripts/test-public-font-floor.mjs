@@ -138,6 +138,22 @@ test("nested min(calc()) must not hide a constant sub-12px font size", () => {
   assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
 });
 
+test("min() rejects a smaller constant calc in its second position", () => {
+  const css = [
+    ".rem{font-size:min(1rem, calc(1rem * .5))}",
+    ".px{font-size:min(1rem,calc(20px / 2))}",
+    ".nested{font-size:min(1rem, calc(1rem / 0))}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(css, "fixture.css").map(({ value }) => value), [
+    "min(1rem, calc(1rem * .5))",
+    "min(1rem,calc(20px / 2))",
+    "min(1rem, calc(1rem / 0))",
+  ]);
+  assert.deepEqual(auditFontSizes(
+    ".safe{font-size:min(1rem, calc(20px * 1.5))}", "fixture.css"
+  ), []);
+});
+
 test("public CSS audit rejects linked stylesheet files instead of silently ignoring them", async () => {
   const root = await mkdtemp(join(tmpdir(), "amaana-css-audit-file-"));
   try {
