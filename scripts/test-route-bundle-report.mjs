@@ -621,6 +621,9 @@ test("AF-R047 rejects malformed public route labels before reading client-refere
     "/stories#private",
     "/stories\\private",
     "/stories\nprivate",
+    "/stories/%2e%2e/private",
+    "/stories/%2Fprivate",
+    "/stories/%5cprivate",
   ];
   for (const route of invalidRoutes) {
     const paths = { "/page": route };
