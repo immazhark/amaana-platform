@@ -103,6 +103,39 @@ function rotationTimer(root: NonNullable<ReturnType<typeof ScrollCarousel>>, {
   return { scrollTo, schedule, tick() { tick?.(); }, cleanup() { timerCleanup?.(); observerCleanup?.(); } };
 }
 
+describe("carousel invalid automatic-rotation intervals", () => {
+  it.each([-25, Number.POSITIVE_INFINITY, Number.NaN])(
+    "does not schedule rotation or offer a restart control for invalid interval %s", autoAdvanceMs => {
+      effects.length = 0;
+      state.index = 0;
+      state.refIndex = 0;
+      state.refs = [];
+      state.paused = false;
+      const root = ScrollCarousel({
+        label: "Programmes",
+        autoAdvanceMs,
+        children: [createElement("p", { key: "one" }, "One"),
+          createElement("p", { key: "two" }, "Two")],
+      });
+      if (!root) throw new Error("Expected carousel");
+      const labels: string[] = [];
+      const scan = (node: unknown): void => {
+        if (Array.isArray(node)) { node.forEach(scan); return; }
+        if (!node || typeof node !== "object" || !("props" in node)) return;
+        const props = (node as ReactElement<{ children?: unknown; "aria-label"?: string }>).props;
+        if (typeof props["aria-label"] === "string") labels.push(props["aria-label"]);
+        scan(props.children);
+      };
+      scan(root);
+      expect(labels).not.toContain("Pause automatic slides");
+      expect(labels).not.toContain("Resume automatic slides");
+      const timer = rotationTimer(root);
+      expect(timer.schedule).not.toHaveBeenCalled();
+      timer.cleanup();
+    },
+  );
+});
+
 describe("carousel rotation after an explicit keyboard restart", () => {
   it("advances while focus stays on the rotation control after the visitor resumes", () => {
     const paused = fixture(true);

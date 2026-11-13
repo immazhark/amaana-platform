@@ -34,10 +34,12 @@ export function ScrollCarousel({
   mode = "cards",
   className = "",
   startAt = 0,
-  autoAdvanceMs = 0,
+  autoAdvanceMs: requestedAutoAdvanceMs = 0,
   heading,
   cinematic = false,
 }: ScrollCarouselProps) {
+  const autoAdvanceMs = Number.isFinite(requestedAutoAdvanceMs) && requestedAutoAdvanceMs > 0
+    ? requestedAutoAdvanceMs : 0;
   const slides = Children.toArray(children);
   const slideCount = slides.length;
   const viewportRef = useRef<HTMLDivElement>(null);
