@@ -101,9 +101,19 @@ const isRecord = value => value !== null && typeof value === "object" && !Array.
 // Public route labels from generated manifests are URL paths, not external
 // locations, query strings or aliases for other directory levels.
 function validPublicRoute(route) {
-  return typeof route === "string" && route.startsWith("/") &&
-    !route.includes("//") && !/[?#\\\s\u0000-\u001F\u007F]/u.test(route) &&
-    !route.split("/").some(segment => segment === "." || segment === "..");
+  if (typeof route !== "string" || !route.startsWith("/")) return false;
+  // A second decoding layer could conceal separators or dot segments.
+  if (/%25/i.test(route)) return false;
+  // Inspect both forms: encoded separators or dot segments must not disguise
+  // another directory level in an untrusted generated route manifest.
+  let decoded;
+  try { decoded = decodeURIComponent(route); }
+  catch { return false; }
+  // An encoded slash embedded within a segment must not invent a route level.
+  if (decoded.split("/").length !== route.split("/").length) return false;
+  return [route, decoded].every(value => value.startsWith("/") &&
+    !value.includes("//") && !/[?#\\\s\u0000-\u001F\u007F]/u.test(value) &&
+    !value.split("/").some(segment => segment === "." || segment === ".."));
 }
 
 function pageRouteEntries(appPaths) {
