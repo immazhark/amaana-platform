@@ -74,6 +74,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       hasAssistanceRequest: Boolean(item.assistanceRequest),
       archiveConsent: item.assistanceRequest?.verification?.archiveConsent,
     })
+    // Null confidentiality is allowed for unlinked appeals only.
+    // A linked assistance request requires a reviewed classification to enter search.
+    && (!item.assistanceRequest || item.assistanceRequest.verification?.confidentialityLevel != null)
     && canListAppealInSitemap(item.assistanceRequest?.verification?.confidentialityLevel),
   );
 
