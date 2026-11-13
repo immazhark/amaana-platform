@@ -26,6 +26,8 @@ export function buildPublishedLanguageAlternates(
     canonicalPath === `/${locale}` || canonicalPath.startsWith(`/${locale}/`)
   )) return {};
   const result: Partial<Record<PublicLocale, string>> = { en: canonicalPath };
+  // Malformed runtime projections cannot authorize translated public URLs.
+  if (!Array.isArray(translations)) return result;
   const seen = new Set<PublicLocale>();
   for (const translation of translations) {
     if (translation === null || typeof translation !== "object") continue;
