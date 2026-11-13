@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { readFile } from 'node:fs/promises';
+import { mkdtempSync, mkdirSync, writeFileSync, symlinkSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import {
   listPublicMediaFiles,
   loadAndValidatePublicMediaReviewRegister,
@@ -66,6 +69,32 @@ test('review register rejects sensitive-detail fields even when coverage is othe
 test('missing public-media root is a valid empty inventory', async () => {
   const files = await listPublicMediaFiles('public/media-directory-that-does-not-exist');
   assert.deepEqual(files, []);
+});
+
+test('public media review inventory fails closed on symbolic links instead of omitting their targets', async () => {
+  const workspace = mkdtempSync(join(tmpdir(), 'amaana-media-review-links-'));
+  const outside = join(workspace, 'outside');
+  const root = join(workspace, 'public', 'media');
+  try {
+    mkdirSync(outside, { recursive: true });
+    mkdirSync(root, { recursive: true });
+    writeFileSync(join(outside, 'unreviewed.webp'), 'synthetic only');
+    writeFileSync(join(root, 'reviewed.webp'), 'synthetic only');
+
+    const linkedRoot = join(workspace, 'linked-root');
+    symlinkSync(outside, linkedRoot, 'dir');
+    await assert.rejects(listPublicMediaFiles(linkedRoot), /Symlinked public media/);
+
+    const linkedFile = join(root, 'unreviewed.webp');
+    symlinkSync(join(outside, 'unreviewed.webp'), linkedFile);
+    await assert.rejects(listPublicMediaFiles(root), /Symlinked public media/);
+    rmSync(linkedFile);
+
+    symlinkSync(outside, join(root, 'linked-folder'), 'dir');
+    await assert.rejects(listPublicMediaFiles(root), /Symlinked public media/);
+  } finally {
+    rmSync(workspace, { recursive: true, force: true });
+  }
 });
 
 test('empty inventory remains structurally valid and has no pending asset decisions', () => {
