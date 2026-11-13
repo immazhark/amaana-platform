@@ -175,7 +175,7 @@ export function ScrollCarousel({
   useEffect(() => {
     if (!autoAdvanceMs || slideCount < 2 || paused || reducedMotion) return;
     const timer = window.setInterval(() => {
-      if (inView.current && !document.hidden && !drag.current && !viewportRef.current?.closest("section")?.matches(":hover, :focus-within")) goTo(activeIndexRef.current + 1);
+      if (inView.current && !document.hidden && !drag.current && !viewportRef.current?.closest("section")?.matches(":hover")) goTo(activeIndexRef.current + 1);
     }, autoAdvanceMs);
     return () => window.clearInterval(timer);
   }, [autoAdvanceMs, activeIndex, goTo, paused, reducedMotion, slideCount]);

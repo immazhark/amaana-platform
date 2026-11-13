@@ -383,8 +383,9 @@ test('keyboard focus keeps autoplay paused until an explicit restart',async({pag
  await expect(root.getByRole('progressbar')).toHaveAttribute('aria-valuenow','1');
  const resume=root.getByRole('button',{name:'Resume automatic slides'});
  await resume.focus();await page.keyboard.press('Enter');
- await root.getByRole('button',{name:'Pause automatic slides'}).evaluate(n=>n.blur());
+ await expect(root.getByRole('button',{name:'Pause automatic slides'})).toBeFocused();
  await expect(root.getByRole('progressbar')).toHaveAttribute('aria-valuenow','2',{timeout:4000});
+ await expect(root.getByRole('button',{name:'Pause automatic slides'})).toBeFocused();
 });
 
 async function openPausedCarousel(page) {
