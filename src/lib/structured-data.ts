@@ -43,6 +43,26 @@ export function normalizeStructuredDataPath(path: string) {
   const value = path.trim();
   if (!value.startsWith("/") || value.startsWith("//") || /[\\\u0000-\u001F\u007F\s]/.test(value)) return null;
 
+  // WHATWG URL resolution collapses dot segments before the privacy checks.
+  // Inspect supplied path segments first, including nested percent encoding,
+  // so a story cannot claim a different page's canonical URL.
+  const rawPath = value.split(/[?#]/, 1)[0];
+  for (const rawSegment of rawPath.split("/")) {
+    let segment = rawSegment;
+    for (let depth = 0; depth < 8; depth++) {
+      if (segment === "." || segment === "..") return null;
+      if (!/%[0-9a-f]{2}/i.test(segment)) break;
+      try {
+        const decoded = decodeURIComponent(segment);
+        if (decoded === segment) break;
+        segment = decoded;
+      } catch {
+        return null;
+      }
+      if (depth === 7) return null;
+    }
+  }
+
   try {
     const url = new URL(value, DEFAULT_SITE_URL);
     if (url.origin !== DEFAULT_SITE_URL || url.search || isPrivateAppMediaUrl(url.pathname)) return null;
