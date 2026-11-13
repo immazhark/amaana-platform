@@ -230,6 +230,29 @@ test("non-HTML, absent-body and oversized transport responses fail closed", asyn
   }
 });
 
+test("HTML text in another media type or parameter cannot certify an HTML response", async () => {
+  for (const contentType of ["text/html-fake", "application/json; profile=text/html", "text/plain; note=text/html"]) {
+    const fakeFetch = async target => {
+      const response = new Response(page(graph, target), { status: 200,
+        headers: { "Content-Type": contentType } });
+      Object.defineProperty(response, "url", { value: target });
+      return response;
+    };
+    await assert.rejects(auditPublicSchema(fakeFetch), /content type/, contentType);
+  }
+});
+
+test("HTML media type accepts case and charset parameters", async () => {
+  const fakeFetch = async target => {
+    if (target.endsWith("/api/health/version")) throw new Error("synthetic version unavailable");
+    const response = new Response(page(graph, target), { status: 200,
+      headers: { "Content-Type": "Text/HTML; charset=UTF-8" } });
+    Object.defineProperty(response, "url", { value: target });
+    return response;
+  };
+  assert.equal((await auditPublicSchema(fakeFetch)).pages.length, 5);
+});
+
 test("AF-R080 accepts inert CSS and title text containing tag-like fragments", () => {
   for (const extra of [
     '<style>body::after { content: "<link"; }</style>',
