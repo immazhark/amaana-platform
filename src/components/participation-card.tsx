@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { ActionIcon, type ActionIconKind } from "./action-icon";
 import styles from "./participation-card.module.css";
+import { isPrivateRoute } from "@/lib/public-routing";
 
 export type ParticipationPath = { marker: string; icon?: ActionIconKind; title: string; copy: string; action: string; href: string };
 /** Only reviewed in-site routes and explicit secure contact destinations may navigate. */
 function isSafeParticipationHref(href: unknown): href is string {
   if (typeof href !== "string" || !href || href.length > 2048 || href !== href.trim() || /[\u0000-\u001f\u007f]/.test(href)) return false;
-  if (href.startsWith("/")) return !href.startsWith("//") && !href.startsWith("/\\");
+  if (href.startsWith("/")) return /^\/(?:[a-z0-9-]+(?:\/[a-z0-9-]+)*)?$/.test(href) && !isPrivateRoute(href);
   if (/^(?:mailto:|tel:)/i.test(href)) return href.length > href.indexOf(":") + 1;
   if (!/^https:\/\//i.test(href)) return false;
   try {

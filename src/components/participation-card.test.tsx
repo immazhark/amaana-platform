@@ -48,6 +48,21 @@ describe("participation card destination semantics", () => {
     expect(html).not.toContain("insecure.example.invalid");
   });
 
+  it("rejects private, encoded and noncanonical internal participation links", () => {
+    const blocked = [
+      "/admin", "/admin/login", "/api/private", "/donations/receipt",
+      "/%61dmin", "/x/../admin", "/our-work?redirect=/admin", "/%2f%2fevil.invalid",
+    ];
+    const candidates = blocked.map((href, index) => ({
+      ...paths[2]!, marker: `private-${index}`, title: `Private destination ${index}`, href,
+    }));
+    const html = renderToStaticMarkup(<ParticipationCards paths={[paths[2]!, ...candidates]} />);
+    expect(html).toContain('href="/request-assistance"');
+    for (let index = 0; index < candidates.length; index++) {
+      expect(html, blocked[index]).not.toContain(`Private destination ${index}`);
+    }
+  });
+
   it("uses native anchors for email and telephone actions while keeping SPA links internal", () => {
     const html = renderToStaticMarkup(<ParticipationCards paths={paths} />);
     const anchors = [...html.matchAll(/<a\b[^>]*>/g)].map(match => match[0]);
