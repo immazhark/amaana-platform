@@ -1,3 +1,7 @@
+# 14 November 2026 IST — coordinated Codex continuation
+
+CODEX_ACTIVE coordinator accepts owner-directed responsibility at main `0198a4fb3a6381f9602f2bafb6cd10894f7ef642`. Owner explicitly requests parallel coding; isolated disjoint worktrees are authorized for this team, with one integration writer and serialized protected merges. Continuing existing #855 branch `fix/public-media-symlink-audit-20261114`, head `213e8aead7e436103106c52fa683d6c9ef299a21`; hosted RED run `43523284764`. Scope: reject linked public-media roots, immediate parents and child entries, preserving absent-root acceptance. Independent agents cover route-bundle metadata validation and public UI; no shared source or coordination writes. #852–#854 awaiting full browser acceptance. #684/#845 finance hold remains. Railway website SUCCESS at main; public HTTP returned 403, so live identity unverified. No payment, infrastructure, secret, schema or donor-data mutation. Rollback each bounded source/test/docs change by narrow revert.
+
 # Amaana implementation ownership — 12 November 2026 IST
 
 ## 13 November 2026 IST — guarded #839–#841 integration and AF-N14 bounded evidence

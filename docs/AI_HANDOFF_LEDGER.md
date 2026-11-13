@@ -1,3 +1,7 @@
+# 14 November 2026 IST — Codex coordinated takeover
+
+Owner explicitly requested repository responsibility and parallel coding. CODEX_ACTIVE coordinates isolated disjoint implementations and serialized guarded merges. Base `0198a4fb3a6381f9602f2bafb6cd10894f7ef642`; continue #855 RED head `213e8aead7e436103106c52fa683d6c9ef299a21`. Read-only PR and finance audits continue independently. Preserve #684/#845 holds, all existing branches, acceptance gates and 149 IDs.
+
 # Amaana handoff ledger
 
 ## 13 November 2026 IST — three exact-head source merges and honest AF-N14 progression

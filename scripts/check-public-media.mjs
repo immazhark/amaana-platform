@@ -1,4 +1,4 @@
-import { readdir } from 'node:fs/promises';
+import { lstat, readdir } from 'node:fs/promises';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
@@ -66,6 +66,17 @@ export async function validateImage(filename) {
 }
 
 export async function checkPublicMedia(root) {
+  root = path.resolve(root);
+  // Reject linked scan boundaries before reading any content; absent staging is valid.
+  for (const directory of [path.dirname(root), root]) {
+    try {
+      if ((await lstat(directory)).isSymbolicLink()) {
+        throw new Error("Public media scan boundary must not be a symbolic link.");
+      }
+    } catch (error) {
+      if (error?.code !== "ENOENT") throw error;
+    }
+  }
   let count = 0;
   let boundaryCount = 0;
   const failures = [];
@@ -80,7 +91,9 @@ export async function checkPublicMedia(root) {
 
     for (const entry of entries) {
       const filename = path.join(directory, entry.name);
-      if (entry.isDirectory()) {
+      if (entry.isSymbolicLink()) {
+        failures.push(`${path.relative(root, filename)}: symbolic link is forbidden in public media.`);
+      } else if (entry.isDirectory()) {
         await walk(filename);
       } else if (entry.isFile()) {
         const relative = path.relative(root, filename);
