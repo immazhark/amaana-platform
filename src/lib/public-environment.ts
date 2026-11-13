@@ -5,7 +5,7 @@ export type PublicAppealIdentity = {
 };
 
 export function isSyntheticStagingAppeal(appeal: PublicAppealIdentity) {
-  return appeal.slug.startsWith("staging-") || appeal.title.startsWith("STAGING TEST");
+  return appeal.slug.toLowerCase().startsWith("staging-") || appeal.title.toLowerCase().startsWith("staging test");
 }
 
 export function canExposeSyntheticStagingContent() {
