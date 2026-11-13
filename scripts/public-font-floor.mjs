@@ -65,7 +65,21 @@ export function auditFontSizes(source, path) {
       return Number(number) < minimum;
     });
 
-    if (tooSmall) violations.push({ path, value });
+    // In a CSS min(), a constant calc() operand below the floor always
+    // bounds the chosen result below that floor. Literal-only fallback
+    // misses the small result of min(calc(1rem * .5), 1rem).
+    const nestedMinCalc = !shorthand &&
+      /^min\(\s*calc\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*([*/])\s*(-?\d*\.?\d+)\s*\)\s*,/i.exec(value);
+    const minCalcValue = nestedMinCalc
+      ? (nestedMinCalc[3] === "*"
+        ? Number(nestedMinCalc[1]) * Number(nestedMinCalc[4])
+        : Number(nestedMinCalc[1]) / Number(nestedMinCalc[4]))
+      : null;
+    const nestedMinTooSmall = minCalcValue !== null && (
+      !Number.isFinite(minCalcValue) ||
+      minCalcValue < (nestedMinCalc?.[2].toLowerCase() === "px" ? MIN_FONT_PX : MIN_FONT_REM)
+    );
+    if (tooSmall || nestedMinTooSmall) violations.push({ path, value });
   }
 
   return violations;

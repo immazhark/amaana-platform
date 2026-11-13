@@ -122,6 +122,22 @@ test("chained constant CSS calc scalar operations must use the final font size",
   assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
 });
 
+test("nested min(calc()) must not hide a constant sub-12px font size", () => {
+  const unsafe = [
+    ".tooSmall{font-size:min(calc(1rem * .5), 1rem)}",
+    ".alsoTooSmall{font-size:min(calc(1rem / 2), 14px)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(unsafe, "fixture.css").map(({ value }) => value), [
+    "min(calc(1rem * .5), 1rem)",
+    "min(calc(1rem / 2), 14px)",
+  ]);
+  const safe = [
+    ".allowed{font-size:min(calc(1rem * 2), 14px)}",
+    ".allowedPx{font-size:min(calc(16px / 1), 1rem)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
+});
+
 test("public CSS audit rejects linked stylesheet files instead of silently ignoring them", async () => {
   const root = await mkdtemp(join(tmpdir(), "amaana-css-audit-file-"));
   try {
