@@ -60,12 +60,12 @@ export function normalizeStructuredDataImage(imageUrl: string | null | undefined
     if (value.startsWith("/")) {
       if (value.startsWith("//")) return null;
       const url = new URL(value, siteUrl);
-      if (url.origin !== siteUrl || isPrivateAppMediaUrl(url.pathname)) return null;
+      if (url.origin !== siteUrl || url.search || url.hash || isPrivateAppMediaUrl(url.pathname)) return null;
       return url.toString();
     }
 
     const url = new URL(value);
-    if (url.protocol !== "https:" || url.username || url.password) return null;
+    if (url.protocol !== "https:" || url.username || url.password || url.search || url.hash) return null;
     // The configured origin and the apex/www production aliases are app
     // routes; none may advertise a protected destination as a public image.
     if (isPrivateAppMediaUrl(url.toString()) ||
