@@ -27,9 +27,19 @@ export function selectImpactComparison<T extends { slug: string }>(
 
   if (!validShape) return { options: publicRecords, requested: true, invalid: true, selected: null };
 
-  const first = publicRecords.find(record => record.slug === left);
-  const second = publicRecords.find(record => record.slug === right);
-  if (!first || !second) {
+  let first: T | undefined;
+  let second: T | undefined;
+  let ambiguous = false;
+  for (const record of publicRecords) {
+    if (record.slug === left) {
+      if (first) { ambiguous = true; break; }
+      first = record;
+    } else if (record.slug === right) {
+      if (second) { ambiguous = true; break; }
+      second = record;
+    }
+  }
+  if (ambiguous || !first || !second) {
     return { options: publicRecords, requested: true, invalid: true, selected: null };
   }
 
