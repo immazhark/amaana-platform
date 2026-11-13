@@ -44,6 +44,18 @@ describe("comparison of reviewed published initiative evidence", () => {
     expect(result.options).toEqual(publicRecords);
   });
 
+  it("fails closed instead of choosing an arbitrary duplicated public slug", () => {
+    const collision = [
+      ...publicRecords,
+      { slug: "eid-gift-kits", title: "Duplicate synthetic initiative" },
+    ];
+    const result = selectImpactComparison(collision, {
+      left: "eid-gift-kits", right: "amaana-taleem",
+    });
+    expect(result).toMatchObject({ requested: true, invalid: true, selected: null });
+    expect(result.options).toEqual(collision);
+  });
+
   it("cannot select a source record not present in the public projection", () => {
     const result = selectImpactComparison(publicRecords.slice(0, 1), {
       left: "eid-gift-kits", right: "amaana-taleem",
