@@ -108,6 +108,28 @@ describe("appeal sharing recovery", () => {
     expect(html).toContain("https%3A%2F%2Famaanafoundation.org%2F");
   });
 
+  it("never shares private or malformed paths as if they were approved appeal destinations", () => {
+    for (const path of [
+      "/admin/appeals",
+      "/api/private/report",
+      "/donate/synthetic-case",
+      "/appeals/../admin/appeals",
+      "/appeals/%2e%2e/api/private",
+      "/appeals/%252e%252e/api/private",
+      "/appeals/valid-slug/unreviewed",
+    ]) {
+      const html = renderToStaticMarkup(<AppealShare
+        title={appeal.title}
+        summary={appeal.summary}
+        path={path}
+      />);
+      const whatsapp = html.match(/href="https:\/\/wa\.me\/\?text=([^"]+)"/)?.[1];
+      expect(whatsapp, path).toBeDefined();
+      expect(decodeURIComponent(whatsapp ?? ""), path)
+        .toMatch(/\n\nhttps:\/\/amaanafoundation\.org\/$/);
+    }
+  });
+
   it("renders a safe native WhatsApp link with the fully qualified canonical URL", () => {
     const html = renderToStaticMarkup(<AppealShare
       title={appeal.title}
