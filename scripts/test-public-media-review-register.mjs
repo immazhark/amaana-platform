@@ -97,6 +97,22 @@ test('public media review inventory fails closed on symbolic links instead of om
   }
 });
 
+test('public media review rejects a symlinked public parent before enumerating files', async () => {
+  const workspace = mkdtempSync(join(tmpdir(), 'amaana-media-review-parent-'));
+  const outside = join(workspace, 'outside');
+  try {
+    mkdirSync(join(outside, 'media'), { recursive: true });
+    writeFileSync(join(outside, 'media', 'unreviewed.webp'), 'synthetic only');
+    symlinkSync(outside, join(workspace, 'public'), 'dir');
+    await assert.rejects(
+      listPublicMediaFiles(join(workspace, 'public', 'media')),
+      /Symlinked public media parent/,
+    );
+  } finally {
+    rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 test('empty inventory remains structurally valid and has no pending asset decisions', () => {
   const resolved = validatePublicMediaReviewRegister(register, []);
   assert.deepEqual(publicMediaReviewSummary(resolved), {
