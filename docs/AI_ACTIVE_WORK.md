@@ -1,3 +1,15 @@
+## 14 November 2026 IST — owner-directed ChatGPT implementation takeover (05:05 IST checkpoint)
+
+**Writer: CHATGPT_ACTIVE.** The owner explicitly directed ChatGPT to take over repo execution on 14 November; this supersedes the previous CODEX_ACTIVE coordinator entry below. Other Codex/parallel contributors may perform read-only analysis only until this session records an isolated disjoint branch and integration plan. One shared-repository writer and serialized guarded merges remain binding. No uncoordinated new agents or infrastructure changes were authorized.
+
+**Observed main:** `63c87af59606278edbe97cbdaf8b2678665f05db` (merged #857); **Railway production website:** deployment `7c3a51e7-d0a1-448f-bfdb-efde0d0f9af8` SUCCESS, online 1/1, commit `63c87af59606278edbe97cbdaf8b2678665f05db`; public Cloudflare version/readiness requests unavailable from this environment (HTTP status unverified). Other preview offline; notification cron parked, no live delivery activation.
+
+**Open PRs inspected:** #861, #859, #858, #856, #855, #853 and financially held #845/#684. #856 full exact-head hosted CI `43524198123` seven jobs success; separate promotion `43527442581` plan/readiness/verify success, intended long-job skips; no review threads. Other source PRs remain individually gated. #684 independent payee ownership, credited UTR reconciliation and separate production activation approval are outstanding; #845 intentionally retained failing evidence. No real payments, data, secrets, schema, worker, live infrastructure changes.
+
+**Backlog:** docs/mission-control/149-item-status-2026-11-12.csv contains 149 unique records; 12 Completed / 48 Implemented / 63 Partial / 24 Not started / 1 Superseded / 1 N/A. Clean active queue 135. Uploaded October handoff counts are superseded. No new item closure from this coordination update.
+
+**Next action:** serial exact-head review/merge of qualifying non-financial candidates; preserve unready drafts; independent finance/ledger/security analyses without competing implementation writes. Rollback this documentation-only ownership checkpoint through its atomic PR revert. Older checkpoint entries below remain historical.
+
 ## 14 November 2026 IST — coordinated audit corrections and protected font audit merge
 
 Coordinator CODEX_ACTIVE under explicit owner-directed parallel coding. Base a936835dd58c210e21dc3bed52a122b1d657c3fc; #854 protected merge dd0fa90d2d367cdaf8909c2fa5e2c9d4ff4e4d15 after full CI 43522240927 and separate promotion 43526227816. Independent review found no blocker. Railway d21709b4-6a0e-48ff-9cbd-abc321427315 SKIPPED; previous a936835 deployment SLEEPING. Public Cloudflare 403 blocks independent runtime certification.
