@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const [appeal, confidentialityLevel] = await Promise.all([getAppealPageData(slug), getAppealSearchPrivacy(slug)]);
   if (!appeal) return { title: "Appeal not found" };
   const canonical = `/appeals/${appeal.slug}`;
-  const highlySensitive = confidentialityLevel === "HIGHLY_SENSITIVE";
+  const highlySensitive = confidentialityLevel === "HIGHLY_SENSITIVE" || confidentialityLevel === "UNVERIFIED";
   const { title: metadataTitle, summary: metadataDescription } = publicAppealShareCopy(appeal.title, appeal.summary, highlySensitive);
   return { title: metadataTitle, description: metadataDescription, alternates: { canonical }, robots: highlySensitive ? { index: false, follow: true, nocache: true } : undefined, openGraph: { type: "article", url: canonical, title: `${metadataTitle} | Amaana Foundation`, description: metadataDescription, publishedTime: appeal.publishedAt?.toISOString(), images: openGraphShareImages() }, twitter: { card: "summary_large_image", title: `${metadataTitle} | Amaana Foundation`, description: metadataDescription, images: twitterShareImages() } };
 }
@@ -45,7 +45,7 @@ export default async function AppealDetailPage({ params }: Props) {
   const progress = goal > 0 ? Math.min(100, Math.round((raised / goal) * 1_000) / 10) : 0;
   const progressLabel = raised > 0 && progress === 0 ? "Less than 0.1%" : `${progress}%`;
   const isOpen = isAppealOpenForDonations(appeal);
-  const highlySensitive = confidentialityLevel === "HIGHLY_SENSITIVE";
+  const highlySensitive = confidentialityLevel === "HIGHLY_SENSITIVE" || confidentialityLevel === "UNVERIFIED";
   const shareCopy = publicAppealShareCopy(appeal.title, appeal.summary, highlySensitive);
 
   return (

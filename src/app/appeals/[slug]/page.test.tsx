@@ -104,6 +104,21 @@ describe("appeal breadcrumb privacy parity", () => {
     expect(metadata.robots).toEqual({ index: false, follow: true, nocache: true });
     expect(await breadcrumbName()).toBe(metadata.title);
   });
+
+  it("does not advertise or share identifying text when linked confidentiality review is missing", async () => {
+    mocks.privacy.mockResolvedValue("UNVERIFIED");
+    const metadata = await generateMetadata(params);
+    expect(metadata.title).toBe("Verified Support Appeal");
+    expect(metadata.description).toBe("A privacy-sensitive verified support appeal from Amaana Foundation. Public details are intentionally limited.");
+    expect(metadata.robots).toEqual({ index: false, follow: true, nocache: true });
+    expect(await breadcrumbName()).toBe("Verified Support Appeal");
+    renderToStaticMarkup(await AppealPage(params));
+    expect(mocks.share).toHaveBeenCalledWith({
+      title: "Verified Support Appeal",
+      summary: "A privacy-sensitive verified support appeal from Amaana Foundation. Public details are intentionally limited.",
+      path: `/appeals/${appeal.slug}`,
+    });
+  });
 });
 
 
