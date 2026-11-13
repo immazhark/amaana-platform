@@ -110,6 +110,11 @@ describe('homepage editor scalar validation', () => {
     expect(() => parseHomeConfig({ ...defaultHomeConfig, appealPosition: value })).toThrow(HomeCarouselValidationError);
   });
 
+  it.each(['0x10', '0b10', '0o10', '1e2', '0b101'])(
+    'rejects non-decimal numeric editor text %s', value => {
+      expect(() => validateHomeSlide({ ...origin, order: value })).toThrow(HomeCarouselValidationError);
+      expect(() => parseHomeConfig({ ...defaultHomeConfig, appealPosition: value })).toThrow(HomeCarouselValidationError);
+    });
   it('accepts ordinary numeric form strings and preserves configured zeroes', () => {
     const slide = validateHomeSlide({ ...origin, order: '0', focalX: '0', focalY: '100' });
     expect([slide.order, slide.focalX, slide.focalY]).toEqual([0, 0, 100]);
