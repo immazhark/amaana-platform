@@ -825,3 +825,35 @@ for (const kind of ["file", "broken-file", "app-directory", "server-directory"])
     }
   });
 }
+
+for (const filename of ['app-build-manifest.json', 'app-path-routes-manifest.json', 'build-manifest.json']) {
+  for (const broken of [false, true]) {
+    test(`AF-R047 rejects ${broken ? 'broken ' : ''}symlinked build metadata: ${filename}`, () => {
+      const directory = mkdtempSync(join(tmpdir(), 'amaana-metadata-link-'));
+      const build = join(directory, '.next');
+      const cli = fileURLToPath(new URL('./report-route-bundles.mjs', import.meta.url));
+      try {
+        mkdirSync(join(build, 'static'), { recursive: true });
+        mkdirSync(join(build, 'server/app'), { recursive: true });
+        const metadata = {
+          'app-build-manifest.json': { pages: { '/page': [] } },
+          'app-path-routes-manifest.json': { '/page': '/' },
+          'build-manifest.json': { rootMainFiles: [] },
+        };
+        writeFileSync(join(build, 'app-path-routes-manifest.json'), JSON.stringify(metadata['app-path-routes-manifest.json']));
+        writeFileSync(join(build, 'server/app/page_client-reference-manifest.js'),
+          jsReferenceSource('/page', {}).replace('"entryCSSFiles":{}', '"entryCSSFiles":{"[project]/src/app/layout":[]}'));
+        const outside = join(directory, 'external-metadata.json');
+        if (!broken) writeFileSync(outside, JSON.stringify(metadata[filename]));
+        rmSync(join(build, filename), { force: true });
+        symlinkSync(outside, join(build, filename));
+        const result = spawnSync(process.execPath, [cli, '--json'], { cwd: directory, encoding: 'utf8', timeout: 5000 });
+        assert.equal(result.status, 1, 'Linked metadata must not produce successful attribution or an unavailable fallback');
+        assert.equal(result.stdout, '');
+        assert.match(result.stderr, /Symbolic links are not supported in build metadata/);
+      } finally {
+        rmSync(directory, { recursive: true, force: true });
+      }
+    });
+  }
+}
