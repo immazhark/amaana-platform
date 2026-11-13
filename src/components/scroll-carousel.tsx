@@ -267,6 +267,7 @@ export function ScrollCarousel({
         role="group"
         tabIndex={slideCount > 1 ? 0 : -1}
         onPointerDown={event => {
+          if (event.defaultPrevented) return;
           navigation.current = null;
           if (mode === "hero" || event.pointerType !== "mouse" || event.button !== 0 || (event.target instanceof Element && event.target.closest("button,video,input,textarea,select,[contenteditable]"))) return;
           if (drag.current) {
