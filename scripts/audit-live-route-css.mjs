@@ -123,7 +123,12 @@ export async function auditPublicRouteCss({ fetchImpl = fetch, routes = PUBLIC_R
   for (const route of canonicalRoutes) {
     const pageUrl = new URL(route, site);
     if (pageUrl.origin !== site.origin) throw new Error("Invalid public route: " + route);
-    const html = await (await request(pageUrl.href)).text();
+    const response = await request(pageUrl.href);
+    const contentType = response.headers?.get("content-type") ?? null;
+    if (!contentType || !/^text\/html(?:\s*;|$)/i.test(contentType)) {
+      throw new Error("Route response is not HTML: " + pageUrl.href);
+    }
+    const html = await response.text();
     const stylesheets = stylesheetsInHtml(html, site.href);
     entries.push({ route, stylesheets });
     for (const asset of stylesheets) {
