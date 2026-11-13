@@ -13,7 +13,13 @@ export default function GlobalError({ reset }: { error: Error & { digest?: strin
             <p style={{ color: "#756349", fontSize: ".75rem", fontWeight: 800, letterSpacing: ".14em", textTransform: "uppercase" }}>Amaana Foundation · temporary interruption</p>
             <h1 style={{ maxWidth: "760px", margin: "1rem 0 2rem", fontFamily: "var(--font-amaana-display, Georgia), serif", fontSize: "clamp(3.3rem,9vw,8rem)", fontWeight: 400, lineHeight: 1.1, letterSpacing: "-.055em" }}>The platform is temporarily unavailable.</h1>
             <p style={{ maxWidth: "620px", color: "#4d5d72", fontSize: "1.08rem", lineHeight: 1.7 }}>Please try again. No payment password, OTP, UPI PIN or card credential is ever required to report a technical problem.</p>
-            <button type="button" onClick={reset} style={{ marginTop: "1.5rem", border: 0, padding: ".95rem 1.35rem", background: "#e0b318", color: "#102039", font: "inherit", fontWeight: 800, cursor: "pointer" }}>Try again →</button>
+            <nav aria-label="Recovery options" style={{ marginTop: "1.5rem", display: "flex", flexWrap: "wrap", alignItems: "center", gap: "1rem" }}>
+              <button type="button" onClick={reset} style={{ border: 0, minHeight: "48px", padding: ".95rem 1.35rem", background: "#e0b318", color: "#102039", font: "inherit", fontWeight: 800, cursor: "pointer" }}>Try again →</button>
+              {/* Fatal recovery must reload the document instead of reusing a failed client router. */}
+              {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+              <a href="/" style={{ display: "inline-flex", alignItems: "center", minHeight: "48px", padding: ".6rem 0", color: "#102039", fontWeight: 700, textDecoration: "underline" }}>Return home</a>
+              <a href="/contact" style={{ display: "inline-flex", alignItems: "center", minHeight: "48px", padding: ".6rem 0", color: "#102039", fontWeight: 700, textDecoration: "underline" }}>Contact Amaana</a>
+            </nav>
           </section>
         </main>
       </body>
