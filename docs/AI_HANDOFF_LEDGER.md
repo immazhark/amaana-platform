@@ -1,5 +1,9 @@
 # Amaana handoff ledger
 
+## 13 November 2026 IST — feedback native-label semantics regression
+
+CHATGPT_ACTIVE claimed `fix/feedback-option-phrasing-20261113` at base `dc216aaa2c5c7ebb656e71d5898d6221cca89a4e`. Reproduce invalid headings/paragraphs/divs inside radio labels with a synthetic server-rendered markup test; make the smallest phrasing-only HTML/CSS fix without changing choice copy, aria associations or mailto privacy boundary. Full CI, separate ready-state and guarded merge required. Other source branches must remain disjoint, #684 financial activation held. No original-149 reclassification.
+
 ## 13 November 2026 IST — independent route bundle duplicate input track
 
 CHATGPT_ACTIVE branch `fix/route-bundle-duplicate-records-20261113` from protected main `2f759111fd2f3f1fac622f7bee75b898709b1571` takes a read-only reporting guard: duplicate aggregate asset records incorrectly count the same build file twice. Add synthetic RED test first; reject duplicate paths without altering valid aggregate byte arithmetic. Separate from #829 JSON-LD image-metadata work; no live runtime, data, money or infrastructure modifications. Require exact-head CI, separate ready-state and guarded merge. Do not reclassify original 149.
