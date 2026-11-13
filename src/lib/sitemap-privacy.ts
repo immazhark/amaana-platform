@@ -5,7 +5,7 @@ import type { ConfidentialityLevel } from "@prisma/client";
  * accountability, but must not be promoted through search discovery surfaces.
  */
 export function canListAppealInSitemap(level: ConfidentialityLevel | null | undefined) {
-  return level !== "HIGHLY_SENSITIVE";
+  return level == null || level === "STANDARD" || level === "CONFIDENTIAL";
 }
 
 /**
