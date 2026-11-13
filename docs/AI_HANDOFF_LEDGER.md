@@ -1,5 +1,9 @@
 # Amaana handoff ledger
 
+## 13 November 2026 IST — owner-directed Codex → ChatGPT implementation transfer
+
+The owner explicitly instructed ChatGPT to take over from Codex on 13 November 2026 IST. Implementation coordination now `CHATGPT_ACTIVE`; Codex-led writes must stop. Protected main at handoff `dbc1196458df24028b54cf485e5f2222d5e73dd7`; open drafts #823/#824/#825/#826 (low-risk candidates with successful full draft CI) and held #684 (financial destination/reconciliation not activated). Preserve all existing branches and source history, per-head acceptance and the separate ready-state gate before each guarded merge. Railway website at same source SHA was previously SUCCESS and later SLEEPING, not a verified public HTTP readiness result. Parallel work is allowed only on disjoint tasks under one coordinator. Current 149 unique IDs: 12 Completed / 48 Implemented / 62 Partial / 25 Not started / 1 Superseded / 1 Not applicable; 135 active. No production data, payment, schema, secrets, media, cron or infrastructure writes authorized by this handoff. Handoff/coordination changes are documentation only; do not treat as shipped runtime code.
+
 ## 12 November 2026 IST — owner-directed Codex parallel implementation transfer
 
 Owner explicitly appointed Codex and requested independent parallel coding agents. CODEX_ACTIVE leads integration; separate isolated disjoint branches may implement in parallel under the current directive. Preserve #817/#818 and their exact-head evidence, financial #684 hold, protected checks and 149-item accounting. This supersedes earlier one-writer wording only for the coordinated team. Source base 6bd58c74252227dbce68ed35fa3d160f5f423078; Railway SUCCESS at that SHA; direct public HTTP returned 403. No financial, schema, infrastructure or notification activation.

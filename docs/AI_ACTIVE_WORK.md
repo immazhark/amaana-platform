@@ -1,5 +1,16 @@
 # Amaana implementation ownership — 12 November 2026 IST
 
+
+## Current owner directive — 13 November 2026 IST (supersedes prior CODEX_ACTIVE coordination)
+
+**State: CHATGPT_ACTIVE.** The owner explicitly directed ChatGPT to take implementation ownership from Codex on 13 November 2026. This transfers repository implementation integration authority to ChatGPT; Codex and any prior Codex-led writers must stop repository writes unless this session explicitly coordinates an isolated contribution. Preserve the coordinated parallel-track model with disjoint branches and serialized SHA-guarded protected merges. This is not simultaneous uncoordinated authority for other sessions.
+
+**Verified initial source:** protected `main` `dbc1196458df24028b54cf485e5f2222d5e73dd7` (PR #822). **Existing draft queue:** #823 gallery focus, #824 schema observer, #825 route CSS audit, #826 carousel focus/rotation, and finance-held #684. All four low-risk PRs have full green exact-head draft CI as of 13 November; still require source review, ready-state promotion on same head, fresh gate verification and guarded merges. #684 remains draft for independent payee/UTR attestation and separately scoped production activation, irrespective of green source CI.
+
+**Railway initial boundary:** website release `fbfc0e8c-008c-4f8f-998b-1be51ef89874`, source `dbc1196458df24028b54cf485e5f2222d5e73dd7`, previously SUCCESS then SLEEPING under configured sleep behavior. Public version/readiness this session is not independently established; no live payments, infrastructure or notifications actions. Worker remains parked.
+
+**Active coordinated tracks:** (1) promote/review eligible PRs #823–#826, one guarded integration at a time; (2) fail-first low-risk source regression with no overlapping files; (3) source-to-runtime donation / Mr Khaja routing and #684 external evidence investigation (read-only, no activation); (4) 149-item reconciliation, preserving 12 Completed, 48 Implemented, 62 Partial, 25 Not started, 1 Superseded, 1 Not applicable, 135 active pending new per-item acceptance. Follow AGENTS.md, one integration writer, full exact-head and separate ready-state checks. Rollback: narrow revert per PR and restored prior coordination state if the owner transfers custody again. All older sections below are historical checkpoints.
+
 ## Current owner directive — 12 November 2026 IST
 
 **Implementation lead: CODEX_ACTIVE.** Mohammed Mazhar Khan explicitly transferred repository ownership to this Codex session and authorized multiple implementation agents on independent enhancements/fixes. This supersedes the older single implementation-writer constraint for this coordinated team only. Each agent uses an isolated task branch/worktree with disjoint declared files; Codex coordinates shared files, exact-head acceptance and serialized protected SHA-guarded integration. No agent edits another agent's branch. Other sessions are not authorized to write concurrently.
