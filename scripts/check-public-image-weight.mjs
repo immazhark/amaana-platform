@@ -16,6 +16,11 @@ export function evaluateImageWeights(files, limit = MAX_ARTWORK_BYTES) {
       throw new Error("Invalid image inventory entry");
     }
   }
+  const seenPaths = new Set();
+  for (const file of files) {
+    if (seenPaths.has(file.path)) throw new Error("Duplicate image inventory path");
+    seenPaths.add(file.path);
+  }
   const sorted = files.slice().sort((a, b) => b.bytes - a.bytes);
   const totalBytes = sorted.reduce((sum, file) => {
     const next = sum + file.bytes;

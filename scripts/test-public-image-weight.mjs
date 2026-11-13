@@ -27,6 +27,21 @@ test("rejects invalid image metadata and invalid limits", () => {
   assert.throws(() => evaluateImageWeights([], 0), /Invalid image weight budget/);
 });
 
+test("duplicate image inventory paths must not inflate checked-in artwork totals", () => {
+  for (const images of [
+    [{ path: "public/hero/scene.webp", bytes: 30 }, { path: "public/hero/scene.webp", bytes: 30 }],
+    [{ path: "public/programme-artwork/banner.png", bytes: 30 }, { path: "public/programme-artwork/banner.png", bytes: 90 }],
+  ]) {
+    assert.throws(() => evaluateImageWeights(images), /Duplicate image inventory path/);
+  }
+  const unique = evaluateImageWeights([
+    { path: "public/hero/scene.webp", bytes: 30 },
+    { path: "public/hero/scene-2.webp", bytes: 90 },
+  ]);
+  assert.equal(unique.totalBytes, 120);
+  assert.equal(unique.imageCount, 2);
+});
+
 test("rejects aggregate bytes outside the safe integer range", () => {
   assert.throws(() => evaluateImageWeights([
     { path: "public/hero/a.webp", bytes: Number.MAX_SAFE_INTEGER },
