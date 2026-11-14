@@ -234,7 +234,7 @@ export async function auditPublicSchema(fetchImpl = fetch) {
     }
     const result = analyzePublicSchemaHtml(path, await readHtmlLimited(response));
     pages.push({ ...result,
-      httpIndexingDirective: /noindex/i.test(response.headers.get("x-robots-tag") ?? "") ? "NOINDEX" : "UNSPECIFIED" });
+      httpIndexingDirective: /(?:^|[,;:\s])noindex(?=$|[,;\s])/i.test(response.headers.get("x-robots-tag") ?? "") ? "NOINDEX" : "UNSPECIFIED" });
   }
   let runtimeSha = null;
   try {
