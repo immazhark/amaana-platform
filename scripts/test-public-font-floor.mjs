@@ -203,3 +203,17 @@ test("public CSS audit still scans ordinary nested CSS and rejects literal small
     await rm(root, { recursive: true, force: true });
   }
 });
+
+test("public CSS audit rejects an aliased repository root before scanning external CSS", async () => {
+  const workspace = await mkdtemp(join(tmpdir(), "amaana-css-audit-repository-"));
+  try {
+    const realRoot = join(workspace, "real-project");
+    await mkdir(join(realRoot, "src"), { recursive: true });
+    await writeFile(join(realRoot, "src", "safe.css"), ".safe{font-size:16px}");
+    const alias = join(workspace, "linked-project");
+    await symlink(realRoot, alias, "dir");
+    await assert.rejects(auditPublicStyles(alias), /symbolic link/i);
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
+});
