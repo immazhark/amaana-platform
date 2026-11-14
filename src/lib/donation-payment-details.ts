@@ -6,6 +6,9 @@ export type DonationPaymentDetails = {
 };
 
 const CANONICAL_UPI_ID = "mab.037347029220157@axisbank";
+// QR-only derivative from the owner-supplied Amaana payment poster. Its exact
+// bytes are pinned by the native test; no patient or overseas instructions.
+const CANONICAL_UPI_QR_URL = "/brand/amaana-upi-qr.png";
 const CANONICAL_BANK = {
   accountName: "AMAANA FOUNDATION",
   accountNumber: "925020008040264",
@@ -40,7 +43,7 @@ export function getDonationPaymentDetails(): DonationPaymentDetails {
       id: CANONICAL_UPI_ID,
       // Do not call an arbitrary third-party QR image verified.
       // Only the official site or configured public media origin is acceptable.
-      qrImageUrl: isCspCompatiblePublicImageUrl(configuredQr) ? configuredQr : null,
+      qrImageUrl: isCspCompatiblePublicImageUrl(configuredQr) ? configuredQr : CANONICAL_UPI_QR_URL,
     },
     bank: configuredBankDetails(),
   };
