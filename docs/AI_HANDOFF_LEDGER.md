@@ -1,3 +1,25 @@
+## 14 November 2026 IST — four guarded merges, three RED-first follow-ups
+
+Protected main at checkpoint: `571025532f8004a528ad8b26484b7fa3271bad75`; active implementation writer `CHATGPT_ACTIVE`. One coordinated repository writer, no autonomous detached coding-agent dispatcher. Main is the release integration target under current owner standing authority and protected exact-head/ready-state policy.
+
+**Four distinct protected code merges this continuation:**
+- #878 linked App Router admin audit root guard: full CI `43544072544`, ready `43546984006`, merge `1b2e5a2ddc39d9d0f5c81af4983b03449fa0036d`. Local read-only audit only; Cloudflare/AF-R013 activation remains unverified and unapproved.
+- #880 malformed media identity/gallery selector guard: full `43545197351`, ready `43547336338`, merge `8d4c367d1055f6e602f9265a58518294e625848e`. Existing public media review/consent/redaction gate retained.
+- #881 malformed gallery keyboard ID guard: full `43545479680`, ready `43547659300`, merge `a50e5d98116e1518fbdcfcce5132090c04beb3ff`. Valid selection and wrap preserved.
+- #882 AF-R047 aggregate bundle asset label validator: RED `43545410695`; initial GREEN `43545568393` failed due over-escaped regex, corrected exact-head full `43545757371`, separate ready-state `43547976197`, merge `571025532f8004a528ad8b26484b7fa3271bad75`. Build uncompressed bytes are not network bytes or field CWV; AF-R047 still Partial.
+
+**Three isolated unmerged RED-first candidate code PRs (status at checkpoint):**
+- #884 work portfolio invalid stored years head `ed2c4d701f8164130995abf8531d98f7ad82b367`, RED CI `43547097150`, GREEN full `43547396352` fast/database/build passed, browser pending.
+- #885 public appeal discovery malformed records head `9b9c777aaee5b0711dcf5a41881d79a9dc6a4f3b`, RED `43547241093`, GREEN `43547516955` fast/database/build passed, browser pending.
+- #886 public stories discovery malformed metadata head `422da6be40592d0700e97991838b2d7178642cb1`, RED `43547936025`, GREEN `43548233097` fast passed, full acceptance pending.
+
+**Railway:** latest successful website deployment `bb06b26f-0b9c-414a-948f-ee2c4af786a9`, exact source `a50e5d98116e1518fbdcfcce5132090c04beb3ff`, online 1/1. #882 website and worker `SKIPPED` for scripts-only. No force-deploy; independent public HTTP version/readiness not yet accessible/verified. Source SHA and runtime SHA distinct.
+
+**Financial holds:** #684 receiving-payee/credited UTR proof plus independently scoped financial production approval; #845 staging eligibility approval. No live payments, notifications/cron, secrets, donor records, irreversible infrastructure changes, schema, auth/RBAC, checkout CSP, or unreviewed media publication. Canonical 149 status remains 12 Completed / 48 Implemented / 63 Partial / 24 Not started / 1 Superseded / 1 N/A. No full item closure inferred from bounded fixes.
+
+**Next executable boundary:** independently check each exact-head full run, review and open threads, promote ready, verify separate ready-state run, protected SHA-guard merge, inspect Railway service watch and website SHA. Leave blocked finance scopes held. Narrow atomic PR revert if rollback needed.
+
+
 ## 14 November 2026 IST — protected merges and pending code workstreams
 
 Protected main at this checkpoint: `a4d3c00a65deb48ec37f28451037832444d83a80`. Implementation writer `CHATGPT_ACTIVE`; one authorized GitHub implementation writer, no autonomous detached coding agents. Scope limited to Amaana Foundation.
