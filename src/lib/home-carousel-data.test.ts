@@ -30,6 +30,25 @@ it("keeps legacy destinations editable while public composition withholds the af
   expect(composeHomeSlides(stored.config, []).map(s => s.id)).toEqual(["origin", "medical", "taleem", "qurbani"]);
 });
 
+describe("homepage carousel stored-config resilience", () => {
+  it("uses canonical fallback slides for malformed stored config without losing the revision", async () => {
+    mocks.findConfig.mockResolvedValueOnce({
+      config: { slides: [{ id: "unexpected-internal-slide", image: "asset:unreviewed" }] },
+      revision: 11,
+    });
+    const stored = await getHomeCarouselConfig();
+    expect(stored.revision).toBe(11);
+    expect(stored.config).toEqual(defaultHomeConfig);
+    expect(stored.config).not.toBe(defaultHomeConfig);
+    expect(mocks.findConfig).toHaveBeenCalledOnce();
+  });
+
+  it("does not disguise a failed database read as a healthy fallback", async () => {
+    mocks.findConfig.mockRejectedValueOnce(new Error("database unavailable"));
+    await expect(getHomeCarouselConfig()).rejects.toThrow("database unavailable");
+  });
+});
+
 describe("homepage reviewed media batching", () => {
   beforeEach(() => {
     mocks.findMedia.mockReset();
