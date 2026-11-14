@@ -1,3 +1,9 @@
+## Per-item open blockers — second pass, 15 November 2026 IST
+
+The proposed latest status is **34 Completed / 24 Implemented / 69 Partial / 20 Not started / 1 Superseded / 1 N/A = 149** (113 active). The earlier 27/31/65/24 first-pass snapshot in this document is retained below as dated evidence; it is no longer the latest proposal.
+
+Every open original item now has a named missing condition and next executable task: [24 Implemented](2026-11-15-implemented-acceptance.md), [69 Partial](2026-11-15-partial-blockers.md), [20 Not started](2026-11-15-not-started-action-plan.md). Source proof and limits for 11 second-pass status changes are immediately below. These are evidence-based proposed classifications, not a claim that all 149 production journeys were independently accepted.
+
 ## Second evidence pass — 15 November 2026 IST
 
 **Pending PR #944 after both passes: 34 Completed / 24 Implemented / 69 Partial / 20 Not started / 1 Superseded / 1 N/A = 149. Active actionable rows: 113.** These numbers are proposed until protected merge. Existing source and test blobs were checked for equality with last independently verified website commit `b2166d9a0a35f67a8e930cbc7f33f431172bf8f6` and CI `43637455449` passed; closure is limited to the original bounded issue, not broad payment, legal, physical accessibility or field performance claims.
