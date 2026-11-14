@@ -1,3 +1,30 @@
+## Second evidence pass — 15 November 2026 IST
+
+**Pending PR #944 after both passes: 34 Completed / 24 Implemented / 69 Partial / 20 Not started / 1 Superseded / 1 N/A = 149. Active actionable rows: 113.** These numbers are proposed until protected merge. Existing source and test blobs were checked for equality with last independently verified website commit `b2166d9a0a35f67a8e930cbc7f33f431172bf8f6` and CI `43637455449` passed; closure is limited to the original bounded issue, not broad payment, legal, physical accessibility or field performance claims.
+
+### Seven more scoped closures (Implemented → Completed)
+
+| ID | Verified original defect correction |
+|---|---|
+| AF-R032 | donation-form.tsx moves focus marker inside scheduled RAF, cancels pending frame in cleanup; scripts/test-donation-error-focus-race.mjs is required in CI; component blob matches deployed b2166d9 |
+| AF-R041 | donation-form.tsx and direct-transfer-form.tsx use type=text inputMode=numeric with strict whole-INR validation; private verified monetary fields use text/inputMode=decimal; source blobs match deployed b2166d9 and amount/browser tests passed |
+| AF-R070 | Reviewed CampaignMediaGallery exists on main, rendered conditionally in our-work/[slug]/page.tsx; selection/focus tests passed; gallery component and route blobs match deployed b2166d9. Scope is mistaken branch absence, not media-publication approval |
+| AF-R086 | Root app/layout.tsx mounts SiteHeader on public pages; site-header.tsx includes desktop and mobile /donate navigation links and responsive CTA; both source blobs match deployed b2166d9 |
+| AF-N01 | prisma/apply-master-content.mjs deduplicates existing and incoming (initiativeId,publicUrl) via existingAssetKeys Set; scripts/test-master-content-assets.mjs tests same-batch duplicates, stable first record and repeated imports; green hosted CI; source and tests match deployed b2166d9 |
+| AF-N02 | prisma/apply-master-content.mjs stamps four bulk/raw SQL updates with UTC clock_timestamp updatedAt; scripts/test-master-content-assets.mjs contains controlled timestamp-stripping mutation; CI green; source/tests match deployed b2166d9 |
+| AF-N20 | campaign-media-gallery.tsx tracks activeId rather than index with modal cleanup; gallery-selection.test.ts and campaign-gallery-focus.test.tsx verify order changes, focus restoration and unmount; all blobs match deployed b2166d9 and CI green |
+
+### Four already-started scopes (Not started → Partial)
+
+| ID | Work already present; what keeps it Partial |
+|---|---|
+| AF-R048 | Synthetic CDP/Playwright mobile profile exists (scripts/profile-public-mobile.mjs), but actual throttled-route acceptance and real-device/field Core Web Vitals are absent; run reproducible trace per route before target closure |
+| AF-R068 | e2e/css-rule-coverage.spec.mjs measures sampled rule ranges; prior 3 Nov evidence exists; full unused CSS <10% on key routes remains unproved and requires route-specific pruning/coverage |
+| AF-R079 | scripts/branch-retention-report.mjs and native synthetic tests exist, with documented read-only inventory. Complete current remote ancestry/open-PR/retention review and separately approved deletion are outstanding |
+| AF-R080 | NGO/Organization/WebSite and guarded DonateAction JSON-LD exist in published source, but independent live entity/rich-result acceptance and Search Console review are still open |
+
+No live payment or certificate action, protected infra modification, unreviewed public image publication, or branch deletion was performed. Other remaining rows retain their current class until its specific acceptance gap is closed.
+
 # Reconciled 149-item register — 15 November 2026 IST
 
 **Source main inspected:** `e4076e9b8a9985b6a8fb937ef08891535234c5d1`. **Last independently verified website runtime:** `b2166d9a0a35f67a8e930cbc7f33f431172bf8f6`, main/production, readiness=ready; docs/tests-only later source merges do not require a forced rollout. Sixteen critical source/test blobs were compared between current main and deployed runtime and were identical.
