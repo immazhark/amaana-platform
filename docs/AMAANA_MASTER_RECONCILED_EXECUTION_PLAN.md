@@ -1,3 +1,7 @@
+## Latest 149-item classification — 15 November 2026 IST
+
+**Supersedes dated classification snapshots below, preserves earlier evidence.** The [current complete 149-item register](mission-control/149-item-status-2026-11-15.csv), [current active 120-item queue](mission-control/active-backlog-2026-11-15.csv) and [individual evidence/limits](mission-control/2026-11-15-itemwise-reconciliation.md) establish **27 Completed / 31 Implemented / 65 Partial / 24 Not started / 1 Superseded / 1 Not applicable = 149**. This reconciles 15 narrowly scoped defects to completion and downgrades two source-contradicted end states. Other items were not silently promoted; full provider, payments, physical accessibility, field CWV and 80G legal acceptance remain separate.
+
 # Amaana Master Reconciled Execution Plan — War-Footing Revision
 
 ## Current verified 149-item status overlay — 12 November 2026 IST
