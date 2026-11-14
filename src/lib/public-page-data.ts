@@ -224,14 +224,27 @@ export const getHomepageDiscoveryData = cache(async () => {
     }),
   ]);
 
+  // A malformed projection must not interrupt the entire public homepage.
+  // The independent SQL publication/cause and identity-media gates stay intact.
+  const publicSlug = (value: unknown): value is string =>
+    typeof value === "string" && value.length <= 200
+    && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value);
   const initiativesBySlug = new Map(
-    [...featuredInitiatives, ...fieldInitiatives].map(record => [record.slug, record] as const),
+    [...featuredInitiatives, ...fieldInitiatives]
+      .filter(record => record && typeof record === "object"
+        && publicSlug(record.slug)
+        && typeof record.title === "string" && record.title.trim().length > 0
+        && (record.primaryMetric == null || typeof record.primaryMetric === "string")
+        && (record.primaryMetricLabel == null || typeof record.primaryMetricLabel === "string"))
+      .map(record => [record.slug, record] as const),
   );
 
   return {
     initiatives: Array.from(initiativesBySlug.values()),
     causes,
-    publishedProgrammeSlugs: publishedProgrammeRecords.map(record => record.slug),
+    publishedProgrammeSlugs: publishedProgrammeRecords
+      .filter(record => record && typeof record === "object" && publicSlug(record.slug))
+      .map(record => record.slug),
   };
 });
 
