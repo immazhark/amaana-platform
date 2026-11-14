@@ -19,7 +19,7 @@
   display:block;color:#172b47;
   font-family:var(--af-font-display);
   font-size:clamp(2rem,3.7vw,3rem);font-weight:600;
-  line-height:1.08;letter-spacing:-.025em;
+  line-height:1.16;letter-spacing:-.025em;
   font-variant-numeric:tabular-nums;
   white-space:normal!important;overflow-wrap:normal!important;
 }
