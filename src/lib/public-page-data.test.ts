@@ -154,6 +154,28 @@ describe("public page gallery media query contracts", () => {
     }
   });
 
+  it("fails closed on malformed homepage query arrays while keeping reviewed records", async () => {
+    const reviewed = { slug: "reviewed-support", title: "Reviewed support", primaryMetric: "24", primaryMetricLabel: "kits" };
+    mocks.initiativeFindMany
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce([reviewed])
+      .mockResolvedValueOnce({ private: "PRIVATE_MEMBERSHIP" });
+    const data = await getHomepageDiscoveryData();
+    expect(data.initiatives).toEqual([reviewed]);
+    expect(data.causes).toEqual([]);
+    expect(data.publishedProgrammeSlugs).toEqual([]);
+    expect(JSON.stringify(data)).not.toContain("PRIVATE_");
+
+    mocks.initiativeFindMany.mockReset().mockResolvedValue([])
+      .mockResolvedValueOnce([reviewed])
+      .mockResolvedValueOnce({ private: "PRIVATE_FIELD" })
+      .mockResolvedValueOnce([{ slug: "eid-gift-kits" }]);
+    const second = await getHomepageDiscoveryData();
+    expect(second.initiatives).toEqual([reviewed]);
+    expect(second.publishedProgrammeSlugs).toEqual(["eid-gift-kits"]);
+    expect(JSON.stringify(second)).not.toContain("PRIVATE_");
+  });
+
   it("omits malformed homepage cause/media relations without losing approved candidate artwork", async () => {
     const visible = { slug: "ramadan-eid", initiatives: [{ mediaAssets: [] }] };
     mocks.causeFindMany.mockResolvedValueOnce([
