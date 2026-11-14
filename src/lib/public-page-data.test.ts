@@ -153,6 +153,34 @@ describe("public page gallery media query contracts", () => {
     }
   });
 
+  it("omits malformed homepage cause/media relations without losing approved candidate artwork", async () => {
+    const visible = { slug: "ramadan-eid", initiatives: [{ mediaAssets: [] }] };
+    mocks.causeFindMany.mockResolvedValueOnce([
+      null, undefined,
+      { slug: "../private", initiatives: [{ mediaAssets: [] }] },
+      { slug: "bad-relation", initiatives: { internal: "PRIVATE_RELATION" } },
+      { slug: "ramadan-eid", initiatives: [
+        null,
+        { mediaAssets: { internal: "PRIVATE_MEDIA" } },
+        { mediaAssets: [] },
+      ] },
+    ]);
+    const result = await getHomepageDiscoveryData();
+    expect(result.causes).toEqual([visible]);
+    expect(JSON.stringify(result)).not.toContain("PRIVATE_");
+    const query = mocks.causeFindMany.mock.calls[0]?.[0];
+    expect(query?.where).toEqual({ status: "PUBLISHED" });
+    expect(query?.select?.initiatives?.where).toMatchObject({
+      status: "PUBLISHED",
+      mediaAssets: { some: expect.objectContaining({
+        kind: "IMAGE", isPublic: true, privacyApprovedAt: { not: null },
+      }) },
+    });
+    expect(query?.select?.initiatives?.select?.mediaAssets?.where).toMatchObject({
+      kind: "IMAGE", isPublic: true, privacyApprovedAt: { not: null }, sortOrder: -1000,
+    });
+  });
+
   it("bounds homepage publication checks to every consulted programme destination", async () => {
     await getHomepageDiscoveryData();
 
