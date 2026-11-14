@@ -1,3 +1,26 @@
+## 14 November 2026 IST — four accepted protected merges; three isolated new code branches
+
+**Active owner:** CHATGPT_ACTIVE, one coordinated GitHub implementation writer as required by AGENTS.md; no connected autonomous GitHub coding-agent dispatcher. Parallel task branches/CI remain separate. **Protected main checkpoint:** `608a2d216278341c4c85fa03f6712bf63f15ef2e`.
+
+**Full exact-head + distinct ready-state CI SUCCESS, SHA-guarded squash merges:**
+- #902 Faith public review predicate, head `275c6558a3b93b63794d89d235f921e26df834ff`; full `43561957064`, ready `43593693325`, merge `12ee5df6f563c86b48cd700263cc6b2cc763852a`.
+- #903 global-error multiline heading, head `2c6b04294b6e15d81d2979f1025153acf9bcc829`; full `43562231177`, ready `43593699502`, merge `72eeee9cbbf3589116f5de2dcd2ea7691a44ab46`.
+- #904 Faith public index topic projection, head `8caa4442337f2785dc388042ab0fca8e1c33ecc5`; full `43562491331`, ready `43593709252`, merge `8ee23ef9a83482379536a0154e775ee479a7cd4d`.
+- #905 route-error multiline heading, head `f947999172588f38e652f9df3c216dc453da1166`; full `43562992011`, ready `43593717173`, merge `608a2d216278341c4c85fa03f6712bf63f15ef2e`.
+
+**Website runtime:** Railway website SUCCESS at SHA `608a2d216278341c4c85fa03f6712bf63f15ef2e`, deployment `f8295b54-c35a-4611-942a-322c88248494`, online 1/1 replicas. Independent public HTTP version/readiness not established. Do not equate an intentionally skipped docs-only rollout with a code failure.
+
+**Independent draft code PRs, NOT merged or deployed at checkpoint:**
+- #907 AF-R025 not-found 404 leading, head `27d9a74c264a74cdb9c6057237ceb0a9cec4ce66`, full `43594172260`: fast/production/database success; browser unfinished.
+- #908 homepage public metadata projection validation, head `43141d8aa2654a8443d7e90e725fde25c5c3d55b`, full `43594550416`: fast/production/database success; browser unfinished.
+- #909 AF-R019 Privacy category small-text contrast, **corrected head** `8388cd7529e634b4e6085a11aa3dc533523777d1`, full `43595222863`: fast success; database/production/browser unfinished. Superseded initial branch head has no release authority.
+
+**Held finance PRs:** #684 reviewed UPI fallback and #845 staging donation eligibility remain unmerged pending separate scoped approval. No live donor communication, payments, secrets, schema or provider activation. Original 149 ledger remains 12 Completed, 48 Implemented, 63 Partial, 24 Not started, 1 Superseded, 1 N/A; AF-R019 and AF-R025 remain Partial.
+
+**Next release:** exact-head full CI, review, ready-state separate CI, SHA-guarded merge per candidate; verify Railway SHA and public HTTP independently when accessible. For anything blocked, advance independent authorized tasks rather than waiving browser or security checks.
+
+---
+
 ## 14 November 2026 IST — protected merges #899/#898/#900, four isolated code candidates
 
 **Single coordinated writer:** CHATGPT_ACTIVE under `AGENTS.md`; independent task branches and GitHub CI run concurrently, but no autonomous repository coding sub-agent dispatcher is connected. **Protected main at this checkpoint:** `83941ec33e10cb802defbfe7150c7305907617f0`.
