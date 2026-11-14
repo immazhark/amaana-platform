@@ -1,3 +1,17 @@
+# Current operational state — 15 November 2026 IST
+
+**Owner/writer:** CHATGPT_ACTIVE, sole coordinated implementation writer. **Protected main/source:** `3e0cdad7e41221666f21bcfb7cce52737d2c095e`. **Latest independently verified production website SHA:** `cc2c7837073dde5d6244681496ab7176b9d1f9e9`, Railway SUCCESS; public version and readiness previously independently checked. #929 and #931 are scripts-only and their Railway deployments were correctly SKIPPED, not failed.
+
+**Merged this batch:** #929 CSS font-size audit for multi-argument min(), source `3ed3869c824ee4391106a6b8a176bfd06d9aace9`; #931 AF-R047 malformed App Router bundle manifest entries, source `3e0cdad7e41221666f21bcfb7cce52737d2c095e`. Both confirmed RED-first regression and full exact-head plus separate ready-state checks before protected SHA-guarded merge. No production UI change or new field Web Vitals claim.
+
+**Unmerged draft source candidates:** #932 Faith media selected-ID guards (`c74fedf80a1b8e16feb396f56b254518d51b1c30`; full `43630235535`); #933 /impact/compare accessible loading (`d8348c8736104e458c985264d3f37e0cbcdac068`; full `43630863369`); #934 three reviewed detail route loading fallbacks (`263b7d87935477ee99a120cbbe73377b2ef4684e`; full `43631461153`, cancelled browser first attempt, one focused retry active); #935 JS URL leading-whitespace contact source audit (`9037b4054584fb77af8b169e8ee9c19a7eea8925`; full `43632087037`). All RED-first and corrected-head fast/database/production SUCCESS; browser/final and distinct ready-state remain pending. No candidate merged/deployed as of this checkpoint.
+
+**Finance/privacy/operations holds:** #684, #845, #446 remain individually blocked as recorded; no high-risk activation, live data or infrastructure mutation. **Canonical 149:** 12 Completed / 48 Implemented / 63 Partial / 24 Not started / 1 Superseded / 1 N/A. Do not inflate totals for these narrow changes.
+
+**Next safe actions:** finish and independently review each PR's full exact-head acceptance; separate ready-state checks; protected expected-head merges individually; check Railway SKIPPED/SUCCESS and independent website version/readiness where deployment occurs. Keep gate-bound work isolated; no competing writer.
+
+---
+
 # Current operational state — 14 November 2026 IST (four protected public-code merges)
 
 **Sole coordinated writer:** CHATGPT_ACTIVE. **Protected main:** `cc2c7837073dde5d6244681496ab7176b9d1f9e9` (accepted #926). **Website runtime:** Railway deployment `8f57a956-794c-4511-8367-b3bcfd4f070b` SUCCESS, independently observed public /api/health/version at identical SHA, production/main; /api/health/ready returned ready. Basic identity/readiness LIVE_VERIFIED.
