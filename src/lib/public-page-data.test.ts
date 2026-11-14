@@ -70,6 +70,26 @@ describe("public page gallery media query contracts", () => {
     expect(query.select).not.toHaveProperty("mediaAssets");
   });
 
+  it("rejects malformed published metric projections before the public outcomes strip", async () => {
+    const reviewed = { slug: "reviewed-later", title: "Reviewed relief", primaryMetric: "32", primaryMetricLabel: "kits" };
+    mocks.initiativeFindMany.mockResolvedValueOnce([
+      null, undefined,
+      { ...reviewed, slug: "../admin" },
+      { ...reviewed, title: { private: "PRIVATE_TITLE" } },
+      { ...reviewed, primaryMetric: { internal: "PRIVATE_METRIC" } },
+      { ...reviewed, primaryMetricLabel: ["PRIVATE_LABEL"] },
+      { ...reviewed, title: "   " },
+      reviewed,
+    ]);
+    const { getDonationImpactHighlights } = await import("./public-page-data");
+    const items = await getDonationImpactHighlights();
+    expect(items).toEqual([reviewed]);
+    expect(JSON.stringify(items)).not.toContain("PRIVATE_");
+    expect(mocks.initiativeFindMany.mock.calls.at(-1)?.[0].where).toMatchObject({
+      status: "PUBLISHED", cause: { status: "PUBLISHED" },
+    });
+  });
+
   it("shows no donor proof on an empty reviewed metric projection", async () => {
     const { getDonationImpactHighlights } = await import("./public-page-data");
     await expect(getDonationImpactHighlights()).resolves.toEqual([]);
