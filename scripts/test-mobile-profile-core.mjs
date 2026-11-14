@@ -49,8 +49,11 @@ test("local-only profiling refuses same-origin write methods before network use"
   for (const method of ["POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE", "get", "", "POST\n"]) {
     assert.equal(isAllowedProfileRequest(uri, method), false, method);
   }
-  assert.equal(isAllowedProfileRequest(uri, "GET"), true);
-  assert.equal(isAllowedProfileRequest(uri, "HEAD"), true);
+  assert.equal(isAllowedProfileRequest(uri, "GET"), false);
+  assert.equal(isAllowedProfileRequest(uri, "HEAD"), false);
+  const publicUri = "http://127.0.0.1:3000/api/health/ready";
+  assert.equal(isAllowedProfileRequest(publicUri, "GET"), true);
+  assert.equal(isAllowedProfileRequest(publicUri, "HEAD"), true);
   assert.equal(isAllowedProfileRequest("http://127.0.0.1:3000/api/analytics/page-view", "POST"), false);
   assert.equal(isAllowedProfileRequest("https://evil.invalid/path", "GET"), false);
 });
