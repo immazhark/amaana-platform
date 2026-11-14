@@ -1,3 +1,17 @@
+# Current operational state — 14 November 2026 IST (three-workstream checkpoint)
+
+**Writer:** CHATGPT_ACTIVE, owner takeover completed in #862. One implementation writer coordinates isolated task branches and serialized merges. Actual autonomous external coding agents were not launched. Read-only work may proceed independently.
+
+**Protected main at checkpoint:** `3bc7b085c008c3037edd53b71459df614085b58c`, following #855 public-media symlink audit merge; #855 head `07ba9ef2f0c901603c66ea51f95181bbcda9237b`, full CI `43528573595` success, separate ready-state `43532663380` success, protected SHA-guarded merge. Docs-only #863 merged earlier at `ea030d765ba0525b737696d46a324011d46a04a7`.
+
+**Isolated draft fixes in progress:** #864 artwork audit symlinked scan root, head `0c5e8a8a3cd741ed8aa067bc168d743b4b9254f8`, RED `43533148239`, GREEN fast/db/production, full CI `43533355070` browser outstanding; #865 X-Robots-Tag complete noindex directive, head `a13e132e94b08e3dcb4d72fcc22a256636456b3e`, RED `43533153839`, GREEN fast/db/production, full CI `43533359690` browser outstanding; #866 local-only synthetic profiler private reads, head `dc6cc8ddf978a125afcba0c2abbf1322538c0974`, RED `43533880459` and expanded RED `43534855944`, corrected source/test pending exact-head CI `43535301936`. No draft is merge-certified at this checkpoint. Each PR touches two disjoint audit-only files.
+
+**Runtime:** latest settled Railway website deployment `43d96cd5-5e76-47c9-a5cf-561328567868` for source `fe6249e380c6e00c52af874a51caf41a7ed01119`, healthy online 1/1 at last environment-status check. Later docs/scripts commits were Railway SKIPPED as watched paths were unchanged. Independent public HTTP readiness/version remains UNVERIFIED. Preview offline; notification worker not activated. No force-deploy, secrets, real funds, donor data, cron or live payment changes.
+
+**Finance holds:** #684 external Axis Bank/NPCI beneficiary and credited UTR attestation plus separately scoped production approval; #845 unapproved staging donation eligibility behavior with intentional RED evidence. Do not merge either as routine maintenance. Original ledger remains 149: 12 Completed / 48 Implemented / 63 Partial / 24 Not started / 1 Superseded / 1 N/A; 135 active. Next: continue unrelated safe source code while full browser checks run; for each successful exact head, inspect reviews, ready-state CI and SHA-guarded merge; then verify Railway watch outcome. Rollback by narrow atomic PR revert.
+
+---
+
 # Current operational state — 14 November 2026 IST (ChatGPT release checkpoint)
 
 **Writer:** CHATGPT_ACTIVE, owner-directed takeover recorded through protected #862. This is the current checkpoint; older CODEX_ACTIVE sections below are retained as history, not present ownership. One shared-repository integration writer and serialized protected merges; independent source/QA tracks remain disjoint.
