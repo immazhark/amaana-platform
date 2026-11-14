@@ -239,9 +239,20 @@ export const getHomepageDiscoveryData = cache(async () => {
       .map(record => [record.slug, record] as const),
   );
 
+  // The cause/media projection is a separate database read. A corrupt
+  // relation must not interrupt the homepage's reviewed programme artwork.
+  const visibleCauses = (Array.isArray(causes) ? causes : [])
+    .filter(cause => cause && typeof cause === "object" && !Array.isArray(cause)
+      && publicSlug(cause.slug) && Array.isArray(cause.initiatives))
+    .map(cause => ({
+      slug: cause.slug,
+      initiatives: cause.initiatives.filter(initiative =>
+        initiative && typeof initiative === "object" && !Array.isArray(initiative)
+        && Array.isArray(initiative.mediaAssets)),
+    }));
   return {
     initiatives: Array.from(initiativesBySlug.values()),
-    causes,
+    causes: visibleCauses,
     publishedProgrammeSlugs: publishedProgrammeRecords
       .filter(record => record && typeof record === "object" && publicSlug(record.slug))
       .map(record => record.slug),
