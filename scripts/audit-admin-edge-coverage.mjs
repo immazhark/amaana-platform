@@ -2,7 +2,7 @@
  * Local, read-only AF-R013 inventory. This is a proposed edge-policy scope,
  * NOT proof that a Cloudflare Access/WAF rule is configured or enforced.
  */
-import { readdirSync } from "node:fs";
+import { lstatSync, readdirSync } from "node:fs";
 import { isAbsolute, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -111,6 +111,9 @@ function routePathsUnder(directory, relativeSegments) {
 export function discoverAdminRoutes(root = appRoot) {
   if (typeof root !== "string" || !isAbsolute(root)) {
     throw new Error("A local absolute app directory is required");
+  }
+  if (lstatSync(root).isSymbolicLink()) {
+    throw new Error("Symlink in admin route inventory: " + root);
   }
   // Next.js pathless route groups can precede /admin or /api/admin.
   // Walk all App Router route files, then select their effective admin URLs.
