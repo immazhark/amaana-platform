@@ -87,6 +87,28 @@ it("fails closed for a withdrawn or incompletely reviewed visible Faith image", 
   });
 });
 
+it("fails closed for malformed second-read Faith media without weakening religious verification", async () => {
+  const approved = {
+    id: "hero", mediaAssets: [], status: "PUBLISHED",
+    religiousReviewStatus: "VERIFIED", verifiedAt: new Date("2026-01-01"),
+    sourceCitation: "Reviewed source",
+  };
+  mocks.findMany.mockResolvedValue([
+    null, undefined,
+    { ...approved, id: { internal: "PRIVATE_ID" } },
+    { ...approved, mediaAssets: { internal: "PRIVATE_MEDIA" } },
+    { ...approved, sourceCitation: { internal: "PRIVATE_CITATION" } },
+    { ...approved, religiousReviewStatus: "PENDING" },
+    approved,
+  ]);
+  const visible = await getVisibleFaithMedia(["hero"]);
+  expect(visible).toEqual([{ id: "hero", mediaAssets: [] }]);
+  expect(JSON.stringify(visible)).not.toContain("PRIVATE_");
+  expect(mocks.findMany.mock.calls[0]?.[0].where).toEqual({
+    ...publicFaithWhere, id: { in: ["hero"] },
+  });
+});
+
 it("keeps only requested visible IDs even if the database responds with extra records", async () => {
   const reviewed = {
     id: "unrequested", mediaAssets: [], status: "PUBLISHED",

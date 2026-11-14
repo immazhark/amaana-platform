@@ -113,6 +113,14 @@ export async function getVisibleFaithMedia(ids: readonly string[]) {
     },
   });
   const allowed = new Set(uniqueIds);
-  return records.filter(record => allowed.has(record.id) && isPublicFaithReviewComplete(record))
+  // Only separately approved media reaches the public library. Invalid
+  // projection shapes must not bypass the verified religious review recheck
+  // or interrupt text-only fallback if a relation is malformed.
+  return (Array.isArray(records) ? records : []).filter(record =>
+    record !== null && typeof record === "object" && !Array.isArray(record)
+    && typeof record.id === "string" && allowed.has(record.id)
+    && Array.isArray(record.mediaAssets)
+    && typeof record.sourceCitation === "string"
+    && isPublicFaithReviewComplete(record))
     .map(({ id, mediaAssets }) => ({ id, mediaAssets }));
 }
