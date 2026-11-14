@@ -137,3 +137,18 @@ test("rejects nested artwork symlinks instead of skipping linked subtrees", () =
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("rejects a symlinked artwork scan root instead of inspecting an external tree", () => {
+  const workspace = mkdtempSync(join(tmpdir(), "amaana-artwork-root-link-"));
+  try {
+    const real = join(workspace, "real-repository");
+    mkdirSync(join(real, "public", "hero"), { recursive: true });
+    mkdirSync(join(real, "public", "programme-artwork"), { recursive: true });
+    writeFileSync(join(real, "public", "hero", "sample.webp"), Buffer.alloc(16));
+    const linkedRoot = join(workspace, "repository");
+    symlinkSync(real, linkedRoot, "dir");
+    assert.throws(() => readHeroImageInventory(linkedRoot), /Symlinked artwork scan root/);
+  } finally {
+    rmSync(workspace, { recursive: true, force: true });
+  }
+});
