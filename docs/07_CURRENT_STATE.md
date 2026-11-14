@@ -1,3 +1,13 @@
+# Current operational checkpoint — 14 November 2026 IST (#921 and #922 merged)
+
+**Owner:** CHATGPT_ACTIVE sole coordinated writer. **Protected source main:** `a89df617e2babeffdd6f1b3e1d4c29c7c63c7262`. **#922** tested `5b79025f4120d0993d57dd75ff9ab9163f2ba1ab`, RED `43612119738`, full CI `43612375511`, ready `43615259173`, protected merge `eeb77b2e418117b266e53b6d811ef33f4e531c09`; Railway SUCCESS at exact SHA and independent public version/readiness matched. **#921** tested `3ef1ee2e4995dc4b2ff4ef3c6ce76e551bea3cc0`, RED `43611901115`, full CI `43613318881`, ready `43615373468`, protected merge `a89df617e2babeffdd6f1b3e1d4c29c7c63c7262`. Latest Railway deploy `b2278c92-6ffc-466f-88d0-ecf8a917a660` subsequently reached SUCCESS at exact code SHA `a89df617e2babeffdd6f1b3e1d4c29c7c63c7262`; independent public HTTPS /api/health/version matched and /api/health/ready returned `ready`. Live identity/basic readiness VERIFIED, not full carousel admin recovery.
+
+**Boundaries:** #921 provides public carousel fallback only on bad editorial schema, not an automatic fix for corrupted stored records or editor save permissions. #922 only metric typography. No money, schema, auth, secret, media release, infrastructure or donor communications touched. Financial holds #684, #845 preserved; Railway IaC #446 requires authenticated plan and separately approved apply. Canonical 149-item denominator and last verified classifications unchanged (12/48/63/24/1/1). AF-R025 remains Partial.
+
+**Next:** Continue a disjoint high-priority source task; preserve separate authorization for any operator repair of stored carousel rows. Prior history retained below.
+
+---
+
 # Current operational checkpoint — 14 November 2026 IST: #919 live; #921/#922 in CI
 
 **Writer:** CHATGPT_ACTIVE single coordinated implementation writer. **Protected code main:** `879028173c074e84615b3b68da5e85b2e430bb4f`; #919 full seven-job `43610066733`, ready `43612040151`, merge exact SHA `879028173c074e84615b3b68da5e85b2e430bb4f`. Railway production website `347917a7-8c64-4b8f-880d-be80f49abfa0` SUCCESS at matching code SHA; independently GET /api/health/version exact SHA and /api/health/ready `ready`. No global physical accessibility acceptance implied.
