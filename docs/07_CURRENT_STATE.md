@@ -1,3 +1,23 @@
+# Current operational state — 14 November 2026 IST (five-track source checkpoint)
+
+**Technical source at checkpoint:** protected main `350b8cca959ca122176d6513be80bfdbd1815280`, after three independent guarded merges: #868 `e2bb6ec17607394a1506314c0b42c60c6afb2eca` (route-error native recovery; full CI `43538398199`, ready `43540498812`), #870 `10c7be255684af541f8c5bb8bd1b58b0bdea4873` (malformed participation cards; full `43539647661`, ready `43540502893`) and #869 `350b8cca959ca122176d6513be80bfdbd1815280` (404 Contact recovery; full `43538811800`, ready `43541875785`). Source integrity and SHA-guarded merge completed for all three.
+
+**One repository implementation writer:** CHATGPT_ACTIVE per the #862 handoff and AGENTS coordination. There is no authorized autonomous subagent writer/dispatcher. Five independent code tracks were processed through isolated branches and serialized protected merges, not fictitious detached agents.
+
+**Four distinct draft source PRs remain:**
+- #871 public teaser decimal sentence boundary, head `831e81dd4a88b9f72c92786ad1bf15a2d2fb4998`, hosted RED `43539577674`, full GREEN `43539874379` browser pending.
+- #872 linked repo-root CSS font audit, head `ffc47452bd90f3fa8e73674eada7ef341bdee1d5`, RED `43540106733`, GREEN `43540249694` browser pending.
+- #873 AF-R025 homepage multiline heading leading, head `70367735cd99017bd5854769fce677f0afbb0501`, RED `43540988337`, GREEN `43541312803` browser pending.
+- #874 public asset inventory symlink boundary, head `236b76ec137145ac81c5067b0141a3b2bcf30d1b`, RED `43541686637`, GREEN `43541827125` pending.
+
+No one may merge those drafts without successful full exact-head CI, review, separate ready-state promotion and protected expected-head SHA guard.
+
+**Railway source/runtime:** website `744ef045-038b-4e7e-bdca-761076bb137e` SUCCESS for #870 SHA `10c7be255684af541f8c5bb8bd1b58b0bdea4873`, production online 1/1; newer #869 website deployment `c94f4052-5c51-48d7-84f7-c3424b116de9` BUILDING at checkpoint. Worker SKIPPED for both. Independent HTTP health/version access UNVERIFIED; BUILDING is not SUCCESS. No notification activation/secret changes.
+
+#684 verified bank-payee/credited UTR and separate finance approval pending; #845 donation staging-eligibility plan pending. Canonical 149 remains 12 Completed / 48 Implemented / 63 Partial / 24 Not started / 1 Superseded / 1 N/A (135 active). No entire item relabeled. Next: finish qualifying exact-head checks and promotion, serial guarded merges, Railway SHA verification; leave financial holds isolated. Revert only narrow atomic PRs as rollback.
+
+---
+
 # Current operational state — 14 November 2026 IST (three-workstream checkpoint)
 
 **Writer:** CHATGPT_ACTIVE, owner takeover completed in #862. One implementation writer coordinates isolated task branches and serialized merges. Actual autonomous external coding agents were not launched. Read-only work may proceed independently.

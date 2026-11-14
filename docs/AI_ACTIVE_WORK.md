@@ -1,3 +1,13 @@
+## 14 November 2026 IST — ChatGPT five-track execution checkpoint
+
+**Writer: CHATGPT_ACTIVE**, one repository implementation writer, no detached autonomous coding-agent dispatcher. Owner's continuation and routine protected merge authority remain valid; main at checkpoint `350b8cca959ca122176d6513be80bfdbd1815280`. Separate analysis and code branches were coordinated, but protected integration is serialized.
+
+**Three protected source merges:** #868 `e2bb6ec17607394a1506314c0b42c60c6afb2eca` (full `43538398199`, ready `43540498812`), #870 `10c7be255684af541f8c5bb8bd1b58b0bdea4873` (full `43539647661`, ready `43540502893`), #869 `350b8cca959ca122176d6513be80bfdbd1815280` (full `43538811800`, ready `43541875785`).
+
+**Isolated draft PRs:** #871 head `831e81dd4a88b9f72c92786ad1bf15a2d2fb4998` (decimal teaser; RED `43539577674`, GREEN `43539874379`); #872 head `ffc47452bd90f3fa8e73674eada7ef341bdee1d5` (CSS scan root; RED `43540106733`, GREEN `43540249694`); #873 head `70367735cd99017bd5854769fce677f0afbb0501` (AF-R025 line-height; RED `43540988337`, GREEN `43541312803`); #874 head `236b76ec137145ac81c5067b0141a3b2bcf30d1b` (public-asset inventory links; RED `43541686637`, GREEN `43541827125`). Green runs not full-accepted until final verify successful; no premature merges.
+
+Railway settled site #870 exact SHA successful, #869 website deployment building at checkpoint; independent public HTTP version/readiness unverified. #684/#845 finance-held; no financial activation/real funds/donor records/secrets/schema/cron/CSP/infrastructure changes. Master 149 classes unchanged. Next: finish disjoint PRs as individual exact-head CI+promotion+guarded merge, verify Railway watch outcome. Rollback by narrow PR revert.
+
 ## 14 November 2026 IST — three isolated development branches (CHATGPT_ACTIVE)
 
 **Single implementation writer: CHATGPT_ACTIVE.** Protected main at checkpoint `3bc7b085c008c3037edd53b71459df614085b58c`. Codex owner handoff already recorded in #862. No concurrent detached agents are authorized to write. One coordinator integrates distinct PRs; independent read-only analysis may run in parallel.
