@@ -1,7 +1,7 @@
 
 import { describe, expect, it } from "vitest";
 import { programmes } from "./master-copy";
-import { distinctStoryParagraphs, programmeStoryParagraphs } from "./public-copy";
+import { distinctStoryParagraphs, heroTeaser, programmeStoryParagraphs } from "./public-copy";
 
 describe("distinctStoryParagraphs", () => {
   it("removes a body paragraph that repeats the hero summary", () => {
@@ -60,4 +60,19 @@ it("keeps the full public narrative for every canonical initiative", () => {
       expect(paragraphs, programme.slug).toContain(paragraph);
     }
   }
+});
+
+
+describe("heroTeaser factual sentence boundaries", () => {
+  it("retains decimal quantities in the first public sentence", () => {
+    expect(heroTeaser("A synthetic 2.5 km route was documented. A second sentence follows."))
+      .toBe("A synthetic 2.5 km route was documented.");
+    expect(heroTeaser("A synthetic ₹1.25 lakh amount was referenced. A later note follows."))
+      .toBe("A synthetic ₹1.25 lakh amount was referenced.");
+  });
+
+  it("retains decimal metrics without a final full stop", () => {
+    expect(heroTeaser("Synthetic metric 1.5 and another value 3.75"))
+      .toBe("Synthetic metric 1.5 and another value 3.75");
+  });
 });
