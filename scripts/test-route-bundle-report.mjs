@@ -494,6 +494,24 @@ test("CLI tolerates a closed output reader while malformed builds still fail", a
 });
 
 
+test("AF-R047 fails closed on non-string page and inherited-layout asset entries", () => {
+  // Invalid manifest types must never turn a partially measured build into a
+  // successful smaller total. Unsafe string paths retain the existing skip rule.
+  for (const invalid of [null, undefined, 24, { path: "static/chunks/private.js" }, ["static/chunks/nested.js"]]) {
+    assert.throws(() => summarizeAppRouteBundles({
+      "/page": ["static/chunks/valid.js", invalid],
+    }, () => 12), /Invalid App Router page asset entry/);
+
+    assert.throws(() => summarizeAppRouteBundles({
+      "/page": ["static/chunks/valid.js"],
+      "/layout": [invalid],
+    }, () => 12), /Invalid App Router layout asset entry/);
+  }
+  assert.equal(summarizeAppRouteBundles({
+    "/page": ["static/chunks/valid.js", "../unsafe.js"],
+  }, () => 12)[0].totalBytes, 12);
+});
+
 test("AF-R047 rejects malformed page asset lists instead of silently omitting routes", () => {
   const valid = { "/page": [], "/about/page": [] };
   assert.equal(summarizeAppRouteBundles(valid, () => 0).length, 2);
