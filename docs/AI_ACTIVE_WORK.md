@@ -1,3 +1,9 @@
+## 14 November 2026 IST — protected audit/UI merges and release boundaries
+
+**Current implementation writer: CHATGPT_ACTIVE.** Owner-directed takeover remains in force from #862. Protected main `fe6249e380c6e00c52af874a51caf41a7ed01119`; source merged through #858/#859 audit fixes and #861/#853 UI fixes after exact-head full CI, independent source review and separate ready-state verification. #856 tooling and #862 handoff were merged earlier. One writer integrates; no detached Codex session may mutate repo.
+
+Railway #861 site deployment `c0e01178-2396-4752-9d34-90d214575ebd` SUCCESS; #853 site deployment `43d96cd5-5e76-47c9-a5cf-561328567868` BUILDING at checkpoint. Public live SHA/readiness remain independently unverified. #855 media scanner has a two-file effective diff head `07ba9ef2f0c901603c66ea51f95181bbcda9237b`, full CI `43528573595` browser in progress; preserve draft until exact-head full acceptance and distinct ready-state CI. PR #684 and #845 remain finance-held; no real funds, secret reads, donor data, notifications, worker/cron or infrastructure changes. Canonical 149 unchanged (12/48/63/24/1/1; active 135). Next source work must be an isolated RED-first task without overlap; #855 and deployment inspections can proceed independently. Rollback by narrow PR revert.
+
 ## 14 November 2026 IST — owner-directed ChatGPT implementation takeover (05:05 IST checkpoint)
 
 **Writer: CHATGPT_ACTIVE.** The owner explicitly directed ChatGPT to take over repo execution on 14 November; this supersedes the previous CODEX_ACTIVE coordinator entry below. Other Codex/parallel contributors may perform read-only analysis only until this session records an isolated disjoint branch and integration plan. One shared-repository writer and serialized guarded merges remain binding. No uncoordinated new agents or infrastructure changes were authorized.
