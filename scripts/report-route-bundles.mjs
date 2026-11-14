@@ -83,7 +83,7 @@ export function summarizeUnattributedAppAssets(appPaths, assets) {
     throw new Error("Invalid aggregate asset size or path");
   }
   if (assets.some(({ path }) => !path || path.startsWith("/") ||
-      /[\\?#:\\s\\u0000-\\u001F\\u007F]/u.test(path) ||
+      /[\\?#:\s\u0000-\u001F\u007F]/u.test(path) ||
       path.split("/").some(segment => !segment || segment === "." || segment === ".."))) {
     throw new Error("Invalid aggregate asset path");
   }
