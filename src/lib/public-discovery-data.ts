@@ -1,6 +1,7 @@
 import { isPublicFaithReviewComplete, publicFaithWhere } from "@/lib/faith-publication";
 import { prisma } from "@/lib/prisma";
 import { STORY_PAGE_SIZE } from "@/lib/story-discovery";
+import { retainRoutableStoryRecords } from "@/lib/story-index-records";
 
 const DISCOVERY_MEDIA_CANDIDATE_LIMIT = 3;
 
@@ -55,7 +56,13 @@ export async function getVisibleStoryCards(ids: readonly string[]) {
     where: { ...publicStoryWhere, id: { in: [...ids] } },
     select: { ...storyIndexSelect, mediaAssets: storyMediaCandidates },
   });
-  const byId = new Map(cards.map(card => [card.id, card]));
+  // Revalidate the second public read: records may change after index selection.
+  // The database publication gate remains mandatory; malformed render fields
+  // must not interrupt the page or expose an unusable destination.
+  const visible = retainRoutableStoryRecords(cards).filter(card =>
+    typeof card.title === "string" && card.title.trim().length > 0
+    && typeof card.summary === "string" && Array.isArray(card.mediaAssets));
+  const byId = new Map(visible.map(card => [card.id, card]));
   return ids.flatMap(id => {
     const card = byId.get(id);
     return card ? [card] : [];
