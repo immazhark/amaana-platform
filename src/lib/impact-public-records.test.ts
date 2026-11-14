@@ -31,6 +31,19 @@ describe("impact page public projection boundary", () => {
     expect(retainRenderableImpactRecords([reviewed])[0]).toBe(reviewed);
   });
 
+  it("rejects malformed route aliases and preserves reviewed rows without metrics", () => {
+    const withoutMetric = { ...reviewed, id: "synthetic-no-metric", primaryMetric: null, primaryMetricLabel: null };
+    const candidates = [
+      { ...reviewed, slug: "../admin" },
+      { ...reviewed, slug: "medical//records" },
+      { ...reviewed, cause: { title: "   " } },
+      { ...reviewed, mediaAssets: null },
+      { ...reviewed, primaryMetric: 1_000_000 },
+      withoutMetric,
+    ] as unknown as Array<typeof reviewed>;
+    expect(retainRenderableImpactRecords(candidates)).toEqual([withoutMetric]);
+  });
+
   it("returns an empty public projection for an invalid collection", () => {
     expect(retainRenderableImpactRecords(null as unknown as Array<typeof reviewed>)).toEqual([]);
   });
