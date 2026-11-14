@@ -26,6 +26,22 @@ it("indexes only public story metadata without loading media for the full archiv
   expect(query.select).not.toHaveProperty("mediaAssets");
 });
 
+it("omits malformed story index identities before paging and second-read queries", async () => {
+  const good = { id: "published-safe", slug: "published-safe", title: "Published story", summary: "Reviewed description" };
+  mocks.findMany.mockResolvedValueOnce([
+    { ...good, id: { internal: "PRIVATE_ID" } },
+    { ...good, slug: "../admin" },
+    { ...good, slug: " " },
+    good,
+  ]);
+  const records = await getStoriesDiscoveryIndexData();
+  expect(records).toEqual([good]);
+  expect(JSON.stringify(records)).not.toContain("PRIVATE_");
+  expect(mocks.findMany.mock.calls[0]?.[0]).toMatchObject({
+    where: { status: "PUBLISHED", privacyApprovedAt: { not: null } },
+  });
+});
+
 it("loads identity-media candidates only for selected public page IDs", async () => {
   mocks.findMany.mockResolvedValue([card("story-b"), card("story-a")]);
   const cards = await getVisibleStoryCards(["story-a", "story-b"]);
