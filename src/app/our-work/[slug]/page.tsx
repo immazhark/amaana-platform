@@ -9,7 +9,7 @@ import { PageHero } from "@/components/page-hero";
 import { ProgrammeDetail } from "@/components/programme-detail";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { programmeBySlug, programmeCategories } from "@/lib/master-copy";
-import { canRenderPublicMedia, resolvePublicMediaUrl, selectIdentityPublicImage } from "@/lib/public-media";
+import { dedupeRenderablePublicMediaByUrl, resolvePublicMediaUrl, selectIdentityPublicImage } from "@/lib/public-media";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
@@ -106,7 +106,7 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
   const initiative = await getInitiativePageData(slug);
   if (!initiative) notFound();
 
-  const media = initiative.mediaAssets.filter(canRenderPublicMedia).filter((asset,index,list)=>list.findIndex(other=>resolvePublicMediaUrl(other)===resolvePublicMediaUrl(asset))===index);
+  const media = dedupeRenderablePublicMediaByUrl(initiative.mediaAssets);
   const leadMedia = selectInitiativeBannerImage(media) ?? null;
   const gallery = media;
   const period = formatYears(initiative.startYear, initiative.endYear, initiative.year);
