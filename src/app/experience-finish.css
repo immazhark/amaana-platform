@@ -738,6 +738,8 @@ body{font-weight:var(--af-weight-body)}
 .v2-not-found h1{line-height:1.16}
 /* AF-R025: route error headings contain explicit multiline text; preserve readable leading. */
 .v2-error-page h1{line-height:1.16}
+/* AF-R025: private assistance and acknowledgement headlines wrap at mobile widths. */
+.v2-state-hero h1,.v2-receipt-hero h1{line-height:1.16}
 :is(.v2-state-hero,.v2-receipt-hero)>.v2-shell{padding-block:clamp(2.25rem,3.25vw,3rem)}
 .v2-state-grid{min-height:27rem}
 :is(.v2-state-grid>div>p,.v2-state-hero>.v2-shell>p,.v2-receipt-hero>.v2-shell>p,.v2-not-found-content>p,.v2-error-content>p,.v2-reference-block small,.v2-receipt-status small,.admin-heading .muted,.admin-heading .lead){color:#4d5d72}
