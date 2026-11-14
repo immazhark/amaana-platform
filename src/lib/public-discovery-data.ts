@@ -96,7 +96,7 @@ export async function getFaithDiscoveryData() {
     record && typeof record === "object" && !Array.isArray(record)
     && typeof record.id === "string" && record.id.trim().length > 0
     && typeof record.slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(record.slug)
-    && typeof record.type === "string" && record.type.length > 0
+    && (record.type === "ARTICLE" || record.type === "REMINDER" || record.type === "VIDEO")
     && typeof record.title === "string" && record.title.trim().length > 0
     && typeof record.excerpt === "string"
     && typeof record.sourceCitation === "string"
