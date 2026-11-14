@@ -22,6 +22,7 @@ import {
   getImpactComparisonPageData,
   getImpactPageData,
   getHomepageDiscoveryData,
+  getOurWorkIndexData,
   getProgrammeChildMedia,
 } from "./public-page-data";
 import { getPublishedInitiativeBySlug } from "./public-content";
@@ -299,6 +300,41 @@ describe("public page gallery media query contracts", () => {
     expect(query.select.mediaAssets.where).toHaveProperty("sortOrder", -1000);
     expect(query.select).not.toHaveProperty("financialSummary");
     expect(query.select).not.toHaveProperty("assistanceRequest");
+  });
+
+  it("drops malformed portfolio records while retaining reviewed published initiatives", async () => {
+    const good = {
+      id: "initiative-safe", slug: "reviewed-relief", title: "Reviewed relief",
+      summary: "Reviewed public summary", year: 2026, startYear: null, endYear: null,
+      primaryMetric: "25", primaryMetricLabel: "kits", isFeatured: false,
+      mediaAssets: [],
+    };
+    const cause = {
+      id: "cause-reviewed", slug: "relief", title: "Relief",
+      summary: "Reviewed public cause",
+      initiatives: [
+        null,
+        { ...good, id: "wrong-route", slug: "../internal" },
+        { ...good, id: "wrong-title", title: { private: "PRIVATE_TITLE" } },
+        { ...good, id: "bad-number", year: { private: "PRIVATE_YEAR" } },
+        { ...good, id: "wrong-media", mediaAssets: { private: "PRIVATE_MEDIA" } },
+        good,
+      ],
+    };
+    mocks.causeFindMany.mockResolvedValueOnce([
+      null, undefined,
+      { ...cause, id: "bad-cause", slug: "../internal" },
+      { ...cause, id: "bad-relation", initiatives: { private: "PRIVATE_RELATION" } },
+      cause,
+    ]);
+    const data = await getOurWorkIndexData();
+    expect(data).toEqual([{ ...cause, initiatives: [good] }]);
+    expect(JSON.stringify(data)).not.toContain("PRIVATE_");
+    expect(mocks.causeFindMany.mock.calls[0]?.[0].where).toEqual({ status: "PUBLISHED" });
+    expect(mocks.causeFindMany.mock.calls[0]?.[0].select.initiatives.where)
+      .toEqual({ status: "PUBLISHED" });
+    expect(mocks.causeFindMany.mock.calls[0]?.[0].select.initiatives.select.mediaAssets.where)
+      .toMatchObject({ kind: "IMAGE", isPublic: true, privacyApprovedAt: { not: null }, sortOrder: -1000 });
   });
 
   it("fails closed for malformed completed-support showcase projections", async () => {
