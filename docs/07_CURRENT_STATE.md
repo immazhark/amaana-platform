@@ -1,3 +1,18 @@
+# Operational state — 14 November 2026 IST (current safe-boundary checkpoint)
+
+Protected main at this checkpoint: `a4d3c00a65deb48ec37f28451037832444d83a80`. Implementation writer `CHATGPT_ACTIVE`; one authorized GitHub implementation writer, no autonomous detached coding agents. Scope limited to Amaana Foundation.
+
+**Merged with exact-head CI, separate ready-state and SHA guard:** #874 public asset inventory symlinks (full `43541827125`, ready `43544957355`, merge `d92f243c75a00231feb97cea99a5737e1306b882`, Railway SKIPPED); #876 public gallery metadata fail-closed (full `43543147308`, ready `43545149079`, merge `d0f3ce008e622773b5d193040ee78002c81c864a`); #877 homepage no-open-appeals Contact route (full `43543477188`, ready `43545930565`, merge `a4d3c00a65deb48ec37f28451037832444d83a80`).
+
+**Isolated draft code PRs, all unmerged:** #878 local admin-edge scan-root symlink guard head `6162996484adc75c69980699dc6e45f9ddb1b45f` (RED `43543768667`, GREEN full run `43544072544` pending browser); #880 public media identity/gallery selectors guard head `0c6bfb426fa947e98b5209f4469664676e6e1c58` (RED `43544896987`, GREEN `43545197351` pending browser); #881 gallery keyboard selection invalid IDs head `b719eab9c357f981715c0c8ac8266d7c816644ed` (RED `43545040907`, GREEN `43545479680` pending browser); #882 AF-R047 bundle reporter aggregate path labels head `5d801be7cec2cc62ea04d3d8df607f209f4646a3` (RED `43545410695`, first GREEN `43545568393` failed an over-escaped regex; corrected GREEN `43545757371` pending browser). The draft status and required checks must be reverified before promotion and merge.
+
+**Railway:** website deployment `990f4c08-7413-4925-bc80-dd5c97b710da` is SUCCESS for #877 source `a4d3c00a65deb48ec37f28451037832444d83a80`, site online 1/1 replica; notification worker SKIPPED. Later scripts/docs merges may show SKIPPED correctly. Independent public HTTP version/readiness inaccessible from available web fetch, so LIVE_HTTP_UNVERIFIED. Do not force redeploy.
+
+**Holds:** #684 independent bank payee and credited UTR attestation plus scoped production finance authorization; #845 donation staging eligibility plan. No payment, schema, auth/RBAC, checkout CSP, donor identities, public media approvals, secret, cron, notification or live infrastructure activation. 149-item classification unchanged: 12 Completed / 48 Implemented / 63 Partial / 24 Not started / 1 Superseded / 1 N/A. AF-R047 is still Partial. Next: continue disjoint coding while CI runs; for each qualifying PR inspect exact-head full verify and review, promote ready, verify separate run, SHA-guard merge, and inspect Railway result. Narrow atomic PR revert is rollback.
+
+
+---
+
 # Current operational state — 14 November 2026 IST (continued source execution checkpoint)
 
 **Active writer:** CHATGPT_ACTIVE under AGENTS.md and the #862 ownership handoff. One repository integration writer; independent, disjoint branches and CI run concurrently, but detached autonomous coding agents have not been launched. Current protected main at checkpoint: `2c9230cd9797e28e77a1a962c002805946a15441`.
