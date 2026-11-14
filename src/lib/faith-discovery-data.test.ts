@@ -44,6 +44,39 @@ it("omits review-only fields and incomplete citations from public Faith counts",
   }]);
 });
 
+
+it("keeps verified Faith items but omits malformed public identities and topic links", async () => {
+  const approved = {
+    id: "reviewed-reflection", slug: "reviewed-reflection", type: "ARTICLE",
+    title: "Reviewed reflection", excerpt: "Approved summary",
+    status: "PUBLISHED", religiousReviewStatus: "VERIFIED",
+    verifiedAt: new Date("2026-11-14T00:00:00Z"),
+    sourceCitation: "Reviewed source",
+    topics: [{ topic: { slug: "compassion", name: "Compassion" } }],
+  };
+  mocks.findMany.mockResolvedValue([
+    null, undefined,
+    { ...approved, id: "private-title", title: { private: "PRIVATE_TITLE" } },
+    { ...approved, id: "unsafe-route", slug: "../admin" },
+    { ...approved, id: "unverified", religiousReviewStatus: "PENDING" },
+    {
+      ...approved, id: "broken-topics", slug: "broken-topics",
+      topics: [
+        null, { topic: null },
+        { topic: { slug: "../admin", name: "PRIVATE_TOPIC" } },
+        { topic: { slug: "compassion", name: "Compassion" } },
+      ],
+    },
+    approved,
+  ]);
+  const items = await getFaithDiscoveryData();
+  expect(items.map(item => item.id)).toEqual(["broken-topics", "reviewed-reflection"]);
+  expect(items[0]?.topics).toEqual([{ topic: { slug: "compassion", name: "Compassion" } }]);
+  expect(items[1]?.topics).toEqual(approved.topics);
+  expect(JSON.stringify(items)).not.toContain("PRIVATE_");
+  expect(mocks.findMany.mock.calls[0]?.[0].where).toEqual(publicFaithWhere);
+});
+
 it("loads image candidates only for two distinct visible Faith IDs", async () => {
   await getVisibleFaithMedia(["hero", "lead", "hero"]);
   expect(mocks.findMany).toHaveBeenCalledOnce();

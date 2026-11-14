@@ -91,10 +91,28 @@ export async function getFaithDiscoveryData() {
     },
   });
   // Review status is needed only for the final eligibility check; do not serialize it.
-  return records.filter(isPublicFaithReviewComplete).map(record => ({
+  // Reject malformed public identity/text projections before the page renders.
+  const reviewed = (Array.isArray(records) ? records : []).filter(record =>
+    record && typeof record === "object" && !Array.isArray(record)
+    && typeof record.id === "string" && record.id.trim().length > 0
+    && typeof record.slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(record.slug)
+    && typeof record.type === "string" && record.type.length > 0
+    && typeof record.title === "string" && record.title.trim().length > 0
+    && typeof record.excerpt === "string"
+    && typeof record.sourceCitation === "string"
+    && isPublicFaithReviewComplete(record));
+  return reviewed.map(record => ({
     id: record.id, slug: record.slug, type: record.type, title: record.title,
     excerpt: record.excerpt, sourceCitation: record.sourceCitation,
-    verifiedAt: record.verifiedAt, topics: record.topics,
+    verifiedAt: record.verifiedAt,
+    // A corrupt topic relation cannot authorize or disclose public editorial text.
+    // Keep the independently reviewed item and omit only unusable taxonomy links.
+    topics: (Array.isArray(record.topics) ? record.topics : []).filter(link =>
+      link && typeof link === "object" && !Array.isArray(link)
+      && link.topic && typeof link.topic === "object" && !Array.isArray(link.topic)
+      && typeof link.topic.slug === "string"
+      && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(link.topic.slug)
+      && typeof link.topic.name === "string" && link.topic.name.trim().length > 0),
   }));
 }
 
