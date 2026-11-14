@@ -230,7 +230,8 @@ export const getHomepageDiscoveryData = cache(async () => {
     typeof value === "string" && value.length <= 200
     && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value);
   const initiativesBySlug = new Map(
-    [...featuredInitiatives, ...fieldInitiatives]
+    [...(Array.isArray(featuredInitiatives) ? featuredInitiatives : []),
+      ...(Array.isArray(fieldInitiatives) ? fieldInitiatives : [])]
       .filter(record => record && typeof record === "object"
         && publicSlug(record.slug)
         && typeof record.title === "string" && record.title.trim().length > 0
@@ -253,7 +254,7 @@ export const getHomepageDiscoveryData = cache(async () => {
   return {
     initiatives: Array.from(initiativesBySlug.values()),
     causes: visibleCauses,
-    publishedProgrammeSlugs: publishedProgrammeRecords
+    publishedProgrammeSlugs: (Array.isArray(publishedProgrammeRecords) ? publishedProgrammeRecords : [])
       .filter(record => record && typeof record === "object" && publicSlug(record.slug))
       .map(record => record.slug),
   };
