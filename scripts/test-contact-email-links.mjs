@@ -22,6 +22,12 @@ test('AF-R076 detects Cloudflare-obfuscated replacement even with other correct 
   assert.match(auditContactEmailLinks(altered, footer).join('\n'), /Cloudflare email-protection/i);
 });
 
+test('AF-R076 detects JavaScript href with leading whitespace before the scheme', () => {
+  const altered = contact.replace(`href: "${canonical}"`, 'href: " \\tJaVaScRiPt:alert(1)"');
+  assert.notEqual(altered, contact);
+  assert.match(auditContactEmailLinks(altered, footer).join('\\n'), /javascript: link/i);
+});
+
 test('AF-R076 rejects a wrong donation support email destination', () => {
   const altered = contact.replace(`href: "${donation}"`, 'href: "mailto:elsewhere@example.invalid?subject=Donation%20support"');
   assert.notEqual(altered, contact);

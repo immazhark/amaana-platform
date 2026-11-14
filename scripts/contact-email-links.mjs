@@ -34,7 +34,7 @@ export function auditContactEmailLinks(contactSource, footerSource) {
     try { hrefs = staticHrefValues(source, name); }
     catch { problems.push(`${name} link source cannot be parsed`); continue; }
     if (hrefs.some(href => PROTECTED_LINK.test(href))) problems.push(`${name} has an invalid Cloudflare email-protection link`);
-    if (hrefs.some(href => /^javascript:/i.test(href))) problems.push(`${name} includes a javascript: link`);
+    if (hrefs.some(href => /^javascript:/i.test(href.trimStart()))) problems.push(`${name} includes a javascript: link`);
     if (hrefs.some(href => href.startsWith('mailto:') && href !== GENERAL && href !== DONATION)) {
       problems.push(`${name} contains an unapproved mailto destination`);
     }
