@@ -13,6 +13,22 @@ import {
 
 describe("public media safety", () => {
   afterEach(() => vi.unstubAllEnvs());
+  it("skips malformed stored media records without hiding reviewed photographs", () => {
+    const approved = { kind: "IMAGE" as const, publicUrl: "/media/approved.webp", altText: "Reviewed photo", sortOrder: IDENTITY_MEDIA_SORT_ORDER };
+    const broken = [
+      null, undefined,
+      { kind: "IMAGE", publicUrl: "/media/unreviewed.webp", altText: { html: "not text" }, sortOrder: IDENTITY_MEDIA_SORT_ORDER },
+      { kind: "IMAGE", publicUrl: "/media/unreviewed.webp", altText: "Not reviewed", title: { private: "value" }, sortOrder: 0 },
+      { kind: "IMAGE", publicUrl: "/media/unreviewed.webp", altText: "Not reviewed", sortOrder: "-1000" },
+    ] as unknown as typeof approved[];
+    expect(canRenderPublicMedia(null as unknown as typeof approved)).toBe(false);
+    expect(isDocumentaryPublicImage(null as unknown as typeof approved)).toBe(false);
+    expect(selectIdentityPublicImage(null as unknown as typeof approved[])).toBeUndefined();
+    expect(selectGalleryPublicImage(null as unknown as typeof approved[])).toBeNull();
+    expect(selectIdentityPublicImage([...broken, approved])?.publicUrl).toBe("/media/approved.webp");
+    expect(selectGalleryPublicImage([...broken, approved])?.publicUrl).toBe("/media/approved.webp");
+  });
+
   it("never promotes supporting gallery images into an unassigned identity slot", () => {
     expect(selectIdentityPublicImage([
       { kind: "IMAGE", publicUrl: "/media/gallery.jpg", altText: "Eid kits", sortOrder: 0 },
