@@ -151,6 +151,20 @@ for (const [path, expectedName] of programmeCategorySchemaCases) {
   });
 }
 
+test('reviewed detail loading boundaries preserve true HTTP 404 for unavailable public records', async ({ request }) => {
+  // An App Router loading.tsx can commit HTTP 200 before a later notFound().
+  // The public site must not disguise withdrawn/unknown editorial URLs as live.
+  for (const path of [
+    '/stories/nonexistent-source-review-20261115',
+    '/our-work/nonexistent-source-review-20261115',
+    '/faith-and-reflections/nonexistent-source-review-20261115',
+  ]) {
+    const response = await request.get(path, { maxRedirects: 0, failOnStatusCode: false });
+    expect(response.status(), path + ' must remain an HTTP 404').toBe(404);
+    expect(response.headers().location, path + ' must not redirect').toBeUndefined();
+  }
+});
+
 test('prototype property slugs do not redirect visitors to invented destinations', async ({ request }) => {
   for (const path of ['/our-work/constructor', '/programmes/constructor', '/programmes/toString']) {
     const response = await request.get(path, { maxRedirects: 0 });
