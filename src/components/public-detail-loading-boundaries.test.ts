@@ -16,7 +16,7 @@ it.each(reviewedDetailRoutes)(
     const source = readFileSync(path, "utf8");
     expect(source).toContain('import { PublicRouteLoading } from "@/components/public-route-loading"');
     expect(source).toContain(`route="${identity}"`);
-    expect(source).not.toMatch(/use client|fetch\\(|prisma\\.|searchParams|window\\.|Math\\.random|Date\\(/);
+    expect(source).not.toMatch(/use client|fetch\(|prisma\.|searchParams|window\.|Math\.random|Date\(/);
     expect(source).not.toMatch(/beneficiar(?:y|ies)|donor|raised|funded|₹/i);
   },
 );
