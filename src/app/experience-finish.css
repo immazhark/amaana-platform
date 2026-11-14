@@ -734,6 +734,8 @@ body{font-weight:var(--af-weight-body)}
 :is(.v2-state-hero,.v2-receipt-hero,.v2-not-found,.v2-error-page,.v2-loading-page,.admin-heading)::after{content:"";position:absolute;top:clamp(1.5rem,5vw,3rem);right:clamp(.75rem,2vw,2rem);width:var(--amaana-emblem-width);aspect-ratio:276/500;background:url("/backgrounds/amaana-arch-emblem.svg?v=20260928-r5") top center/contain no-repeat;pointer-events:none;z-index:-1}
 :is(.page-hero,.v3-home-banner)>.amaana-backdrop-emblem{display:block;z-index:2}
 :is(.v2-state-hero,.v2-receipt-hero,.v2-not-found,.v2-error-page,.v2-loading-page) h1{max-width:15ch;font:500 clamp(3rem,5.25vw,5.15rem)/1.05 var(--af-font-display);letter-spacing:-.045em;text-wrap:balance}
+/* AF-R025: a wrapped 404 headline needs readable spacing at narrow widths and zoom. */
+.v2-not-found h1{line-height:1.16}
 /* AF-R025: route error headings contain explicit multiline text; preserve readable leading. */
 .v2-error-page h1{line-height:1.16}
 :is(.v2-state-hero,.v2-receipt-hero)>.v2-shell{padding-block:clamp(2.25rem,3.25vw,3rem)}
