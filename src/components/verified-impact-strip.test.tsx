@@ -45,6 +45,23 @@ describe("published-only donation trust evidence", () => {
     expect(markup).not.toContain("raised to date");
   });
 
+  it("scans candidate outcome slugs linearly without repeated quadratic lookups", () => {
+    let slugReads = 0;
+    const items = Array.from({ length: 100 }, (_, index) => ({
+      get slug() {
+        slugReads += 1;
+        return `published-${index}`;
+      },
+      title: `Documented initiative ${index}`,
+      value: String(index + 1),
+      label: "reviewed outcome",
+    }));
+    const html = renderToStaticMarkup(<VerifiedImpactStrip items={items} />);
+    expect(html).toContain("/our-work/published-0");
+    expect(html).not.toContain("/our-work/published-3");
+    expect(slugReads).toBeLessThan(2_000);
+  });
+
   it("limits the strip to three separate documented outcomes", () => {
     const items = Array.from({ length: 5 }, (_, i) => ({
       slug: `published-${i}`, title: `Published ${i}`,
