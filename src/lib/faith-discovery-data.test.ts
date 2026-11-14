@@ -117,6 +117,22 @@ it("loads image candidates only for two distinct visible Faith IDs", async () =>
   });
 });
 
+it("drops malformed selected Faith media identities before the bounded second read", async () => {
+  const approved = {
+    id: "hero", status: "PUBLISHED", religiousReviewStatus: "VERIFIED",
+    verifiedAt: new Date("2026-11-15T00:00:00Z"),
+    sourceCitation: "Reviewed source", mediaAssets: [],
+  };
+  mocks.findMany.mockResolvedValueOnce([approved]);
+  const requested = [null, { internal: "PRIVATE_ID" }, "hero", "", "hero"] as unknown as string[];
+  const visible = await getVisibleFaithMedia(requested);
+  expect(visible).toEqual([{ id: "hero", mediaAssets: [] }]);
+  expect(JSON.stringify(visible)).not.toContain("PRIVATE_ID");
+  expect(mocks.findMany.mock.calls[0]?.[0]?.where).toEqual({
+    ...publicFaithWhere, id: { in: ["hero"] },
+  });
+});
+
 it("rejects an unbounded media request and skips the database for no visible IDs", async () => {
   expect(await getVisibleFaithMedia([])).toEqual([]);
   await expect(getVisibleFaithMedia(["a", "b", "c"])).rejects.toThrow(/two/i);

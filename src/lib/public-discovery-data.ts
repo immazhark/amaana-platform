@@ -124,7 +124,11 @@ export async function getFaithDiscoveryData() {
  * This protects against a withdrawal between the index and media reads.
  */
 export async function getVisibleFaithMedia(ids: readonly string[]) {
-  const uniqueIds = [...new Set(ids)];
+  // A malformed selected ID is not an additional public media candidate.
+  // Validate before deduplication and the two-record second-read limit.
+  const uniqueIds = [...new Set((Array.isArray(ids) ? ids : []).filter(
+    id => typeof id === "string" && id.trim().length > 0,
+  ))];
   if (uniqueIds.length > 2) throw new RangeError("At most two Faith media records can be loaded");
   if (uniqueIds.length === 0) return [];
 
