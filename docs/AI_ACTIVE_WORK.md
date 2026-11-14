@@ -1,3 +1,17 @@
+## 14 November 2026 IST — explicit owner handoff, coordinated repository writer
+
+**Implementation owner:** CHATGPT_ACTIVE, this ChatGPT session, following the owner's explicit takeover directive. Previous coding sessions should stop repository writes; research and QA work may be parallel but only one writer advances refs. Integration target remains protected `main`, task branches only. Baseline at handoff `670ad68ee60bd6c6a861c6a84b9b0e0e7e98c7a1`.
+
+**Delivered:** #889 public factual fallback metric guard merged `ab1d281d95989f7cb7755ff6a5f84a98a402824c` after full `43549366300` and ready `43552854396`. #890 gallery caption guard merged `1d4f187d753ae52076c6aa05ac8a28d72c253a17` after full `43549574531` and ready `43552858043`. Railway reported SUCCESS for #890 SHA; independent public HTTP identity/readiness not verified in this session.
+
+**In progress:** #886 story-index identity guard head `ab6a78f1d312bf3f446e30f71a151f8f0a72131c` full CI `43552793004` browser pending; #888 impact pre-render record guard head `8fc1072caf610404bc9b2208a1bad72b97a9daaa` requiring exact-head CI and clean merge. Preserve both independent PRs and their RED-first regressions.
+
+**Held scopes:** #684 verified public payee/credited UTR and scoped financial release; #845 staging donation-eligibility production plan. No donor messages, payments/refunds, high-risk auth/RBAC/schema/checkout CSP, cron/provider activation, secrets, unreviewed faces, destructive infrastructure operations. 149-item classifications unchanged.
+
+**Next:** complete #886 and #888 exact-head checks, separate ready-state promotion and SHA-guarded merges; verify actual Railway website SHA and public HTTP where independently accessible. Do not force deploy or erase earlier coordination records.
+
+---
+
 ## 14 November 2026 IST — CHATGPT_ACTIVE public discovery continuation
 
 **Protected main at this checkpoint:** `ad50c06d145c28fa4327703368ddff9823d5703d`. **Authorized implementation writer:** `CHATGPT_ACTIVE`; independent branches and GitHub CI, no dispatched autonomous coding agents. Source and deployed runtime SHAs are separate.

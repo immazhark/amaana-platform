@@ -1,3 +1,9 @@
+## 14 November 2026 IST — owner-directed repository takeover and independent release streams
+
+Owner explicitly delegated implementation ownership to this ChatGPT session. Source base `1d4f187d753ae52076c6aa05ac8a28d72c253a17` after #889 and #890 protected merges; Railway latest website SUCCESS at that merge SHA, but independent public HTTP not yet verified. This records a single coordinated repository writer, not independent competing GitHub writers. Existing task branches #886 (Stories identity) and #888 (Impact rendering boundary) contain new test-first fixes pending full current-head CI and protected release. Financial #684 and staging #845 remain held. Current 149 classification total stays unchanged. Rollback: revert each narrow merge independently, not protected-main history.
+
+---
+
 ## 14 November 2026 IST — portfolio release and three new RED-first branches
 
 **Protected main at this checkpoint:** `ad50c06d145c28fa4327703368ddff9823d5703d`. **Authorized implementation writer:** `CHATGPT_ACTIVE`; independent branches and GitHub CI, no dispatched autonomous coding agents. Source and deployed runtime SHAs are separate.
