@@ -141,3 +141,20 @@ test("AF-R048 refuses overflowed CLS session totals instead of reporting Infinit
     { startTime: 1_100, value: Number.MAX_VALUE },
   ]), Number.MAX_VALUE, "Separate windows must not be summed into overflow");
 });
+
+test("local synthetic profiler refuses private same-origin reads before tracing", () => {
+  const local = "http://127.0.0.1:3000";
+  for (const pathname of [
+    "/admin", "/admin/team", "/api/admin/private", "/api/ops/worker",
+    "/api/cron/notifications", "/api/webhooks/razorpay", "/documents/assistance",
+    "/donations/AFD-2026-12345678/acknowledgement",
+    "/request-assistance/status", "/request-assistance/received",
+    "/%61dmin/team", "/api/%61dmin/private",
+  ]) {
+    assert.equal(isAllowedProfileRequest(local + pathname, "GET"), false, pathname);
+    assert.equal(isAllowedProfileRequest(local + pathname, "HEAD"), false, pathname);
+  }
+  for (const pathname of ["/", "/donate", "/_next/static/chunks/site.js", "/api/health/ready"]) {
+    assert.equal(isAllowedProfileRequest(local + pathname, "GET"), true, pathname);
+  }
+});
