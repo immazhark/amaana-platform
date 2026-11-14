@@ -1,3 +1,17 @@
+# Current operational state — 14 November 2026 IST (three accepted merges and #917)
+
+**Writer:** CHATGPT_ACTIVE only. **Protected source main:** `f1da173534a613eb3fa8b790b8a97c3608f664bb`. **Railway website:** deployment `09a4d7fc-c947-4aea-87fe-dfa9d1058caf` SUCCESS at that exact SHA. Independent public HTTP version/readiness UNVERIFIED; do not claim LIVE_VERIFIED.
+
+**Merged code:** #914 `b1704ddac155c79d4e309776758c31fd6d9e0e56` (full `43601870792`, ready `43605013157`); #915 `ea0d5470d080f8d4898da421c3d0ac3d760ea832` (full `43602093134`, ready `43605030966`); #911 `f1da173534a613eb3fa8b790b8a97c3608f664bb` (full `43602517724`, ready `43605126741`). SHA-guarded merges, no unresolved review threads. Narrow fixes only.
+
+**Unmerged source candidate:** draft #917 branch `fix/home-discovery-array-contract-20261114`, head `c6be3568c501616f008b2715a01699b52302a1ab`. Focused test-only commit `7845fda2c4be0698a1147e8ec29f635d2c5da192` had its CI cancelled when the subsequent commit superseded it; do not misreport completed RED. Original null-spread TypeError independently reproduced in Node. Corrected-head full CI `43607941362`: fast/database/production successful; browser/final verify pending at this checkpoint. No merge before required gates.
+
+**Held:** finance #684 payee/UTR and activation; donation eligibility #845 scoped high-risk source plan. Railway IaC #446 needs authenticated read-only import/plan then separately approved consequential apply before 1 December 2026. No destructive branches, live payments/refunds, donor communications, cron, media publication or infrastructure changes. Master unique 149 unchanged; last verified overlay 12 Completed, 48 Implemented, 63 Partial, 24 Not started, 1 Superseded, 1 Not applicable.
+
+**Next:** Finish #917 browser/verify, review RED evidence and exact head, promote to ready for separate CI only after full acceptance, protected SHA-guarded merge, inspect Railway/public identity. Continue disjoint P1 source work.
+
+---
+
 # Current operational state — 14 November 2026 IST (public discovery fixes)
 
 **Protected main at this checkpoint:** `ad50c06d145c28fa4327703368ddff9823d5703d`. **Authorized implementation writer:** `CHATGPT_ACTIVE`; independent branches and GitHub CI, no dispatched autonomous coding agents. Source and deployed runtime SHAs are separate.
