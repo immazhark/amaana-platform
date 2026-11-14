@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { selectImpactComparison } from "./impact-comparison";
+import { retainComparableImpactRecords, selectImpactComparison } from "./impact-comparison";
 
 const publicRecords = [
   { slug: "eid-gift-kits", title: "Eid Gift Kits" },
@@ -89,5 +89,39 @@ describe("campaign-attributed comparison links", () => {
       expect(result).toMatchObject({ requested: true, invalid: true, selected: null });
       expect(JSON.stringify(result)).not.toContain("private@example.org");
     }
+  });
+});
+
+describe("public comparison page projection boundary", () => {
+  const reviewed = {
+    slug: "eid-gift-kits", title: "Eid Gift Kits", summary: "Reviewed public summary",
+    cause: { title: "Ramadan & Eid" }, primaryMetric: "42", primaryMetricLabel: "kits",
+  };
+
+  it("rejects malformed identity, cause, summary and metric fields before page rendering", () => {
+    const withoutMetric = { ...reviewed, slug: "amaana-taleem", primaryMetric: null, primaryMetricLabel: null };
+    const malformed = [
+      null, undefined,
+      { ...reviewed, slug: "../admin" },
+      { ...reviewed, slug: "two//slash" },
+      { ...reviewed, title: 123 },
+      { ...reviewed, cause: null },
+      { ...reviewed, cause: { title: { private: "PRIVATE_CAUSE" } } },
+      { ...reviewed, summary: { private: "PRIVATE_SUMMARY" } },
+      { ...reviewed, primaryMetric: { private: "PRIVATE_METRIC" } },
+      { ...reviewed, primaryMetricLabel: ["PRIVATE_LABEL"] },
+    ] as unknown as Array<typeof reviewed>;
+    const result = retainComparableImpactRecords([...malformed, reviewed, withoutMetric]);
+    expect(result).toEqual([reviewed, withoutMetric]);
+    expect(JSON.stringify(result)).not.toContain("PRIVATE_");
+  });
+
+  it("preserves valid source order without changing the comparison selection semantics", () => {
+    const second = { ...reviewed, slug: "amaana-taleem" };
+    const records = retainComparableImpactRecords([reviewed, second]);
+    expect(records[0]).toBe(reviewed);
+    expect(selectImpactComparison(records, { left: second.slug, right: reviewed.slug }).selected)
+      .toEqual([second, reviewed]);
+    expect(retainComparableImpactRecords(null as unknown as Array<typeof reviewed>)).toEqual([]);
   });
 });

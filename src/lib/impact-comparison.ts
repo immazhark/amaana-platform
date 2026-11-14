@@ -1,6 +1,33 @@
 import { hasUnsupportedPublicQueryFields } from "./public-navigation-query.mjs";
 export type ImpactComparisonSearch = Record<string, string | string[] | undefined>;
 
+export type ComparablePublicImpactRecord = {
+  slug: string;
+  title: string;
+  summary: string;
+  cause: { title: string };
+  primaryMetric: string | null;
+  primaryMetricLabel: string | null;
+};
+
+/** Validate the narrow published comparison projection before page dereferences. */
+export function retainComparableImpactRecords<T extends ComparablePublicImpactRecord>(records: readonly T[]): T[] {
+  if (!Array.isArray(records)) return [];
+  return records.filter(record => {
+    if (!record || typeof record !== "object" || Array.isArray(record)) return false;
+    const value = record as unknown as Record<string, unknown>;
+    const cause = value.cause;
+    const causeTitle = cause && typeof cause === "object" && !Array.isArray(cause)
+      ? (cause as { title?: unknown }).title : null;
+    return typeof value.slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.slug)
+      && typeof value.title === "string" && value.title.trim().length > 0
+      && typeof value.summary === "string"
+      && typeof causeTitle === "string" && causeTitle.trim().length > 0
+      && (value.primaryMetric == null || typeof value.primaryMetric === "string")
+      && (value.primaryMetricLabel == null || typeof value.primaryMetricLabel === "string");
+  });
+}
+
 /** Compare only entries from the already-approved public projection. Never
  * merge incomparable metrics or reflect untrusted query parameters. */
 export function selectImpactComparison<T extends { slug: string }>(
