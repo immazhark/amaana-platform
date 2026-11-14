@@ -31,12 +31,16 @@ describe("public story index identity boundary", () => {
       ...publicStory,
       initiative: { status: "PUBLISHED", title: "Reviewed initiative", cause: { status: "PUBLISHED", title: { private: "PRIVATE_NESTED_CAUSE" } } },
     };
+    const missingPublishedInitiativeCause = {
+      ...publicStory,
+      initiative: { status: "PUBLISHED", title: "Reviewed initiative", cause: null },
+    };
     const unrelatedDraft = {
       ...publicStory,
       id: "reviewed-with-draft",
       cause: { status: "DRAFT", title: { draft: "NOT_PUBLIC" } },
     };
-    const records = retainRoutableStoryRecords([badCause, badInitiative, badNestedCause, publicStory, unrelatedDraft] as unknown as Array<typeof publicStory>);
+    const records = retainRoutableStoryRecords([badCause, badInitiative, badNestedCause, missingPublishedInitiativeCause, publicStory, unrelatedDraft] as unknown as Array<typeof publicStory>);
     expect(records).toEqual([publicStory, unrelatedDraft]);
     expect(JSON.stringify(records)).not.toContain("PRIVATE_");
   });
