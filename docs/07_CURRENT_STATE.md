@@ -1,3 +1,17 @@
+# Current operational state — 14 November 2026 IST (#917 merged; #919 isolated)
+
+**Writer:** CHATGPT_ACTIVE; one coordinated implementation writer. **Protected main:** `e1d0e9cb88e299f572197dca890fa0835f128c7f` after #917. Hosted RED `43607751387` rerun failed specifically with `featuredInitiatives is not iterable` on test-only `7845fda2`; GREEN `43607941362` seven-job SUCCESS; separate ready-state `43610846302` SUCCESS; reviewed and SHA-guarded merge `e1d0e9cb88e299f572197dca890fa0835f128c7f`.
+
+**Independent unmerged P1 candidate:** draft #919 `fix/af-r025-appeal-funding-metric-leading-20261114`, source head `7b4fb8685c0435bb68a2b596e7a38f058ddca9eb`. RED `43609762795` (1.08 fails >=1.14), corrected line-height 1.16, GREEN `43610066733`: fast/database/production successful, browser/final pending at checkpoint. No payment logic or canonical amount changes. Do not merge before full exact-head and separate ready-state verification.
+
+**Railway:** last confirmed SUCCESS runtime `f1da173534a613eb3fa8b790b8a97c3608f664bb` deployment `09a4d7fc-c947-4aea-87fe-dfa9d1058caf`. New #917 deploy `eade9243-5e11-4498-aa34-4e483d41fcb4` BUILDING at inspection. Independent public GET version/readiness UNVERIFIED. No forced rollout.
+
+**Holds:** #684 verified payee/UTR and finance activation, #845 reviewed payment eligibility scope, #446 authenticated read-only Railway IaC plan before any approved apply. No real payment/refund, sensitive records, media release, secrets, migrations, notification/cron, infrastructure settings or destructive branch cleanup. Original canonical 149 classifications unchanged (12 Completed/48 Implemented/63 Partial/24 Not started/1 Superseded/1 N/A).
+
+**Next:** complete #919 gates, merge only at exact head after readiness; verify Railway/public SHA separately; continue independent P1 implementation when blocked.
+
+---
+
 # Current operational state — 14 November 2026 IST (three accepted merges and #917)
 
 **Writer:** CHATGPT_ACTIVE only. **Protected source main:** `f1da173534a613eb3fa8b790b8a97c3608f664bb`. **Railway website:** deployment `09a4d7fc-c947-4aea-87fe-dfa9d1058caf` SUCCESS at that exact SHA. Independent public HTTP version/readiness UNVERIFIED; do not claim LIVE_VERIFIED.
