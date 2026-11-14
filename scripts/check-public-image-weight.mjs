@@ -36,6 +36,10 @@ export function evaluateImageWeights(files, limit = MAX_ARTWORK_BYTES) {
 }
 
 export function readHeroImageInventory(root = process.cwd()) {
+  // Do not follow an alias for the repository scan boundary.
+  if (lstatSync(root).isSymbolicLink()) {
+    throw new Error("Symlinked artwork scan root is forbidden");
+  }
   if (lstatSync(join(root, "public")).isSymbolicLink()) {
     throw new Error("Symlinked artwork parent is forbidden: public");
   }
