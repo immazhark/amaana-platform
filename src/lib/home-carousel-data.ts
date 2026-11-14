@@ -12,7 +12,7 @@ const getHomeCarouselConfigCached = unstable_cache(async () => {
       config = readStoredHomeConfig(row.config);
     } catch (error) {
       // Invalid stored editorial configuration must not take down the public homepage.
-      // Preserve the revision so authorized editors can safely repair it.
+      // Keep the revision accurate; the invalid persisted row needs separate operator recovery.
       if (!(error instanceof HomeCarouselValidationError)) throw error;
     }
   }
