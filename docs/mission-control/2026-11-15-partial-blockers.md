@@ -1,4 +1,4 @@
-# 71 Partial backlog items — exact remaining acceptance and next step
+# 70 Partial backlog items — exact remaining acceptance and next step
 
 15 November 2026 IST · Current proposed register PR #944. **These are scope-derived missing end conditions, not a claim each was newly reproduced in runtime.** Source-tested cases have separate proof in the main 149-item reconciliation. Preserve privacy, finance, legal and external approval gates.
 
@@ -32,7 +32,6 @@
 | AF-R068 | MEASUREMENT | Sampled CSS-rule coverage exists, but unused CSS below 10% is not proved | Record representative route states and prune measured unused selectors |
 | AF-R069 | ENGINEERING | Strict a11y and import-cycle lint checks have incomplete codebase coverage | Add fail-first fixtures and enable targeted checks without skipping current lint |
 | AF-R071 | ENGINEERING | Proposed detail-route loading created HTTP200 soft 404; safe complete skeleton strategy absent | Keep merged true-404 test and research non-leaf streaming boundaries |
-| AF-R072 | ENGINEERING | Homepage metadata description exceeded length goal; PR #945 still requires release acceptance | Complete #945 checks and verify actual deployed name=description |
 | AF-R074 | EXTERNAL | Registry/entity links require independently verified official record | Verify signed registration link before public linking and schema enrichment |
 | AF-R076 | ENGINEERING | Broken Cloudflare email-obfuscation link not reproduced at affected URL | Reconstruct actual DOM/href and correct exact route with browser regression |
 | AF-R077 | MEASUREMENT | Real-user Web Vitals attribution lacks trusted field collection and reporting proof | Validate privacy-safe ingest, source attribution and sample p75 without identifiers |

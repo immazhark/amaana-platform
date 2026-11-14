@@ -1,3 +1,7 @@
+## Fourth pass — AF-R072 accepted on real production HTML (15 November 2026 IST)
+
+**Latest proposed PR #944 totals are now 35 Completed / 24 Implemented / 70 Partial / 18 Not started / 1 Superseded / 1 N/A = 149; 112 active.** AF-R072 moved from Partial to Completed only after PR #945's RED/green, distinct ready-state, guarded merge `33cb6ff5906832047858b2570ff9c2c361bb19ef`, Railway website SUCCESS and independent live public SHA/readiness and original HTML: actual `<meta name="description">` is **155 characters**. Source completion, deployment and HTML were established separately. AF-R043 forced dynamic homepage/TTFB remains Partial. The earlier second/third pass counts below are retained as historical proposals, not the latest status.
+
 ## Third evidence pass — already implemented Not started groundwork
 
 **Latest proposed #944 totals:** 34 Completed / 24 Implemented / 71 Partial / 18 Not started / 1 Superseded / 1 Not applicable = 149; active 113. AF-R018 and AF-ATTESTATION are no longer mislabeled Not started: HSTS preload headers and server-only aggregate-digest tests respectively are in deployed source. Neither is complete: subdomain/preload approval and a real signed/provenanced report attestation are unverified. This is a source-only reclassification, NOT a live domain change or a claim that SHA256 alone proves tamper evidence.
