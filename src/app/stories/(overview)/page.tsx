@@ -9,6 +9,7 @@ import { getStoriesDiscoveryIndexData, getVisibleStoryCards } from "@/lib/public
 import { selectIdentityPublicImage } from "@/lib/public-media";
 import styles from "../stories-audit.module.css";
 import { publishedStoryProgrammeContext, selectStoryDiscovery, type StorySearch } from "@/lib/story-discovery";
+import { retainRoutableStoryRecords } from "@/lib/story-index-records";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,7 @@ export const metadata: Metadata = {
 
 export default async function StoriesPage({ searchParams }: { searchParams: Promise<StorySearch> }) {
   const [stories, search] = await Promise.all([getStoriesDiscoveryIndexData(), searchParams]);
-  const selection = selectStoryDiscovery(stories, search);
+  const selection = selectStoryDiscovery(retainRoutableStoryRecords(stories), search);
   const visibleStories = await getVisibleStoryCards(selection.results.map(story => story.id));
   const leadStory = selection.page === 1 ? visibleStories[0] : undefined;
   const pageHref = (page: number) => { const params = new URLSearchParams(); if (selection.q) params.set("q", selection.q); if (selection.programme) params.set("programme", selection.programme); params.set("page", String(page)); return `/stories?${params}#story-results`; };
