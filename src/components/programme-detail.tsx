@@ -30,7 +30,8 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
  const summary=canonical?.summary??record.summary;
  const children=programmeChildren(slug);
  const childMediaRecords=await getProgrammeChildMedia(children.map(child=>child.slug));
- const publishedChildSlugs=new Set(childMediaRecords.map(item=>item.slug));
+ const validChildMediaRecords=(Array.isArray(childMediaRecords)?childMediaRecords:[]).filter(item=>item!=null&&typeof item==="object"&&typeof item.slug==="string"&&Array.isArray(item.mediaAssets));
+ const publishedChildSlugs=new Set(validChildMediaRecords.map(item=>item.slug));
  const publishedChildren=children.filter(child=>publishedChildSlugs.has(child.slug));
 
  // The published-child projection already passed the server publication gate.
@@ -49,7 +50,7 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
   }];
  });
 
- const childMedia=new Map((Array.isArray(childMediaRecords)?childMediaRecords:[]).filter(item=>item!=null&&typeof item==="object"&&typeof item.slug==="string"&&Array.isArray(item.mediaAssets)).map(item=>[item.slug,selectGalleryPublicImage(item.mediaAssets)]));
+ const childMedia=new Map(validChildMediaRecords.map(item=>[item.slug,selectGalleryPublicImage(item.mediaAssets)]));
  const media=dedupeRenderablePublicMediaByUrl(record.mediaAssets);
  const umbrella=children.length>0;
  const collage=umbrella&&hasProgrammeArtwork(slug);
