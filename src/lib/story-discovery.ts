@@ -5,15 +5,21 @@ export const STORY_PAGE_SIZE = 12;
 
 /** Display only published, nonblank programme context; never reveal draft cause names. */
 export function publishedStoryProgrammeContext(story: PublicStory): string | null {
+ if (!story || typeof story !== "object" || Array.isArray(story)) return null;
  const initiativeCause = story.initiative?.status === "PUBLISHED" && story.initiative.cause?.status === "PUBLISHED"
    ? story.initiative.cause.title : null;
- if (initiativeCause?.trim()) return initiativeCause;
+ if (typeof initiativeCause === "string" && initiativeCause.trim()) return initiativeCause;
  const directCause = story.cause?.status === "PUBLISHED" ? story.cause.title : null;
- return directCause?.trim() ? directCause : null;
+ return typeof directCause === "string" && directCause.trim() ? directCause : null;
 }
 
 export function selectStoryDiscovery<T extends PublicStory>(records: readonly T[], search: StorySearch) {
- const contexts = records.map(publishedStoryProgrammeContext);
+ const reviewed = Array.isArray(records) ? records.filter(story =>
+   story && typeof story === "object" && !Array.isArray(story) &&
+   typeof story.title === "string" && !!story.title.trim() &&
+   typeof story.summary === "string",
+ ) : [];
+ const contexts = reviewed.map(publishedStoryProgrammeContext);
  const programmes = [...new Set(contexts.filter((value): value is string => value !== null))].sort();
  const raw = typeof search.q === "string" ? search.q : "";
  const q = raw.length > 80 ? "" : raw.trim().replace(/\s+/g," ");
@@ -22,7 +28,7 @@ export function selectStoryDiscovery<T extends PublicStory>(records: readonly T[
    || raw.length > 80 || q.length > 80 || /[\u0000-\u001f\u007f]/.test(raw)
    || Boolean(programme && !programmes.includes(programme)) || Boolean(search.page && (typeof search.page !== "string" || !/^[1-9]\d*$/.test(search.page) || !Number.isSafeInteger(Number(search.page))));
  const normalizedQuery = invalid || !q ? "" : q.toLocaleLowerCase("en");
- const matching = invalid ? [] : records.filter((story, index) => (!programme || contexts[index] === programme) && (!q || `${story.title} ${story.summary}`.replace(/\s+/g, " ").toLocaleLowerCase("en").includes(normalizedQuery)));
+ const matching = invalid ? [] : reviewed.filter((story, index) => (!programme || contexts[index] === programme) && (!q || `${story.title} ${story.summary}`.replace(/\s+/g, " ").toLocaleLowerCase("en").includes(normalizedQuery)));
  const totalPages = Math.max(1,Math.ceil(matching.length/STORY_PAGE_SIZE));
  const page = invalid ? 1 : Math.min(Number(search.page || 1),totalPages);
  return { q:invalid?"":q,programme:invalid?"":programme,invalid,programmes,page,totalPages,count:matching.length,results:matching.slice((page-1)*STORY_PAGE_SIZE,page*STORY_PAGE_SIZE),active:Boolean(q||programme||search.page||invalid) };
