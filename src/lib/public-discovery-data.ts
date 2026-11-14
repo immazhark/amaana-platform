@@ -41,11 +41,13 @@ const storyMediaCandidates = {
 } as const;
 
 export async function getStoriesDiscoveryIndexData() {
-  return prisma.story.findMany({
+  const records = await prisma.story.findMany({
     where: publicStoryWhere,
     orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }, { id: "asc" }],
     select: storyIndexSelect,
   });
+  // Malformed index identities must not reach pagination or a second public query.
+  return retainRoutableStoryRecords(records);
 }
 
 export async function getVisibleStoryCards(ids: readonly string[]) {
