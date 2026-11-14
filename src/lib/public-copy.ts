@@ -44,8 +44,10 @@ export function buildPublicRecordFallback({
   metric?: string | null;
   metricLabel?: string | null;
 }) {
-  const metricSentence = metric
-    ? `The documented outcome for this work is ${metric}${metricLabel ? ` ${metricLabel}` : ""}.`
+  const reviewedMetric = typeof metric === "string" ? metric.trim() : "";
+  const reviewedLabel = typeof metricLabel === "string" ? metricLabel.trim() : "";
+  const metricSentence = reviewedMetric
+    ? `The documented outcome for this work is ${reviewedMetric}${reviewedLabel ? ` ${reviewedLabel}` : ""}.`
     : "";
   const privacySentence = `Only information suitable for public sharing is included here; personal documents and sensitive details remain private.`;
   return [metricSentence, privacySentence].filter(Boolean).join(" ");
