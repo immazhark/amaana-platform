@@ -1,3 +1,21 @@
+## 14 November 2026 IST — three protected public-code merges; new isolated homepage contract candidate
+
+**Writer:** CHATGPT_ACTIVE, one coordinated implementation writer. No autonomous coding-agent dispatcher is connected. Protected main at this checkpoint: `f1da173534a613eb3fa8b790b8a97c3608f664bb`. Routine implementation authority applies; high-risk finance/schema/auth and consequential infrastructure actions remain separately gated.
+
+**Accepted exact-head merges:**
+- #914 private assistance/acknowledgement heading leading, tested head `f370994508729f4e118c31ed7eece6fac4b4131a`; full CI `43601870792`, separate ready-state `43605013157` successful; SHA-guarded squash `b1704ddac155c79d4e309776758c31fd6d9e0e56`.
+- #915 homepage reviewed programme artwork malformed relation guard, tested head `6f8c79374f31b4ef9aa5dd2f7f96e1884280e11a`; full `43602093134`, separate ready-state `43605030966` successful; guarded squash `ea0d5470d080f8d4898da421c3d0ac3d760ea832`.
+- #911 published completed-support showcase malformed record guard, tested head `0b31d300e55169abc5c1b5e439e74bd35dfa2dbf`; full `43602517724`, separate ready-state `43605126741` successful; guarded squash `f1da173534a613eb3fa8b790b8a97c3608f664bb`.
+- Railway website deployment `09a4d7fc-c947-4aea-87fe-dfa9d1058caf` SUCCESS for exact final code merge SHA `f1da173534a613eb3fa8b790b8a97c3608f664bb`. Independent public GET of /api/health/version and /api/health/ready remains UNVERIFIED through available web reader. No forced redeploy.
+
+**New isolated source candidate:** draft #917 `fix/home-discovery-array-contract-20261114`, RED-first test commit `7845fda2c4be0698a1147e8ec29f635d2c5da192`, correction commit `c6be3568c501616f008b2715a01699b52302a1ab`. The first test-only CI run was cancelled on superseding commit; baseline null-spread TypeError was separately reproduced in Node, not represented as a passing completed hosted RED. Corrected-head CI `43607941362`: fast/database/production succeeded; browser and final verify pending at this checkpoint. Validate full exact-head evidence, independent review, distinct ready-state CI before protected SHA-guarded merge. Scope changes only top-level homepage discovery array normalization and synthetic tests.
+
+**Holds preserved:** draft #684 UPI fallback lacks independently verified payee/UTR and separately approved finance activation; #845 changes donation eligibility and requires scoped high-risk authorization. No donor communication, live payment/refund, schema, secret, auth/CSP, media release, cron, branch deletion or infrastructure apply. Master 149 unique-item denominator unchanged; previous verified classification overlay 12 Completed, 48 Implemented, 63 Partial, 24 Not started, 1 Superseded, 1 N/A. None of these narrow fixes closes an entire item.
+
+**Next:** complete #917 exact-head browser/verify; obtain genuine failing regression evidence or record its bounded limitation; review and promote only after all gates; independently verify final Railway/public identity. Continue disjoint P1 source work without duplicate PRs or concurrent repository writers.
+
+---
+
 ## 14 November 2026 IST — one protected code merge; non-force PR conflict reconciliation; independent accessibility candidate
 
 **Implementation ownership:** CHATGPT_ACTIVE, sole coordinated repository writer under AGENTS.md. Read-only research and hosted CI can run concurrently. No connected autonomous repository coding-agent dispatcher exists. **Protected main at checkpoint:** `0200f3e7e48348b92b161503e45c16d89228f8e3`.
