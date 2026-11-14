@@ -113,6 +113,9 @@ async function* cssFiles(directory) {
 }
 
 export async function auditPublicStyles(root = process.cwd()) {
+  if ((await lstat(resolve(root))).isSymbolicLink()) {
+    throw new Error(`Symbolic link is not permitted in public CSS audit: ${root}`);
+  }
   const violations = [];
   for await (const path of cssFiles(join(root, "src"))) {
     const displayPath = relative(root, path).split(sep).join("/");
