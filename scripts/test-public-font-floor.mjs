@@ -174,6 +174,22 @@ test("min() rejects a smaller constant calc in its second position", () => {
   ), []);
 });
 
+test("min() with three arguments cannot hide a sub-12px constant calc bound", () => {
+  const unsafe = [
+    ".third{font-size:min(2rem,1.2rem,calc(1rem * .5))}",
+    ".middle{font-size:min(1rem,calc(1rem / 2),1.5rem)}",
+    ".thirdPx{font-size:min(20px,18px,calc(24px / 3))}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(unsafe, "fixture.css").map(item => item.value), [
+    "min(2rem,1.2rem,calc(1rem * .5))",
+    "min(1rem,calc(1rem / 2),1.5rem)",
+    "min(20px,18px,calc(24px / 3))",
+  ]);
+  assert.deepEqual(auditFontSizes(
+    ".safe{font-size:min(1rem,calc(1rem * 2),1.3rem)}", "fixture.css"
+  ), []);
+});
+
 test("public CSS audit rejects linked stylesheet files instead of silently ignoring them", async () => {
   const root = await mkdtemp(join(tmpdir(), "amaana-css-audit-file-"));
   try {

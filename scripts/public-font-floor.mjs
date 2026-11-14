@@ -75,26 +75,17 @@ export function auditFontSizes(source, path) {
       return Number(number) < minimum;
     });
 
-    // In a CSS min(), a constant calc() operand below the floor always
-    // bounds the chosen result below that floor. Literal-only fallback
-    // misses the small result of min(calc(1rem * .5), 1rem).
-    const leadingMinCalc = !shorthand &&
-      /^min\(\s*calc\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*([*/])\s*(-?\d*\.?\d+)\s*\)\s*,/i.exec(value);
-    // A calc() in min()'s second slot imposes the same upper bound.
-    // Restrict the first operand to a simple constant; dynamic/nested forms
-    // remain for browser computed-style acceptance.
-    const trailingMinCalc = !shorthand &&
-      /^min\(\s*[^(),]+\s*,\s*calc\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*([*/])\s*(-?\d*\.?\d+)\s*\)\s*\)$/i.exec(value);
-    const nestedMinCalc = leadingMinCalc || trailingMinCalc;
-    const minCalcValue = nestedMinCalc
-      ? (nestedMinCalc[3] === "*"
-        ? Number(nestedMinCalc[1]) * Number(nestedMinCalc[4])
-        : Number(nestedMinCalc[1]) / Number(nestedMinCalc[4]))
-      : null;
-    const nestedMinTooSmall = minCalcValue !== null && (
-      !Number.isFinite(minCalcValue) ||
-      minCalcValue < (nestedMinCalc?.[2].toLowerCase() === "px" ? MIN_FONT_PX : MIN_FONT_REM)
-    );
+    // Any constant calc() argument below the floor caps min(), even with
+    // three or more arguments. Ignore other CSS expressions for browser review.
+    const minCalcOperands = !shorthand && /^min\(/i.test(value)
+      ? Array.from(value.matchAll(/(?:\(|,)\s*calc\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*([*/])\s*(-?\d*\.?\d+)\s*\)\s*(?=,|\))/gi))
+      : [];
+    const nestedMinTooSmall = minCalcOperands.some(([, number, unit, operation, scalar]) => {
+      const amount = operation === "*"
+        ? Number(number) * Number(scalar) : Number(number) / Number(scalar);
+      return !Number.isFinite(amount) ||
+        amount < (unit.toLowerCase() === "px" ? MIN_FONT_PX : MIN_FONT_REM);
+    });
     if (tooSmall || nestedMinTooSmall) violations.push({ path, value });
   }
 
