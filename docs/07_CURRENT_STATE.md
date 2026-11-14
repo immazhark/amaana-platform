@@ -1,3 +1,19 @@
+# Current operational state — 14 November 2026 IST (four protected public-code merges)
+
+**Sole coordinated writer:** CHATGPT_ACTIVE. **Protected main:** `cc2c7837073dde5d6244681496ab7176b9d1f9e9` (accepted #926). **Website runtime:** Railway deployment `8f57a956-794c-4511-8367-b3bcfd4f070b` SUCCESS, independently observed public /api/health/version at identical SHA, production/main; /api/health/ready returned ready. Basic identity/readiness LIVE_VERIFIED.
+
+**Completed source releases:** #925 (story index identity; full `43616605925`, ready `43619452459`, merge `3a1bf4641162db4256bcedc93d5bcc0ff2908a84`); #927 (Faith type projection; full `43617957546`, ready `43620373177`, merge `dd03b9d6508f8b57dea3fb39e371d900ad9b0dbe`); #928 (homepage appeal query fail-closed collection; full `43618537459`, ready `43620841639`, merge `f7c1c51a49eab8fe46eecaf5c45b43ef5f3dafe2`); #926 (published story relations; full `43618076001`, ready `43620903709`, merge `cc2c7837073dde5d6244681496ab7176b9d1f9e9`). All RED-first, exact-head gated and no unresolved reviews.
+
+**Isolated candidate:** draft #929 CSS min() multi-argument font floor, current `8273568b31bb5fe6ed09f2518238040551d5ea67`, first RED `43619362214`, corrected `43619540426` fast/database/production passed, browser/final pending. No premature merge.
+
+**Production warning:** #927 deployment failed Prisma `P1002` advisory lock timeout after five retries. Subsequent #928 predeploy succeeded on attempt two with no pending migrations; #926 deployed successfully. Do not bypass migration lock or force rollout.
+
+**Holds:** finance PRs #684/#845, Railway IaC P0 #446 before 1 December 2026, public media/privacy, 80G/12AB legal position, assistive-tech/field CWV acceptance. No live transactions, schema, secret, notification, media release or destructive action. Canonical 149 counts unchanged: 12/48/63/24/1/1.
+
+**Next:** complete #929 full browser/verify and distinct ready-state, merge only with protected expected-head SHA; confirm Railway path and source/runtime separately. Earlier history retained below.
+
+---
+
 # Current operational checkpoint — 14 November 2026 IST (#921 and #922 merged)
 
 **Owner:** CHATGPT_ACTIVE sole coordinated writer. **Protected source main:** `a89df617e2babeffdd6f1b3e1d4c29c7c63c7262`. **#922** tested `5b79025f4120d0993d57dd75ff9ab9163f2ba1ab`, RED `43612119738`, full CI `43612375511`, ready `43615259173`, protected merge `eeb77b2e418117b266e53b6d811ef33f4e531c09`; Railway SUCCESS at exact SHA and independent public version/readiness matched. **#921** tested `3ef1ee2e4995dc4b2ff4ef3c6ce76e551bea3cc0`, RED `43611901115`, full CI `43613318881`, ready `43615373468`, protected merge `a89df617e2babeffdd6f1b3e1d4c29c7c63c7262`. Latest Railway deploy `b2278c92-6ffc-466f-88d0-ecf8a917a660` subsequently reached SUCCESS at exact code SHA `a89df617e2babeffdd6f1b3e1d4c29c7c63c7262`; independent public HTTPS /api/health/version matched and /api/health/ready returned `ready`. Live identity/basic readiness VERIFIED, not full carousel admin recovery.

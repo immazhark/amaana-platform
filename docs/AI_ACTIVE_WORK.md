@@ -1,3 +1,25 @@
+## 14 November 2026 IST — four protected public-code merges, current runtime verified
+
+**Implementation owner:** CHATGPT_ACTIVE, sole coordinated writer under AGENTS.md. Read-only investigation and hosted CI run concurrently. No connected autonomous coding-agent dispatcher can launch independent repository writers. **Protected code main at checkpoint:** `cc2c7837073dde5d6244681496ab7176b9d1f9e9`.
+
+**Four accepted atomic merges (each with completed fail-first regression, full exact-head seven-job CI, separate ready-state and zero unresolved review threads):**
+- #925 story index identity filter before pagination / second DB query: corrected head `6a3f7c0c2f08069c64f5e6aed5a277d9adb98107`; full `43616605925`; ready `43619452459`; guarded merge `3a1bf4641162db4256bcedc93d5bcc0ff2908a84`.
+- #927 reviewed Faith formats restricted to ARTICLE/REMINDER/VIDEO without changing religious review: corrected `e7c5fab9bc5fed8e227e71237c373c5534edcc1e`; full `43617957546`; ready `43620373177`; merge `dd03b9d6508f8b57dea3fb39e371d900ad9b0dbe`.
+- #928 malformed top-level homepage appeal query fails closed, original public and domestic-donation eligibility unchanged: corrected `a77954de48ac2701edc4ecbead764a5fa5907855`; full `43618537459`; ready `43620841639`; merge `f7c1c51a49eab8fe46eecaf5c45b43ef5f3dafe2`.
+- #926 published story cause/initiative and nested-cause render guards: corrected `6a290e19dac7f36d5e6450037d476a3aa1dba03a`; full `43618076001`; ready `43620903709`; merge `cc2c7837073dde5d6244681496ab7176b9d1f9e9`.
+
+**Exact production identity:** Railway website deployment `8f57a956-794c-4511-8367-b3bcfd4f070b` SUCCESS on merge `cc2c7837073dde5d6244681496ab7176b9d1f9e9`; independent public HTTPS /api/health/version returned this exact SHA on main/production and /api/health/ready returned ready. Also checked public home, stories and Faith URLs through read-only fetch without errors. Source identity and basic readiness LIVE_VERIFIED, not field Web Vitals or physical accessibility acceptance.
+
+**Release incident, not concealed:** intermediate #927 Railway deployment `4089aff9-9604-4386-8b12-16049272d957` FAILED at pre-deploy: Prisma `P1002` timeout acquiring PostgreSQL migration advisory lock `72707369` on five retries. Subsequent #928 deployment succeeded on retry attempt two, reporting 18 migrations and **no pending migrations**. The latest #926 deploy succeeded. No migration bypass, live DB intervention, manual redeploy, secret or infrastructure mutation was made. Concurrent deploy contention is plausible but not independently proven as the root cause.
+
+**Independent source candidate not yet merged:** draft #929 `fix/a11y-font-floor-min-multiple-arguments-20261114`, tested head `8273568b31bb5fe6ed09f2518238040551d5ea67`. Test-only `ea16c8f9c669fcc97393e1868d53ec72071e9eb5` failed in `43619362214`; corrected `43619540426` fast/database/production successful; browser/final verify pending at checkpoint. It tightens the static CSS 12px floor audit for min() with multiple calc operands, no runtime UI change. Required distinct ready-state after full CI.
+
+**Held:** #684 UPI source finance verification / approved activation and #845 donor eligibility high-risk plan; #446 Railway IaC effective-state read-only plan / scoped apply remains a P0 operational dependency. Runtime inventory: three live services, three live buckets, zero volumes or staged changes; do not disclose secrets. No live payments/refunds, donor outreach, media identity release, schema migration, cron, branch pruning or destructive cleanup.
+
+**149-item ledger preserved:** 12 Completed, 48 Implemented, 63 Partial, 24 Not started, 1 Superseded, 1 N/A. Narrow source fixes do not certify full backlog items. Next: finish #929 gates and protected merge if green, separately inspect Railway outcome and public readiness; pursue independently measured P1 source work, keep remaining gate-bound scopes isolated. Historical notes preserved below.
+
+---
+
 ## 14 November 2026 IST — two protected application merges, independent public verification pending latest runtime
 
 **Writer:** CHATGPT_ACTIVE, sole coordinated implementation writer under AGENTS.md; one implementation writer, concurrent read-only review and hosted CI. **Protected source main at checkpoint:** `a89df617e2babeffdd6f1b3e1d4c29c7c63c7262`. No authenticated autonomous repository coding agent dispatcher is connected.
