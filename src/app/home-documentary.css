@@ -74,7 +74,7 @@
    Preserve the locked cinematic masthead; reduce competing visual weight below it. */
 .v3-home .v3-section{padding-block:clamp(3.5rem,5.8vw,5.5rem)}
 .v3-home .v3-section-head{margin-bottom:clamp(2rem,3.8vw,3.25rem)}
-.v3-home .v3-heading{font-size:clamp(2.25rem,4vw,3.5rem);line-height:1}
+.v3-home .v3-heading{font-size:clamp(2.25rem,4vw,3.5rem);line-height:1.15}
 .v3-proof{padding-block:.45rem!important}
 .v3-proof-label{margin:0;padding:.85rem 0 .15rem;color:var(--af-color-gold-ink);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase}
 .v3-proof-item{min-height:6.7rem!important;padding:1rem clamp(.9rem,2vw,1.55rem)!important;justify-content:center}
