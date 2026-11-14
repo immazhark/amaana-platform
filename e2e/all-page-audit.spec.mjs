@@ -181,6 +181,11 @@ for (const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]]) 
     await page.screenshot({path:path.join(directory,'complete-route-error.jpg'),type:'jpeg',quality:65,fullPage:true});
     fs.writeFileSync(path.join(directory,'complete-route-error.json'),JSON.stringify({route:'error.tsx',evidence:'Source-rendered isolated layout; recovery callback is reviewed in source, not exercised by this static render.',width,height,geometry,violations:audit.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}))},null,2));
     expect(geometry.overflow).toBe(false);
+    const headingLeading = await page.locator('.v2-error-page h1').evaluate(node => {
+      const style = getComputedStyle(node);
+      return parseFloat(style.lineHeight) / parseFloat(style.fontSize);
+    });
+    expect(headingLeading,'AF-R025 route error heading wraps with readable leading').toBeGreaterThanOrEqual(1.14);
     await expect(page.getByRole('button',{name:'Try again',exact:true})).toBeVisible();
     expect(audit.violations.filter(v=>['serious','critical'].includes(v.impact))).toEqual([]);
   });
