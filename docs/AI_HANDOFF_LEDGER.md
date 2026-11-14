@@ -1,3 +1,23 @@
+## 15 November 2026 IST — script audit merges and four isolated source candidates
+
+**Coordinated implementation owner:** CHATGPT_ACTIVE under AGENTS.md. One repository writer; independent read-only inspection and hosted CI run concurrently. No connected coding-agent dispatcher with authorized GitHub write isolation is available. **Protected source main:** `3e0cdad7e41221666f21bcfb7cce52737d2c095e`.
+
+**Accepted protected merge #929:** CSS public font-floor static audit now detects sub-12px constant `calc()` limits in any of three or more `min()` operands. Tested head `8273568b31bb5fe6ed09f2518238040551d5ea67`, full exact-head run `43619540426`, separate ready-state `43629049256`, protected squash `3ed3869c824ee4391106a6b8a176bfd06d9aace9`. Railway SKIPPED; no website CSS or runtime change.
+
+**Accepted protected merge #931:** AF-R047 route-build bundle report rejects non-string page and inherited-layout manifest entries rather than silently undercounting. RED test-only `0ec6628ecd6eb5133abb5acef35a9f901910743e` CI `43629635113`; GREEN `4d01ea739416bbda7cdc0336bd4c8eb6260d0fe9` full seven-job `43629884577`, distinct ready-state `43632144163`, guarded squash `3e0cdad7e41221666f21bcfb7cce52737d2c095e`. Railway SKIPPED, correct for scripts-only changes. No field Web Vitals certification.
+
+**Four independently implemented, not merged or deployed at checkpoint (all have confirmed RED-first source regressions; browser/final verification pending):**
+- #932 Faith visible-media selected-ID runtime validation. RED `4a2d26ab956efdf2fcc1d3227ddd148310664c5f` fast CI `43629817056`; corrected `c74fedf80a1b8e16feb396f56b254518d51b1c30`; `43630235535` fast/database/production SUCCESS, browser still in progress.
+- #933 AF-R071 comparison dynamic loading fallback. RED `a03115656ae6384529c1594bfd21f142afc622c7` `43630516609`; corrected `d8348c8736104e458c985264d3f37e0cbcdac068`; `43630863369` fast/database/production SUCCESS, browser in progress.
+- #934 AF-R071 story, programme, Faith detail loading fallbacks. RED `9d706ce98806ef41bf3c473550258a01b075c530` `43631203382`; corrected `263b7d87935477ee99a120cbbe73377b2ef4684e`; `43631461153` fast/database/production SUCCESS, first browser attempt cancelled, one browser-job retry submitted and in progress. A cancelled gate is not a pass.
+- #935 AF-R076 static contact-link scanner detects leading-whitespace mixed-case JavaScript protocol. RED `02b672dd7a733e1151574066bc4357fa1f98e38b` `43631966804`; corrected `9037b4054584fb77af8b169e8ee9c19a7eea8925`; `43632087037` fast/database/production SUCCESS, browser in progress. Real mailto links remain unchanged. AF-R076 full original broken-link acceptance still Partial.
+
+**Runtime is a distinct boundary:** latest independently verified public website deployment remains `cc2c7837073dde5d6244681496ab7176b9d1f9e9` (Railway SUCCESS `8f57a956-794c-4511-8367-b3bcfd4f070b`, version and readiness previously independently checked). #929/#931 are scripts-only; do not force rollout to equal main SHA. Later source PRs remain non-live until guarded merges/deployments and independent HTTPS SHA verification.
+
+**Risk holds unchanged:** #684 official UPI destination verification/reconciliation and scoped activation; #845 donor eligibility scoped finance decision; #446 Railway IaC effective-state plan and distinct consequential apply authority; no secrets, live payments, schema, provider notification, public face release or branch deletion. **149 original IDs unchanged:** 12 Completed, 48 Implemented, 63 Partial, 24 Not started, 1 Superseded, 1 N/A. Small source fixes do not close whole-item acceptance. **Next:** while CI runs, independent read-only discovery; promote each green PR separately, verify distinct ready-state, guarded expected-head merge, then Railway and public SHA/readiness. Preserve older chronology below.
+
+---
+
 ## 14 November 2026 IST — four protected public-code merges, current runtime verified
 
 **Implementation owner:** CHATGPT_ACTIVE, sole coordinated writer under AGENTS.md. Read-only investigation and hosted CI run concurrently. No connected autonomous coding-agent dispatcher can launch independent repository writers. **Protected code main at checkpoint:** `cc2c7837073dde5d6244681496ab7176b9d1f9e9`.
