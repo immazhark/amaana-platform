@@ -1,3 +1,20 @@
+## 14 November 2026 IST — release checkpoint after three independent protected merges
+
+**Active writer:** CHATGPT_ACTIVE, one coordinated GitHub implementation writer. Independent source/CI branches are permitted; no autonomous code-agent dispatch capability exists in the current connected toolset. **Protected main:** `484eeed931b8a221389658c2f1d9ea416474dbb1`.
+
+**Merged after full exact-head CI and distinct ready-state verification:**
+- #895 AF-R012 admin static-audit shadowed guards, tested `c2e0749fae44b6e99d91f491e6d3b6177a044b73`, full `43555217486`, ready `43559142491`, merged `b2d472337ac44cc73c5d4974a7c7c6dd3f2ab515`. Audit test code only, no production auth/RBAC change.
+- #896 AF-R024 CSS additive calc font-floor audit, tested `09912dc3bbc70480a050b6acd4311a0750c163a7`, full `43555533583`, ready `43559147019`, merged `aaae17b5fd6789032806a7e7d87d28d8702b9f80`. Audit scripts only, no production stylesheet change.
+- #894 Impact witness-media malformed projection guard, tested `74b631336ac0f3c5c7b507c7a455adb7b2cdec04`, full `43554213885`, ready `43559134683`, merged `484eeed931b8a221389658c2f1d9ea416474dbb1`. Existing media-publication/privacy gate retained.
+
+**Railway at checkpoint:** #895/#896 website deployments SKIPPED as scripts-only. #894 website deployment `0f7114ba-3aab-4610-9de6-dd3e7c311457` at `484eeed931b8a221389658c2f1d9ea416474dbb1` was BUILDING when checked; last SUCCESS was #893 at `1eb5543353b1359b2dce98f8afaad0a054ca8dcc`. This does NOT establish live public HTTP identity or readiness.
+
+**Outstanding GitHub drafts:** #684 verified official UPI QR and #845 synthetic staging donation eligibility, held by payment/provider and exact scoped plan conditions. Do not activate high-risk financial behavior. No other open PRs at checkpoint. Canonical 149 classifications unchanged (12 completed, 48 implemented, 63 partial, 24 not started, 1 superseded, 1 N/A).
+
+**Next executable work:** verify #894 Railway deployment SHA; seek independent public HTTP version/readiness where accessible. Continue separately scoped unblocked engineering work; preserve one-writer ownership and required exact-head release checks. Rollback: revert individual code merge, no protected branch rewrite.
+
+---
+
 ## 14 November 2026 IST — owner-directed repository takeover and independent release streams
 
 Owner explicitly delegated implementation ownership to this ChatGPT session. Source base `1d4f187d753ae52076c6aa05ac8a28d72c253a17` after #889 and #890 protected merges; Railway latest website SUCCESS at that merge SHA, but independent public HTTP not yet verified. This records a single coordinated repository writer, not independent competing GitHub writers. Existing task branches #886 (Stories identity) and #888 (Impact rendering boundary) contain new test-first fixes pending full current-head CI and protected release. Financial #684 and staging #845 remain held. Current 149 classification total stays unchanged. Rollback: revert each narrow merge independently, not protected-main history.
