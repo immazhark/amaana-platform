@@ -29,7 +29,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: { absolute: "Amaana Foundation | Charity & Relief in Hyderabad" },
-  description: "Amaana Foundation supports verified needs in Hyderabad through education, seasonal relief, emergency response and community assistance with dignity and transparency.",
+  description: "Amaana Foundation supports verified needs in Hyderabad through education, seasonal relief, emergency response and assistance with dignity and transparency.",
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
