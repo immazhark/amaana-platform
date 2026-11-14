@@ -88,6 +88,25 @@ describe("public gallery projection", () => {
     assert.equal(JSON.stringify(item).includes("private/key"), false);
   });
 
+  it("fails closed on malformed runtime gallery records while preserving reviewed images", () => {
+    for (const invalidCollection of [null, undefined, "invalid", { 0: image, length: 1 }]) {
+      assert.deepEqual(toPublicGalleryItems(invalidCollection as unknown as typeof image[]), []);
+    }
+    const corrupt = [
+      null,
+      { ...image, id: "" },
+      { ...image, id: 99 },
+      { ...image, altText: { message: "not a label" } },
+      { ...image, caption: { message: "not a caption" } },
+      { ...image, title: { message: "not a title" } },
+      { ...image, publicUrl: { link: "/media/other.jpg" } },
+    ] as unknown as typeof image[];
+    const items = toPublicGalleryItems([...corrupt, image]);
+    assert.deepEqual(items.map(item => item.id), ["landscape"]);
+    assert.equal(items[0]?.alt, "Approved drive photograph");
+    assert.equal(items[0]?.caption, "Distribution record");
+  });
+
   it("honours title-only poster labels without exposing the reviewed title", () => {
     const [item] = toPublicGalleryItems([{
       ...image, title: "Thank you poster", altText: "Community annual update",

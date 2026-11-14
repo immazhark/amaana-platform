@@ -8,10 +8,19 @@ export function toPublicGalleryItems<T extends PublicMediaCandidate & {
   width?: number | null;
   height?: number | null;
 }>(assets: readonly T[]) {
+  if (!Array.isArray(assets)) return [];
   const urls = new Set<string>();
   const ids = new Set<string>();
   return assets.flatMap(asset => {
-    if (asset.kind !== "IMAGE" || !canRenderPublicMedia(asset)) return [];
+    // Stored media metadata can be malformed despite the TypeScript contract.
+    // Reject unsafe records before URL checks, caption projection or styling.
+    if (!asset || typeof asset !== "object" || Array.isArray(asset) ||
+        typeof asset.id !== "string" || !asset.id.trim() ||
+        asset.kind !== "IMAGE" || typeof asset.altText !== "string" ||
+        [asset.title, asset.caption, asset.publicUrl, asset.externalUrl].some(
+          value => value != null && typeof value !== "string",
+        ) ||
+        !canRenderPublicMedia(asset)) return [];
     const url = resolvePublicMediaUrl(asset);
     if (!url) return [];
     const displayUrl = getPublicImageOptimizationUrl(url) ?? url;
