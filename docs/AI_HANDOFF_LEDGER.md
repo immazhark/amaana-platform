@@ -1,3 +1,19 @@
+## 14 November 2026 IST — homepage array boundary merged; appeal amount accessibility RED/GREEN candidate
+
+**One implementation writer:** CHATGPT_ACTIVE. **Protected main:** `e1d0e9cb88e299f572197dca890fa0835f128c7f` after #917, not an archived integration branch. Independent read-only investigations and hosted CI may overlap; no autonomous repository coding-agent dispatcher is connected.
+
+**#917 completed protected source merge:** Test-only `7845fda2c4be0698a1147e8ec29f635d2c5da192` hosted RED was re-run as `43607751387` attempt 2, fast job `132494680119`: exact TypeError `featuredInitiatives is not iterable` in synthetic public homepage query-array regression. GREEN head `c6be3568c501616f008b2715a01699b52302a1ab`, full seven-job exact-head `43607941362` SUCCESS, separate ready-state `43610846302` SUCCESS, zero unresolved review threads; SHA-guarded squash merge `e1d0e9cb88e299f572197dca890fa0835f128c7f`. Only malformed top-level homepage projection arrays are normalized, no relaxation of published/privacy SQL gates.
+
+**#919 isolated unmerged source candidate:** `fix/af-r025-appeal-funding-metric-leading-20261114`, test-only head `bf5d64bd7238b62a0847df3fb8685208ce6e9a9c`, RED CI `43609762795` fast job `132492058484` failed exactly on 1.08 vs required >=1.14; correction head `7b4fb8685c0435bb68a2b596e7a38f058ddca9eb` changes only appeal metric line-height to 1.16. GREEN `43610066733` fast/database/production succeeded, browser/final verify pending at checkpoint. No payment logic, figures or donation destinations altered. Require complete exact-head CI, review, separate ready-state promotion and guarded merge; original AF-R025 remains Partial.
+
+**Railway/source distinction:** earlier successful website runtime SHA `f1da173534a613eb3fa8b790b8a97c3608f664bb` deployment `09a4d7fc-c947-4aea-87fe-dfa9d1058caf`; #917 deployment `eade9243-5e11-4498-aa34-4e483d41fcb4` was BUILDING when checked. Independent public HTTP health/version remains UNVERIFIED. A later read-only Railway state can supersede this checkpoint. 24-hour read-only HTTP observation: 5,578 requests, 0 5xx, 4,175 4xx; this is not field CWV or attacker attribution.
+
+**Protected holds:** #684 UPI QR source/finance activation, #845 donation eligibility, #446 Railway IaC plan/apply; no real funds, donor messages, medical/media disclosures, schema, secrets, cron or destructive branch actions. Canonical 149 unique IDs unchanged; last verified classifications 12 Completed, 48 Implemented, 63 Partial, 24 Not started, 1 Superseded, 1 N/A.
+
+**Next executable action:** finish #919 exact-head browser/final result, independent review, distinct ready-state and SHA-guarded merge if green; inspect exact Railway deploy SHA/public readiness. Otherwise park that release and continue independent source work. Preserve historical checkpoint text beneath this note.
+
+---
+
 ## 14 November 2026 IST — three protected public-code merges; new isolated homepage contract candidate
 
 **Writer:** CHATGPT_ACTIVE, one coordinated implementation writer. No autonomous coding-agent dispatcher is connected. Protected main at this checkpoint: `f1da173534a613eb3fa8b790b8a97c3608f664bb`. Routine implementation authority applies; high-risk finance/schema/auth and consequential infrastructure actions remain separately gated.
