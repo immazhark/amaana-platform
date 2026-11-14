@@ -1,3 +1,11 @@
+## 14 November 2026 IST — CHATGPT_ACTIVE ongoing four-branch checkpoint
+
+**Implementation writer: CHATGPT_ACTIVE** under AGENTS.md. Protected main at checkpoint `2c9230cd9797e28e77a1a962c002805946a15441`; no concurrent detached writing agents, isolated independent PRs and sequential protected integration only. Merged #871 `1f31c7e109d5a2fe5b9d1d2cd1aedca6d4f4d3a9` (full `43539874379`, ready `43542853239`) and #873 `2c9230cd9797e28e77a1a962c002805946a15441` (RED `43540988337`, full `43541312803`, ready `43543927252`).
+
+Draft #874 head `236b76ec137145ac81c5067b0141a3b2bcf30d1b` (RED `43541686637`, GREEN `43541827125` pending); #876 head `0f05ad93d1ddff332972cf9fa0fb36b9d2dd95f6` (RED `43542812216`, GREEN `43543147308` pending); #877 head `8e7a29d19cdf433892caf775b6f1ff09da6d8fdc` (controlled source RED; hosted test-only run `43543296741` cancelled, GREEN `43543477188` pending); #878 head `6162996484adc75c69980699dc6e45f9ddb1b45f` (hosted RED `43543768667`, GREEN `43544072544` pending). No draft is merge-certified until full exact-head check and separate ready-state success.
+
+Railway #871 exact source SUCCESS online; #873 deployment building at checkpoint; independent public HTTP unverified. #684/#845 financial holds unchanged. 149 classifications unchanged. No private donor data, live payments, secret access, worker/cron activation or infrastructure changes. Next: review qualifying PRs, ready-state check, guarded merges, verify Railway watch status. Rollback narrowly.
+
 ## 14 November 2026 IST — ChatGPT five-track execution checkpoint
 
 **Writer: CHATGPT_ACTIVE**, one repository implementation writer, no detached autonomous coding-agent dispatcher. Owner's continuation and routine protected merge authority remain valid; main at checkpoint `350b8cca959ca122176d6513be80bfdbd1815280`. Separate analysis and code branches were coordinated, but protected integration is serialized.

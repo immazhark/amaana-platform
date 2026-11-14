@@ -1,3 +1,9 @@
+## 14 November 2026 IST — continued CHATGPT_ACTIVE branch/release handoff
+
+Protected main `2c9230cd9797e28e77a1a962c002805946a15441`; source merges #871 `1f31c7e109d5a2fe5b9d1d2cd1aedca6d4f4d3a9` with GREEN `43539874379`/ready `43542853239`, #873 `2c9230cd9797e28e77a1a962c002805946a15441` with RED `43540988337`, GREEN `43541312803`/ready `43543927252`. Four isolated draft PRs remain: #874 `236b76ec137145ac81c5067b0141a3b2bcf30d1b` (GREEN `43541827125`), #876 `0f05ad93d1ddff332972cf9fa0fb36b9d2dd95f6` (GREEN `43543147308`), #877 `8e7a29d19cdf433892caf775b6f1ff09da6d8fdc` (GREEN `43543477188`), #878 `6162996484adc75c69980699dc6e45f9ddb1b45f` (GREEN `43544072544`). Each GREEN still awaiting full acceptance at checkpoint; never count queued/browser-in-progress as success.
+
+CHATGPT_ACTIVE remains sole repository writer; no autonomous detached agents. Railway last settled #871 site SHA success/online, #873 website BUILDING at checkpoint, public HTTP readiness unverified. #684 and #845 finance-held. No payment/schema/CSP/auth deployment/cron/media publication approvals or secret changes; canonical 149 unchanged. Next executor: inspect exact-head CI/reviews, ready promotion, protected SHA-guard merges, and Railway source versus runtime; leave blocked items isolated. Restore through atomic PR revert if needed.
+
 ## 14 November 2026 IST — CHATGPT_ACTIVE protected UI merges and four isolated RED-first follow-ups
 
 Implementation writer CHATGPT_ACTIVE, protected main `350b8cca959ca122176d6513be80bfdbd1815280` at checkpoint. Merged #868 (full `43538398199`, ready `43540498812`, merge `e2bb6ec17607394a1506314c0b42c60c6afb2eca`), #870 (full `43539647661`, ready `43540502893`, merge `10c7be255684af541f8c5bb8bd1b58b0bdea4873`), #869 (full `43538811800`, ready `43541875785`, merge `350b8cca959ca122176d6513be80bfdbd1815280`). Independent source diff/review-thread inspection performed; no unresolved review threads.
