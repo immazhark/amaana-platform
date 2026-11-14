@@ -4,8 +4,12 @@ export function adjacentGalleryId(
   currentId: string | null,
   direction: -1 | 1,
 ): string | null {
-  const length = items.length;
+  if (!Array.isArray(items)) return null;
+  const eligible = items.filter(item =>
+    item && typeof item === "object" && typeof item.id === "string" && !!item.id.trim(),
+  );
+  const length = eligible.length;
   if (!length) return null;
-  const index = items.findIndex(item => item.id === currentId);
-  return items[index < 0 ? 0 : (index + direction + length) % length]?.id ?? null;
+  const index = eligible.findIndex(item => item.id === currentId);
+  return eligible[index < 0 ? 0 : (index + direction + length) % length]?.id ?? null;
 }
