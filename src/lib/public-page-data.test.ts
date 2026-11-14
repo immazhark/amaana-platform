@@ -125,6 +125,34 @@ describe("public page gallery media query contracts", () => {
       .toHaveProperty("mediaAssets.some");
   });
 
+  it("ignores malformed homepage projection rows without losing reviewed programmes", async () => {
+    const reviewed = { slug: "reviewed-relief", title: "Reviewed relief", primaryMetric: "30", primaryMetricLabel: "kits" };
+    const withoutMetrics = { slug: "field-support", title: "Reviewed field support", primaryMetric: null, primaryMetricLabel: null };
+    mocks.initiativeFindMany
+      .mockResolvedValueOnce([
+        null, undefined,
+        { ...reviewed, slug: "../admin" },
+        { ...reviewed, slug: "invalid-title", title: { private: "PRIVATE_TITLE" } },
+        { ...reviewed, slug: "invalid-metric", primaryMetric: { private: "PRIVATE_METRIC" } },
+        reviewed,
+      ])
+      .mockResolvedValueOnce([withoutMetrics])
+      .mockResolvedValueOnce([
+        null, { slug: "reviewed-relief" },
+        { slug: "../admin" }, { slug: { private: "PRIVATE_SLUG" } },
+        { slug: "field-support" },
+      ]);
+    const data = await getHomepageDiscoveryData();
+    expect(data.initiatives).toEqual([reviewed, withoutMetrics]);
+    expect(data.publishedProgrammeSlugs).toEqual(["reviewed-relief", "field-support"]);
+    expect(JSON.stringify(data)).not.toContain("PRIVATE_");
+    for (const call of mocks.initiativeFindMany.mock.calls) {
+      expect(call[0].where).toMatchObject({
+        status: "PUBLISHED", cause: { status: "PUBLISHED" },
+      });
+    }
+  });
+
   it("bounds homepage publication checks to every consulted programme destination", async () => {
     await getHomepageDiscoveryData();
 
