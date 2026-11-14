@@ -11,6 +11,7 @@ import { documentedImpactMetric } from "@/lib/documented-impact-metric";
 import { programmeBySlug, programmeCategories } from "@/lib/master-copy";
 import { filterImpactByProgramme, type ImpactProgrammeSearch } from "@/lib/impact-programme-filter";
 import { getImpactPageData } from "@/lib/public-page-data";
+import { retainRenderableImpactRecords } from "@/lib/impact-public-records";
 import { selectIdentityPublicImage } from "@/lib/public-media";
 import { selectImpactWitnessMedia } from "@/lib/impact-witness-media";
 import "../impact-refinement.module.css";
@@ -36,7 +37,8 @@ export const metadata: Metadata = {
 
 export default async function ImpactPage({ searchParams }: { searchParams: Promise<ImpactProgrammeSearch> }) {
   const [rawInitiatives, search] = await Promise.all([getImpactPageData(), searchParams]);
-  const initiatives = rawInitiatives.filter(item => {
+  const publicInitiatives = retainRenderableImpactRecords(rawInitiatives);
+  const initiatives = publicInitiatives.filter(item => {
     const canonical = programmeBySlug(item.slug);
     return Boolean(canonical) && !(canonical && "parentSlug" in canonical && canonical.parentSlug);
   });
@@ -72,7 +74,7 @@ export default async function ImpactPage({ searchParams }: { searchParams: Promi
         )}
       />
 
-      <div className="v2-shell"><VerifiedImpactStrip headingId="impact-published-outcomes" items={rawInitiatives.flatMap(item =>
+      <div className="v2-shell"><VerifiedImpactStrip headingId="impact-published-outcomes" items={publicInitiatives.flatMap(item =>
         item.primaryMetric && item.primaryMetricLabel ? [{ slug: item.slug, title: item.title, value: item.primaryMetric, label: item.primaryMetricLabel }] : [],
       )} /></div>
       <section className="v2-section paper v2-impact-wall-section" id="evidence" aria-labelledby="impact-wall-title">

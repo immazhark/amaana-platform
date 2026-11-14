@@ -1,3 +1,13 @@
+## 14 November 2026 IST — owner-directed implementation handoff into this session
+
+**Ownership:** CHATGPT_ACTIVE, this session is the single coordinated repository implementation writer after the owner's explicit repeated handoff. Previous ChatGPT coding sessions must not continue independent repository writes. Agent-skill planning/review streams may run concurrently; only this writer changes refs. Base main at claim: `670ad68ee60bd6c6a861c6a84b9b0e0e7e98c7a1`; Railway website SUCCESS at that SHA (public HTTP readiness separate).
+
+**Current isolated scopes:** #888 impact public projection render boundary, #886 story index routable identity guard; #889 fallback metrics and #890 gallery captions have exact-head full CI success and await independent review/ready-state and guarded merge. #684 official UPI QR and #845 staging donation eligibility remain held; no finance, auth/RBAC, schema, secrets, checkout CSP, notifications, infrastructure apply or unreviewed public media changes.
+
+**Execution rule:** This coordination claim is on the existing #888 task branch, not a direct main write. Atomic task heads, exact-head CI, separate ready-state CI, protected SHA-guarded merge and independent runtime SHA verification remain mandatory. Canonical backlog classifications unchanged; do not claim full item closure from these bounded corrections.
+
+---
+
 ## 14 November 2026 IST — CHATGPT_ACTIVE coding/release checkpoint
 
 Protected main at checkpoint: `571025532f8004a528ad8b26484b7fa3271bad75`; active implementation writer `CHATGPT_ACTIVE`. One coordinated repository writer, no autonomous detached coding-agent dispatcher. Main is the release integration target under current owner standing authority and protected exact-head/ready-state policy.
