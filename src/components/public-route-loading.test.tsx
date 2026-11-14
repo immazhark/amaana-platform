@@ -2,6 +2,21 @@ import { expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { PublicRouteLoading } from "./public-route-loading";
 
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+
+it("AF-R071 streams a dedicated accessible loading fallback for impact comparisons", () => {
+  const path = join(process.cwd(), "src/app/impact/compare/loading.tsx");
+  expect(existsSync(path)).toBe(true);
+  if (!existsSync(path)) return;
+  expect(readFileSync(path, "utf8")).toContain('route="impact-compare"');
+  const html = renderToStaticMarkup(<PublicRouteLoading route={"impact-compare" as never} />);
+  expect(html).toContain("Compare Documented Impact");
+  expect(html).toContain("Loading published initiatives to compare");
+  expect(html).toContain('role="status"');
+  expect(html).not.toMatch(/<a\\b|<button\\b|<img\\b|₹/);
+});
+
 const routes = [
   ["stories", "Stories of Amanah", "Loading published stories"],
   ["our-work", "Our Work", "Loading published initiatives"],
