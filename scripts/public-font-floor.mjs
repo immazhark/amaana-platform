@@ -27,6 +27,15 @@ export function auditFontSizes(source, path) {
     const directCalc = !shorthand && /^calc\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*([*/])\s*(-?\d*\.?\d+)\s*\)$/i.exec(value);
     const reverseCalc = !shorthand && /^calc\(\s*(-?\d*\.?\d+)\s*\*\s*(-?\d*\.?\d+)\s*(rem|px)\s*\)$/i.exec(value);
     const additiveCalc = !shorthand && /^calc\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*([+-])\s*(-?\d*\.?\d+)\s*\2\s*\)$/i.exec(value);
+    // Three or more constant same-unit terms can hide a sub-floor result
+    // even when each individual operand is at or above the minimum.
+    const additiveChainCalc = !shorthand &&
+      /^calc\(\s*(-?\d*\.?\d+)\s*(rem|px)((?:\s*[+-]\s*-?\d*\.?\d+\s*\2){2,})\s*\)$/i.exec(value);
+    const additiveChainValue = additiveChainCalc
+      ? Array.from(additiveChainCalc[3].matchAll(/([+-])\s*(-?\d*\.?\d+)\s*(?:rem|px)/gi))
+        .reduce((result, [, op, number]) => op === "+"
+          ? result + Number(number) : result - Number(number), Number(additiveChainCalc[1]))
+      : null;
     // Fold only literal length-first scalar product chains. Unsupported
     // nested, mixed-unit and dynamic expressions use the old fallback.
     const scalarChainCalc = !shorthand &&
@@ -43,12 +52,13 @@ export function auditFontSizes(source, path) {
       : additiveCalc ? Number(additiveCalc[1]) + (additiveCalc[3] === "+"
         ? Number(additiveCalc[4]) : -Number(additiveCalc[4]))
       : scalarChainCalc ? scalarChainValue
+      : additiveChainCalc ? additiveChainValue
       : null;
     if (computed !== null && !Number.isFinite(computed)) {
       violations.push({ path, value });
       continue;
     }
-    const computedUnit = directCalc?.[2] ?? reverseCalc?.[3] ?? additiveCalc?.[2] ?? scalarChainCalc?.[2];
+    const computedUnit = directCalc?.[2] ?? reverseCalc?.[3] ?? additiveCalc?.[2] ?? scalarChainCalc?.[2] ?? additiveChainCalc?.[2];
     const folded = computed !== null && computedUnit
       ? [[value, String(computed), computedUnit]]
       : null;

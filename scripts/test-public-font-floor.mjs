@@ -122,6 +122,26 @@ test("chained constant CSS calc scalar operations must use the final font size",
   assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
 });
 
+test("same-unit additive calc chains use the resulting size, not each operand", () => {
+  const unsafe = [
+    ".chainedRem{font-size:calc(2rem - 1rem - 1rem)}",
+    ".chainedPx{font-size:calc(28px - 14px - 13px)}",
+    ".mixedSigns{font-size:calc(1rem + 1rem - 1.5rem)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(unsafe, "fixture.css").map(item => item.value), [
+    "calc(2rem - 1rem - 1rem)",
+    "calc(28px - 14px - 13px)",
+    "calc(1rem + 1rem - 1.5rem)",
+  ]);
+
+  const safe = [
+    ".restoredRem{font-size:calc(2rem - 1rem + .25rem)}",
+    ".restoredPx{font-size:calc(22px + 4px - 13px)}",
+    ".large{font-size:calc(2rem + 1rem - 1rem)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
+});
+
 test("nested min(calc()) must not hide a constant sub-12px font size", () => {
   const unsafe = [
     ".tooSmall{font-size:min(calc(1rem * .5), 1rem)}",
