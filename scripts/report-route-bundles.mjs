@@ -82,6 +82,11 @@ export function summarizeUnattributedAppAssets(appPaths, assets) {
       !Number.isSafeInteger(asset.bytes) || asset.bytes < 0)) {
     throw new Error("Invalid aggregate asset size or path");
   }
+  if (assets.some(({ path }) => !path || path.startsWith("/") ||
+      /[\\?#:\\s\\u0000-\\u001F\\u007F]/u.test(path) ||
+      path.split("/").some(segment => !segment || segment === "." || segment === ".."))) {
+    throw new Error("Invalid aggregate asset path");
+  }
   if (new Set(assets.map(asset => asset.path)).size !== assets.length) {
     throw new Error("Duplicate aggregate asset path");
   }
