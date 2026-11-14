@@ -85,3 +85,26 @@ describe("participation card destination semantics", () => {
     expect(external).toContain('rel="noopener noreferrer"');
   });
 });
+
+it("fails closed for invalid participation collections without hiding reviewed destinations", () => {
+  for (const malformed of [null, undefined, "invalid-collection", { 0: paths[0], length: 1 }]) {
+    expect(renderToStaticMarkup(
+      <ParticipationCards paths={malformed as unknown as ParticipationPath[]} />,
+    )).toBe("");
+  }
+
+  const broken = [
+    null,
+    undefined,
+    { ...paths[0], title: { dangerously: "object" } },
+    { ...paths[0], copy: 777 },
+    { ...paths[0], action: null },
+    { ...paths[0], marker: { nested: "object" } },
+    { ...paths[0], icon: "unknown-icon" },
+  ] as unknown as ParticipationPath[];
+  const html = renderToStaticMarkup(<ParticipationCards paths={[...broken, paths[2]!]} />);
+  expect(html).toContain('href="/request-assistance"');
+  expect(html).toContain("Request support");
+  expect(html).not.toContain("dangerously");
+  expect(html).not.toContain("unknown-icon");
+});
