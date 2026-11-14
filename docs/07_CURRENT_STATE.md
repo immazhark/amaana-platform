@@ -1,3 +1,23 @@
+# Current operational state — 14 November 2026 IST (ChatGPT release checkpoint)
+
+**Writer:** CHATGPT_ACTIVE, owner-directed takeover recorded through protected #862. This is the current checkpoint; older CODEX_ACTIVE sections below are retained as history, not present ownership. One shared-repository integration writer and serialized protected merges; independent source/QA tracks remain disjoint.
+
+**Protected main:** `fe6249e380c6e00c52af874a51caf41a7ed01119` after exact-head, reviewed, ready-state-verified SHA-guarded merges #858 `3df2c58e96292f03fdf1fbffdf127c4c60568dee` (HTML ASCII stylesheet rel), #859 `7b00012f60f136d6bb211098979505354d0a9133` (HTML MIME essence), #861 `be78644b7d4de39350193bc5f3940d1eec2efe6d` (descendant-cancelled carousel drag) and #853 `fe6249e380c6e00c52af874a51caf41a7ed01119` (fatal root error recovery). Earlier this continuation merged #856 `3fa72b66b349b5924a79da0d8bcd87ad1d23e3f5` (route metadata symlink safety) and owner handoff #862 `3fc5bd02e29277fe09f9f0b3f4574700bd5a226b`. No protected-main direct writes, force history or branch deletion.
+
+**Acceptance:** #858 full CI `43526456265`, separate ready `43530640322`; #859 full `43526459595`, ready `43530646681`; #861 full `43527256698`, ready `43530896723`; #853 full `43527167593`, ready `43530911175`: successful selected jobs and expected skips in promotion. #856 and #862 exact evidence remain in their PRs and preceding handoff. No item-level reclassification from these bounded fixes.
+
+**Railway production:** #861 website deployment `c0e01178-2396-4752-9d34-90d214575ebd` SUCCESS at `be78644b7d4de39350193bc5f3940d1eec2efe6d`; #853 website deployment `43d96cd5-5e76-47c9-a5cf-561328567868` BUILDING at latest observation. Worker watch outcome SKIPPED and worker parked; historic preview offline. Fresh public version/readiness HTTP identity not independently obtained: LIVE_UNVERIFIED. Do not conflate source main with runtime SHA or trigger a forced rollout.
+
+**Open isolated source:** #855 media symlink scanner rewritten as two-file effective diff at candidate `07ba9ef2f0c901603c66ea51f95181bbcda9237b`; hosted full CI `43528573595` fast/production/database successful, browser still in progress, final verify/promotion pending. Keep draft until full exact-head acceptance. Any changed head restarts acceptance. No conflicting source paths from other open PRs observed at this checkpoint.
+
+**Financial holds:** #684 QR fallback remains draft/not live for independent Axis Bank/NPCI payee ownership attestation, credited transfer/UTR reconciliation and separately approved production activation; #845 retains deliberate failing donation-eligibility evidence, not release-ready. Do not perform live payments, refunds, donor delivery, secret/config/schema changes or activate cron. Domestic INR only; unresolved 80G classification and all public-media privacy gates preserved.
+
+**Backlog:** canonical `docs/mission-control/149-item-status-2026-11-12.csv` verified 149 unique IDs: 12 Completed + 48 Implemented + 63 Partial + 24 Not started + 1 Superseded + 1 N/A; active 135 (P0 28 / P1 72 / P2 35). This is ledger consistency, not live reacceptance of 149 features.
+
+**Next independent executable task:** inspect final #855 exact-head browser/verify, then promote/merge only after separate ready run and review; independently verify #853 Railway SUCCESS plus fresh public identity/readiness; continue isolated P1 source work and finance evidence without activating protected payments. Rollback each atomic PR separately; no production infrastructure apply authorized.
+
+---
+
 ## 14 November 2026 IST — coordinated audit corrections and protected font audit merge
 
 Coordinator CODEX_ACTIVE under explicit owner-directed parallel coding. Base a936835dd58c210e21dc3bed52a122b1d657c3fc; #854 protected merge dd0fa90d2d367cdaf8909c2fa5e2c9d4ff4e4d15 after full CI 43522240927 and separate promotion 43526227816. Independent review found no blocker. Railway d21709b4-6a0e-48ff-9cbd-abc321427315 SKIPPED; previous a936835 deployment SLEEPING. Public Cloudflare 403 blocks independent runtime certification.
