@@ -1,3 +1,26 @@
+## 14 November 2026 IST — protected merges #899/#898/#900, four isolated code candidates
+
+**Single coordinated writer:** CHATGPT_ACTIVE under `AGENTS.md`; independent task branches and GitHub CI run concurrently, but no autonomous repository coding sub-agent dispatcher is connected. **Protected main at this checkpoint:** `83941ec33e10cb802defbfe7150c7305907617f0`.
+
+**Three production-code changes completed after full exact-head CI, separate ready-state CI and SHA-guarded protected squash:**
+- #899 public published-outcome metric render guard, head `c1d8e98d2fc07fc62ba795de5030937cbdc99a7b`, full `43560468146`, ready `43562362889`, merge `c3d2802487ea4954cba99b2eb7d0f639b1cbf0f0`. Published initiative/cause SQL and downstream finance behavior preserved.
+- #898 second-read Stories card public metadata guard, head `5a3abfe1c6728ec68f00023de4a01bfff5134410`, full `43560238560`, ready `43562608691`, merge `62b08b3cb604808a766d0b2a6b468291a3a90ca8`. Stories publication/identity privacy gates retained.
+- #900 Faith visible-media second-read guard, head `7263827d03e5789608427ddf32f3aea1b0cb1cb6`, full `43560684518`, ready `43563130769`, merge `83941ec33e10cb802defbfe7150c7305907617f0`. Published, religious-verification, cited-source and media privacy gates retained.
+
+**Next four independent code candidates, implemented but DRAFT/NOT MERGED:**
+- #902 public Faith review predicate rejects malformed projections, head `275c6558a3b93b63794d89d235f921e26df834ff`, full CI `43561957064`, browser pending after fast/database/production success.
+- #903 AF-R025 global-error multiline heading leading, head `2c6b04294b6e15d81d2979f1025153acf9bcc829`, full CI `43562231177`, browser pending after fast/database/production success.
+- #904 reviewed Faith index taxonomy projection guard, head `8caa4442337f2785dc388042ab0fca8e1c33ecc5`, full CI `43562491331`, browser pending after fast/database/production success.
+- #905 AF-R025 route-error headline leading, head `f947999172588f38e652f9df3c216dc453da1166`, full CI `43562992011`, browser and production pending.
+
+**Railway at this checkpoint:** website SHA `62b08b3cb604808a766d0b2a6b468291a3a90ca8` at deployment `3935a4ff-22fd-43e1-a89a-0cebf4495098` reported SUCCESS, online 1/1. New #900 deployment `05331db8-b243-427f-b6be-484d1e4954e0` was BUILDING. Distinguish source merge from production deployment and external HTTP live readiness (UNVERIFIED). Do not force deployment.
+
+**Release next:** recheck exact heads and no unresolved review threads, promote each only after full success, verify distinct ready-state CI, merge with expected_head_sha. #904 touches existing `public-discovery-data.ts` and `faith-discovery-data.test.ts` after #900; #903/#905 touch distinct lines of `e2e/all-page-audit.spec.mjs`. Recheck mergeability against current main after every merge; do not force update.
+
+**Held separately:** #684 official UPI fallback and #845 staging donation-eligibility; no high-risk financial activation. Canonical original 149 classes unchanged: 12 Completed, 48 Implemented, 63 Partial, 24 Not started, 1 Superseded, 1 N/A. No new public claims, donor communication, schema, secret or live infrastructure changes.
+
+---
+
 ## 14 November 2026 IST — three isolated code candidates awaiting browser acceptance
 
 **Writer remains CHATGPT_ACTIVE**, single coordinated implementation writer under AGENTS.md. Main baseline `2d4e161752e5bd809a960c3ffe368d8125e8a2f9`; Railway's last confirmed website SUCCESS was source `484eeed931b8a221389658c2f1d9ea416474dbb1` (#894), with docs-only #897 SKIPPED. No autonomous repository coding agent dispatcher is exposed by connected tools.
