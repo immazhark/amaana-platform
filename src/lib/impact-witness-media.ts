@@ -8,7 +8,9 @@ export function selectImpactWitnessMedia<
   T extends { mediaAssets: readonly PublicMediaCandidate[] },
 >(records: readonly T[]): Array<{ record: T; media: T["mediaAssets"][number] }> {
   const selected: Array<{ record: T; media: T["mediaAssets"][number] }> = [];
+  if (!Array.isArray(records)) return selected;
   for (const record of records) {
+    if (!record || typeof record !== "object" || Array.isArray(record) || !Array.isArray(record.mediaAssets)) continue;
     const media = selectIdentityPublicImage(record.mediaAssets);
     if (!media) continue;
     selected.push({ record, media });

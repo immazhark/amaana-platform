@@ -14,6 +14,21 @@ function record(id: string, sortOrder: number, altText: string | null = "Reviewe
 }
 
 describe("impact witness media selection", () => {
+  it("rejects malformed projection records while retaining later approved witness images", () => {
+    const valid = record("published-later", IDENTITY_MEDIA_SORT_ORDER);
+    const broken = [
+      null,
+      undefined,
+      { mediaAssets: null },
+      { mediaAssets: { length: 1 } },
+      { mediaAssets: [] },
+    ] as unknown as Array<typeof valid>;
+    const selected = selectImpactWitnessMedia([...broken, valid]);
+    expect(selected.map(({ record: item }) => item.id)).toEqual(["published-later"]);
+    expect(selected[0]?.media).toBe(valid.mediaAssets[0]);
+    expect(selectImpactWitnessMedia(null as unknown as Array<typeof valid>)).toEqual([]);
+  });
+
   it("does not render an empty witness section for gallery-only approved images", () => {
     const galleryOnly = record("gallery-only", 10);
     expect(selectImpactWitnessMedia([galleryOnly])).toEqual([]);
