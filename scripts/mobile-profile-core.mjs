@@ -25,6 +25,12 @@ export function assertLocalProfileTarget(value) {
 export function isAllowedProfileRequest(rawUrl, method = "GET") {
   try {
     const url = new URL(rawUrl);
+    // Read-only tracing is limited to public local paths. Decode once and
+    // reject ambiguous/double-encoded paths rather than recording private data.
+    const pathname = decodeURIComponent(url.pathname);
+    const privatePath = /^(?:\/admin|\/documents|\/donations|\/api\/(?:admin|ops|cron|webhooks)|\/request-assistance\/(?:status|received))(?:\/|$)/i.test(pathname);
+    if (privatePath || pathname.includes("\\") || pathname.includes("//") ||
+        /%[0-9a-f]{2}/i.test(pathname)) return false;
     // Profiling may fetch local content but must never forward a write method,
     // even if the target is the approved synthetic localhost origin.
     return (method === "GET" || method === "HEAD") &&
