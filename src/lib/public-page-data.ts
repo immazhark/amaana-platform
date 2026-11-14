@@ -256,7 +256,7 @@ export const getHomepageDiscoveryData = cache(async () => {
  * stories, appeals, faith content, financial summaries and full media galleries.
  */
 export const getOurWorkIndexData = cache(async () => {
-  return prisma.cause.findMany({
+  const records = await prisma.cause.findMany({
     where: { status: "PUBLISHED" },
     orderBy: [{ displayOrder: "asc" }, { publishedAt: "desc" }],
     select: {
@@ -288,6 +288,31 @@ export const getOurWorkIndexData = cache(async () => {
       },
     },
   });
+  // Reject invalid database projections before public portfolio pages can
+  // dereference cause/initiative fields. Keep publication and media SQL gates.
+  const slugIsSafe = (value: unknown): value is string =>
+    typeof value === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value);
+  return (Array.isArray(records) ? records : [])
+    .filter(cause => cause && typeof cause === "object" && !Array.isArray(cause)
+      && typeof cause.id === "string" && cause.id.length > 0
+      && slugIsSafe(cause.slug)
+      && typeof cause.title === "string" && cause.title.trim().length > 0
+      && typeof cause.summary === "string"
+      && Array.isArray(cause.initiatives))
+    .map(cause => ({
+      ...cause,
+      initiatives: cause.initiatives.filter(item =>
+        item && typeof item === "object" && !Array.isArray(item)
+        && typeof item.id === "string" && item.id.length > 0
+        && slugIsSafe(item.slug)
+        && typeof item.title === "string" && item.title.trim().length > 0
+        && typeof item.summary === "string"
+        && (item.primaryMetric == null || typeof item.primaryMetric === "string")
+        && (item.primaryMetricLabel == null || typeof item.primaryMetricLabel === "string")
+        && [item.year, item.startYear, item.endYear].every(
+          year => year == null || Number.isSafeInteger(year))
+        && Array.isArray(item.mediaAssets)),
+    }));
 });
 
 /**
