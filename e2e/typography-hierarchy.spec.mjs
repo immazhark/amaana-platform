@@ -465,7 +465,16 @@ for (const width of [390, 1280]) {
         await expect(label).toBeVisible();
         expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(12);
       }
+      const heading = page.locator(state === 'acknowledgement' ? '.v2-receipt-hero h1' : '.v2-state-hero h1');
+      await expect(heading).toHaveCount(1);
+      const headingRatio = () => heading.evaluate(node => {
+        const style = getComputedStyle(node);
+        return parseFloat(style.lineHeight) / parseFloat(style.fontSize);
+      });
+      expect(await headingRatio(), `${state} heading leading`).toBeGreaterThanOrEqual(1.14);
+
       await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+      expect(await headingRatio(), `${state} heading leading at 200% text`).toBeGreaterThanOrEqual(1.14);
       for (const selector of selectors) {
         const label = page.locator(selector);
         expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(24);
