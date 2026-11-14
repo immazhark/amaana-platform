@@ -15,7 +15,7 @@ import { getPublishedInitiativeBySlug, PUBLIC_DETAIL_MEDIA_LIMIT } from '@/lib/p
 import { getProgrammeChildMedia } from '@/lib/public-page-data';
 import { programmeBySlug, programmeChildren } from '@/lib/master-copy';
 import { PublicMedia } from '@/components/public-media';
-import { dedupeRenderablePublicMediaByUrl, resolvePublicMediaUrl, selectGalleryPublicImage, selectIdentityPublicImage } from '@/lib/public-media';
+import { canRenderPublicMedia, dedupeRenderablePublicMediaByUrl, resolvePublicMediaUrl, selectGalleryPublicImage, selectIdentityPublicImage } from '@/lib/public-media';
 import { buildPublicRecordFallback, programmeStoryParagraphs, heroTeaser } from '@/lib/public-copy';
 import { CampaignMediaGallery } from '@/components/campaign-media-gallery';
 import { toPublicGalleryItems } from '@/lib/public-gallery-projection';
