@@ -22,6 +22,18 @@ test('each public discovery route has a server loading fallback with a fixed rou
   }
 });
 
+test('AF-R071 comparison route streams an accurate and nontransactional loading boundary', () => {
+  const path = 'src/app/impact/compare/loading.tsx';
+  assert.ok(existsSync(join(root, path)), 'Dynamic impact comparison needs its own loading boundary');
+  const source = read(path);
+  assert.match(source, /import \{ PublicRouteLoading \} from ['"]@\/components\/public-route-loading['"]/);
+  assert.match(source, /route="impact-compare"/);
+  assert.doesNotMatch(source, /use client|fetch\(|prisma\.|searchParams|window\./);
+  const component = read('src/components/public-route-loading.tsx');
+  assert.match(component, /"impact-compare":\s*\{\s*title:\s*"Compare Documented Impact"/);
+  assert.match(component, /Loading published initiatives to compare/);
+});
+
 test('loading component is accessible, noninteractive, and never renders invented public evidence', () => {
   const source = read('src/components/public-route-loading.tsx');
   assert.match(source, /role="status"/);
