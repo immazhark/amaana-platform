@@ -325,3 +325,27 @@ test("raw-text custom element prefixes do not conceal active private JSON-LD", (
     assert.throws(() => analyzePublicSchemaHtml("/", page().replace("<body>", `<body>${custom}`)), /Private route/, name);
   }
 });
+
+test("HTTP X-Robots-Tag observation distinguishes noindex directives from lookalike text", async () => {
+  const makeFetch = directive => async target => {
+    if (target.endsWith("/api/health/version")) throw new Error("synthetic version unavailable");
+    const response = new Response(page(graph, target), {
+      status: 200,
+      headers: { "Content-Type": "text/html", "X-Robots-Tag": directive },
+    });
+    Object.defineProperty(response, "url", { value: target });
+    return response;
+  };
+  for (const [directive, expected] of [
+    ["noindex", "NOINDEX"],
+    ["googlebot: noindex, nofollow", "NOINDEX"],
+    ["NOINDEX, FOLLOW", "NOINDEX"],
+    ["notnoindex", "UNSPECIFIED"],
+    ["noindexing", "UNSPECIFIED"],
+    ["custom-noindex-flag", "UNSPECIFIED"],
+    ["noindex=off", "UNSPECIFIED"],
+  ]) {
+    const report = await auditPublicSchema(makeFetch(directive));
+    assert.equal(report.pages[0].httpIndexingDirective, expected, directive);
+  }
+});
