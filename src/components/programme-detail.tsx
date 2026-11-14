@@ -49,7 +49,7 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
   }];
  });
 
- const childMedia=new Map(childMediaRecords.map(item=>[item.slug,selectGalleryPublicImage(item.mediaAssets)]));
+ const childMedia=new Map((Array.isArray(childMediaRecords)?childMediaRecords:[]).filter(item=>item!=null&&typeof item==="object"&&typeof item.slug==="string"&&Array.isArray(item.mediaAssets)).map(item=>[item.slug,selectGalleryPublicImage(item.mediaAssets)]));
  const media=dedupeRenderablePublicMediaByUrl(record.mediaAssets);
  const umbrella=children.length>0;
  const collage=umbrella&&hasProgrammeArtwork(slug);
