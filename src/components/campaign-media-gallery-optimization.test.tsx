@@ -74,6 +74,20 @@ describe("campaign gallery managed image optimization", () => {
     expect(html).not.toContain(">Privacy protected</span>");
   });
 
+  it("rejects malformed public captions before rendering reviewed gallery photographs", () => {
+    const html = renderToStaticMarkup(<CampaignMediaGallery items={[
+      { id: "corrupt-caption", url: "/media/corrupt.webp", alt: "Unreviewed text",
+        caption: { private: "PRIVATE_NOTE" } as unknown as string },
+      { id: "approved", url: "/media/approved.webp", alt: "Reviewed field photograph",
+        caption: "Approved descriptive caption" },
+    ]} />);
+    expect(html).toContain("Reviewed field photograph");
+    expect(html).toContain("Approved descriptive caption");
+    expect(html).not.toContain("PRIVATE_NOTE");
+    expect(html).not.toContain("corrupt.webp");
+    expect(html).toContain("Enlarge image 1 of 1");
+  });
+
   it("keeps media selection stable when malformed input repeats an asset ID", () => {
     const html = renderToStaticMarkup(<CampaignMediaGallery items={[
       { id: "same-id", url: "/media/first.webp", alt: "First reviewed image" },
