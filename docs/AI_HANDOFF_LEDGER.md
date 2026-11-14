@@ -1,3 +1,20 @@
+## 14 November 2026 IST — three isolated code candidates awaiting browser acceptance
+
+**Writer remains CHATGPT_ACTIVE**, single coordinated implementation writer under AGENTS.md. Main baseline `2d4e161752e5bd809a960c3ffe368d8125e8a2f9`; Railway's last confirmed website SUCCESS was source `484eeed931b8a221389658c2f1d9ea416474dbb1` (#894), with docs-only #897 SKIPPED. No autonomous repository coding agent dispatcher is exposed by connected tools.
+
+**Implemented, draft, NOT merged or deployed:**
+- **#898** Stories second public read projection safety; head `5a3abfe1c6728ec68f00023de4a01bfff5134410`, full CI run `43560238560`. Synthetic null Prisma record threw before fix; code now checks canonical identity, title, summary and media array. SQL story status/privacy gate retained.
+- **#899** Public published-outcome metric projection safety; head `c1d8e98d2fc07fc62ba795de5030937cbdc99a7b`, full CI run `43560468146`. Rejects malformed slug/title/metric/label before slicing three published programme outcomes; source SQL publication and cause gates retained, no payment/checkout behavior.
+- **#900** Faith media second-read shape safety; head `7263827d03e5789608427ddf32f3aea1b0cb1cb6`, full CI run `43560684518`. Rejects malformed IDs/media/citation records before the existing religion-verification predicate; no relaxation of PUBLISHED, VERIFIED, citation/date or image privacy controls.
+
+**Verification checkpoint:** all three heads have fast, production and database jobs SUCCESS; all three browser jobs still IN_PROGRESS (responsive, accessibility and journey acceptance), with final verify pending. Drafts stay parked rather than treating pending acceptance as a pass. No unresolved PR review threads at last review. #898 and #900 modify separate sections of `src/lib/public-discovery-data.ts`; recheck mergeability against updated main after the first merge.
+
+**Existing finance holds:** #684 official UPI QR fallback and #845 synthetic staging donation eligibility remain separately gated; no activation, no donor communication, no financial migration. Canonical 149-item classes unchanged (12 Completed, 48 Implemented, 63 Partial, 24 Not started, 1 Superseded, 1 N/A).
+
+**Next safe executable release:** check all seven exact-head CI jobs, independent code review, promote each individually only after green, verify separate ready-state runs, expected-head-SHA guarded merges; then inspect Railway SHA and independent public HTTP health/readiness if accessible. If CI remains incomplete, continue unrelated authorized work. No forced deployment to equalize source/runtime.
+
+---
+
 ## 14 November 2026 IST — release checkpoint after three independent protected merges
 
 **Active writer:** CHATGPT_ACTIVE, one coordinated GitHub implementation writer. Independent source/CI branches are permitted; no autonomous code-agent dispatch capability exists in the current connected toolset. **Protected main:** `484eeed931b8a221389658c2f1d9ea416474dbb1`.
