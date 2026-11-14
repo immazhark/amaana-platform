@@ -1,3 +1,14 @@
+## 14 November 2026 IST — three isolated development branches (CHATGPT_ACTIVE)
+
+**Single implementation writer: CHATGPT_ACTIVE.** Protected main at checkpoint `3bc7b085c008c3037edd53b71459df614085b58c`. Codex owner handoff already recorded in #862. No concurrent detached agents are authorized to write. One coordinator integrates distinct PRs; independent read-only analysis may run in parallel.
+
+**Released to main:** #855 media symlink boundary, full exact-head CI `43528573595`, separate ready-state `43532663380`, SHA-guarded merge `3bc7b085c008c3037edd53b71459df614085b58c`; Railway site/worker SKIPPED for scripts-only diff.
+
+**Independent isolated source branches:** #864 `fix/artwork-scan-root-symlink-20261114` head `0c5e8a8a3cd741ed8aa067bc168d743b4b9254f8` (RED `43533148239`; full CI `43533355070` browser pending); #865 `fix/robots-header-directive-boundary-20261114` head `a13e132e94b08e3dcb4d72fcc22a256636456b3e` (RED `43533153839`; full CI `43533359690` browser pending); #866 `fix/mobile-profile-private-request-20261114` head `dc6cc8ddf978a125afcba0c2abbf1322538c0974` (RED `43533880459` and expanded `43534855944`; current full CI `43535301936` pending). All are draft and disjoint audit scripts, no application runtime changes; do not merge until exact-head full checks, independent review and separate ready promotion pass.
+
+**Holds:** #684 UPI QR banking ownership/UTR/approval, #845 payment-eligibility scope; no funds, secrets, donor data, schema, worker/cron, infrastructure, or outbound communication changes. Canonical 149 classifications unchanged; 135 active. Public deployment identity separate and independently HTTP-unverified. After source merges, refresh ledger once at a safe boundary. Rollback narrow PRs only.
+
+
 ## 14 November 2026 IST — protected audit/UI merges and release boundaries
 
 **Current implementation writer: CHATGPT_ACTIVE.** Owner-directed takeover remains in force from #862. Protected main `fe6249e380c6e00c52af874a51caf41a7ed01119`; source merged through #858/#859 audit fixes and #861/#853 UI fixes after exact-head full CI, independent source review and separate ready-state verification. #856 tooling and #862 handoff were merged earlier. One writer integrates; no detached Codex session may mutate repo.
