@@ -1,3 +1,24 @@
+## 14 November 2026 IST — three accepted public-site releases, two independent draft fixes
+
+**Writer:** CHATGPT_ACTIVE, only one coordinated implementation writer as required by AGENTS.md. Independent task branches and hosted CI can overlap. No connected autonomous repository coding-agent dispatcher. **Protected main at this checkpoint:** `5eda0912dc268f7e6fa8a89bb8c8842a8f88bd7e`.
+
+**Accepted source merges (full exact-head 7/7, distinct ready-for-review CI SUCCESS, zero unresolved reviews, SHA-guarded squash):**
+- #907 AF-R025 404 display heading leading, source head `27d9a74c264a74cdb9c6057237ceb0a9cec4ce66`, full `43594172260`, ready `43599419728`, merge `331a711d89b0a6bcd9464ca11a1b1766c83edee4`.
+- #908 homepage published discovery malformed record guard, head `43141d8aa2654a8443d7e90e725fde25c5c3d55b`, full `43594550416`, ready `43599427795`, merge `bd913ccd9d14f731fc7ecd42f303328720238d04`.
+- #909 AF-R019 Privacy matrix small label AA contrast, **corrected** head `8388cd7529e634b4e6085a11aa3dc533523777d1`, full `43595222863`, ready `43599432381`, merge `5eda0912dc268f7e6fa8a89bb8c8842a8f88bd7e`.
+
+**Runtime separately verified:** Railway website SHA `5eda0912dc268f7e6fa8a89bb8c8842a8f88bd7e` SUCCESS, deployment `2e3b32ed-597b-43cb-bcbd-66a5fb74f50e`; 1/1 replicas online and zero reported warnings or critical issues. Independent public GET `/api/health/version` and `/api/health/ready` remains **UNVERIFIED**: available web reader reports inaccessible, and local container DNS cannot resolve site. Do not claim LIVE_VERIFIED.
+
+**Independent new draft production candidates, NOT MERGED/DEPLOYED:**
+- #911 completed medical-support showcase projection fail-closed, head `98ec7f4f6ddfd88447b5807866a54f7d9563ca70`, full `43599818528`, fast/database/production success; browser in progress on responsive/a11y/journeys. Preserves reviewed-media and published initiative/cause query.
+- #912 Our Work portfolio causes/initiative projection fail-closed, head `a353e2d9e1af7f71569f61d732a71a6e9d1ae3c9`, full `43599917688`, fast/database/production success; browser in progress. Preserves nested published initiative query and approved image filter. #911/#912 modify disjoint sections of the same getter and test file; recheck mergeability against updated main, never force merge.
+
+**Finance and legal holds unchanged:** #684 official UPI fallback and #845 staging donation eligibility require separately scoped authorization; no payment, provider, checkout, auth, secrets, schema, medical disclosure, media approval or live donor action was activated. Original canonical 149 classes unchanged (12 Completed, 48 Implemented, 63 Partial, 24 Not started, 1 Superseded, 1 N/A). A narrow AF-R019/AF-R025 change does not close full items.
+
+**Next executable:** Check exact tested heads and all seven full CI jobs; promote each after success, verify its independent ready-state run, complete review and protected merge with expected_head_sha; inspect Railway SHA/status and public HTTP identity independently. Other blocked tasks remain isolated.
+
+---
+
 ## 14 November 2026 IST — four accepted protected merges; three isolated new code branches
 
 **Active owner:** CHATGPT_ACTIVE, one coordinated GitHub implementation writer as required by AGENTS.md; no connected autonomous GitHub coding-agent dispatcher. Parallel task branches/CI remain separate. **Protected main checkpoint:** `608a2d216278341c4c85fa03f6712bf63f15ef2e`.
