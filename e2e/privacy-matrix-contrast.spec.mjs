@@ -12,7 +12,7 @@ for (const width of [390, 1440]) {
     await expect(label).toBeVisible();
     const measurement = await label.evaluate(node => {
       const rgb = (value) => {
-        const values = value.match(/[\\d.]+/g)?.map(Number);
+        const values = value.match(/[\d.]+/g)?.map(Number);
         if (!values || values.length < 3) throw new Error("Invalid computed CSS color");
         return [values[0], values[1], values[2], values[3] ?? 1];
       };
