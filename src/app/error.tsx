@@ -17,7 +17,6 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
           {/* Recovery must reload the document when this route has failed. */}
           {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a className="v2-text-link" href="/">Return home →</a>
-          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
           <a className="v2-text-link" href="/contact">Contact Amaana →</a>
         </div>
       </div>
