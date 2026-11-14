@@ -486,7 +486,15 @@ export const getDonationImpactHighlights = cache(async () => {
     take: 8,
     select: { slug: true, title: true, primaryMetric: true, primaryMetricLabel: true },
   });
-  return rows.filter(item => item.primaryMetric?.trim() && item.primaryMetricLabel?.trim()).slice(0, 3);
+  // SQL publication and cause review gates are necessary, but malformed
+  // projection values must not become public factual claims or hide later rows.
+  return (Array.isArray(rows) ? rows : []).filter(item =>
+    item !== null && typeof item === "object" && !Array.isArray(item)
+    && typeof item.slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item.slug)
+    && typeof item.title === "string" && item.title.trim().length > 0
+    && typeof item.primaryMetric === "string" && item.primaryMetric.trim().length > 0
+    && typeof item.primaryMetricLabel === "string" && item.primaryMetricLabel.trim().length > 0,
+  ).slice(0, 3);
 });
 
 /**
