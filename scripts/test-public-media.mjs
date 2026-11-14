@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
@@ -65,4 +65,48 @@ test('public media boundary allows reviewed derivative naming and ordinary field
 test('missing public media directory is accepted as an empty library', async () => {
   const root = path.join(tmpdir(), `amaana-media-missing-${Date.now()}-${Math.random().toString(16).slice(2)}`);
   await assert.doesNotReject(checkPublicMedia(root));
+});
+
+test('public media decoder refuses symlinked root directories', async () => {
+  const workspace = await mkdtemp(path.join(tmpdir(), 'amaana-media-root-link-'));
+  try {
+    const real = path.join(workspace, 'real-media');
+    await mkdir(real);
+    const linked = path.join(workspace, 'media');
+    await symlink(real, linked);
+    await assert.rejects(checkPublicMedia(linked), /symbolic link/i);
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
+});
+
+test('public media decoder refuses symlinked files and nested folders', async () => {
+  const workspace = await mkdtemp(path.join(tmpdir(), 'amaana-media-child-link-'));
+  try {
+    const root = path.join(workspace, 'public-media');
+    const external = path.join(workspace, 'unreviewed');
+    await mkdir(root);
+    await mkdir(external);
+    await writeFile(path.join(external, 'private.webp'), Buffer.from('SYNTHETIC_ONLY'));
+    await symlink(path.join(external, 'private.webp'), path.join(root, 'linked.webp'));
+    await assert.rejects(checkPublicMedia(root), /symbolic link/i);
+    await rm(path.join(root, 'linked.webp'));
+    await symlink(external, path.join(root, 'linked-directory'));
+    await assert.rejects(checkPublicMedia(root), /symbolic link/i);
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
+});
+
+test('public media decoder refuses a symlinked immediate parent directory', async () => {
+  const workspace = await mkdtemp(path.join(tmpdir(), 'amaana-media-parent-link-'));
+  try {
+    const real = path.join(workspace, 'real-public');
+    await mkdir(path.join(real, 'media'), { recursive: true });
+    const linked = path.join(workspace, 'public');
+    await symlink(real, linked);
+    await assert.rejects(checkPublicMedia(path.join(linked, 'media')), /symbolic link/i);
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
 });
