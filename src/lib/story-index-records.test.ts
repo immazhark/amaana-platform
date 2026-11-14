@@ -19,6 +19,28 @@ describe("public story index identity boundary", () => {
     expect(JSON.stringify(selected)).not.toContain("PRIVATE_SLUG");
   });
 
+  it("rejects malformed published relationship labels before story cards render", () => {
+    const publishedCause = { status: "PUBLISHED", title: "Reviewed cause" };
+    const publicStory = { ...valid, cause: publishedCause, initiative: null };
+    const badCause = { ...publicStory, cause: { status: "PUBLISHED", title: { private: "PRIVATE_CAUSE" } } };
+    const badInitiative = {
+      ...publicStory,
+      initiative: { status: "PUBLISHED", title: { private: "PRIVATE_INITIATIVE" }, cause: publishedCause },
+    };
+    const badNestedCause = {
+      ...publicStory,
+      initiative: { status: "PUBLISHED", title: "Reviewed initiative", cause: { status: "PUBLISHED", title: { private: "PRIVATE_NESTED_CAUSE" } } },
+    };
+    const unrelatedDraft = {
+      ...publicStory,
+      id: "reviewed-with-draft",
+      cause: { status: "DRAFT", title: { draft: "NOT_PUBLIC" } },
+    };
+    const records = retainRoutableStoryRecords([badCause, badInitiative, badNestedCause, publicStory, unrelatedDraft] as unknown as Array<typeof publicStory>);
+    expect(records).toEqual([publicStory, unrelatedDraft]);
+    expect(JSON.stringify(records)).not.toContain("PRIVATE_");
+  });
+
   it("preserves valid source order, identity and empty-inventory semantics", () => {
     const next = { ...valid, id: "synthetic-2", slug: "another-story" };
     const selected = retainRoutableStoryRecords([valid, next]);
