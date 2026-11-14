@@ -5,6 +5,7 @@ type PublicLoadingRoute =
   | "stories"
   | "our-work"
   | "impact"
+  | "impact-compare"
   | "appeals"
   | "faith-and-reflections"
   | "donate";
@@ -13,6 +14,7 @@ const routeCopy: Record<PublicLoadingRoute, { title: string; message: string }> 
   "stories": { title: "Stories of Amanah", message: "Loading published stories…" },
   "our-work": { title: "Our Work", message: "Loading published initiatives…" },
   "impact": { title: "Our Impact", message: "Loading documented outcomes…" },
+  "impact-compare": { title: "Compare Documented Impact", message: "Loading published initiatives to compare…" },
   "appeals": { title: "Verified Appeals", message: "Checking current public appeals…" },
   "faith-and-reflections": { title: "Faith & Reflections", message: "Loading the reviewed library…" },
   "donate": { title: "Domestic Donations", message: "Checking currently approved giving routes…" },
