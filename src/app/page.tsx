@@ -162,6 +162,7 @@ export default async function HomePage() {
               </div>
               <div className="v3-actions">
                 <Link className="v3-btn" href="/our-work">Explore our work</Link>
+                <Link className="v2-text-link" href="/contact">Contact Amaana →</Link>
               </div>
             </div>
           )}
