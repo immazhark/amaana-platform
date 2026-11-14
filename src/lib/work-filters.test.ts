@@ -260,3 +260,25 @@ it("preserves explicit years, open single-year endpoints and supported inclusive
     expect(filterWork(programmes, { year }).results[0]?.initiatives).toEqual([expected]);
   }
 });
+
+it("rejects malformed stored year values instead of exposing invented filter options", () => {
+  const invalid = [
+    { year: Number.NaN, startYear: null, endYear: null },
+    { year: 2026.5, startYear: null, endYear: null },
+    { year: "2026", startYear: null, endYear: null },
+    { year: 0, startYear: null, endYear: null },
+    { year: null, startYear: null, endYear: Number.POSITIVE_INFINITY },
+    { year: null, startYear: Number.NaN, endYear: 2026 },
+    { year: null, startYear: 2024.5, endYear: 2026 },
+    { year: null, startYear: 2024, endYear: Number.NaN },
+    { year: null, startYear: 2024, endYear: 2026.5 },
+    { year: null, startYear: "2024", endYear: 2026 },
+  ] as unknown as Array<{ year: number | null; startYear: number | null; endYear: number | null }>;
+  const reviewed = { year: 2025, startYear: null, endYear: null };
+  const records = [{ slug: "public-relief", initiatives: [...invalid, reviewed] }];
+  expect(filterWork(records, {}).years).toEqual([2025]);
+  expect(filterWork(records, { year: "2026" })).toMatchObject({
+    invalid: true, year: "", results: [], count: 0,
+  });
+  expect(filterWork(records, { year: "2025" }).results[0]?.initiatives).toEqual([reviewed]);
+});
