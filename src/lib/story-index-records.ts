@@ -13,6 +13,8 @@ export function retainRoutableStoryRecords<T extends { id: string; slug: string 
     if (!record || typeof record !== "object" || Array.isArray(record)) return false;
     const value = record as unknown as Record<string, unknown>;
     const initiative = value.initiative;
+    const publishedInitiative = initiative !== null && typeof initiative === "object"
+      && !Array.isArray(initiative) && (initiative as Record<string, unknown>).status === "PUBLISHED";
     const nestedCause = initiative && typeof initiative === "object" && !Array.isArray(initiative)
       ? (initiative as Record<string, unknown>).cause : null;
     return typeof value.id === "string" && value.id.trim().length > 0
@@ -20,6 +22,7 @@ export function retainRoutableStoryRecords<T extends { id: string; slug: string 
       && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.slug)
       && validPublishedContext(value.cause)
       && validPublishedContext(initiative)
+      && (!publishedInitiative || (nestedCause !== null && typeof nestedCause === "object" && !Array.isArray(nestedCause)))
       && validPublishedContext(nestedCause);
   });
 }
