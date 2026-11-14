@@ -1,3 +1,21 @@
+# Current operational state — 14 November 2026 IST (continued source execution checkpoint)
+
+**Active writer:** CHATGPT_ACTIVE under AGENTS.md and the #862 ownership handoff. One repository integration writer; independent, disjoint branches and CI run concurrently, but detached autonomous coding agents have not been launched. Current protected main at checkpoint: `2c9230cd9797e28e77a1a962c002805946a15441`.
+
+**Protected code merges completed in this continuation:** #871 public teaser decimal boundary, full exact-head CI `43539874379`, separate ready-state `43542853239`, merge `1f31c7e109d5a2fe5b9d1d2cd1aedca6d4f4d3a9`; #873 homepage multiline heading AF-R025, hosted RED `43540988337`, full CI `43541312803`, ready-state `43543927252`, guarded merge `2c9230cd9797e28e77a1a962c002805946a15441`. Neither is a full master-item closure.
+
+**Four isolated draft changes await exact-head acceptance:**
+- #874 public asset inventory symlinks, head `236b76ec137145ac81c5067b0141a3b2bcf30d1b`, RED `43541686637`, GREEN `43541827125` browser pending.
+- #876 malformed public gallery metadata, head `0f05ad93d1ddff332972cf9fa0fb36b9d2dd95f6`, RED `43542812216` (one intentional new test failure), GREEN `43543147308` browser pending.
+- #877 homepage no-appeals Contact recovery, head `8e7a29d19cdf433892caf775b6f1ff09da6d8fdc`, controlled source RED recorded; original test-only CI `43543296741` was cancelled by new push, GREEN `43543477188` browser pending.
+- #878 local admin-edge linked App Router scan-root guard, head `6162996484adc75c69980699dc6e45f9ddb1b45f`, RED production prebuild `43543768667` confirmed Missing expected exception, GREEN `43544072544` pending. This does NOT modify/activate auth, RBAC or Cloudflare controls; AF-R013 still PLAN_ONLY_UNVERIFIED.
+
+**Railway source/runtime separation:** #871 website deployment `10a5cedf-a6d1-498f-9ae3-b08191eac6de` SUCCESS with source `1f31c7e109d5a2fe5b9d1d2cd1aedca6d4f4d3a9`, online 1/1; #873 website deployment `9405932a-05da-48b5-9407-9472d9faa346` BUILDING at checkpoint. Worker SKIPPED. Public version/ready endpoints not independently accessible by web tool and remain HTTP_UNVERIFIED. No rollouts forced.
+
+**Finance holds:** #684 external Axis/NPCI payee and credited UTR proof and separately approved production scope; #845 staging eligibility policy. No payment activation, donor data, secrets, cron, notification, schema, checkout CSP or infrastructure changes. 149-item canonical classifications unchanged (12 Completed / 48 Implemented / 63 Partial / 24 Not started / 1 Superseded / 1 N/A). Next: full checks, independent review, separate ready-state and SHA-guard merges for #874/#876/#877/#878; Railway deployed SHA/health; preserve blockers. Narrow PR revert is rollback.
+
+---
+
 # Current operational state — 14 November 2026 IST (five-track source checkpoint)
 
 **Technical source at checkpoint:** protected main `350b8cca959ca122176d6513be80bfdbd1815280`, after three independent guarded merges: #868 `e2bb6ec17607394a1506314c0b42c60c6afb2eca` (route-error native recovery; full CI `43538398199`, ready `43540498812`), #870 `10c7be255684af541f8c5bb8bd1b58b0bdea4873` (malformed participation cards; full `43539647661`, ready `43540502893`) and #869 `350b8cca959ca122176d6513be80bfdbd1815280` (404 Contact recovery; full `43538811800`, ready `43541875785`). Source integrity and SHA-guarded merge completed for all three.
