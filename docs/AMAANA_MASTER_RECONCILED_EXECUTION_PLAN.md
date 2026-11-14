@@ -1,3 +1,7 @@
+## Latest 149-item evidence checkpoint — 15 November 2026 IST
+
+**Reconciled unique items: 149 = 16 Completed + 42 Implemented + 65 Partial + 24 Not started + 1 Superseded + 1 Not applicable.** This supersedes the 12 November classification counts only; older historical release evidence is preserved. Four direct source/test/live closures: AF-R006, AF-R008, AF-R073, AF-R075. Two corrected overly optimistic implementation labels: AF-R043, AF-R072 → Partial. [All 149 canonical IDs, row-specific previous audit file candidates and outstanding acceptance](mission-control/149-item-status-2026-11-15.csv); [exact evidence, methodology and limits](mission-control/2026-11-15-149-reconciliation.md). Only nine open scopes were targeted for new source/live checks; 128 otherwise-open rows explicitly still require independent source/CI/public reconciliation. No unsupported bulk promotion.
+
 # Amaana Master Reconciled Execution Plan — War-Footing Revision
 
 ## Current verified 149-item status overlay — 12 November 2026 IST

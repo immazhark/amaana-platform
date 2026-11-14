@@ -1,3 +1,9 @@
+# 15 November 2026 IST — 149-item evidence reconciliation checkpoint
+
+**Sole coordinated writer CHATGPT_ACTIVE; main integration branch main.** The 149-row register now reconciles 16 Completed / 42 Implemented / 65 Partial / 24 Not started / 1 Superseded / 1 Not applicable on branch `docs/149-item-evidence-reconciliation-20261115` (PR pending). Source main at this audit start: `e4076e9b8a9985b6a8fb937ef08891535234c5d1`, including accepted #938 linear media deduplication at `b2166d9a0a35f67a8e930cbc7f33f431172bf8f6` and test-only #939. Independently checked website version and readiness matched #938 merge SHA (production/main, ready); the newer test-only #939 Railway deployment was SKIPPED as intended. Exact 149-row status, 4 justified closures, 2 reopened scopes, and explicit unverified rows: `docs/mission-control/2026-11-15-149-reconciliation.md`. Implementation PRs #940 (assistive link), #941 (metric dedupe) and #942 (malformed child projection) are separate and do not change these item counts until independently accepted. #684/#845 finance and #446 IaC remain held; no provider/financial/live-infra mutation. This new note supersedes stale PR/status claims below; preserve dated history.
+
+---
+
 # Current operational state — 15 November 2026 IST — session release checkpoint (verified, after previous 15 November notes)
  
 **Writer:** CHATGPT_ACTIVE; one coordinated repository implementation writer, with parallel read-only investigations. There is no connected authorized multi-writer coding-agent dispatcher. **Protected source main:** `8960e61efa257ccdf64a579cf7a3bcad1e71a703` (#935). **Public runtime:** `2e1e48bfbe30c511819f73c5dda129b62bea97bc` (#933), branch main, production, live Razorpay mode, independent public version and readiness=ready checks after Railway SUCCESS. The later scripts-only #935 correctly caused website and parked-worker Railway SKIPPED; do not deploy merely to match source SHA.
