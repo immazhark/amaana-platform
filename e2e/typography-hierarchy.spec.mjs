@@ -677,7 +677,7 @@ for (const width of [390, 1280]) {
   });
 }
 
-for (const width of [390, 1440]) {
+for (const width of [320, 390, 1440]) {
   for (const scale of [100, 200]) {
     test(`not-found heading keeps readable line spacing at ${width}px and ${scale}% text`, async ({ page }) => {
       await page.setViewportSize({ width, height: 1000 });
@@ -705,7 +705,7 @@ for (const width of [390, 1440]) {
         const style = getComputedStyle(node);
         return { font: Number.parseFloat(style.fontSize), line: Number.parseFloat(style.lineHeight) };
       });
-      expect(metrics.line).toBeGreaterThanOrEqual(metrics.font);
+      expect(metrics.line).toBeGreaterThanOrEqual(metrics.font * 1.14);
     });
   }
 }
