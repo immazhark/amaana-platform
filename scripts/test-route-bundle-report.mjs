@@ -108,6 +108,22 @@ test("unattributed aggregate rejects unmeasured asset sizes instead of producing
   ]), /Invalid aggregate total size/);
 });
 
+test("AF-R047 rejects unsafe aggregate asset paths rather than reporting untrusted bytes", () => {
+  const routes = { "/page": "/" };
+  for (const path of [
+    "", "/chunks/absolute.js", "chunks/../private.js", "../outside.css",
+    "chunks//duplicate.js", "chunks/./alias.js", "https://example.invalid/a.js",
+    "C:\\private.js", "chunks/file.js?download=1", "chunks/unsafe#fragment.css",
+  ]) {
+    assert.throws(() => summarizeUnattributedAppAssets(routes, [{ path, bytes: 11 }]),
+      /Invalid aggregate asset path/, path);
+  }
+  assert.deepEqual(summarizeUnattributedAppAssets(routes, [
+    { path: "chunks/app/page.js", bytes: 9 },
+    { path: "media/approved-font.woff2", bytes: 20 },
+  ]).aggregate, { jsBytes: 9, cssBytes: 0, totalBytes: 9, assetCount: 2 });
+});
+
 test("unattributed build aggregate rejects duplicated paths rather than inflating byte totals", () => {
   const pages = { "/page": "/" };
   for (const records of [
