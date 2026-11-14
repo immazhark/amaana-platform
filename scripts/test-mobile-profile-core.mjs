@@ -146,7 +146,8 @@ test("local synthetic profiler refuses private same-origin reads before tracing"
   const local = "http://127.0.0.1:3000";
   for (const pathname of [
     "/admin", "/admin/team", "/api/admin/private", "/api/ops/worker",
-    "/api/cron/notifications", "/api/webhooks/razorpay", "/documents/assistance",
+    "/api/cron/notifications", "/api/webhooks/razorpay", "/api/donations/order",
+    "/api/assistance/status", "/api/giving-reminder/subscribe", "/api/jobs/cleanup", "/documents/assistance",
     "/donations/AFD-2026-12345678/acknowledgement",
     "/request-assistance/status", "/request-assistance/received",
     "/%61dmin/team", "/api/%61dmin/private",
