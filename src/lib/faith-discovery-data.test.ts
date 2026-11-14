@@ -77,6 +77,28 @@ it("keeps verified Faith items but omits malformed public identities and topic l
   expect(mocks.findMany.mock.calls[0]?.[0].where).toEqual(publicFaithWhere);
 });
 
+it("excludes unknown Faith content formats before verified public counts and routes", async () => {
+  const reviewed = {
+    id: "approved-article", slug: "approved-article", type: "ARTICLE",
+    title: "Reviewed faith content", excerpt: "Documented source context",
+    status: "PUBLISHED", religiousReviewStatus: "VERIFIED",
+    verifiedAt: new Date("2026-11-14T00:00:00Z"), sourceCitation: "Verified citation", topics: [],
+  };
+  mocks.findMany.mockResolvedValueOnce([
+    { ...reviewed, id: "internal-format", type: "PRIVATE_EDITORIAL_FORMAT" },
+    { ...reviewed, id: "blank-format", type: " " },
+    reviewed,
+    { ...reviewed, id: "reviewed-reminder", slug: "reviewed-reminder", type: "REMINDER" },
+    { ...reviewed, id: "reviewed-video", slug: "reviewed-video", type: "VIDEO" },
+  ]);
+  const visible = await getFaithDiscoveryData();
+  expect(visible.map(item => item.id)).toEqual([
+    "approved-article", "reviewed-reminder", "reviewed-video",
+  ]);
+  expect(JSON.stringify(visible)).not.toContain("PRIVATE_EDITORIAL_FORMAT");
+  expect(mocks.findMany.mock.calls[0]?.[0].where).toEqual(publicFaithWhere);
+});
+
 it("loads image candidates only for two distinct visible Faith IDs", async () => {
   await getVisibleFaithMedia(["hero", "lead", "hero"]);
   expect(mocks.findMany).toHaveBeenCalledOnce();
