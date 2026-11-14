@@ -163,7 +163,7 @@ for (const [device,width,height] of [['compact-mobile',320,844],['mobile',390,84
     expect(resized.overflow,'200% text resizing on isolated global error').toBe(false);
     expect(resized.bodyFont).toContain('Arial');
     expect(resized.headingFont).toContain('Georgia');
-    expect(resized.lineHeight).toBeGreaterThanOrEqual(resized.fontSize);
+    expect(resized.lineHeight).toBeGreaterThanOrEqual(resized.fontSize * 1.14);
     await page.getByRole('button',{name:'Try again →',exact:true}).scrollIntoViewIfNeeded();
     await expect(page.getByRole('button',{name:'Try again →',exact:true})).toBeInViewport();
   });
