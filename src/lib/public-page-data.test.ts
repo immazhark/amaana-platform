@@ -365,6 +365,30 @@ describe("public page gallery media query contracts", () => {
       .toMatchObject({ kind: "IMAGE", isPublic: true, privacyApprovedAt: { not: null }, sortOrder: -1000 });
   });
 
+  it("fails closed for malformed completed-support showcase projections", async () => {
+    const safe = { slug: "reviewed-relief", mediaAssets: [] };
+    mocks.initiativeFindMany.mockResolvedValueOnce([
+      null, undefined,
+      { slug: "../internal", mediaAssets: [] },
+      { slug: { private: "PRIVATE_SLUG" }, mediaAssets: [] },
+      { slug: "invalid-media", mediaAssets: { private: "PRIVATE_MEDIA" } },
+      safe,
+    ]);
+    const records = await getCompletedAidShowcaseData();
+    expect(records).toEqual([safe]);
+    expect(JSON.stringify(records)).not.toContain("PRIVATE_");
+    expect(mocks.initiativeFindMany.mock.calls[0]?.[0]).toMatchObject({
+      where: {
+        status: "PUBLISHED",
+        cause: { slug: "medical-financial-relief", status: "PUBLISHED" },
+      },
+      select: { slug: true },
+    });
+    expect(mocks.initiativeFindMany.mock.calls[0]?.[0].select.mediaAssets.where).toMatchObject({
+      kind: "IMAGE", isPublic: true, privacyApprovedAt: { not: null },
+    });
+  });
+
   it("uses bounded approved image sets for completed support and programme child cards", async () => {
     await getCompletedAidShowcaseData();
     await getProgrammeChildMedia(["eid-gift-kits-2025"]);
