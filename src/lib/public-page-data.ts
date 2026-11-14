@@ -346,7 +346,7 @@ export const getImpactComparisonPageData = cache(async () => {
  * a bounded set of approved public images per record is used so the card strip can prefer documentary gallery photography.
  */
 export const getCompletedAidShowcaseData = cache(async () => {
-  return prisma.initiative.findMany({
+  const records = await prisma.initiative.findMany({
     where: {
       status: "PUBLISHED",
       cause: { slug: "medical-financial-relief", status: "PUBLISHED" },
@@ -357,6 +357,13 @@ export const getCompletedAidShowcaseData = cache(async () => {
       mediaAssets: PUBLIC_GALLERY_MEDIA_PROJECTION,
     },
   });
+  // A malformed second-read projection must not interrupt public appeals.
+  // Keep the SQL publication and privacy-approved media gates unchanged.
+  return (Array.isArray(records) ? records : []).filter(record =>
+    record && typeof record === "object" && !Array.isArray(record)
+    && typeof record.slug === "string"
+    && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(record.slug)
+    && Array.isArray(record.mediaAssets));
 });
 
 /**
