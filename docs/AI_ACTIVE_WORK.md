@@ -1,3 +1,18 @@
+## 14 November 2026 IST — CHATGPT_ACTIVE public discovery continuation
+
+**Protected main at this checkpoint:** `ad50c06d145c28fa4327703368ddff9823d5703d`. **Authorized implementation writer:** `CHATGPT_ACTIVE`; independent branches and GitHub CI, no dispatched autonomous coding agents. Source and deployed runtime SHAs are separate.
+
+**Protected merge:** #884 invalid public portfolio year filtering, tested head `ed2c4d701f8164130995abf8531d98f7ad82b367`, RED `43547097150`, full GREEN `43547396352`, separate ready-state `43549451113`, guarded merge `ad50c06d145c28fa4327703368ddff9823d5703d`. Railway website deployment `e90e590a-4c39-492a-a31c-3b7ed4283da7` SUCCESS at that SHA; worker SKIPPED. Independent HTTP health/version UNVERIFIED via web inspection.
+
+**Existing isolated drafts:** #885 public appeal search head `9b9c777aaee5b0711dcf5a41881d79a9dc6a4f3b`, RED `43547241093`, GREEN `43547516955`; #886 public Stories head `422da6be40592d0700e97991838b2d7178642cb1`, RED `43547936025`, GREEN `43548233097`. Fast/database/build passed, browser acceptance pending; neither merged.
+
+**New independent RED-first code branches:** #888 public Impact classification guard, RED `43549032832` failed exactly one targeted test, GREEN `09020662de0682d8e8f0f070ce3bd451a94ee360`, full `43549359892` fast/database/build passed, browser pending; #889 public factual fallback metric guard, RED `43549040635` failed two targeted tests, GREEN `8649449892a774fc1c21d3d7828982013cd41c2b`, full `43549366300` fast/database/build passed, browser pending; #890 public gallery invalid caption guard, RED `43549270919` failed exactly one targeted test, GREEN `9304314e98871d5345ab523a126c9c0f7d0efe4a`, full `43549574531` fast passed, browser/build/database ongoing. Do not promote drafts without all exact-head selected jobs, independent review, separate ready-state and expected-head merge.
+
+**Holds:** #684 verified payee/credited UTR and scoped finance release; #845 staging eligibility. No payments, donor data, unreviewed faces, secret/cron/notification/schema/auth/CSP/infrastructure activation. Canonical **149 classifications unchanged** (12 Completed/48 Implemented/63 Partial/24 Not started/1 Superseded/1 N/A). No full backlog-item closure from these bounded changes. Roll back narrow PRs atomically. Next: finish pending PR release gates; monitor Railway by SHA; continue independent unblocked source changes.
+
+
+---
+
 ## 14 November 2026 IST — CHATGPT_ACTIVE coding/release checkpoint
 
 Protected main at checkpoint: `571025532f8004a528ad8b26484b7fa3271bad75`; active implementation writer `CHATGPT_ACTIVE`. One coordinated repository writer, no autonomous detached coding-agent dispatcher. Main is the release integration target under current owner standing authority and protected exact-head/ready-state policy.
