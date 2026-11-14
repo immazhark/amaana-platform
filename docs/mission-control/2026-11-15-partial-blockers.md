@@ -1,9 +1,11 @@
-# 69 Partial backlog items — exact remaining acceptance and next step
+# 71 Partial backlog items — exact remaining acceptance and next step
 
 15 November 2026 IST · Current proposed register PR #944. **These are scope-derived missing end conditions, not a claim each was newly reproduced in runtime.** Source-tested cases have separate proof in the main 149-item reconciliation. Preserve privacy, finance, legal and external approval gates.
 
 | ID | Execution lane | Original missing acceptance | Next unblocked development or evidence task |
 |---|---|---|---|
+| AF-R018 | REVIEWED_SCOPE | HSTS preload directive already emitted in shipped source; no verified complete DNS/TLS subdomain inventory or approved preload-enrollment/rollback. | Inventory all actual DNS hostnames and TLS endpoints; assess preload/includeSubDomains blast radius and obtain separately scoped owner approval before registry submission. |
+| AF-ATTESTATION | ENGINEERING | A tested synthetic private aggregate digest exists, but a bare hash is not a signed attestation; approved aggregates, independent signer and public revocation workflow are missing. | Define provenance-bound aggregate schema and authenticated attestation/verification threat model using synthetic fixtures; obtain reviewer-approved source figures before any public claim. |
 | AF-R005 | ENGINEERING | Public-prefixed media credential names have no proven clean client-bundle history | Audit built client chunks and scanner with synthetic credentials; isolate any confirmed leak |
 | AF-R012 | ENGINEERING | Full admin route/action/API RBAC and anonymous denial coverage is incomplete | Generate admin permission matrix; add negative anonymous and cross-role tests |
 | AF-R014 | REVIEWED_SCOPE | CSP unsafe-inline scripts remain and checkout CSP change is financial-risk scope | Design nonce/hash approach; prove in synthetic checkout before seeking scoped activation approval |

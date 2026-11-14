@@ -1,3 +1,7 @@
+## Third evidence pass — already implemented Not started groundwork
+
+**Latest proposed #944 totals:** 34 Completed / 24 Implemented / 71 Partial / 18 Not started / 1 Superseded / 1 Not applicable = 149; active 113. AF-R018 and AF-ATTESTATION are no longer mislabeled Not started: HSTS preload headers and server-only aggregate-digest tests respectively are in deployed source. Neither is complete: subdomain/preload approval and a real signed/provenanced report attestation are unverified. This is a source-only reclassification, NOT a live domain change or a claim that SHA256 alone proves tamper evidence.
+
 ## Per-item open blockers — second pass, 15 November 2026 IST
 
 The proposed latest status is **34 Completed / 24 Implemented / 69 Partial / 20 Not started / 1 Superseded / 1 N/A = 149** (113 active). The earlier 27/31/65/24 first-pass snapshot in this document is retained below as dated evidence; it is no longer the latest proposal.

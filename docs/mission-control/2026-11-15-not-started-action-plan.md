@@ -1,4 +1,4 @@
-# 20 Not started backlog items — exact next work
+# 18 Not started backlog items — exact next work
 
 15 November 2026 IST · Proposed state after crediting four already-partially-implemented scopes in PR #944. Work may start without full external approval on engineering-only portions; production activation of risky services still requires review.
 
@@ -6,7 +6,6 @@
 |---|---|---|---|
 | AF-R013 | REVIEWED_SCOPE | Admin WAF/allow-list lacks verified admins and recovery plan | Simulate Cloudflare rules, retain recovery access, request scoped approval |
 | AF-R015 | REVIEWED_SCOPE | Injected analytics beacon has unresolved CSP policy conflict | Reproduce violation, prepare disable-beacon or explicit reviewed CSP plan |
-| AF-R018 | REVIEWED_SCOPE | HSTS preload/subdomain TLS safety not established | Inventory DNS and certificates for every subdomain before owner approval |
 | AF-R059 | ENGINEERING | Governed CSS cascade layer architecture has not been introduced | Migrate one isolated component family with visual parity tests |
 | AF-R062 | ENGINEERING | Remaining !important overrides lack proven redundancy | Measure cascade then remove tested subset from one component family |
 | AF-R078 | ENGINEERING | Dated audits may have live inbound references/retention obligations | Produce backlink map then safely archive reviewed unreferenced docs |
@@ -14,7 +13,6 @@
 | AF-N13 | EXTERNAL | Developer-tool braces advisory lacks verified patched release and impact decision | Check lockfile and reachable usage, document supported mitigation |
 | AF-TAX | EXTERNAL | Statutory 10BD/10BE and legal 80G status not signed off | Prepare separate private export contract for CA review, issue no certificates |
 | AF-REFERRAL | REVIEWED_SCOPE | Partner attestations need verified identities and scoped RBAC approval | Prototype expiring revocable private attestations without case browsing |
-| AF-ATTESTATION | ENGINEERING | Tamper-evident aggregate report hashing has no source contract | Build synthetic report snapshot/verification and retention tests |
 | AF-BATCH-TRACK | REVIEWED_SCOPE | Donor batch status may expose private distribution/beneficiary records | Design anonymous batch token and approval states with synthetic data |
 | AF-DRIVE-SPONSOR | EDITORIAL | Locality-drive sponsorship lacks approved inventory, zone and contribution rules | Draft unpublished locality proposal and post-drive report template |
 | AF-FAMILY-JAR | REVIEWED_SCOPE | Pooled contributions need each member consent, allocation and payment review | Prototype non-collecting group pledge and cross-user denial tests |
@@ -25,4 +23,4 @@
 | AF-PRESS | EDITORIAL | Press outreach needs trustee-approved facts and redacted photographs | Draft approved-only press kit; no outbound contact |
 | AF-FIDYA | EDITORIAL | Fidya/Kaffarah/Aqiqah/Waqf need approved rulings, prices and fund destinations | Write disabled giving-policy contract for qualified review |
 
-**Four immediately executable standalone engineering scopes:** AF-R059, AF-R062, AF-R078 and AF-ATTESTATION. The remaining entries are not permission to sit idle: safe policy specs, nontransactional UX prototypes and synthetic tests can progress in parallel while external/owner decisions are pending. These classifications do not authorize high-risk auth/finance/secret/CSP/schema production mutations, branch deletion, outbound messaging, tax certificate issuance or public identity exposure.
+**Three immediately executable standalone engineering scopes:** AF-R059, AF-R062 and AF-R078. The remaining entries are not permission to sit idle: safe policy specs, nontransactional UX prototypes and synthetic tests can progress in parallel while external/owner decisions are pending. These classifications do not authorize high-risk auth/finance/secret/CSP/schema production mutations, branch deletion, outbound messaging, tax certificate issuance or public identity exposure.
