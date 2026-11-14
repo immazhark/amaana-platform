@@ -6,6 +6,10 @@ vi.mock("@/lib/prisma", () => ({ prisma: { story: { findMany: mocks.findMany } }
 
 import { getStoriesDiscoveryIndexData, getVisibleStoryCards } from "./public-discovery-data";
 
+const card = (id: string) => ({
+  id, slug: id, title: `Reviewed ${id}`, summary: "Published summary", mediaAssets: [],
+});
+
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.findMany.mockResolvedValue([]);
@@ -23,7 +27,7 @@ it("indexes only public story metadata without loading media for the full archiv
 });
 
 it("loads identity-media candidates only for selected public page IDs", async () => {
-  mocks.findMany.mockResolvedValue([{ id: "story-b" }, { id: "story-a" }]);
+  mocks.findMany.mockResolvedValue([card("story-b"), card("story-a")]);
   const cards = await getVisibleStoryCards(["story-a", "story-b"]);
 
   expect(cards.map(card => card.id)).toEqual(["story-a", "story-b"]);
@@ -40,8 +44,30 @@ it("loads identity-media candidates only for selected public page IDs", async ()
   });
 });
 
+it("rejects malformed second-read story cards before rendering a public destination", async () => {
+  const good = card("reviewed-story");
+  const invalid = [
+    null, undefined,
+    { ...card("missing-id"), id: null },
+    { ...card("invalid-route"), slug: "../admin" },
+    { ...card("bad-title"), title: { internal: "PRIVATE_TITLE" } },
+    { ...card("empty-title"), title: " " },
+    { ...card("bad-summary"), summary: { internal: "PRIVATE_SUMMARY" } },
+    { ...card("bad-media"), mediaAssets: { internal: "PRIVATE_MEDIA" } },
+  ];
+  mocks.findMany.mockResolvedValue([...invalid, good]);
+  const selected = await getVisibleStoryCards([
+    "reviewed-story", "invalid-route", "bad-title", "empty-title", "bad-summary", "bad-media",
+  ]);
+  expect(selected).toEqual([good]);
+  expect(JSON.stringify(selected)).not.toContain("PRIVATE_");
+  expect(mocks.findMany.mock.calls[0]?.[0].where).toMatchObject({
+    status: "PUBLISHED", privacyApprovedAt: { not: null },
+  });
+});
+
 it("omits a story withdrawn between index selection and media loading", async () => {
-  mocks.findMany.mockResolvedValue([{ id: "still-public" }]);
+  mocks.findMany.mockResolvedValue([card("still-public")]);
   const cards = await getVisibleStoryCards(["withdrawn", "still-public"]);
 
   expect(cards.map(card => card.id)).toEqual(["still-public"]);
