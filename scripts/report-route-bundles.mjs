@@ -37,6 +37,15 @@ export function summarizeAppRouteBundles(pages, byteSize) {
     entry.endsWith("/layout") && !Array.isArray(assets))) {
     throw new Error("Invalid App Router layout asset list");
   }
+  // An invalid element type means the manifest is corrupt. Silently skipping
+  // it would report fewer bytes than the page or inherited layout requires.
+  if (routePages.some(page => pages[page].some(asset => typeof asset !== "string"))) {
+    throw new Error("Invalid App Router page asset entry");
+  }
+  if (Object.entries(pages).some(([entry, assets]) =>
+    entry.endsWith("/layout") && assets.some(asset => typeof asset !== "string"))) {
+    throw new Error("Invalid App Router layout asset entry");
+  }
 
   return routePages.map(page => {
     const parts = page.split("/").filter(Boolean);
