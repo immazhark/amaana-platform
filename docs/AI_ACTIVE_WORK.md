@@ -1,3 +1,19 @@
+## 14 November 2026 IST — one protected code merge; non-force PR conflict reconciliation; independent accessibility candidate
+
+**Implementation ownership:** CHATGPT_ACTIVE, sole coordinated repository writer under AGENTS.md. Read-only research and hosted CI can run concurrently. No connected autonomous repository coding-agent dispatcher exists. **Protected main at checkpoint:** `0200f3e7e48348b92b161503e45c16d89228f8e3`.
+
+**Production-code release accepted:** #912 (Our Work public portfolio cause/initiative runtime projection safety), tested head `a353e2d9e1af7f71569f61d732a71a6e9d1ae3c9`, full exact-head CI `43599917688` SUCCESS, separate ready-state CI `43602042730` SUCCESS, review threads clear, protected squash merge `0200f3e7e48348b92b161503e45c16d89228f8e3`. Railway website deployment `838ae7c4-b457-4522-bc46-836b419a95d6` reports SUCCESS at matching SHA, environment online 1/1 replicas with no reported warnings or critical issues. Independent public GET `/api/health/version` and `/api/health/ready` remains UNVERIFIED (web reader inaccessible). No forced rollout.
+
+**Independent code PRs not merged or deployed:**
+- #911 `fix/appeals-completed-showcase-records-20261114`: first head `98ec7f4f6ddfd88447b5807866a54f7d9563ca70` passed full `43599818528` but was **not mergeable** after #912 because they touched the same files. Resolved **without force-push** via a true merge commit retaining both original PR head and current main as parents. Exact updated head `0b31d300e55169abc5c1b5e439e74bd35dfa2dbf`, full CI `43602517724`: plan/fast/database/production success; browser in progress. Combined source and regressions preserve both #911 and accepted #912. Recheck exact-head CI and distinct ready-state run before protected merge.
+- #914 `fix/af-r025-private-status-heading-leading-20261114`, head `f370994508729f4e118c31ed7eece6fac4b4131a`, full CI `43601870792`: plan/fast/database/production success; browser in progress. Changes only private state and acknowledgement heading line-height to 1.16 with synthetic 390/1280px and 200% text scaling browser assertions. No payment/private tracking behavior change. No ready-state promotion yet.
+
+**Continued holds:** #684 official UPI QR fallback (provider payee and UTR proof) and #845 staging donation eligibility (approved reviewed high-risk plan) not merged. No live payment, refund, donor communication, media publication, secret, schema or infrastructure changes. Canonical 149 IDs unchanged: 12 Completed, 48 Implemented, 63 Partial, 24 Not started, 1 Superseded, 1 N/A; AF-R025 remains Partial.
+
+**Next safe release:** for each PR, verify exact-head seven required CI jobs and zero unresolved review threads, promote to ready, verify distinct ready-state workflow and protected SHA-guarded squash merge; separately inspect Railway and public readiness. Keep any unfinished candidate isolated. This docs-only checkpoint does not warrant a website deployment.
+
+---
+
 ## 14 November 2026 IST — three accepted public-site releases, two independent draft fixes
 
 **Writer:** CHATGPT_ACTIVE, only one coordinated implementation writer as required by AGENTS.md. Independent task branches and hosted CI can overlap. No connected autonomous repository coding-agent dispatcher. **Protected main at this checkpoint:** `5eda0912dc268f7e6fa8a89bb8c8842a8f88bd7e`.
