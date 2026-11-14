@@ -184,6 +184,29 @@ export function canRenderPublicMedia(asset: PublicMediaCandidate) {
 
 
 /**
+ * Keep only public-renderable media, preserving the first record for each
+ * normalized URL. This is a render guard, not editorial publication approval;
+ * callers must retain their existing database publication/consent filters.
+ * One Set lookup per item avoids quadratic URL comparisons.
+ */
+export function dedupeRenderablePublicMediaByUrl<T extends PublicMediaCandidate>(
+  assets: readonly T[],
+): T[] {
+  if (!Array.isArray(assets)) return [];
+
+  const seenUrls = new Set<string>();
+  const distinct: T[] = [];
+  for (const asset of assets) {
+    if (!canRenderPublicMedia(asset)) continue;
+    const url = resolvePublicMediaUrl(asset);
+    if (!url || seenUrls.has(url)) continue;
+    seenUrls.add(url);
+    distinct.push(asset);
+  }
+  return distinct;
+}
+
+/**
  * Prefer documentary photography for high-prominence covers when a reviewed
  * photo and a campaign graphic are both available. This never changes the
  * publication/privacy gate; it only ranks already-public-safe IMAGE assets.

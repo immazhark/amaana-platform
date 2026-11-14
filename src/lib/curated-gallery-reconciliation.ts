@@ -3,8 +3,7 @@ import {
   type CuratedGallerySlug,
 } from "@/lib/curated-gallery-contract";
 import {
-  canRenderPublicMedia,
-  resolvePublicMediaUrl,
+  dedupeRenderablePublicMediaByUrl,
   selectIdentityPublicImage,
   type PublicMediaCandidate,
 } from "@/lib/public-media";
@@ -28,12 +27,7 @@ export function reconcileCuratedGalleryPublicRecord(
   mediaAssets: readonly CuratedGalleryRenderableAsset[],
   curatedIds: ReadonlySet<string>,
 ): CuratedGalleryRenderReconciliation {
-  const media = mediaAssets
-    .filter(canRenderPublicMedia)
-    .filter((asset, index, list) => {
-      const url = resolvePublicMediaUrl(asset);
-      return Boolean(url) && list.findIndex(other => resolvePublicMediaUrl(other) === url) === index;
-    });
+  const media = dedupeRenderablePublicMediaByUrl(mediaAssets);
 
   const lead = selectIdentityPublicImage(media);
   const highlight = slug === "eid-gift-kits-2026"

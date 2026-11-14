@@ -34,7 +34,9 @@ vi.mock("@/lib/public-copy", () => ({
   programmeStoryParagraphs: () => ["Documented work"],
   heroTeaser: () => "Documented work",
 }));
-vi.mock("@/lib/public-media", () => ({
+vi.mock("@/lib/public-media", async importOriginal => ({
+  // Keep the real shared deduplication safety contract under test.
+  ...await importOriginal<typeof import("@/lib/public-media")>(),
   canRenderPublicMedia: () => true,
   resolvePublicMediaUrl: (asset: { publicUrl: string }) => asset.publicUrl,
   getPublicImageOptimizationUrl: (url: string) => url,
