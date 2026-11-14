@@ -50,15 +50,49 @@ function exportedRouteHandlers(source) {
       if (!initializer || !(ts.isArrowFunction(initializer) || ts.isFunctionExpression(initializer))) {
         throw new Error("Cannot statically audit exported admin API handler");
       }
-      handlers.push({ name: declaration.name, body: initializer.body });
+      handlers.push({ name: declaration.name, body: initializer.body, parameters: initializer.parameters });
     }
   }
   return handlers;
 }
 
+/** Resolve direct lexical binding names, including destructuring aliases.
+ * A locally shadowed auth helper must never satisfy this static guard audit.
+ * This is conservative: an ambiguous binding fails closed, not as an auth proof. */
+function bindingDeclaresName(binding, name) {
+  if (!binding) return false;
+  if (ts.isIdentifier(binding)) return binding.text === name;
+  if (ts.isObjectBindingPattern(binding) || ts.isArrayBindingPattern(binding)) {
+    return binding.elements.some(element =>
+      ts.isBindingElement(element) && bindingDeclaresName(element.name, name));
+  }
+  return false;
+}
+
+function bodyShadowsGuardName(body, name) {
+  let shadowed = false;
+  function visit(node) {
+    if (shadowed) return;
+    if ((ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node))
+        && node.name?.text === name) {
+      shadowed = true;
+      return;
+    }
+    if (ts.isFunctionLike(node)) return; // A nested helper has its own scope.
+    if (ts.isVariableDeclaration(node) && bindingDeclaresName(node.name, name)) {
+      shadowed = true;
+      return;
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(body);
+  return shadowed;
+}
+
 // Only statements before a direct unconditional return/throw can satisfy
 // a guard. Nested function bodies do not execute as part of the route/action.
 function bodyHasReachableDirectCall(body, name) {
+  if (bodyShadowsGuardName(body, name)) return false;
   let found = false;
   function visit(node) {
     if (found || ts.isFunctionLike(node)) return;
@@ -121,13 +155,15 @@ function bodyHasReachableDirectCall(body, name) {
 function sourceHasGuardCall(source, name, method) {
   for (const handler of exportedRouteHandlers(source)) {
     if (method && handler.name.text !== method) continue;
+    if (handler.parameters?.some(parameter => bindingDeclaresName(parameter.name, name))) continue;
     if (bodyHasReachableDirectCall(handler.body, name)) return true;
   }
   return false;
 }
 
 // Shared synthetic and inventory check; preserve its current behavior for RED.
-function actionHasPermissionGuard(body) {
+function actionHasPermissionGuard(body, parameters = []) {
+  if (parameters.some(parameter => bindingDeclaresName(parameter.name, "requirePermission"))) return false;
   return bodyHasReachableDirectCall(body, "requirePermission");
 }
 
@@ -163,7 +199,7 @@ function exportedAsyncProtectedActions(sourceFile) {
     if (!hasModifier(statement, ts.SyntaxKind.ExportKeyword)) continue;
     if (ts.isFunctionDeclaration(statement)) {
       if (statement.name && statement.body && hasModifier(statement, ts.SyntaxKind.AsyncKeyword)) {
-        actions.push({ name: statement.name.text, body: statement.body });
+        actions.push({ name: statement.name.text, body: statement.body, parameters: statement.parameters });
       }
     } else if (ts.isVariableStatement(statement)) {
       for (const declaration of statement.declarationList.declarations) {
@@ -178,7 +214,7 @@ function exportedAsyncProtectedActions(sourceFile) {
         if (ts.isIdentifier(declaration.name) && initializer &&
             (ts.isArrowFunction(initializer) || ts.isFunctionExpression(initializer)) &&
             hasModifier(initializer, ts.SyntaxKind.AsyncKeyword)) {
-          actions.push({ name: declaration.name.text, body: initializer.body });
+          actions.push({ name: declaration.name.text, body: initializer.body, parameters: initializer.parameters });
         }
       }
     }
@@ -204,6 +240,53 @@ test("AF-R012 detects exported async arrow and function-expression server action
   assert.deepEqual(actions.map(action => actionHasPermissionGuard(action.body)), [
     true, false, true, true,
   ], "An unguarded async arrow must fail its own permission check, not vanish from inventory");
+});
+
+test("AF-R012 rejects shadowed security-check names in admin API routes", () => {
+  const unsafe = [
+    "export async function POST(getCurrentUser) { await getCurrentUser(); }",
+    "export const POST = async (hasPermission) => { hasPermission({}, 'team.manage'); };",
+    "export async function POST() { const getCurrentUser = async () => null; await getCurrentUser(); }",
+    "export async function POST() { const { hasPermission } = helper; hasPermission({}, 'team.manage'); }",
+    "export async function POST() { function isSameOrigin() { return true; } isSameOrigin({}); }",
+  ];
+  for (const source of unsafe) {
+    for (const guard of ["getCurrentUser", "hasPermission", "isSameOrigin"]) {
+      assert.equal(sourceHasGuardCall(source, guard, "POST"), false,
+        `Shadowed or absent ${guard} must not satisfy the admin API guard inventory`);
+    }
+  }
+  const legitimate =
+    "export async function POST(request) { const user = await getCurrentUser(); if (!hasPermission(user, 'team.manage')) return; if (!isSameOrigin(request)) return; }";
+  for (const guard of ["getCurrentUser", "hasPermission", "isSameOrigin"]) {
+    assert.equal(sourceHasGuardCall(legitimate, guard, "POST"), true,
+      `A direct imported ${guard} call remains detectable`);
+  }
+  const nestedBinding =
+    "export async function POST() { const unused = () => { const getCurrentUser = () => null; }; await getCurrentUser(); }";
+  assert.equal(sourceHasGuardCall(nestedBinding, "getCurrentUser", "POST"), true,
+    "An unused nested helper binding cannot shadow an outer imported guard");
+});
+
+test("AF-R012 rejects shadowed permission calls in protected server actions", () => {
+  for (const source of [
+    "export async function update(requirePermission) { await requirePermission('team.manage'); }",
+    "export const update = async (requirePermission) => { await requirePermission('team.manage'); };",
+    "export async function update() { const requirePermission = () => true; requirePermission('team.manage'); }",
+    "export async function update() { const { requirePermission } = helpers; requirePermission('team.manage'); }",
+  ]) {
+    const ast = ts.createSourceFile("synthetic-shadowed-action.ts", source,
+      ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    const [action] = exportedAsyncProtectedActions(ast);
+    assert.ok(action);
+    assert.equal(actionHasPermissionGuard(action.body, action.parameters), false);
+  }
+  const valid = ts.createSourceFile("synthetic-approved-action.ts",
+    "export async function update() { await requirePermission('team.manage'); }",
+    ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const [action] = exportedAsyncProtectedActions(valid);
+  assert.ok(action);
+  assert.equal(actionHasPermissionGuard(action.body, action.parameters), true);
 });
 
 test("AF-R012 inventories variable-exported admin API handlers, even if unguarded", () => {
@@ -479,7 +562,7 @@ test("every protected admin server action independently requires permission", ()
     for (const action of exportedAsyncProtectedActions(sourceFile)) {
       exportedActionCount += 1;
       assert.ok(
-        actionHasPermissionGuard(action.body),
+        actionHasPermissionGuard(action.body, action.parameters),
         `${path}:${action.name} must independently call requirePermission()`,
       );
     }
