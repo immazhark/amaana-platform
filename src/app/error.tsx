@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect } from "react";
 
 export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
@@ -15,8 +14,11 @@ export default function ErrorPage({ error, reset }: { error: Error & { digest?: 
         <p>Try loading it again. If the problem continues, you can return to Amaana&apos;s public work or contact the team. Never send passwords, OTPs, UPI PINs or card credentials while reporting a technical issue.</p>
         <div className="v2-error-actions">
           <button className="v2-button" type="button" onClick={reset}>Try again</button>
-          <Link className="v2-text-link" href="/">Return home →</Link>
-          <Link className="v2-text-link" href="/contact">Contact Amaana →</Link>
+          {/* Recovery must reload the document when this route has failed. */}
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+          <a className="v2-text-link" href="/">Return home →</a>
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+          <a className="v2-text-link" href="/contact">Contact Amaana →</a>
         </div>
       </div>
     </section>
