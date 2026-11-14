@@ -8,7 +8,6 @@ import { join } from "node:path";
 it("AF-R071 streams a dedicated accessible loading fallback for impact comparisons", () => {
   const path = join(process.cwd(), "src/app/impact/compare/loading.tsx");
   expect(existsSync(path)).toBe(true);
-  if (!existsSync(path)) return;
   expect(readFileSync(path, "utf8")).toContain('route="impact-compare"');
   const source = readFileSync(join(process.cwd(), "src/components/public-route-loading.tsx"), "utf8");
   expect(source).toContain('"impact-compare"');
@@ -20,6 +19,7 @@ const routes = [
   ["stories", "Stories of Amanah", "Loading published stories"],
   ["our-work", "Our Work", "Loading published initiatives"],
   ["impact", "Our Impact", "Loading documented outcomes"],
+  ["impact-compare", "Compare Documented Impact", "Loading published initiatives to compare"],
   ["appeals", "Verified Appeals", "Checking current public appeals"],
   ["faith-and-reflections", "Faith & Reflections", "Loading the reviewed library"],
 ] as const;
