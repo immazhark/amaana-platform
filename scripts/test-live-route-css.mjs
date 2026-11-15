@@ -785,3 +785,30 @@ test("AF-R068 does not reinterpret stylesheet dot segments into a different buil
     "https://amaanafoundation.org/_next/static/chunks/site.css",
   ]);
 });
+
+test("AF-R068 keeps oversized CSS rejection nonblocking when stream cancellation never settles", async () => {
+  let cancelled = false;
+  const html = '<link rel="stylesheet" href="/_next/static/large.css">';
+  const fakeFetch = async url => {
+    if (url.endsWith(".css")) return {
+      ok: true, status: 200, url,
+      headers: { get: key => key === "content-type" ? "text/css" : null },
+      body: new ReadableStream({
+        start(controller) { controller.enqueue(new Uint8Array(1_200_000)); },
+        cancel() { cancelled = true; return new Promise(() => {}); },
+      }),
+    };
+    return {
+      ok: true, status: 200, url,
+      headers: { get: key => key === "content-type" ? "text/html" : null },
+      text: async () => html,
+    };
+  };
+  const outcome = await Promise.race([
+    auditPublicRouteCss({ fetchImpl: fakeFetch, routes: ["/"] })
+      .then(() => "accepted", error => String(error)),
+    new Promise(resolve => setTimeout(() => resolve("audit stalled"), 150)),
+  ]);
+  assert.match(outcome, /CSS response exceeds the audit size limit/);
+  assert.equal(cancelled, true);
+});

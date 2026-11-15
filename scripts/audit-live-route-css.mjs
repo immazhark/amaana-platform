@@ -133,7 +133,9 @@ async function readResponseBytes(response, limit, kind) {
         chunks.push(value);
       }
     } catch (error) {
-      try { await reader.cancel(); } catch { /* Preserve the original read error. */ }
+      // A broken stream producer can leave cancellation pending indefinitely.
+      // Preserve the primary size/read failure without waiting on cleanup.
+      try { void reader.cancel().catch(() => {}); } catch { /* Preserve the read error. */ }
       throw error;
     } finally {
       reader.releaseLock();
