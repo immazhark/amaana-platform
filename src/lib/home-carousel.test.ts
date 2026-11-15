@@ -131,3 +131,28 @@ describe('homepage editor scalar validation', () => {
     expect(slide.secondaryHref).toBe('');
   });
 });
+
+describe('homepage CTA identity integrity', () => {
+  it.each([
+    '/our-work/eid/../taleem',
+    '/our-work/eid/%2e%2e/taleem',
+    '/our-work/eid/%2E%2e/taleem',
+    '/our-work/eid/./taleem',
+    '/our-work/eid/%2e/taleem',
+    '/our-work//taleem',
+  ])('rejects navigation that rewrites the reviewed programme identity: %s', href => {
+    expect(() => safeHomeHref(href)).toThrow(HomeCarouselValidationError);
+    expect(visibleHomeSlides({
+      slides: [{ ...eid, primaryHref: href }], appealPosition: 0,
+    }, new Set(), now)).toHaveLength(0);
+  });
+
+  it.each([
+    '/our-work/eid-gift-kits',
+    '/our-work/taleem',
+    '/donate/reviewed-appeal?source=home',
+    '/about#mission',
+  ])('keeps reviewed canonical public navigation %s', href => {
+    expect(safeHomeHref(href)).toBe(href);
+  });
+});
