@@ -34,17 +34,15 @@ const publicShareOrigin = "https://amaanafoundation.org";
 function canonicalAppealShareUrl(path: unknown): string {
   if (typeof path !== "string" || !path.startsWith("/") || path.startsWith("//") ||
       path.includes("\\") || /[\u0000-\u001f\u007f]/.test(path)) return publicShareOrigin + "/";
-  try {
-    const url = new URL(path, publicShareOrigin);
-    if (url.origin !== publicShareOrigin || url.username || url.password) return publicShareOrigin + "/";
-    // Only canonical public appeal details may leave this share control.
-    const slug = url.pathname.startsWith("/appeals/") ? url.pathname.slice("/appeals/".length) : "";
-    if (slug.length > 200 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) return publicShareOrigin + "/";
-    // URL queries may carry private record references; an outward share uses only its pathname.
-    return publicShareOrigin + url.pathname;
-  } catch {
-    return publicShareOrigin + "/";
-  }
+  // Validate the raw pathname before any URL resolution. URL normalizes
+  // "/appeals/first/../second" to a different valid appeal, which must never
+  // pair a first appeal's identifying copy with a second appeal's URL.
+  const pathname = path.split(/[?#]/, 1)[0] ?? "";
+  const slug = pathname.startsWith("/appeals/") ? pathname.slice("/appeals/".length) : "";
+  if (slug.length > 200 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) return publicShareOrigin + "/";
+  // Query strings and fragments may carry private references. Share the
+  // original, unambiguous approved slug only.
+  return publicShareOrigin + pathname;
 }
 
 export function AppealShare({ title, summary, path }: AppealShareProps) {
