@@ -772,3 +772,16 @@ test("public CSS audit cancels streamed oversized stylesheets before allocating 
   await assert.rejects(auditPublicRouteCss({ fetchImpl, routes: ["/"] }), /large|limit|size/i);
   assert.equal(cancelled, true, "Cancel the oversized response stream");
 });
+
+test("AF-R068 does not reinterpret stylesheet dot segments into a different build asset", () => {
+  const html = [
+    '<link rel="stylesheet" href="/_next/static/chunks/../private.css">',
+    '<link rel="stylesheet" href="/_next/static/chunks/%2e%2e/private.css">',
+    '<link rel="stylesheet" href="/_next/static/chunks/%2e/private.css">',
+    '<link rel="stylesheet" href="/_next/static/chunks//site.css">',
+    '<link rel="stylesheet" href="/_next/static/chunks/site.css">',
+  ].join("");
+  assert.deepEqual(stylesheetsInHtml(html), [
+    "https://amaanafoundation.org/_next/static/chunks/site.css",
+  ]);
+});
