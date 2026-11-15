@@ -1,3 +1,7 @@
+## 15 November 2026 IST — AF-R078 started-scope credit after #946 release
+
+**Updated proposed totals: 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A =149; 112 actionable.** Original AF-R078 archiving is not fully done, but tested read-only local Markdown retention inventory is now merged via #946 `922a390c6a9763f1e7def2a0b7d84516bcc5a952` (CI 43647179334 and distinct ready-state 43658051915 SUCCESS). Move Not started → Partial only. No documents archived or deleted. Draft #947 tests reference-definition detection and remains unaccepted until release. Public source/runtime SHAs remain separate; no forced rollout.
+
 ## Fourth pass — AF-R072 accepted on real production HTML (15 November 2026 IST)
 
 **Latest proposed PR #944 totals are now 35 Completed / 24 Implemented / 70 Partial / 18 Not started / 1 Superseded / 1 N/A = 149; 112 active.** AF-R072 moved from Partial to Completed only after PR #945's RED/green, distinct ready-state, guarded merge `33cb6ff5906832047858b2570ff9c2c361bb19ef`, Railway website SUCCESS and independent live public SHA/readiness and original HTML: actual `<meta name="description">` is **155 characters**. Source completion, deployment and HTML were established separately. AF-R043 forced dynamic homepage/TTFB remains Partial. The earlier second/third pass counts below are retained as historical proposals, not the latest status.
