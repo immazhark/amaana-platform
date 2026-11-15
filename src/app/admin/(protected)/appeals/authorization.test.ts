@@ -31,3 +31,74 @@ for (const [name, action] of Object.entries(actions)) {
     expect(mocks.privileged).not.toHaveBeenCalled();
   });
 }
+
+const unrelatedPermissionsByAction = {
+  updateAppeal: "appeal.approve",
+  transitionAppeal: "appeal.approve",
+  updateFeaturing: "appeal.update",
+  addAppealUpdate: "appeal.approve",
+  publishAppealUpdate: "appeal.update",
+  unpublishAppealUpdate: "appeal.update",
+} satisfies Record<keyof typeof actions, string>;
+
+function userWithSeparateRoles(...rolePermissions: string[][]) {
+  return {
+    id: "synthetic-cross-role-user",
+    status: "ACTIVE",
+    roles: rolePermissions.map(permissions => ({
+      role: { permissions: permissions.map(key => ({ permission: { key } })) },
+    })),
+  };
+}
+
+for (const [name, action] of Object.entries(actions) as [keyof typeof actions, (formData: FormData) => Promise<unknown>][]) {
+  it(name + " denies plausible but unrelated cross-role grants before private effects", async () => {
+    mocks.user.mockResolvedValue(userWithSeparateRoles(
+      ["content.view", "donation.reconcile"],
+      [unrelatedPermissionsByAction[name]],
+    ));
+    await expect(action(new FormData())).rejects.toThrow("Synthetic redirect: /admin/forbidden");
+    expect(mocks.user).toHaveBeenCalledOnce();
+    expect(mocks.privileged).not.toHaveBeenCalled();
+  });
+}
+
+it("appeal.update alone reaches edit version validation but cannot grant featuring", async () => {
+  mocks.user.mockResolvedValue(userWithSeparateRoles(["appeal.update"]));
+  await expect(updateAppeal(new FormData())).rejects.toThrow("Appeal edit version is missing or invalid");
+  expect(mocks.user).toHaveBeenCalledOnce();
+  expect(mocks.privileged).not.toHaveBeenCalled();
+  vi.clearAllMocks();
+  mocks.cookie.mockReturnValue({ value: Buffer.alloc(32, 0xa5).toString("base64url") });
+  mocks.user.mockResolvedValue(userWithSeparateRoles(["appeal.update"]));
+  await expect(updateFeaturing(new FormData())).rejects.toThrow("Synthetic redirect: /admin/forbidden");
+  expect(mocks.privileged).not.toHaveBeenCalled();
+});
+
+it("appeal.approve alone reaches featuring validation but cannot edit an appeal", async () => {
+  mocks.user.mockResolvedValue(userWithSeparateRoles(["appeal.approve"]));
+  await expect(updateFeaturing(new FormData())).rejects.toThrow("Appeal featuring version is missing or invalid");
+  expect(mocks.user).toHaveBeenCalledOnce();
+  expect(mocks.privileged).not.toHaveBeenCalled();
+  vi.clearAllMocks();
+  mocks.cookie.mockReturnValue({ value: Buffer.alloc(32, 0xa5).toString("base64url") });
+  mocks.user.mockResolvedValue(userWithSeparateRoles(["appeal.approve"]));
+  await expect(updateAppeal(new FormData())).rejects.toThrow("Synthetic redirect: /admin/forbidden");
+  expect(mocks.privileged).not.toHaveBeenCalled();
+});
+
+it("appeal.update without appeal.approve cannot publish an appeal even after a valid versioned read", async () => {
+  mocks.user.mockResolvedValue(userWithSeparateRoles(["appeal.update"]));
+  mocks.privileged.mockResolvedValueOnce({ status: "UNDER_REVIEW" });
+  const form = new FormData();
+  form.set("id", "synthetic-appeal");
+  form.set("status", "PUBLISHED");
+  form.set("expectedUpdatedAt", "2026-11-15T00:00:00.000Z");
+
+  await expect(transitionAppeal(form)).rejects.toThrow("Approval permission is required");
+  expect(mocks.user).toHaveBeenCalledOnce();
+  expect(mocks.privileged).toHaveBeenCalledOnce();
+  expect(mocks.privileged).toHaveBeenCalledWith(expect.objectContaining({
+    where: { id: "synthetic-appeal" },
+  }));
+});
