@@ -86,3 +86,19 @@ it("appeal.approve alone reaches featuring validation but cannot edit an appeal"
   await expect(updateAppeal(new FormData())).rejects.toThrow("Synthetic redirect: /admin/forbidden");
   expect(mocks.privileged).not.toHaveBeenCalled();
 });
+
+it("appeal.update without appeal.approve cannot publish an appeal even after a valid versioned read", async () => {
+  mocks.user.mockResolvedValue(userWithSeparateRoles(["appeal.update"]));
+  mocks.privileged.mockResolvedValueOnce({ status: "UNDER_REVIEW" });
+  const form = new FormData();
+  form.set("id", "synthetic-appeal");
+  form.set("status", "PUBLISHED");
+  form.set("expectedUpdatedAt", "2026-11-15T00:00:00.000Z");
+
+  await expect(transitionAppeal(form)).rejects.toThrow("Approval permission is required");
+  expect(mocks.user).toHaveBeenCalledOnce();
+  expect(mocks.privileged).toHaveBeenCalledOnce();
+  expect(mocks.privileged).toHaveBeenCalledWith(expect.objectContaining({
+    where: { id: "synthetic-appeal" },
+  }));
+});
