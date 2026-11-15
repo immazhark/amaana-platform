@@ -58,5 +58,65 @@
     "name": "fix/canonical-pathway-public-route-validation-20261115",
     "headSha": "12cd05ce500f2d9fc3ac494b16730afce428a618",
     "mergeSha": "85ea2e57f59d035bdb3d4ae034fb21e3c7cf1a12"
+  },
+  {
+    "pr": 958,
+    "name": "test/af-r066-expand-stylelint-governed-modules-20261115",
+    "headSha": "72ad9768fc1aa376ecf00fbce6731379d447c172",
+    "mergeSha": "7c549fd06bfb0829b0e680be3169828ae0f43d59"
+  },
+  {
+    "pr": 957,
+    "name": "fix/af-r024-shorthand-calc-font-floor-20261115",
+    "headSha": "f89aa746cb55dd44f1d00a93cb6317d7ec112991",
+    "mergeSha": "f138fb3d4238092e18f37dabb9f8df9ab7cba769"
+  },
+  {
+    "pr": 955,
+    "name": "test/af-r071-await-published-compare-options-20261115",
+    "headSha": "e35db428aa450ca56fdb8638ce4b96ea9ab03bf8",
+    "mergeSha": "fc7be4f3fd64d7c1da0fc898bb4c27e0a201736d"
+  },
+  {
+    "pr": 952,
+    "name": "test/af-n11-real-low-scrypt-work-factor-20261115",
+    "headSha": "51a8ba2b53f4e33aa5320ed38dd70622ee1a0faf",
+    "mergeSha": "911fbccf8bc81e18d9d13d58775a5ff8d9aadeb1"
+  },
+  {
+    "pr": 954,
+    "name": "fix/af-r034-reminder-source-new-tab-20261115",
+    "headSha": "ea79e90a91c63dd6e117d62a2f596abb42bc3510",
+    "mergeSha": "841dbc7831349b242d5b64abf246e897f6b04e1c"
+  },
+  {
+    "pr": 951,
+    "name": "test/af-n21-post-generation-artwork-weight-guard-20261115",
+    "headSha": "6c3ecf3dcbaff8ad55ca9a54f716033731291bc4",
+    "mergeSha": "e01f03cff49e21a6f7c19e493a60a94e173e0bb6"
+  },
+  {
+    "pr": 953,
+    "name": "test/af-n24-private-ack-disposed-response-20261115",
+    "headSha": "87245d8d19ecfcec481d73141a2ca251ed2103df",
+    "mergeSha": "ded92c8484f440367d8a790ba54940d03da38543"
+  },
+  {
+    "pr": 950,
+    "name": "fix/af-r034-companion-external-link-context-20261115",
+    "headSha": "80a447248008ac171eb6d8bcb793d781ddb81a2c",
+    "mergeSha": "77314a94a7e59501b0925092735f25cb3f3885dc"
+  },
+  {
+    "pr": 948,
+    "name": "fix/af-r024-nested-min-additive-font-floor-20261115",
+    "headSha": "bda085e038b77811905ab6370fc05e69d1162a53",
+    "mergeSha": "e76a29029f455ccec5951ad830c40f0390a54f51"
+  },
+  {
+    "pr": 947,
+    "name": "fix/af-r078-reference-style-document-backlinks-20261115",
+    "headSha": "a78c0c6860ab4db397428cf774c6c7543306e6f6",
+    "mergeSha": "d6d0e5d3f9ef1dd365efb267a2869c2670a03db6"
   }
 ]
