@@ -1,152 +1,152 @@
 [
   {
-    "pr": 720,
-    "name": "feat/giving-policy-window-contract-20261109",
-    "headSha": "f3d5897280d2a02ff118226d205bcf36584b454d",
-    "mergeSha": "efd1eb00643d3ac1968ea60a3c74f58b3353f6a9"
+    "pr": 756,
+    "name": "docs/chatgpt-ownership-reconciled-20261111",
+    "headSha": "ea721e26cfd536c862c1c37ee622f0dcf96901e6",
+    "mergeSha": "4172a02756182cce70348cdf5fe1177bb016f48f"
   },
   {
-    "pr": 721,
-    "name": "fix/giving-capability-primitive-enums-20261109",
-    "headSha": "715767d7703f4f953bcfd30081a3d8400def8e42",
-    "mergeSha": "7fcd9f44b3626dd2a8ab775b9eb08de8cfeac854"
+    "pr": 757,
+    "name": "fix/web-vitals-exact-document-attribution-20261111",
+    "headSha": "8c328d83d2aaf938a63a0c197a322b15e3daa8ae",
+    "mergeSha": "fc202afab220a37008dc6743b4e9576d55178f3c"
   },
   {
-    "pr": 722,
-    "name": "fix/donation-intention-error-reset-20261109",
-    "headSha": "59401a70a0da40b8d911ed82a10d3faea732577f",
-    "mergeSha": "2562af2cb95ae1680cbddae69ebb0f19e105d000"
+    "pr": 758,
+    "name": "fix/legacy-route-manifest-symlink-20261111",
+    "headSha": "ca3cf16fd6bbb1b0f4bfd9d8a01e36beede30cbe",
+    "mergeSha": "86135173653dcbdfb601be8c0dc7633f9bafab8e"
   },
   {
-    "pr": 723,
-    "name": "fix/acknowledgement-stale-response-20261109",
-    "headSha": "89fa5e096c317b1d968edde8d09404e57ba946d5",
-    "mergeSha": "2562af2cb95ae1680cbddae69ebb0f19e105d000"
+    "pr": 759,
+    "name": "docs/af-n13-withdrawn-advisory-20261111",
+    "headSha": "91c6c777546e86a2653677b0d05e482286fab63f",
+    "mergeSha": "e25987dd2223bfa459e15a1f9f0b4d99760237a9"
   },
   {
-    "pr": 724,
-    "name": "chore/donation-method-style-governance-20261109",
-    "headSha": "c6f9ffde71365ec20cf4d03b0af78d9a9db3d88f",
-    "mergeSha": "5e1efb687a7d51abe217ddc9c851a2d14cd7918c"
+    "pr": 761,
+    "name": "test/contact-email-link-integrity-20261111",
+    "headSha": "a1d483f97ccc6f3968cad7ed934e404fa328c089",
+    "mergeSha": "ac3e13353da445d4a4924a3974d5d15213d0898e"
   },
   {
-    "pr": 725,
-    "name": "chore/direct-transfer-style-governance-20261110",
-    "headSha": "fcbb2174c2309ddf61b01b31dbafa97f32d9b7a0",
-    "mergeSha": "dda27a299af58e928a2b155b25b4d42832eaaeb0"
+    "pr": 762,
+    "name": "fix/web-vitals-navigation-invalidation-20261111",
+    "headSha": "818021d8fa2913221b01ec2cfef0c377eba274f4",
+    "mergeSha": "b85ede6c7c51c189fbb7eb0b99dba562e9bd4478"
   },
   {
-    "pr": 727,
-    "name": "test/assistance-action-session-boundaries-20261110",
-    "headSha": "59db5b17469a4ef2f7807bc50620da9bcffd90c7",
-    "mergeSha": "68dbf3067e40d71ed4e3248e7d1da04cac9ae323"
+    "pr": 763,
+    "name": "test/cloudflare-beacon-csp-boundary-20261111",
+    "headSha": "fbcd5f45f0b0fd4f456225a18a44f0d873e3b3d8",
+    "mergeSha": "2b062d798a1688bec8e36b7558f5f0d4ab4ef961"
   },
   {
-    "pr": 728,
-    "name": "test/media-action-session-boundaries-20261110",
-    "headSha": "c0ef98e64f6cea2a44f551a5af392d7d8b9bc0c2",
-    "mergeSha": "8fa49759303bd7320916977a126482dfcd725469"
+    "pr": 764,
+    "name": "fix/campaign-gallery-absolute-first-party-optimization-20261111",
+    "headSha": "531011614e978306a1d7202fcb523ad8457bbabf",
+    "mergeSha": "2b84ae44818238a553cad2b3cbc4c5c7e1bbc40d"
   },
   {
-    "pr": 729,
-    "name": "fix/route-asset-prefix-alias-20261110",
-    "headSha": "870cd7f04be48a83972806a76544dc6d2070dca2",
-    "mergeSha": "369314bff18ecf7fc08e04e86244a46454f2d22f"
+    "pr": 765,
+    "name": "fix/public-font-floor-constant-calc-20261111",
+    "headSha": "937666b7e3422cbe1aa68148a6fb316d0771c9bc",
+    "mergeSha": "531877cad4a6c7f04c7472720ed409a91f3b55aa"
   },
   {
-    "pr": 730,
-    "name": "test/home-carousel-action-session-20261110",
-    "headSha": "673e4f8bb8147e59dd5ed9f24742103d2b09be77",
-    "mergeSha": "1646d201fef635f0577ef93b3699c4e7ef4691a9"
+    "pr": 766,
+    "name": "fix/campaign-data-heading-leading-20261111",
+    "headSha": "8a924b10cf53004e4521d819db234b2322209829",
+    "mergeSha": "945b1b65457209c5cd5a17811c110da93ebe201b"
   },
   {
-    "pr": 731,
-    "name": "fix/audit-history-minimal-read-20261110",
-    "headSha": "225b95946a0fa34f18fd653e25929cca3124adfa",
-    "mergeSha": "c55e5842591b14568abedf3322ad40958fc5b691"
+    "pr": 767,
+    "name": "fix/public-font-floor-additive-calc-20261111",
+    "headSha": "eb2498ba363d9d8f591c49054343162d9dd749f4",
+    "mergeSha": "1701f111b4fb25134ba5b02b3c97646f8174bbc6"
   },
   {
-    "pr": 732,
-    "name": "fix/admin-team-projection-20261110",
-    "headSha": "3c421ea2f5c1e751447bc0214e87e79107e3db8f",
-    "mergeSha": "48076b4b15fe5906701421ce4521af0895faa6e5"
+    "pr": 768,
+    "name": "fix/public-font-floor-chained-scalar-calc-20261111",
+    "headSha": "3e6b71bb99288ff17ceb0a681defc175a3ab623f",
+    "mergeSha": "131bcec01f50c7c1d23e9eeb7b83472d758104b6"
   },
   {
-    "pr": 733,
-    "name": "fix/admin-appeals-projection-20261110",
-    "headSha": "76fe3896e64fedf666ebda79a0b9a9851fd2b434",
-    "mergeSha": "1232d4c5467dd1584007f9b1836b55760ec511b7"
+    "pr": 769,
+    "name": "fix/public-font-floor-symlink-failclosed-20261111",
+    "headSha": "d4c74e8933108c977e5207c26c0bc2109d1188c3",
+    "mergeSha": "fd4030e0885ac60c0533ce536c4323e4420efd2a"
   },
   {
-    "pr": 734,
-    "name": "test/audit-page-session-boundary-20261110",
-    "headSha": "5107c9ff19fa8e6559a65aca6a2e4f78b58487d4",
-    "mergeSha": "e473947aa29668b5bf9a10ca8028f9497f911760"
+    "pr": 770,
+    "name": "fix/impact-principle-gold-ink-contrast-20261111",
+    "headSha": "2f2b2c42544200cc8e0a255a0127a38ba49f3c2e",
+    "mergeSha": "3ded5c93e4af7cbde8e0c50e0021dc5cdfc7268d"
   },
   {
-    "pr": 735,
-    "name": "fix/public-team-minimal-group-projection-20261110",
-    "headSha": "6ea63537ee8ef796e6ee3562e446377238ff8f45",
-    "mergeSha": "678bb1cc2c5a07d43201cb08c5ba91d705b94d57"
+    "pr": 771,
+    "name": "fix/faith-library-action-contrast-20261111",
+    "headSha": "7a063ae358bd9e2f194120ad68a4ac0d6ec4ee29",
+    "mergeSha": "3f5f221fcfdeee7b8e3407710aab542a100685ca"
   },
   {
-    "pr": 736,
-    "name": "fix/admin-assistance-queue-projection-20261110",
-    "headSha": "43dcd877e690cb5853abdae5bf55a1375afcacce",
-    "mergeSha": "edbdca009a9f4c336fe1b5ccc7d8981e76aa57b3"
+    "pr": 772,
+    "name": "fix/sponsorship-multiline-heading-leading-20261111",
+    "headSha": "598fb4adffbdbd0599398c25e961e696beb16a94",
+    "mergeSha": "145c6cb4381b8fadfee2d60fe758cb001bc08e9e"
   },
   {
-    "pr": 737,
-    "name": "fix/admin-media-minimal-read-20261110",
-    "headSha": "21802c9f8150bd8b8563d81dc8ca4b7508c2c321",
-    "mergeSha": "7d7512a141051746f3ca9d0f2004373648a9fe50"
+    "pr": 773,
+    "name": "fix/programme-story-heading-leading-20261111",
+    "headSha": "b601e3eb74489912fdc56b457af80bc8c95fb9f5",
+    "mergeSha": "2f461a233ac4c622e8d88b93a357018115b9bbe1"
   },
   {
-    "pr": 741,
-    "name": "fix/admin-donations-minimal-reconciled-20261110",
-    "headSha": "8033cc09c9a452c2759481ffdc74580616dcc5ba",
-    "mergeSha": "e844d51457598fc012004e287f686a525a06cad1"
+    "pr": 774,
+    "name": "fix/stories-ethic-heading-leading-20261111",
+    "headSha": "8904fefd120c75f7fdaefe7e4153cf0a5b504d6f",
+    "mergeSha": "e4a63e399d791d67bf94743b0070c66e44c22a98"
   },
   {
-    "pr": 744,
-    "name": "fix/admin-retention-audit-reconciled-main-20261110",
-    "headSha": "120e448a98e5ca8f0bb88e7a6c8ae56e7f97c544",
-    "mergeSha": "13af1802695fe088d89c0d4ba1aad1d5232bf023"
+    "pr": 775,
+    "name": "fix/impact-tile-h3-line-height-20261111",
+    "headSha": "03978d27084e6bcd42b5e1a3bb425ef96ba4063f",
+    "mergeSha": "e49d9fe3d0a6ce1f3a1ce7b451f9913f1044fe89"
   },
   {
-    "pr": 748,
-    "name": "fix/admin-private-list-projections-consolidated-20261110",
-    "headSha": "c619b5740cfa5e388648728135fe0d7331537a3e",
-    "mergeSha": "10cb4f23decb6c82a3ff2b9bbb052bb0cc6fd1ac"
+    "pr": 776,
+    "name": "fix/af-r047-client-manifest-symlink-boundary-20261111",
+    "headSha": "1e872e03e34232204651f73d34c3ececbc51f044",
+    "mergeSha": "0d4d02d904605cd870c52b189d59dd80f03e8fb1"
   },
   {
-    "pr": 749,
-    "name": "fix/admin-appeal-editor-minimal-fields-20261110",
-    "headSha": "5bf82deeaf93754fe5a20c448b87b8e35ecb48be",
-    "mergeSha": "4c1a1e30b97090ac98efb9f42a621dbaf6c61171"
+    "pr": 778,
+    "name": "fix/af-r011-no-dynamic-test-execution-20261112",
+    "headSha": "58521d6047548d4c47956638736c7c4ae3dba258",
+    "mergeSha": "47152209927ae5df8be185af5c0af13ef0658a9b"
   },
   {
-    "pr": 751,
-    "name": "fix/admin-donation-detail-minimal-read-20261110",
-    "headSha": "ef4fa982a52802e097cbd529d1dbd89f1da33a67",
-    "mergeSha": "03667a783ac1f42db4f880f29a6b864421c4e6ec"
+    "pr": 779,
+    "name": "docs/af-149-verified-release-overlay-20261112",
+    "headSha": "b3316e871dd7ea91337c08d2db6ba6c71daf3209",
+    "mergeSha": "3654b551a182709a3803ae6845340dacef227ba0"
   },
   {
-    "pr": 752,
-    "name": "docs/codex-takeover-release-evidence-20261111",
-    "headSha": "d5fa322c32796401d051f9089276f8ac66660623",
-    "mergeSha": "8118c02422dace83cdbb00c77af376a1d0f9507f"
+    "pr": 780,
+    "name": "test/af-r008-r009-public-content-schema-20261112",
+    "headSha": "af50da5955dd85064af528477c3b214c96e7f663",
+    "mergeSha": "b18e1518e938049f12876a069ebfa8e8cfee39cb"
   },
   {
-    "pr": 753,
-    "name": "fix/route-js-unmatched-attribution-20261111",
-    "headSha": "216f2bc35cead55e47f80f1568f1321556f900ee",
-    "mergeSha": "df956b1a5ce16a465503f6d19c57ac1bb0d37c81"
+    "pr": 781,
+    "name": "fix/branch-inventory-canonical-refs-20261112",
+    "headSha": "655424e1b7fa6516e25bc4a21c422368409b757f",
+    "mergeSha": "f21f8995da138d86d3a4951b0a5f11a9aad4d7df"
   },
   {
-    "pr": 755,
-    "name": "fix/client-secret-boundary-reconciled-20261111",
-    "headSha": "bd75862833ca2064675be333ac4bf09920b6289e",
-    "mergeSha": "c48dc48fe4d4e3eedc35f101ea765a5c3b714e1e"
+    "pr": 782,
+    "name": "docs/af-r079-release-checkpoint-20261112",
+    "headSha": "5d59d4b76430f552b62b6f271524a08f30c99863",
+    "mergeSha": "bd720b5567147dde624cd4d5cf0ce5a7a0fe793d"
   }
 ]
