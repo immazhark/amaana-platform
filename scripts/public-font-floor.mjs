@@ -86,7 +86,18 @@ export function auditFontSizes(source, path) {
       return !Number.isFinite(amount) ||
         amount < (unit.toLowerCase() === "px" ? MIN_FONT_PX : MIN_FONT_REM);
     });
-    if (tooSmall || nestedMinTooSmall) violations.push({ path, value });
+    // min() selects the smallest argument, including a nested same-unit
+    // additive calc. Every literal operand can exceed 12px while the
+    // evaluated subtraction still drops the selected size below the floor.
+    const minAdditiveOperands = !shorthand && /^min\(/i.test(value)
+      ? Array.from(value.matchAll(/(?:\(|,)\s*calc\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*([+-])\s*(-?\d*\.?\d+)\s*\2\s*\)\s*(?=,|\))/gi))
+      : [];
+    const nestedMinAdditiveTooSmall = minAdditiveOperands.some(([, start, unit, operation, adjustment]) => {
+      const finalSize = Number(start) + (operation === "+" ? Number(adjustment) : -Number(adjustment));
+      return !Number.isFinite(finalSize) ||
+        finalSize < (unit.toLowerCase() === "px" ? MIN_FONT_PX : MIN_FONT_REM);
+    });
+    if (tooSmall || nestedMinTooSmall || nestedMinAdditiveTooSmall) violations.push({ path, value });
   }
 
   return violations;
