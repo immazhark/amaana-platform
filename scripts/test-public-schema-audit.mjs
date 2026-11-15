@@ -349,3 +349,27 @@ test("HTTP X-Robots-Tag observation distinguishes noindex directives from lookal
     assert.equal(report.pages[0].httpIndexingDirective, expected, directive);
   }
 });
+
+test("AF-R080 limits optional runtime-version response without weakening five-page audit", async () => {
+  let versionBodyRead = false;
+  const fetchImpl = async target => {
+    if (target.endsWith("/api/health/version")) {
+      return {
+        status: 200,
+        url: target,
+        headers: new Headers({ "content-type": "application/json", "content-length": "2000000" }),
+        json: async () => {
+          versionBodyRead = true;
+          return { commitSha: "a".repeat(40) };
+        },
+      };
+    }
+    const response = new Response(page(graph, target), { status: 200, headers: { "Content-Type": "text/html" } });
+    Object.defineProperty(response, "url", { value: target });
+    return response;
+  };
+  const result = await auditPublicSchema(fetchImpl);
+  assert.equal(result.pages.length, 5);
+  assert.equal(result.runtimeSha, null, "Oversized runtime metadata cannot certify runtime identity");
+  assert.equal(versionBodyRead, false, "Reject declared oversized version responses before parsing");
+});
