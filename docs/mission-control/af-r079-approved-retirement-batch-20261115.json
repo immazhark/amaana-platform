@@ -70,5 +70,83 @@
     "name": "docs/chatgpt-two-release-checkpoint-20261115",
     "headSha": "82dd7995f3681fefeda05b3cd462f37c43cd0d94",
     "mergeSha": "bf9037a6ad1e61cfe8c2ab0896af56a5f4d6f52c"
+  },
+  {
+    "pr": 935,
+    "name": "fix/af-r076-obfuscated-js-contact-href-20261115",
+    "headSha": "9037b4054584fb77af8b169e8ee9c19a7eea8925",
+    "mergeSha": "8960e61efa257ccdf64a579cf7a3bcad1e71a703"
+  },
+  {
+    "pr": 933,
+    "name": "feat/af-r071-impact-compare-streaming-fallback-20261115",
+    "headSha": "d8348c8736104e458c985264d3f37e0cbcdac068",
+    "mergeSha": "2e1e48bfbe30c511819f73c5dda129b62bea97bc"
+  },
+  {
+    "pr": 932,
+    "name": "fix/faith-media-invalid-selected-ids-20261115",
+    "headSha": "c74fedf80a1b8e16feb396f56b254518d51b1c30",
+    "mergeSha": "5f2d740ee91bba30ce0dfa1ae66fcb5ecad04d2c"
+  },
+  {
+    "pr": 936,
+    "name": "docs/af-20261115-source-audit-and-streaming-handoff",
+    "headSha": "2363cea9c422a92fe38bbb4d2e99841d8cfabc7f",
+    "mergeSha": "fcdee18e6fe3df69a3b2660b108edf9a9a2182dd"
+  },
+  {
+    "pr": 931,
+    "name": "fix/af-r047-malformed-manifest-assets-20261115",
+    "headSha": "4d01ea739416bbda7cdc0336bd4c8eb6260d0fe9",
+    "mergeSha": "3e0cdad7e41221666f21bcfb7cce52737d2c095e"
+  },
+  {
+    "pr": 929,
+    "name": "fix/a11y-font-floor-min-multiple-arguments-20261114",
+    "headSha": "8273568b31bb5fe6ed09f2518238040551d5ea67",
+    "mergeSha": "3ed3869c824ee4391106a6b8a176bfd06d9aace9"
+  },
+  {
+    "pr": 930,
+    "name": "docs/af-20261114-story-faith-home-release-handoff",
+    "headSha": "88563f33997f0436d8957c821cd6255f7a3fef96",
+    "mergeSha": "3830cf98f554b0c2eb4512e0e82cafa51554ddf6"
+  },
+  {
+    "pr": 926,
+    "name": "fix/stories-published-context-shapes-20261114",
+    "headSha": "6a290e19dac7f36d5e6450037d476a3aa1dba03a",
+    "mergeSha": "cc2c7837073dde5d6244681496ab7176b9d1f9e9"
+  },
+  {
+    "pr": 928,
+    "name": "fix/home-appeal-invalid-query-collection-20261114",
+    "headSha": "a77954de48ac2701edc4ecbead764a5fa5907855",
+    "mergeSha": "f7c1c51a49eab8fe46eecaf5c45b43ef5f3dafe2"
+  },
+  {
+    "pr": 927,
+    "name": "fix/faith-index-supported-format-types-20261114",
+    "headSha": "e7c5fab9bc5fed8e227e71237c373c5534edcc1e",
+    "mergeSha": "dd03b9d6508f8b57dea3fb39e371d900ad9b0dbe"
+  },
+  {
+    "pr": 925,
+    "name": "fix/stories-discovery-safe-index-20261114",
+    "headSha": "6a3f7c0c2f08069c64f5e6aed5a277d9adb98107",
+    "mergeSha": "3a1bf4641162db4256bcedc93d5bcc0ff2908a84"
+  },
+  {
+    "pr": 924,
+    "name": "docs/af-20261114-release-921-922-verified",
+    "headSha": "932513b7f27c91f54885b9688f197201c1186e2b",
+    "mergeSha": "71c6bec6652245185137bb6b2005b2aa319635bf"
+  },
+  {
+    "pr": 921,
+    "name": "fix/home-carousel-invalid-stored-config-fallback-20261114",
+    "headSha": "3ef1ee2e4995dc4b2ff4ef3c6ce76e551bea3cc0",
+    "mergeSha": "a89df617e2babeffdd6f1b3e1d4c29c7c63c7262"
   }
 ]
