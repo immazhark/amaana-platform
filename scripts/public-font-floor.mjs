@@ -74,20 +74,6 @@ export function auditFontSizes(source, path) {
       const minimum = unit.toLowerCase() === "px" ? MIN_FONT_PX : MIN_FONT_REM;
       return Number(number) < minimum;
     });
-    // A font shorthand may use calc() for its size. Only a calc() in the
-    // size position counts; a calculation after '/' is line-height.
-    const shorthandCalc = shorthand
-      ? /(?:^|\s)calc\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*([*/])\s*(-?\d*\.?\d+)\s*\)(?=\s|\/|$)/i.exec(value)
-      : null;
-    const shorthandCalcValue = shorthandCalc
-      ? (shorthandCalc[3] === "*" ? Number(shorthandCalc[1]) * Number(shorthandCalc[4])
-        : Number(shorthandCalc[1]) / Number(shorthandCalc[4]))
-      : null;
-    const shorthandCalcTooSmall = shorthandCalcValue !== null &&
-      !/\/\s*$/.test(value.slice(0, shorthandCalc.index)) &&
-      (!Number.isFinite(shorthandCalcValue) ||
-        shorthandCalcValue < (shorthandCalc[2].toLowerCase() === "px" ? MIN_FONT_PX : MIN_FONT_REM));
-
     // Any constant calc() argument below the floor caps min(), even with
     // three or more arguments. Ignore other CSS expressions for browser review.
     const minCalcOperands = !shorthand && /^min\(/i.test(value)
