@@ -1,122 +1,74 @@
 [
   {
-    "pr": 970,
-    "name": "fix/mobile-profile-api-image-boundary-20261115",
-    "headSha": "4b98049ac3b60c48984a495fbf5b7bddbf256cf8",
-    "mergeSha": "26a956f07cc732aecaa2f8c7cd57c2271224db49"
+    "pr": 962,
+    "name": "test/af-r069-explicit-no-autofocus-a11y-20261115",
+    "headSha": "a83fe438252b0082a3b77e3172cae77521c385cf",
+    "mergeSha": "53cb7461bdcdf93ccfa65e9c6be6143c35426944"
   },
   {
-    "pr": 971,
-    "name": "fix/home-carousel-cta-dot-segments-20261115",
-    "headSha": "ea193a0ec18c556498c84c67c4ef7b332c3afcb9",
-    "mergeSha": "eafd6714b10bed21d47fdf09f4a96d30085feaf9"
+    "pr": 968,
+    "name": "docs/guarded-releases-branch-inventory-20261115",
+    "headSha": "bcc31aed13907d48782d98115f1d28088ebac46b",
+    "mergeSha": "db53bd7afbd239a5a041d36615215adfe9863969"
   },
   {
-    "pr": 972,
-    "name": "fix/live-css-audit-bounded-responses-20261115",
-    "headSha": "9990de9c832e8494b2dc1a6a122754783db916dc",
-    "mergeSha": "a0086e9c22ed55be44b142ec19569301b1f675eb"
+    "pr": 965,
+    "name": "docs/session-checkpoint-guarded-pr957-pr958-20261115",
+    "headSha": "2c20f2444eb2188d4028868ce797d6b3555d3ff0",
+    "mergeSha": "c54c3d0e88c13bc15c1c31c3754392e387711371"
   },
   {
-    "pr": 973,
-    "name": "fix/telemetry-serialization-fail-closed-20261115",
-    "headSha": "2e7e8e3b1e46b60cc7d01f72f619f26b1f81fa5b",
-    "mergeSha": "820578baef7103304394bcaa034eec9371bba4d7"
+    "pr": 961,
+    "name": "docs/nov15-two-guarded-merges-four-draft-queue",
+    "headSha": "206eee2b90139b6bb2e506e4ce116e028458cc8e",
+    "mergeSha": "45db58056018b63d5fa90d8b12c7f04972671534"
   },
   {
-    "pr": 967,
-    "name": "fix/team-public-contact-links-validated-20261115",
-    "headSha": "6b7be0beefe40587b86c544d4a63eb47e95de9a4",
-    "mergeSha": "54243df3d6bca80b861d4aa10fe72bbbd59119e8"
+    "pr": 956,
+    "name": "docs/chatgpt-four-merges-and-fifth-test-handoff-20261115",
+    "headSha": "005b9697d0c49d66924688ec156b5c35b83088b6",
+    "mergeSha": "ad87bed5698b8ccf5e04daa0aab79ec6a0ae963c"
   },
   {
-    "pr": 966,
-    "name": "fix/verification-faq-canonical-origin-20261115",
-    "headSha": "3612a5f8562cd771b23e63a86855a946b8a68dc7",
-    "mergeSha": "4cbfddf5ad744ce074a57cd14cdaa1076cfd6a2d"
+    "pr": 945,
+    "name": "fix/af-r072-home-meta-description-length-20261115",
+    "headSha": "f98585f4b39211e2b45a1873d96de39c10858360",
+    "mergeSha": "33cb6ff5906832047858b2570ff9c2c361bb19ef"
   },
   {
-    "pr": 969,
-    "name": "fix/appeal-share-preserve-route-identity-20261115",
-    "headSha": "3f108a1284a2bbe179d9fabbf8ad5db6b75430f0",
-    "mergeSha": "603529d9252885448b01dfa164b21fbac0c5ccda"
+    "pr": 942,
+    "name": "fix/programme-child-projection-runtime-guard-20261115",
+    "headSha": "ebb9a0060451c5e7cb5980b447a4c07767c17fd2",
+    "mergeSha": "1a113f474d171054803728f7b728bd7911b5d26a"
   },
   {
-    "pr": 959,
-    "name": "fix/page-hero-reviewed-action-hrefs-20261115",
-    "headSha": "2910b9b99e0273b1bf59ffd58b7a995ddb9e342d",
-    "mergeSha": "2f176b4ed5a4409446bf27d5b2fedd4c48e3d504"
+    "pr": 940,
+    "name": "fix/assistance-followup-new-tab-disclosure-20261115",
+    "headSha": "15d39da1b8bd1a17caf695c077c235063f6ec32e",
+    "mergeSha": "637bd820bd96b5693da0f77f6b857f8fb2b2bf6b"
   },
   {
-    "pr": 964,
-    "name": "fix/participation-contact-protocol-validation-20261115",
-    "headSha": "6cc311d3965f0d4ad5f5d42885fd48eabeafa329",
-    "mergeSha": "b8f36e0eb4d4563ffb792794e2ee3ecfa5f27e7c"
+    "pr": 941,
+    "name": "perf/verified-impact-linear-unique-metrics-20261115",
+    "headSha": "071d971e5c742e5e463d0d669562df67a08564a7",
+    "mergeSha": "6b7dabb91a32f6dbbf8b7b74643f3959d0fd6180"
   },
   {
-    "pr": 960,
-    "name": "fix/canonical-pathway-public-route-validation-20261115",
-    "headSha": "12cd05ce500f2d9fc3ac494b16730afce428a618",
-    "mergeSha": "85ea2e57f59d035bdb3d4ae034fb21e3c7cf1a12"
+    "pr": 939,
+    "name": "test/af-r071-public-detail-true-http404-20261115",
+    "headSha": "1af32a71a35d587da0a810a6c6aa26874b484cd5",
+    "mergeSha": "e4076e9b8a9985b6a8fb937ef08891535234c5d1"
   },
   {
-    "pr": 958,
-    "name": "test/af-r066-expand-stylelint-governed-modules-20261115",
-    "headSha": "72ad9768fc1aa376ecf00fbce6731379d447c172",
-    "mergeSha": "7c549fd06bfb0829b0e680be3169828ae0f43d59"
+    "pr": 938,
+    "name": "perf/public-media-linear-url-dedupe-20261115",
+    "headSha": "2db43e2e03985a7b73595feda875c5710ef73af7",
+    "mergeSha": "b2166d9a0a35f67a8e930cbc7f33f431172bf8f6"
   },
   {
-    "pr": 957,
-    "name": "fix/af-r024-shorthand-calc-font-floor-20261115",
-    "headSha": "f89aa746cb55dd44f1d00a93cb6317d7ec112991",
-    "mergeSha": "f138fb3d4238092e18f37dabb9f8df9ab7cba769"
-  },
-  {
-    "pr": 955,
-    "name": "test/af-r071-await-published-compare-options-20261115",
-    "headSha": "e35db428aa450ca56fdb8638ce4b96ea9ab03bf8",
-    "mergeSha": "fc7be4f3fd64d7c1da0fc898bb4c27e0a201736d"
-  },
-  {
-    "pr": 952,
-    "name": "test/af-n11-real-low-scrypt-work-factor-20261115",
-    "headSha": "51a8ba2b53f4e33aa5320ed38dd70622ee1a0faf",
-    "mergeSha": "911fbccf8bc81e18d9d13d58775a5ff8d9aadeb1"
-  },
-  {
-    "pr": 954,
-    "name": "fix/af-r034-reminder-source-new-tab-20261115",
-    "headSha": "ea79e90a91c63dd6e117d62a2f596abb42bc3510",
-    "mergeSha": "841dbc7831349b242d5b64abf246e897f6b04e1c"
-  },
-  {
-    "pr": 951,
-    "name": "test/af-n21-post-generation-artwork-weight-guard-20261115",
-    "headSha": "6c3ecf3dcbaff8ad55ca9a54f716033731291bc4",
-    "mergeSha": "e01f03cff49e21a6f7c19e493a60a94e173e0bb6"
-  },
-  {
-    "pr": 953,
-    "name": "test/af-n24-private-ack-disposed-response-20261115",
-    "headSha": "87245d8d19ecfcec481d73141a2ca251ed2103df",
-    "mergeSha": "ded92c8484f440367d8a790ba54940d03da38543"
-  },
-  {
-    "pr": 950,
-    "name": "fix/af-r034-companion-external-link-context-20261115",
-    "headSha": "80a447248008ac171eb6d8bcb793d781ddb81a2c",
-    "mergeSha": "77314a94a7e59501b0925092735f25cb3f3885dc"
-  },
-  {
-    "pr": 948,
-    "name": "fix/af-r024-nested-min-additive-font-floor-20261115",
-    "headSha": "bda085e038b77811905ab6370fc05e69d1162a53",
-    "mergeSha": "e76a29029f455ccec5951ad830c40f0390a54f51"
-  },
-  {
-    "pr": 947,
-    "name": "fix/af-r078-reference-style-document-backlinks-20261115",
-    "headSha": "a78c0c6860ab4db397428cf774c6c7543306e6f6",
-    "mergeSha": "d6d0e5d3f9ef1dd365efb267a2869c2670a03db6"
+    "pr": 937,
+    "name": "docs/chatgpt-two-release-checkpoint-20261115",
+    "headSha": "82dd7995f3681fefeda05b3cd462f37c43cd0d94",
+    "mergeSha": "bf9037a6ad1e61cfe8c2ab0896af56a5f4d6f52c"
   }
 ]
