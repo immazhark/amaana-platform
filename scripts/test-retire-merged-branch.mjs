@@ -18,6 +18,7 @@ const snapshot = (overrides = {}) => ({
   branch: { name: "fix/af-r079-synthetic-fixture", protected: false, commit: { sha: sha("a") } },
   compare: { status: "ahead", behind_by: 0 },
   otherOpenPrs: [],
+  dependentBasePrs: [],
   ...overrides,
 });
 
@@ -129,4 +130,9 @@ test("no delete occurs for unmerged, explicitly retained, or fork-based PRs", as
     })).action, "PRESERVE");
     assert.equal(calls.includes("DELETE"), false);
   }
+});
+
+test("never retires a task branch used as another open PR's base", () => {
+  const result = planMergedBranchRetirement(snapshot({ dependentBasePrs: [{ number: 42 }] }));
+  assert.notEqual(result.action, "RETIRE");
 });
