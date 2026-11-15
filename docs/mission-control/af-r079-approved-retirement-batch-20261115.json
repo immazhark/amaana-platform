@@ -1,152 +1,152 @@
 [
   {
-    "pr": 922,
-    "name": "fix/af-r025-impact-metric-leading-20261114",
-    "headSha": "5b79025f4120d0993d57dd75ff9ab9163f2ba1ab",
-    "mergeSha": "eeb77b2e418117b266e53b6d811ef33f4e531c09"
+    "pr": 897,
+    "name": "docs/coordination-release-894-896-20261114",
+    "headSha": "9582b76cf0a5b67834e79623dcd6f25fab7108a6",
+    "mergeSha": "2d4e161752e5bd809a960c3ffe368d8125e8a2f9"
   },
   {
-    "pr": 923,
-    "name": "docs/af-20261114-appeal-release-and-independent-lanes",
-    "headSha": "8c97c15f9aed890eb8411b16f5204df2b3569ff4",
-    "mergeSha": "ac20de57888977c48c99b213887c51930cdae8e5"
+    "pr": 896,
+    "name": "fix/af-r024-additive-font-calc-audit-20261114",
+    "headSha": "09912dc3bbc70480a050b6acd4311a0750c163a7",
+    "mergeSha": "aaae17b5fd6789032806a7e7d87d28d8702b9f80"
   },
   {
-    "pr": 919,
-    "name": "fix/af-r025-appeal-funding-metric-leading-20261114",
-    "headSha": "7b4fb8685c0435bb68a2b596e7a38f058ddca9eb",
-    "mergeSha": "879028173c074e84615b3b68da5e85b2e430bb4f"
+    "pr": 895,
+    "name": "fix/af-r012-shadowed-admin-guard-audit-20261114",
+    "headSha": "c2e0749fae44b6e99d91f491e6d3b6177a044b73",
+    "mergeSha": "b2d472337ac44cc73c5d4974a7c7c6dd3f2ab515"
   },
   {
-    "pr": 920,
-    "name": "docs/af-20261114-homeguard-merged-appeal-a11y-pending",
-    "headSha": "a0cfe764b8b4e4c355f1e7a70bff92a68e8a4868",
-    "mergeSha": "f220520cddd9ef7ea3cd367ce471e3c06d47a431"
+    "pr": 894,
+    "name": "fix/impact-witness-invalid-records-20261114",
+    "headSha": "74b631336ac0f3c5c7b507c7a455adb7b2cdec04",
+    "mergeSha": "484eeed931b8a221389658c2f1d9ea416474dbb1"
   },
   {
-    "pr": 917,
-    "name": "fix/home-discovery-array-contract-20261114",
-    "headSha": "c6be3568c501616f008b2715a01699b52302a1ab",
-    "mergeSha": "e1d0e9cb88e299f572197dca890fa0835f128c7f"
+    "pr": 893,
+    "name": "fix/impact-compare-malformed-public-records-20261114",
+    "headSha": "178667fef54c02dc7cd52e3c2e713cec919ea93a",
+    "mergeSha": "1eb5543353b1359b2dce98f8afaad0a054ca8dcc"
   },
   {
-    "pr": 918,
-    "name": "docs/af-20261114-three-merges-next-guard-handoff",
-    "headSha": "5c4177290150d214773573c8cfb298e29470d71e",
-    "mergeSha": "7febbe3e8c232571a00c54fc0ed97fed41d5efce"
+    "pr": 892,
+    "name": "chore/session-ownership-claim-20261114",
+    "headSha": "5098faea4405d2808c918d496cc9031e238ce18a",
+    "mergeSha": "884b0913bcf14392ecdbd94a8bf47e6ee352eeb4"
   },
   {
-    "pr": 911,
-    "name": "fix/appeals-completed-showcase-records-20261114",
-    "headSha": "0b31d300e55169abc5c1b5e439e74bd35dfa2dbf",
-    "mergeSha": "f1da173534a613eb3fa8b790b8a97c3608f664bb"
+    "pr": 891,
+    "name": "docs/chatgpt-impact-public-copy-gallery-checkpoint-20261114",
+    "headSha": "611dbe12fdf3981637f88f3843f0b0685047fe33",
+    "mergeSha": "3628b6e90807862db29733c9e6f32d38e76d59d4"
   },
   {
-    "pr": 915,
-    "name": "fix/home-public-cause-media-projections-20261114",
-    "headSha": "6f8c79374f31b4ef9aa5dd2f7f96e1884280e11a",
-    "mergeSha": "ea0d5470d080f8d4898da421c3d0ac3d760ea832"
+    "pr": 890,
+    "name": "fix/gallery-malformed-caption-guard-20261114",
+    "headSha": "9304314e98871d5345ab523a126c9c0f7d0efe4a",
+    "mergeSha": "1d4f187d753ae52076c6aa05ac8a28d72c253a17"
   },
   {
-    "pr": 914,
-    "name": "fix/af-r025-private-status-heading-leading-20261114",
-    "headSha": "f370994508729f4e118c31ed7eece6fac4b4131a",
-    "mergeSha": "b1704ddac155c79d4e309776758c31fd6d9e0e56"
+    "pr": 889,
+    "name": "fix/public-record-fallback-invalid-metric-20261114",
+    "headSha": "8649449892a774fc1c21d3d7828982013cd41c2b",
+    "mergeSha": "ab1d281d95989f7cb7755ff6a5f84a98a402824c"
   },
   {
-    "pr": 916,
-    "name": "docs/coordination-912-and-911-914-20261114",
-    "headSha": "55c1e0b46449ce3154959cc5d12531441c3db122",
-    "mergeSha": "86a82dead89fe21ae123a6a0f662f8e830951cf6"
+    "pr": 888,
+    "name": "fix/impact-filter-malformed-runtime-records-20261114",
+    "headSha": "e21f9437de3783ab7df988a6a559b0d072bf24aa",
+    "mergeSha": "81761608e9590f69b4399c75df8d6eafe0b0a6bc"
   },
   {
-    "pr": 912,
-    "name": "fix/work-index-corrupt-projection-20261114",
-    "headSha": "a353e2d9e1af7f71569f61d732a71a6e9d1ae3c9",
-    "mergeSha": "0200f3e7e48348b92b161503e45c16d89228f8e3"
+    "pr": 887,
+    "name": "docs/chatgpt-release-four-code-prs-20261114",
+    "headSha": "adfdbb99c6e34390695f25e0fe7e7955ddf88fea",
+    "mergeSha": "7592aae1bc8a395289be2a6b270f48476bd49444"
   },
   {
-    "pr": 913,
-    "name": "docs/coordination-releases-907-909-and-911-912-20261114",
-    "headSha": "47a47daa78f90eb93ba28988fb332b50abf2632d",
-    "mergeSha": "1874380178be23e40751541622ac4704339c0c02"
+    "pr": 886,
+    "name": "fix/public-story-discovery-malformed-projection-20261114",
+    "headSha": "ab6a78f1d312bf3f446e30f71a151f8f0a72131c",
+    "mergeSha": "20f7d4c1c121a1f34cd3d8849a360f929f6a1b44"
   },
   {
-    "pr": 909,
-    "name": "fix/af-r019-privacy-matrix-label-contrast-20261114",
-    "headSha": "8388cd7529e634b4e6085a11aa3dc533523777d1",
-    "mergeSha": "5eda0912dc268f7e6fa8a89bb8c8842a8f88bd7e"
+    "pr": 885,
+    "name": "fix/public-appeal-search-malformed-records-20261114",
+    "headSha": "9b9c777aaee5b0711dcf5a41881d79a9dc6a4f3b",
+    "mergeSha": "670ad68ee60bd6c6a861c6a84b9b0e0e7e98c7a1"
   },
   {
-    "pr": 908,
-    "name": "fix/home-public-projection-shape-20261114",
-    "headSha": "43141d8aa2654a8443d7e90e725fde25c5c3d55b",
-    "mergeSha": "bd913ccd9d14f731fc7ecd42f303328720238d04"
+    "pr": 884,
+    "name": "fix/work-filter-malformed-year-options-20261114",
+    "headSha": "ed2c4d701f8164130995abf8531d98f7ad82b367",
+    "mergeSha": "ad50c06d145c28fa4327703368ddff9823d5703d"
   },
   {
-    "pr": 907,
-    "name": "fix/af-r025-not-found-heading-leading-20261114",
-    "headSha": "27d9a74c264a74cdb9c6057237ceb0a9cec4ce66",
-    "mergeSha": "331a711d89b0a6bcd9464ca11a1b1766c83edee4"
+    "pr": 883,
+    "name": "docs/chatgpt-three-merges-four-prs-20261114",
+    "headSha": "732b0c2d5f81568bd6e047aecad5e5826bfac8bb",
+    "mergeSha": "0d1a121b6c056fe9007d271126f674b1b999f20b"
   },
   {
-    "pr": 910,
-    "name": "docs/coordination-902-905-907-909-20261114",
-    "headSha": "aaf5ff4f62ed33062eaddc1e05c2168e62319d69",
-    "mergeSha": "c9996a7df6ead536f4c1d87532f020dd060ac7ad"
+    "pr": 882,
+    "name": "fix/route-bundle-aggregate-asset-paths-20261114",
+    "headSha": "5d801be7cec2cc62ea04d3d8df607f209f4646a3",
+    "mergeSha": "571025532f8004a528ad8b26484b7fa3271bad75"
   },
   {
-    "pr": 905,
-    "name": "fix/af-r025-route-error-heading-leading-20261114",
-    "headSha": "f947999172588f38e652f9df3c216dc453da1166",
-    "mergeSha": "608a2d216278341c4c85fa03f6712bf63f15ef2e"
+    "pr": 881,
+    "name": "fix/gallery-keyboard-selection-malformed-records-20261114",
+    "headSha": "b719eab9c357f981715c0c8ac8266d7c816644ed",
+    "mergeSha": "a50e5d98116e1518fbdcfcce5132090c04beb3ff"
   },
   {
-    "pr": 904,
-    "name": "fix/faith-public-topics-projection-20261114",
-    "headSha": "8caa4442337f2785dc388042ab0fca8e1c33ecc5",
-    "mergeSha": "8ee23ef9a83482379536a0154e775ee479a7cd4d"
+    "pr": 880,
+    "name": "fix/public-media-selector-malformed-input-20261114",
+    "headSha": "0c6bfb426fa947e98b5209f4469664676e6e1c58",
+    "mergeSha": "8d4c367d1055f6e602f9265a58518294e625848e"
   },
   {
-    "pr": 903,
-    "name": "fix/af-r025-global-error-heading-leading-20261114",
-    "headSha": "2c6b04294b6e15d81d2979f1025153acf9bcc829",
-    "mergeSha": "72eeee9cbbf3589116f5de2dcd2ea7691a44ab46"
+    "pr": 879,
+    "name": "docs/chatgpt-active-four-track-checkpoint-20261114",
+    "headSha": "549490f57a1414d5d8d2539123dc052060760894",
+    "mergeSha": "c9b9295bbcf0017338c39d48da6e4befce0018ea"
   },
   {
-    "pr": 902,
-    "name": "fix/faith-publication-malformed-review-predicate-20261114",
-    "headSha": "275c6558a3b93b63794d89d235f921e26df834ff",
-    "mergeSha": "12ee5df6f563c86b48cd700263cc6b2cc763852a"
+    "pr": 878,
+    "name": "fix/admin-edge-inventory-linked-root-20261114",
+    "headSha": "6162996484adc75c69980699dc6e45f9ddb1b45f",
+    "mergeSha": "1b2e5a2ddc39d9d0f5c81af4983b03449fa0036d"
   },
   {
-    "pr": 906,
-    "name": "docs/coordination-release-898-900-and-code-902-905-20261114",
-    "headSha": "83ab8942a7717a08fc1130b9204d5f34f00b830e",
-    "mergeSha": "45225911cdfe8ebb498838a7c85191ea100f5cb1"
+    "pr": 877,
+    "name": "fix/home-empty-appeals-contact-route-20261114",
+    "headSha": "8e7a29d19cdf433892caf775b6f1ff09da6d8fdc",
+    "mergeSha": "a4d3c00a65deb48ec37f28451037832444d83a80"
   },
   {
-    "pr": 900,
-    "name": "fix/faith-visible-media-record-boundary-20261114",
-    "headSha": "7263827d03e5789608427ddf32f3aea1b0cb1cb6",
-    "mergeSha": "83941ec33e10cb802defbfe7150c7305907617f0"
+    "pr": 876,
+    "name": "fix/public-gallery-projection-runtime-guard-20261114",
+    "headSha": "0f05ad93d1ddff332972cf9fa0fb36b9d2dd95f6",
+    "mergeSha": "d0f3ce008e622773b5d193040ee78002c81c864a"
   },
   {
-    "pr": 898,
-    "name": "fix/stories-second-read-public-card-guard-20261114",
-    "headSha": "5a3abfe1c6728ec68f00023de4a01bfff5134410",
-    "mergeSha": "62b08b3cb604808a766d0b2a6b468291a3a90ca8"
+    "pr": 875,
+    "name": "docs/chatgpt-five-track-release-checkpoint-20261114",
+    "headSha": "3c0550fa27c16f03ed0513a5b6aabe4081a3e8ca",
+    "mergeSha": "8af483c07cc85426f10b7b9873c62182db939d52"
   },
   {
-    "pr": 899,
-    "name": "fix/public-outcome-metrics-malformed-projection-20261114",
-    "headSha": "c1d8e98d2fc07fc62ba795de5030937cbdc99a7b",
-    "mergeSha": "c3d2802487ea4954cba99b2eb7d0f639b1cbf0f0"
+    "pr": 874,
+    "name": "fix/public-asset-inventory-symlinks-20261114",
+    "headSha": "236b76ec137145ac81c5067b0141a3b2bcf30d1b",
+    "mergeSha": "d92f243c75a00231feb97cea99a5737e1306b882"
   },
   {
-    "pr": 901,
-    "name": "docs/coordination-draft-898-900-20261114",
-    "headSha": "21f12b02e93f1c42fd93e62b7ba15139b7c1ea58",
-    "mergeSha": "c1d349869c1bdbc2f939b9c399568f4f678b24a9"
+    "pr": 873,
+    "name": "fix/home-multiline-section-leading-20261114",
+    "headSha": "70367735cd99017bd5854769fce677f0afbb0501",
+    "mergeSha": "2c9230cd9797e28e77a1a962c002805946a15441"
   }
 ]
