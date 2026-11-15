@@ -113,7 +113,7 @@ export function auditFontSizes(source, path) {
     const shorthandCalcTooSmall = shorthandSize !== null &&
       (!Number.isFinite(shorthandSize) ||
         shorthandSize < (shorthandCalcSize[2].toLowerCase() === "px" ? MIN_FONT_PX : MIN_FONT_REM));
-    if (tooSmall || nestedMinTooSmall || nestedMinAdditiveTooSmall || shorthandCalcTooSmall) violations.push({ path, value });
+    if ((shorthandCalcIsSize ? shorthandCalcTooSmall : tooSmall) || nestedMinTooSmall || nestedMinAdditiveTooSmall) violations.push({ path, value });
   }
 
   return violations;
