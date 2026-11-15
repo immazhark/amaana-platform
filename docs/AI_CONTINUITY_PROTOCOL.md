@@ -33,9 +33,7 @@ No work should be recreated merely because the previous agent's conversational c
 ## Branch strategy
 
 ### Integration branch
-`phase-public-site-rebuild`
-
-This is the current development integration branch. `main` is not the active implementation target unless the user explicitly changes the release strategy.
+Protected `main` is the current integration trunk and the authoritative source for reviewed production releases. The historical `phase-public-site-rebuild` branch is retained for forensic and unmerged-history review, **not** for new implementation. Use a short-lived task branch based on a verified current `main` SHA. Staging is an environment and acceptance boundary; do not create a permanent `staging` Git branch without a documented technical need.
 
 ### Task branches
 Use small, descriptive branches:
@@ -46,6 +44,8 @@ Use small, descriptive branches:
 - `content/...`
 
 One task branch should represent one coherent atomic change.
+
+Reuse an existing active PR head for additional tests or corrections within the same scoped cause. After a protected, exact-head, ready-state-verified merge, retire the eligible task branch using the guarded merge lifecycle. Never reuse a previously merged branch for new work. Historical/archive, protected, active PR and explicitly retained branches are exceptions, not bulk-pruning targets.
 
 ### Handoff with an open branch
 If the outgoing agent has an open task branch:

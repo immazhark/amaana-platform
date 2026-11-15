@@ -111,6 +111,8 @@ jobs:
           '
       - name: Verify read-only branch containment inventory semantics
         run: node --test scripts/test-branch-retention-report.mjs
+      - name: Guard verified merged-branch retirement semantics
+        run: node --test scripts/test-retire-merged-branch.mjs scripts/test-retire-approved-history.mjs
       - name: Guard read-only dated-audit-document retention semantics
         run: node --test scripts/test-dated-doc-retention.mjs
       - name: Guard cross-browser acceptance concurrency and coverage
