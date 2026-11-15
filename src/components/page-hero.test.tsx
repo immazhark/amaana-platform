@@ -56,6 +56,8 @@ describe("PageHero public action destinations", () => {
       { label: "Credentials", href: "https://user:secret@example.invalid" },
       { label: "Trailing space", href: "/contact " },
       { label: "Line break", href: "https://example.invalid/\nroute" },
+      { label: "Encoded mail header", href: "mailto:team@example.invalid?subject=Hi%0d%0aBcc:someone@example.invalid" },
+      { label: "Encoded mail body", href: "mailto:team@example.invalid?subject=Hi%250AHidden" },
       { label: "Empty email", href: "mailto:" },
       { label: "Empty phone", href: "tel:" },
       { label: "Missing href" },
