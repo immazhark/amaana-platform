@@ -1,18 +1,15 @@
 # Amaana implementation ownership — current checkpoint
 
-**As of:** 15 November 2026 IST. This is a replaceable active-work pointer, not a historical log.
+**Updated:** 15 November 2026 IST. This is a replaceable current pointer, not a historical log.
 
-**Writer:** `CHATGPT_ACTIVE` — single authorized GitHub implementation writer. No competing writer was identified in the inspected coordination and PR records. Parallel research and CI are not parallel repository writers.
+**Writer:** `CHATGPT_ACTIVE`, sole implementation writer; repository remains owner-controlled. Verify no competing session before writing. Protected integration/release trunk: `main`. Latest merged source: `b68936e012641976605e3ce74f338ad0f0e32008`; source and runtime SHAs differ intentionally when Railway correctly SKIPs docs/scripts-only commits.
 
-**Integration trunk:** protected `main`; inspected source SHA `4b2f8640a8ede388d041f87a4bd5f30c21ded9c0`. Historical `phase-public-site-rebuild` is retained, not an integration target.
+**Task in progress:** AF-R079 short-lived branch hygiene; existing workflow and manifest. Working branch `chore/af-r079-reviewed-history-wave3-20261115`; [PR #982](https://github.com/immazhark/amaana-platform/pull/982) is a draft third 25-ref retirement wave. PR #982 must pass exact-head selected CI, separate ready-state workflow, review and expected-head guarded merge; recheck head in GitHub, never rely on a copied candidate SHA.
 
-**Current task:** AF-R079 branch/document lifecycle. Working branch `chore/af-r079-merged-branch-lifecycle-20261115`; [PR #980](https://github.com/immazhark/amaana-platform/pull/980). GitHub PR metadata is authoritative for the changing candidate-head SHA and latest exact-head CI, not an old copied checkpoint.
+**Already verified:** #980 merged `ee7d90fb1687b6bd73b711f6751dfaf84872ad4c` and enabled future automatic head retirement. First historical wave: 20/20 retired; #980 head also retired. #979 merged `ee7f6361f9a4f99d2d2f5b204b92ed06aa0e9f5e`, source head absent. #981 merged `b68936e012641976605e3ce74f338ad0f0e32008`; second historical wave 25/25 retired, #981 head absent. Fresh post-wave GitHub census **957 branches**; creation of the #982 task branch adds one temporary ref until merge.
 
-**Implemented on candidate:** Fail-closed post-merge task-branch retirement; a pinned, revalidated 20-ref historical pilot; synthetic edge-case tests; updated `AGENTS.md` and continuity protocol for protected-main short-lived branching. Document cleanup: seven superseded unreferenced dated notes removed from the candidate; `AI_ACTIVE_WORK.md` and `07_CURRENT_STATE.md` reduced to current checkpoints. The historical handoff ledger and Git/PR history are preserved. All changes remain **unmerged/unreleased** pending exact-head checks, distinct ready-state verification and guarded merge. No historical ref deletion has happened at this checkpoint.
+**Production:** Railway last successful website deployment `ffa8dcea-d24a-4783-b672-194390915840` at `83072e44e74c785f51f2b9213a3820fee7a34d8e`; fresh public version/ready reports the same `main` production SHA and `ready`. Later script/docs merges were correctly `SKIPPED`; no forced rollout or live payment operation.
 
-**Current open PRs:** #684, #845 (separate financial/privacy holds); #974, #975, #977, #979 (separate engineering drafts); #980 (governance and hygiene). The original 149-row classifications stay **35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A**.
+**Held:** #684 domestic giving QR and #845 finance staging guard require independent scoped acceptance. Historical `phase-public-site-rebuild`, protected/finance/infrastructure refs and unreviewed history are not deletion targets. Original 149-item register remains **35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A**.
 
-**Next:** Finish #980's full selected workflow and review, ready-state verification, guarded merge; verify the actual branch cleanup results and remaining branch inventory. Continue code PRs without waiving required acceptance. Never activate live donor communications, payment routing, infrastructure, migrations or private-media publication through this task.
-
-**Evidence location:** [AF-R079 runbook](./AF_R079_BRANCH_RETENTION_2026_11_11.md), [pinned candidate manifest](./mission-control/af-r079-approved-retirement-batch-20261115.json), [historical handoffs](./AI_HANDOFF_LEDGER.md), [master backlog](./mission-control/149-item-status-2026-11-15.csv). Historical prior contents of this checkpoint remain available in Git history.
-
+**Next:** Accept PR #982 only after all required exact-head and ready-state gates; verify automatic deletion log and complete ref census after merge. Continue classifying archived branch refs, but never bulk-delete by age/name alone. Keep this pointer concise; full evidence is in GitHub PRs, workflows and the existing [handoff ledger](./AI_HANDOFF_LEDGER.md).
