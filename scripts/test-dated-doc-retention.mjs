@@ -76,3 +76,17 @@ test("AF-R078 treats Markdown reference-style definitions as conservative histor
     assert.equal(report.deletionApproved, false);
   } finally { f.dispose(); }
 });
+
+test("AF-R078 counts HTML anchors in Markdown conservatively as document backlinks", () => {
+  const f = fixture();
+  try {
+    writeFileSync(join(f.nested, "current.md"),
+      '<a class="audit" href="./2026-11-12-checkpoint.md#summary">Earlier checkpoint</a>\n');
+    const report = collectDatedDocumentBacklinks(f.root);
+    const checkpoint = report.documents.find(d =>
+      d.path === "docs/mission-control/2026-11-12-checkpoint.md");
+    assert.deepEqual(checkpoint?.referencedBy, ["docs/mission-control/current.md"]);
+    assert.equal(checkpoint?.disposition, "REVIEW_LINKED");
+    assert.equal(report.deletionApproved, false);
+  } finally { f.dispose(); }
+});
