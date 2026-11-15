@@ -51,3 +51,27 @@ it("keeps the canonical FAQ answers free of donor-specific and beneficiary detai
   expect(answers).toContain("domestic Indian contributions only");
   expect(answers).toContain("claimed direct transfer remains pending");
 });
+
+
+it("normalizes unsafe configured FAQ origins before emitting canonical JSON-LD", () => {
+  const canonical = "https://amaanafoundation.org";
+  const knownPath = canonical + "/how-we-verify";
+  const badOrigins = [
+    "http://example.invalid",
+    "https://person:credential@example.invalid",
+    "javascript:alert(1)",
+    "invalid base URL",
+  ];
+  for (const origin of badOrigins) {
+    const schema = buildVerificationFaqSchema(origin);
+    expect(schema.url).toBe(knownPath);
+    expect(schema["@id"]).toBe(knownPath + "#questions");
+    expect(schema.isPartOf["@id"]).toBe(canonical + "/#website");
+    const serialized = serializeVerificationFaqSchema(origin);
+    expect(serialized).not.toContain("example.invalid");
+    expect(serialized).not.toContain("credential");
+  }
+  const preview = buildVerificationFaqSchema("https://preview.example.invalid:8443/nested/path");
+  expect(preview.url).toBe("https://preview.example.invalid:8443/how-we-verify");
+  expect(preview.isPartOf["@id"]).toBe("https://preview.example.invalid:8443/#website");
+});

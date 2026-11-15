@@ -1,4 +1,4 @@
-import { serializeStructuredData } from "@/lib/structured-data";
+import { normalizeStructuredDataSiteUrl, serializeStructuredData } from "@/lib/structured-data";
 
 /** These answers must remain identical in visible copy and machine-readable
  * metadata. No private beneficiary evidence, unverifiable totals or claims
@@ -27,14 +27,15 @@ export const VERIFICATION_FAQ = [
 ] as const;
 
 export function buildVerificationFaqSchema(siteUrl: string) {
-  const url = new URL("/how-we-verify", siteUrl).toString();
+  const origin = normalizeStructuredDataSiteUrl(siteUrl);
+  const url = new URL("/how-we-verify", origin).toString();
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",
     "@id": `${url}#questions`,
     url,
     inLanguage: "en-IN",
-    isPartOf: { "@id": `${new URL("/", siteUrl).toString()}#website` },
+    isPartOf: { "@id": `${new URL("/", origin).toString()}#website` },
     mainEntity: VERIFICATION_FAQ.map(item => ({
       "@type": "Question",
       name: item.question,
