@@ -31,6 +31,24 @@ export function isAllowedProfileRequest(rawUrl, method = "GET") {
     const privatePath = /^(?:\/admin|\/documents|\/donations|\/api\/(?:admin|ops|cron|webhooks|donations|assistance|giving-reminder|jobs)|\/request-assistance\/(?:status|received))(?:\/|$)/i.test(pathname);
     if (privatePath || pathname.includes("\\") || pathname.includes("//") ||
         /%[0-9a-f]{2}/i.test(pathname)) return false;
+    // A localhost URL is not proof that an API is safe to read: prevent
+    // tracing private records or token-bearing requests to unknown endpoints.
+    if (/^\/api(?:\/|$)/i.test(pathname) &&
+        (!new Set(["/api/health/ready", "/api/health/version", "/api/analytics/page-view", "/api/public/live-rail"]).has(pathname) ||
+          url.search || url.hash)) return false;
+    // Next's image optimizer is a same-origin proxy. Keep its source local
+    // and public rather than fetching a third-party/private URL via localhost.
+    if (pathname === "/_next/image") {
+      const keys = [...url.searchParams.keys()];
+      const source = url.searchParams.get("url");
+      const width = url.searchParams.get("w") ?? "";
+      const quality = url.searchParams.get("q") ?? "";
+      if (keys.length !== 3 || ["url", "w", "q"].some(key => url.searchParams.getAll(key).length !== 1) ||
+          !source || !/^\/(?!\/)[A-Za-z0-9_./-]+\.(?:avif|gif|jpe?g|png|webp)$/i.test(source) ||
+          source.split("/").some(segment => segment === "." || segment === "..") ||
+          /^\/(?:admin|api|documents|donations|request-assistance\/(?:status|received))(?:\/|$)/i.test(source) ||
+          !/^\d{1,4}$/.test(width) || !/^(?:[1-9]|[1-9]\d|100)$/.test(quality) || url.hash) return false;
+    }
     // Profiling may fetch local content but must never forward a write method,
     // even if the target is the approved synthetic localhost origin.
     return (method === "GET" || method === "HEAD") &&
