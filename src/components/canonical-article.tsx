@@ -1,4 +1,5 @@
 import { SectionHeading } from "@/components/section-heading";
+import { isPrivateRoute } from "@/lib/public-routing";
 import type { ReactNode } from "react";
 import { PageHero, type PageHeroVariant } from "@/components/page-hero";
 import "@/app/canonical-content.css";
@@ -49,26 +50,33 @@ function normalizeBlocks(blocks: ArticleBlock[]) {
 }
 
 function isSafeInternalPathwayHref(href: string) {
-  return href.startsWith("/") && !href.startsWith("//") && !/[\\\s\u0000-\u001F\u007F]/.test(href);
+  if (!href.startsWith("/") || href.startsWith("//") ||
+      /[\\\s\u0000-\u001F\u007F]/.test(href)) return false;
+  const pathname = href.split(/[?#]/, 1)[0] ?? "";
+  // A public article must never link to protected or ambiguous encoded routes.
+  return /^\/(?:[a-z0-9_-]+(?:\/[a-z0-9_-]+)*)?$/.test(pathname) &&
+    !isPrivateRoute(pathname);
 }
 
 function normalizePathways(pathways?: ArticlePathway[]) {
-  if (!pathways?.length) return [];
+  if (!Array.isArray(pathways)) return [];
 
   const seen = new Set<string>();
-  return pathways
-    .map(pathway => ({
-      label: pathway.label.trim(),
-      href: pathway.href.trim(),
-      description: pathway.description.trim(),
-    }))
-    .filter(pathway => {
-      if (!pathway.label || !pathway.description || !isSafeInternalPathwayHref(pathway.href) || seen.has(pathway.href)) {
-        return false;
-      }
-      seen.add(pathway.href);
-      return true;
-    });
+  const reviewed: ArticlePathway[] = [];
+  for (const candidate of pathways) {
+    // Sources and runtime projections can violate static TypeScript contracts.
+    if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) continue;
+    const item = candidate as Partial<ArticlePathway>;
+    if (typeof item.label !== "string" || typeof item.href !== "string" ||
+        typeof item.description !== "string") continue;
+    const label = item.label.trim();
+    const href = item.href.trim();
+    const description = item.description.trim();
+    if (!label || !description || !isSafeInternalPathwayHref(href) || seen.has(href)) continue;
+    seen.add(href);
+    reviewed.push({ label, href, description });
+  }
+  return reviewed;
 }
 
 export function CanonicalArticle({
