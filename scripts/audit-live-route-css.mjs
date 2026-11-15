@@ -89,6 +89,55 @@ export function summarizeRouteCssBytes(entries, sizes) {
   } };
 }
 
+const MAX_HTML_BYTES = 2 * 1024 * 1024;
+const MAX_CSS_BYTES = 1024 * 1024;
+
+/** Limit decompressed response bytes, including when Content-Length is absent.
+ * Real fetch streams are stopped as soon as the next chunk exceeds the cap.
+ */
+async function readResponseBytes(response, limit, kind) {
+  const declared = response.headers?.get("content-length");
+  if (typeof declared === "string" && /^\d+$/.test(declared.trim()) && Number(declared) > limit) {
+    try { await response.body?.cancel?.(); } catch { /* Refusal must still fail closed. */ }
+    throw new Error(kind + " response exceeds the audit size limit");
+  }
+  if (typeof response.body?.getReader === "function") {
+    const reader = response.body.getReader();
+    const chunks = [];
+    let total = 0;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (!(value instanceof Uint8Array)) throw new Error("Invalid streamed " + kind + " response");
+        total += value.byteLength;
+        if (total > limit) throw new Error(kind + " response exceeds the audit size limit");
+        chunks.push(value);
+      }
+    } catch (error) {
+      try { await reader.cancel(); } catch { /* Preserve the original read error. */ }
+      throw error;
+    } finally {
+      reader.releaseLock();
+    }
+    return Buffer.concat(chunks, total);
+  }
+  // Synthetic fetch fixtures may provide text/arrayBuffer but no stream.
+  // The actual network fetch above always uses its bounded response stream.
+  if (kind === "HTML") {
+    const value = await response.text();
+    if (typeof value !== "string" || Buffer.byteLength(value, "utf8") > limit) {
+      throw new Error(kind + " response exceeds the audit size limit");
+    }
+    return Buffer.from(value, "utf8");
+  }
+  const value = await response.arrayBuffer();
+  if (!(value instanceof ArrayBuffer) || value.byteLength > limit) {
+    throw new Error(kind + " response exceeds the audit size limit");
+  }
+  return Buffer.from(value);
+}
+
 /** Read-only, unauthenticated measurement against fixed public paths. */
 export async function auditPublicRouteCss({ fetchImpl = fetch, routes = PUBLIC_ROUTES } = {}) {
   const site = new URL(ORIGIN);
@@ -128,7 +177,7 @@ export async function auditPublicRouteCss({ fetchImpl = fetch, routes = PUBLIC_R
     if (!contentType || !/^text\/html(?:\s*;|$)/i.test(contentType)) {
       throw new Error("Route response is not HTML: " + pageUrl.href);
     }
-    const html = await response.text();
+    const html = (await readResponseBytes(response, MAX_HTML_BYTES, "HTML")).toString("utf8");
     const stylesheets = stylesheetsInHtml(html, site.href);
     entries.push({ route, stylesheets });
     for (const asset of stylesheets) {
@@ -136,7 +185,7 @@ export async function auditPublicRouteCss({ fetchImpl = fetch, routes = PUBLIC_R
       const response = await request(asset);
       const contentType = response.headers?.get("content-type") ?? null;
       if (!contentType || !/^text\/css(?:\s*;|$)/i.test(contentType)) throw new Error("Stylesheet response is not CSS: " + asset);
-      const body = await response.arrayBuffer();
+      const body = await readResponseBytes(response, MAX_CSS_BYTES, "CSS");
       sizes.set(asset, body.byteLength);
     }
   }
