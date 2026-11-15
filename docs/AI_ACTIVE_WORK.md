@@ -1,17 +1,17 @@
 # Amaana implementation ownership — current checkpoint
 
-**Date:** 15 November 2026 IST. Current pointer, not historical log.
+**15 November 2026 IST · Sole implementation writer: `CHATGPT_ACTIVE`.** Read-only agents and hosted CI may run concurrently. No second repository implementation writer.
 
-**Sole repo writer:** `CHATGPT_ACTIVE`. Read-only audits and independent hosted checks may operate concurrently. Do not permit competing implementation writes.
+**Protected main:** `d77b1c40110ab12c2492304c184c61f988823e91` after AF-R005 PR #987. Hosted fail-first RED `43741783095`, GREEN exact-head `43741890034`, separate ready-state `43744197664` all verified; protected expected-head guarded squash merge. AF-R013 #985 merged earlier at `f45c963b8d17f2abe08beadaa5e50d44c7ed6709`. Source SHA and website deployment SHA differ when Railway correctly SKIPs scripts/docs changes.
 
-**Protected source:** `main` at `f45c963b8d17f2abe08beadaa5e50d44c7ed6709` after AF-R013 [PR #985](https://github.com/immazhark/amaana-platform/pull/985) guarded squash merge. Its RED `43734840150`, full GREEN `43738698646`, separate ready GREEN `43741550873` passed. Four synthetically case-varied admin paths are detected by the local read-only edge inventory; no WAF rule or auth behavior was activated. Railway website and parked worker correctly `SKIPPED` the script/CI/doc-only merge.
+**Current bounded implementation task:** AF-R012 [PR #986](https://github.com/immazhark/amaana-platform/pull/986), `test/af-r012-appeal-cross-role-20261115`. Added synthetic wrong-role and positive-control appeal action tests against **existing behavior**, no production auth/RBAC changes. Earlier head `edc0e820b7317e405baa456c9144162321bb0d11` had fast, database and production SUCCESS, browser incomplete. This task branch now integrates `main` through a normal two-parent commit; new exact-head selected CI, separate ready-state, zero unresolved reviews and protected expected-head SHA merge required. src/** test-only may trigger Railway deployment; verify actual rollout after merge.
 
-**Current bounded work:** AF-R012 cross-role admin appeal test [PR #986](https://github.com/immazhark/amaana-platform/pull/986) on `test/af-r012-appeal-cross-role-20261115`. Initial full candidate head `a02f135032056b4a54852d5c3309c068c87a6218` green fast, database and production, browser running at last observation; no readiness promotion. One sole-writer two-parent integration commit reconciles its code with `main` above and refreshes this pointer; fresh exact-head CI and distinct ready-state run then protected expected-head merge required. Only synthetic tests against existing auth/action logic; no production RBAC change, no donor records or money.
+**Independent work queued under same sole writer:** AF-R078 [PR #988](https://github.com/immazhark/amaana-platform/pull/988), read-only inventory of unquoted HTML links (RED `43742054677`; GREEN head `b16af9dc4dd0b6c4d6d9e8c9b9e03118413fb713`), and AF-R079 [PR #989](https://github.com/immazhark/amaana-platform/pull/989), reviewed wave of 25 exact-SHA merged ref retirement manifest (head `58e6aef569d9ebfc4c7000d20aaa0c85a407dec1`). Both remain drafts pending full acceptance, and require main reconciliation if it moves.
 
-**Prior public release:** AF-R066 #983 merged `b1a5b71872c201874a25c70d6a2b7dc632ac6e06`; Railway website deployment `56519fd5-b4f9-4200-84b0-3cdfab90c4d4` SUCCESS and independently public `/api/health/version` matched this SHA, `/api/health/ready` ready. AF-R078 #984 and AF-R013 #985 were scripts/docs and correctly SKIPPED after their merges; deployed and source SHA may differ.
+**Railway/public:** Website last independent confirmed deployed SHA `b1a5b71872c201874a25c70d6a2b7dc632ac6e06`, /api/health/ready ready. Parked notification worker unchanged; do not force rollout merely to equalize source/runtime.
 
-**Hard holds:** Finance-held #684/#845, Railway IaC issue #446 live apply, all real payments/refunds, secret changes, production schema/backfills, notification activation, external donor messaging, identifiable public media. Preserve INR-only, no FCRA, provisional 12A/12AB and unresolved 80G.
+**Hard holds:** finance #684/#845, Railway IaC #446 production apply, real payments/refunds/notifications, secrets/schema/data changes, public identifiable faces, disputed 80G, provisional 12A/12AB, no FCRA; INR only.
 
-**Original 149:** 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 Not applicable. No completion inflation from scoped coverage.
+**Original 149 totals unchanged:** 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A.
 
-**Next:** Run exact-head CI for reconciled #986 and review results, promote only after full selected acceptance, verify distinct ready check, merge with pinned expected SHA. Inspect Railway and public identity separately; do not force deployment to align SHAs.
+**Next:** Finish #986 new-head acceptance, ready-state and protected guarded merge; inspect Railway/public. Keep backlog progress evidence scoped, do not inflate total closure.
