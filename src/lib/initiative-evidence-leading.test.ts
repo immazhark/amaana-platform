@@ -5,7 +5,7 @@ const css = readFileSync("src/app/initiative-experience.css", "utf8");
 function declaredLeading(selector: string): number {
   const block = css.split(selector + " {")[1]?.split("}")[0];
   expect(block, "Missing editorial rule: " + selector).toBeDefined();
-  const value = /\\bline-height:\\s*(\\d*\\.?\\d+)\\s*;?/.exec(block!)?.[1];
+  const value = /\bline-height:\s*(\d*\.?\d+)\s*;?/.exec(block!)?.[1];
   expect(value, "No explicit line-height for " + selector).toBeDefined();
   return Number(value);
 }
