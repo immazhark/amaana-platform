@@ -116,10 +116,15 @@ export function discoverAdminRoutes(root = appRoot) {
     throw new Error("Symlink in admin route inventory: " + root);
   }
   // Next.js pathless route groups can precede /admin or /api/admin.
-  // Walk all App Router route files, then select their effective admin URLs.
-  const paths = routePathsUnder(root, [])
-    .filter(path => /^\/(?:admin|api\/admin)(?:\/|$)/.test(path))
-    .sort();
+  // A case-variant folder must never disappear from the edge-policy proposal.
+  const allPaths = routePathsUnder(root, []);
+  const adminPrefix = /^\/(?:admin|api\/admin)(?:\/|$)/;
+  const caseVariants = allPaths.filter(path =>
+    /^\/(?:admin|api\/admin)(?:\/|$)/i.test(path) && !adminPrefix.test(path));
+  if (caseVariants.length > 0) {
+    throw new Error("Case-variant administrative route: " + caseVariants.sort().join(", "));
+  }
+  const paths = allPaths.filter(path => adminPrefix.test(path)).sort();
   assertRoutes("Repository inventory", paths);
   return paths;
 }
