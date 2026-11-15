@@ -1,15 +1,17 @@
 # Amaana implementation ownership — current checkpoint
 
-**Updated:** 15 November 2026 IST. This is a replaceable current pointer, not a historical log.
+**Updated:** 15 November 2026 IST. This file is the current implementation pointer; historical facts belong in `docs/AI_HANDOFF_LEDGER.md` and merged PRs.
 
-**Writer:** `CHATGPT_ACTIVE`, sole implementation writer; repository remains owner-controlled. Verify no competing session before writing. Protected integration/release trunk: `main`. Latest merged source: `b68936e012641976605e3ce74f338ad0f0e32008`; source and runtime SHAs differ intentionally when Railway correctly SKIPs docs/scripts-only commits.
+**Writer:** `CHATGPT_ACTIVE` only. The user has explicitly continued ownership. Parallel CI and read-only research are allowed; no second GitHub writer is authorized.
 
-**Task in progress:** AF-R079 short-lived branch hygiene; existing workflow and manifest. Working branch `chore/af-r079-reviewed-history-wave3-20261115`; [PR #982](https://github.com/immazhark/amaana-platform/pull/982) is a draft third 25-ref retirement wave. PR #982 must pass exact-head selected CI, separate ready-state workflow, review and expected-head guarded merge; recheck head in GitHub, never rely on a copied candidate SHA.
+**Protected base:** `main` at `f03f9a7df181e5451471d998da2a8f668a6cf47e` at task-branch creation. Source and Railway runtime SHAs are deliberately separate.
 
-**Already verified:** #980 merged `ee7d90fb1687b6bd73b711f6751dfaf84872ad4c` and enabled future automatic head retirement. First historical wave: 20/20 retired; #980 head also retired. #979 merged `ee7f6361f9a4f99d2d2f5b204b92ed06aa0e9f5e`, source head absent. #981 merged `b68936e012641976605e3ce74f338ad0f0e32008`; second historical wave 25/25 retired, #981 head absent. Fresh post-wave GitHub census **957 branches**; creation of the #982 task branch adds one temporary ref until merge.
+**Release queue:** [PR #983](https://github.com/immazhark/amaana-platform/pull/983) AF-R066, branch `fix/af-r066-evidence-stylelint-20261115`, head `a0f32690bfd46068bc2b8072cde527515162126d`. Verified hosted RED `43731128736` and exact-head GREEN fast/database/production in `43731243191`; browser selected and still in progress at last inspection; draft, unmerged. Must complete browser and final verify, independent ready-state workflow, zero unresolved reviews and expected-SHA protected merge. Never mark uncompleted checks passed.
 
-**Production:** Railway last successful website deployment `ffa8dcea-d24a-4783-b672-194390915840` at `83072e44e74c785f51f2b9213a3820fee7a34d8e`; fresh public version/ready reports the same `main` production SHA and `ready`. Later script/docs merges were correctly `SKIPPED`; no forced rollout or live payment operation.
+**Current independent atomic task:** AF-R078 static backlinks, branch `fix/af-r078-html-backlink-inventory-20261115` created from the protected base. Existing read-only `scripts/draft-dated-doc-retention.mjs` omits HTML `<a href>` links embedded in Markdown files. Write a synthetic failing test, make the smallest correction preserving project-root and symlink guards, then verify and open one draft PR. No archived files will be deleted or reclassified as safe-to-delete. This branch does not modify application routes or financial behavior. Keep AF-R078 Partial until its full retention end state is accepted.
 
-**Held:** #684 domestic giving QR and #845 finance staging guard require independent scoped acceptance. Historical `phase-public-site-rebuild`, protected/finance/infrastructure refs and unreviewed history are not deletion targets. Original 149-item register remains **35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A**.
+**Production baseline:** Railway last inspected website deployment `ffa8dcea-d24a-4783-b672-194390915840` SUCCESS; independently observed public runtime `83072e44e74c785f51f2b9213a3820fee7a34d8e` ready. Held finance PRs #684/#845 remain untouched. #446 Railway IaC needs reviewed read-only CLI plan and a separately scoped live apply decision.
 
-**Next:** Accept PR #982 only after all required exact-head and ready-state gates; verify automatic deletion log and complete ref census after merge. Continue classifying archived branch refs, but never bulk-delete by age/name alone. Keep this pointer concise; full evidence is in GitHub PRs, workflows and the existing [handoff ledger](./AI_HANDOFF_LEDGER.md).
+**149-row totals:** 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 Not applicable. No full-item promotion from partial tests or reports.
+
+**Next:** Finish #983 gates independently; in the meantime progress AF-R078 through RED/GREEN, CI and bounded PR. Refresh both PR heads and protected main before any merge, handle any coordination conflict without overwriting the merged current state. Do not force a Railway rollout.
