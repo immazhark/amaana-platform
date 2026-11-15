@@ -23,6 +23,14 @@ const eslintConfig = defineConfig([
       "jsx-a11y/tabindex-no-positive": "error",
     },
   },
+  // AF-R069: apply keyboard-focus enforcement to native-control share UI only.
+  // Do not enable globally: existing roving-tablist components need separate review.
+  {
+    files: ["src/components/appeal-share.tsx"],
+    rules: {
+      "jsx-a11y/interactive-supports-focus": "error",
+    },
+  },
   {
     files: [
       "src/app/**/route.ts",
