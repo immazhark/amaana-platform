@@ -91,7 +91,9 @@ jobs:
           node --test scripts/test-artwork-encoding.mjs
           node scripts/check-public-image-weight.mjs
       - name: Prevent anonymous admin route coverage drift
-        run: node --test scripts/test-admin-route-inventory.mjs
+        run: |
+          node --test scripts/test-admin-route-inventory.mjs
+          node --test scripts/audit-admin-edge-coverage.test.mjs
       - name: Verify branded application icons
         run: npm run icons:verify
       - name: Decode and validate public campaign media
