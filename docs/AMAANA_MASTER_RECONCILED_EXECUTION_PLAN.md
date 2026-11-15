@@ -1,3 +1,7 @@
+## Updated original 149-row classification — 15 November 2026 IST
+
+**35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 Not applicable = 149 (112 actionable).** Supersedes older historical counts below. [Complete tracker](mission-control/149-item-status-2026-11-15.csv), [current active queue](mission-control/active-backlog-2026-11-15.csv), [source evidence](mission-control/2026-11-15-itemwise-reconciliation.md). AF-R078 now Partial due shipped read-only inventory but original archive/deletion remains unresolved.
+
 ## Latest verified 149-item classification proposal — 15 November 2026 IST
 
 **PR #944 latest:** 35 Completed / 24 Implemented / 70 Partial / 18 Not started / 1 Superseded / 1 Not applicable = 149, **112 actionable**. Supersedes earlier dated counts below without removing their evidence. AF-R072's home meta-description length moved Partial → Completed after PR #945 merged `33cb6ff5906832047858b2570ff9c2c361bb19ef`, Railway SUCCESS, public version/readiness exact and fresh original home HTML `meta name=description` measured 155 characters. See [149-item updated ledger](mission-control/149-item-status-2026-11-15.csv), [112-item active queue](mission-control/active-backlog-2026-11-15.csv), [24 Implemented acceptance gaps](mission-control/2026-11-15-implemented-acceptance.md), [70 Partial blockers](mission-control/2026-11-15-partial-blockers.md), [18 Not started first actions](mission-control/2026-11-15-not-started-action-plan.md). No general W3C/field CWV/payment/statutory/beneficiary-photo approval is implied.
