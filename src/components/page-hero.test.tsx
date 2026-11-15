@@ -25,16 +25,18 @@ describe("PageHero public action destinations", () => {
     const html = hero([
       { label: "View public work", href: "/our-work" },
       { label: "Review payable appeal", href: "/donate/reviewed-example" },
+      { label: "Track existing request", href: "/request-assistance/status" },
       { label: "Read evidence", href: "#evidence" },
       { label: "Email Amaana", href: "mailto:amaanafoundation24@gmail.com" },
       { label: "Call Amaana", href: "tel:+919908002694" },
       { label: "Visit official channel", href: "https://www.instagram.com/amaanafoundation/" },
     ]);
-    for (const label of ["View public work", "Review payable appeal", "Read evidence", "Email Amaana", "Call Amaana", "Visit official channel"]) {
+    for (const label of ["View public work", "Review payable appeal", "Track existing request", "Read evidence", "Email Amaana", "Call Amaana", "Visit official channel"]) {
       expect(html).toContain(label);
     }
     expect(html).toContain('data-next-link="true"');
     expect(html).toContain('href="#evidence"');
+    expect(html).toContain('href="/request-assistance/status"');
     expect(html).toContain('href="mailto:amaanafoundation24@gmail.com"');
     expect(html).toContain('href="tel:+919908002694"');
     expect(html).toContain('href="https://www.instagram.com/amaanafoundation/"');
@@ -48,6 +50,8 @@ describe("PageHero public action destinations", () => {
       { label: "Protocol relative", href: "//example.invalid" },
       { label: "Private admin", href: "/admin" },
       { label: "Private API", href: "/api/private" },
+      { label: "Private receipt", href: "/request-assistance/received" },
+      { label: "Private nested tracking", href: "/request-assistance/status/arbitrary-token" },
       { label: "Encoded private", href: "/%61dmin" },
       { label: "Credentials", href: "https://user:secret@example.invalid" },
       { label: "Trailing space", href: "/contact " },
