@@ -24,12 +24,13 @@ describe("PageHero public action destinations", () => {
   it("keeps reviewed in-site, anchor, email, phone and secure links usable", () => {
     const html = hero([
       { label: "View public work", href: "/our-work" },
+      { label: "Review payable appeal", href: "/donate/reviewed-example" },
       { label: "Read evidence", href: "#evidence" },
       { label: "Email Amaana", href: "mailto:amaanafoundation24@gmail.com" },
       { label: "Call Amaana", href: "tel:+919908002694" },
       { label: "Visit official channel", href: "https://www.instagram.com/amaanafoundation/" },
     ]);
-    for (const label of ["View public work", "Read evidence", "Email Amaana", "Call Amaana", "Visit official channel"]) {
+    for (const label of ["View public work", "Review payable appeal", "Read evidence", "Email Amaana", "Call Amaana", "Visit official channel"]) {
       expect(html).toContain(label);
     }
     expect(html).toContain('data-next-link="true"');
