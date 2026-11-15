@@ -31,7 +31,7 @@
   margin: 1.5rem 0 .8rem;
   font-family: var(--af-font-display);
   font-size: clamp(1.5rem, 2.5vw, 2.4rem);
-  line-height: 1.05;
+  line-height: 1.16;
 }
 
 .v2-initiative-evidence-panel small {
@@ -67,7 +67,7 @@
   font-family: var(--af-font-display);
   font-size: clamp(1.45rem, 2.5vw, 2.35rem);
   font-weight: 500;
-  line-height: 1.05;
+  line-height: 1.16;
 }
 
 .v2-initiative-facts small {
