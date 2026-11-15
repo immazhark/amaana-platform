@@ -96,6 +96,18 @@ export function auditFontSizes(source, path) {
       return !Number.isFinite(finalSize) ||
         finalSize < (unit.toLowerCase() === "px" ? MIN_FONT_PX : MIN_FONT_REM);
     });
+    // A nested calc() with three or more same-unit terms can fall below the
+    // minimum even when each literal operand is large enough on its own.
+    const minAdditiveChains = !shorthand && /^min\(/i.test(value)
+      ? Array.from(value.matchAll(/(?:\(|,)\s*calc\(\s*(-?\d*\.?\d+)\s*(rem|px)((?:\s*[+-]\s*-?\d*\.?\d+\s*\2){2,})\s*\)\s*(?=,|\))/gi))
+      : [];
+    const nestedMinAdditiveChainTooSmall = minAdditiveChains.some(([, start, unit, chain]) => {
+      const finalSize = Array.from(chain.matchAll(/([+-])\s*(-?\d*\.?\d+)\s*(?:rem|px)/gi))
+        .reduce((amount, [, operation, adjustment]) => operation === "+"
+          ? amount + Number(adjustment) : amount - Number(adjustment), Number(start));
+      return !Number.isFinite(finalSize) ||
+        finalSize < (unit.toLowerCase() === "px" ? MIN_FONT_PX : MIN_FONT_REM);
+    });
     // In font shorthands the size may itself be a constant calc(). Check
     // its evaluated value, not its operands; do not treat a later calc()
     // after the size/line-height slash as the font-size.
@@ -112,7 +124,7 @@ export function auditFontSizes(source, path) {
     const shorthandCalcTooSmall = shorthandSize !== null &&
       (!Number.isFinite(shorthandSize) ||
         shorthandSize < (shorthandCalcSize[2].toLowerCase() === "px" ? MIN_FONT_PX : MIN_FONT_REM));
-    if ((shorthandCalcIsSize ? shorthandCalcTooSmall : tooSmall) || nestedMinTooSmall || nestedMinAdditiveTooSmall) violations.push({ path, value });
+    if ((shorthandCalcIsSize ? shorthandCalcTooSmall : tooSmall) || nestedMinTooSmall || nestedMinAdditiveTooSmall || nestedMinAdditiveChainTooSmall) violations.push({ path, value });
   }
 
   return violations;
