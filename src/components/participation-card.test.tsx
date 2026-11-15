@@ -108,3 +108,23 @@ it("fails closed for invalid participation collections without hiding reviewed d
   expect(html).not.toContain("dangerously");
   expect(html).not.toContain("unknown-icon");
 });
+
+
+it("rejects malformed mail and phone actions without hiding normal contact links", () => {
+  const unsafeContact = [
+    { ...paths[0]!, marker: "bad-mail-empty", title: "Missing email address", href: "mailto:" },
+    { ...paths[0]!, marker: "bad-mail-no-at", title: "Unaddressed email", href: "mailto:wrong-address" },
+    { ...paths[0]!, marker: "bad-mail-crlf", title: "Encoded email header injection", href: "mailto:team@example.invalid%0d%0abcc:intruder@example.invalid" },
+    { ...paths[0]!, marker: "bad-mail-body", title: "Injected email body break", href: "mailto:team@example.invalid?subject=Hi%0AHidden" },
+    { ...paths[1]!, marker: "bad-phone-words", title: "Unusable telephone", href: "tel:not-a-number" },
+    { ...paths[1]!, marker: "bad-phone-punctuation", title: "Punctuation telephone", href: "tel:+++" },
+    { ...paths[1]!, marker: "bad-phone-fragment", title: "Fragment telephone", href: "tel:+919908002694#data" },
+  ];
+  const html = renderToStaticMarkup(<ParticipationCards paths={[...paths, ...unsafeContact]} />);
+  expect(html).toContain('href="mailto:amaanafoundation24@gmail.com?subject=Hello"');
+  expect(html).toContain('href="tel:+919908002694"');
+  expect(html).toContain('href="/request-assistance"');
+  for (const item of unsafeContact) expect(html).not.toContain(item.title);
+  expect(html).not.toContain("%0d%0a");
+  expect(html).not.toContain("not-a-number");
+});
