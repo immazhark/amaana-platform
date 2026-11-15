@@ -90,3 +90,17 @@ test("AF-R078 counts HTML anchors in Markdown conservatively as document backlin
     assert.equal(report.deletionApproved, false);
   } finally { f.dispose(); }
 });
+
+test("AF-R078 retains dated Markdown linked by valid unquoted HTML anchor href", () => {
+  const f = fixture();
+  try {
+    writeFileSync(join(f.nested, "current.md"),
+      "<A class=audit HREF=./2026-11-12-checkpoint.md#summary>Earlier checkpoint</A>\n");
+    const report = collectDatedDocumentBacklinks(f.root);
+    const checkpoint = report.documents.find(document =>
+      document.path === "docs/mission-control/2026-11-12-checkpoint.md");
+    assert.deepEqual(checkpoint?.referencedBy, ["docs/mission-control/current.md"]);
+    assert.equal(checkpoint?.disposition, "REVIEW_LINKED");
+    assert.equal(report.deletionApproved, false);
+  } finally { f.dispose(); }
+});

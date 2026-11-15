@@ -1,15 +1,19 @@
-# Amaana Foundation — source and release boundary
+# Amaana Foundation — current source and release state
 
-**15 November 2026 IST.** Protected `main` currently `d77b1c40110ab12c2492304c184c61f988823e91`. AF-R005 PR #987 merged after RED `43741783095`, complete exact-head GREEN `43741890034` and separate ready-state `43744197664`; new guard rejects six compact `NEXT_PUBLIC_` private credential alias classes. This was a source-level preventative fix; no actual secret leak or rotation was claimed.
+**Checkpoint:** 15 November 2026 IST. Source, Railway deployment and public runtime are distinct verification boundaries.
 
-**Earlier protected merges:** AF-R013 #985 `f45c963b8d17f2abe08beadaa5e50d44c7ed6709` and AF-R078 #984 `69f7c7c43512c45eddcca4462f65f3a60fcf2d3b`, both script/docs source-only.
+| Boundary | Last verified observation |
+|---|---|
+| Protected source trunk | `main` merged AF-R078 PR #984 at `69f7c7c43512c45eddcca4462f65f3a60fcf2d3b`; full exact-head CI `43734553764` and separate ready-state `43738571009` passed |
+| AF-R066 source release | PR #983 merged `b1a5b71872c201874a25c70d6a2b7dc632ac6e06`; full CI `43731243191` and separate ready-state `43734382955` passed |
+| Railway deployed website | `56519fd5-b4f9-4200-84b0-3cdfab90c4d4` SUCCESS for `b1a5b71872c201874a25c70d6a2b7dc632ac6e06` |
+| Independently live-verified website | Public `/api/health/version`: `b1a5b71872c201874a25c70d6a2b7dc632ac6e06`, branch `main`, environment `production`; `/api/health/ready`: `ready`; fresh public /compliance, /our-work, /stories content loaded |
+| AF-R078 merge rollout | Railway website and worker both SKIPPED for docs/script-only source `69f7c7c43512c45eddcca4462f65f3a60fcf2d3b`; do not force a rollout to equalize SHAs |
+| Sole implementation writer | `CHATGPT_ACTIVE`; one writer, no parallel repository implementation |
+| Current task | AF-R013 [PR #985](https://github.com/immazhark/amaana-platform/pull/985), synthetic admin route casing regression; RED `43734840150`; GREEN full CI `43734967338` for pre-integration head `d70fc7029bccbafdfce211392b51ae80e1d5f35b`; new integrated head awaiting exact-head CI |
+| Finance/infrastructure holds | PRs #684 and #845, issue #446 live Railway IaC apply, all payment/auth/secret/data/notification activation |
+| Canonical 149 classifications | 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A = 149, unchanged |
 
-**Website last independently verified production:** Railway deployment `56519fd5-b4f9-4200-84b0-3cdfab90c4d4` SUCCESS for source `b1a5b71872c201874a25c70d6a2b7dc632ac6e06`. Public /api/health/version returned this exact SHA and /api/health/ready returned ready on 15 November. Subsequent script/docs commits can be Railway SKIPPED; source and runtime SHAs are not interchangeable.
+**Limits:** AF-R078 identifies HTML backlinks in static local Markdown files; it does not approve deleting or archiving any historical document. AF-R013 improves local planning audit; actual Cloudflare enforcement and recovery are separately scoped. Current live payment mode is provider-controlled; no real funds were tested. The parked notification worker remains unchanged and historical preview remains offline. Finance, legal, religious and public-media privacy constraints remain binding.
 
-**Current sole writer:** `CHATGPT_ACTIVE`. Current AF-R012 synthetic appeal cross-role tests [PR #986](https://github.com/immazhark/amaana-platform/pull/986) integrates latest main; must finish fresh exact-head CI, distinct ready-state and guarded merge. AF-R078 #988 and AF-R079 #989 are separate draft lanes awaiting acceptance and potential main integration. The former cannot authorize any historical file deletion; the latter has a reviewed manifest but no branch deletion is claimed before guarded workflow results.
-
-**Financial/infrastructure holds:** #684 official QR and #845 donation synthetic staging still require separately scoped release review, #446 Railway IaC live apply held. No actual payment or donor production data exercised. INR domestic only, no FCRA; tax and identifiable-media constraints preserved.
-
-**149 backlog unchanged:** 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A. Bounded test/guard sub-scopes do not close complete parent items.
-
-**Next:** Green CI for integrated #986, separate promotion, guarded merge; Railway deployment observation and independent public identity if deployment happens. Review #988/#989 checks without suppressing browser acceptance.
+**Next:** finish #985 integrated-head full CI, distinct ready-state run, review and protected expected-head merge, then verify Railway outcome. Keep older archived references and identity-media constraints; do not inflate full backlog completion from test-only sub-scopes. See [active coordination](./AI_ACTIVE_WORK.md) and [handoff history](./AI_HANDOFF_LEDGER.md).

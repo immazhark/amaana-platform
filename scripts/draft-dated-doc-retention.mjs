@@ -106,13 +106,13 @@ export function collectDatedDocumentBacklinks(rootDirectory = process.cwd()) {
     const patterns = [
       /\]\(\s*(<[^>]+>|[^\s)]+)(?:\s+["'][^"']+["'])?\s*\)/g,
       /^\s{0,3}\[[^\]\r\n]+\]:\s*(<[^>]+>|[^\s]+)/gm,
-      // Markdown permits embedded HTML; keep its quoted anchor links as
-      // conservative retention references, not authorization to delete.
-      /<a\b[^>]*?\bhref\s*=\s*(?:"([^"]+)"|'([^']+)')/gi,
+      // Markdown permits raw HTML with quoted or unquoted href values.
+      // Preserve backlinks conservatively; never authorize document deletion.
+      /<a\b[^>]*?\bhref\s*=\s*(?:"([^"]+)"|'([^']+)'|([^\s"'=<>\x60]+))/gi,
     ];
     for (const pattern of patterns) {
       for (const match of contents.matchAll(pattern)) {
-        const target = resolveMarkdownLink(root, source, match[1] ?? match[2] ?? "");
+        const target = resolveMarkdownLink(root, source, match[1] ?? match[2] ?? match[3] ?? "");
         if (!target || target === sourcePath || !inbound.has(target)) continue;
         inbound.get(target).add(sourcePath);
       }

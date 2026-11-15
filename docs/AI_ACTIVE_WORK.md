@@ -1,17 +1,15 @@
-# Amaana implementation ownership — current checkpoint
+# Amaana Foundation — implementation coordination
 
-**15 November 2026 IST · Sole implementation writer: `CHATGPT_ACTIVE`.** Read-only agents and hosted CI may run concurrently. No second repository implementation writer.
+**16 November 2026 IST — sole writer `CHATGPT_ACTIVE`.** Read-only audits and hosted CI may proceed concurrently. Never overlap implementation writers.
 
-**Protected main:** `d77b1c40110ab12c2492304c184c61f988823e91` after AF-R005 PR #987. Hosted fail-first RED `43741783095`, GREEN exact-head `43741890034`, separate ready-state `43744197664` all verified; protected expected-head guarded squash merge. AF-R013 #985 merged earlier at `f45c963b8d17f2abe08beadaa5e50d44c7ed6709`. Source SHA and website deployment SHA differ when Railway correctly SKIPs scripts/docs changes.
+**Verified protected source:** `main` `56e926dee8e776df9507b92f6b2445ce4ed8c62b` after AF-R078 #988 full/ready checks and protected merge, following AF-R005 #987. Public last independent deployed `b1a5b71872c201874a25c70d6a2b7dc632ac6e06` ready; scripts-only deploys SKIPPED.
 
-**Current bounded implementation task:** AF-R012 [PR #986](https://github.com/immazhark/amaana-platform/pull/986), `test/af-r012-appeal-cross-role-20261115`. Added synthetic wrong-role and positive-control appeal action tests against **existing behavior**, no production auth/RBAC changes. Earlier head `edc0e820b7317e405baa456c9144162321bb0d11` had fast, database and production SUCCESS, browser incomplete. This task branch now integrates `main` through a normal two-parent commit; new exact-head selected CI, separate ready-state, zero unresolved reviews and protected expected-head SHA merge required. src/** test-only may trigger Railway deployment; verify actual rollout after merge.
+**Current task:** AF-R012 [PR #986](https://github.com/immazhark/amaana-platform/pull/986), `test/af-r012-appeal-cross-role-20261115`. Synthetic wrong-role/positive-control authorization regression tests for six existing appeal actions. This is coverage, not a production auth/RBAC behavior modification. Previous integrated head `c53a9a102f3e543d45114a8e3accfb22d0243127` completed full selected exact-head CI `43744311137`; latest protected main is reconciled by a normal two-parent commit, so new full exact-head CI, separate ready check, zero review issues and guarded merge required. Test-only src/** may activate normal Railway website build upon merge; verify independent runtime SHA/health.
 
-**Independent work queued under same sole writer:** AF-R078 [PR #988](https://github.com/immazhark/amaana-platform/pull/988), read-only inventory of unquoted HTML links (RED `43742054677`; GREEN head `b16af9dc4dd0b6c4d6d9e8c9b9e03118413fb713`), and AF-R079 [PR #989](https://github.com/immazhark/amaana-platform/pull/989), reviewed wave of 25 exact-SHA merged ref retirement manifest (head `58e6aef569d9ebfc4c7000d20aaa0c85a407dec1`). Both remain drafts pending full acceptance, and require main reconciliation if it moves.
+**Other same-writer PRs:** AF-R024 [#990](https://github.com/immazhark/amaana-platform/pull/990) CSS nested min(calc()) static font-floor guard integrated head `ac62a07aa8d6ed1313ca6678257a59c2fda02038`, and AF-R079 [#989](https://github.com/immazhark/amaana-platform/pull/989) 25 pinned merged task heads integrated `9be8329aa89c0b7c10212e378005a98b45a760b6`. Hosted CI in progress; if either merges first reconcile and rerun tests.
 
-**Railway/public:** Website last independent confirmed deployed SHA `b1a5b71872c201874a25c70d6a2b7dc632ac6e06`, /api/health/ready ready. Parked notification worker unchanged; do not force rollout merely to equalize source/runtime.
+**Hard holds:** #684 payment QR, #845 donation eligibility, #446 Railway IaC live apply, authentic donor records, secrets, live payments/refunds, schema, cron, notifications, identifiable faces without redaction. Domestic INR, no FCRA; 80G status conflict unresolved, 12A/12AB provisional.
 
-**Hard holds:** finance #684/#845, Railway IaC #446 production apply, real payments/refunds/notifications, secrets/schema/data changes, public identifiable faces, disputed 80G, provisional 12A/12AB, no FCRA; INR only.
+**Canonical 149:** 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A; no inflation.
 
-**Original 149 totals unchanged:** 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A.
-
-**Next:** Finish #986 new-head acceptance, ready-state and protected guarded merge; inspect Railway/public. Keep backlog progress evidence scoped, do not inflate total closure.
+**Next:** verify revised #986 full CI, separate ready promotion and guarded expected-head merge; independently check public Railway and continue other bounded lanes.
