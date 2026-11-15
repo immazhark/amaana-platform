@@ -58,5 +58,65 @@
     "name": "fix/admin-appeals-staff-name-only-projection-20261109",
     "headSha": "735d5dc85b05de5a5aed4180f5a9fc085467dcbf",
     "mergeSha": "df2ed63e6430127dcb3a42f198776aac7642876b"
+  },
+  {
+    "pr": 710,
+    "name": "fix/admin-assistance-assignee-name-only-20261109",
+    "headSha": "048c609d7959155c4f4594c393321926fa079783",
+    "mergeSha": "95c57b39dc4fca725f54e3bdf49d40569cfb97f5"
+  },
+  {
+    "pr": 711,
+    "name": "fix/admin-media-linked-content-title-projection-20261109",
+    "headSha": "277ccafcbf0487849a2c3b130d78c8daffd94438",
+    "mergeSha": "2e0603e489b2ed708214a85f3e005d5a7a47d0dd"
+  },
+  {
+    "pr": 712,
+    "name": "docs/codex-owner-handoff-20261109",
+    "headSha": "c93c09e9c2492a13ee74795477a29617f4cd7726",
+    "mergeSha": "d4a67cb359bba49d788a3cb19cb69b9fc3f4837d"
+  },
+  {
+    "pr": 713,
+    "name": "fix/admin-donation-detail-minimum-relations-20261109",
+    "headSha": "1a070db8c3a3fe6db839f9953733a379cd2fd247",
+    "mergeSha": "bcdaa47154e80ac1f93e49bdd03510f60816647b"
+  },
+  {
+    "pr": 714,
+    "name": "fix/homepage-programme-membership-bound-20261109",
+    "headSha": "606ae1268a1eeaeac088615e566c55c6ae73d916",
+    "mergeSha": "5e1efb687a7d51abe217ddc9c851a2d14cd7918c"
+  },
+  {
+    "pr": 715,
+    "name": "docs/repository-branch-audit-20261109",
+    "headSha": "0bda432cac76d2906aa6f1d428488f809dba5a48",
+    "mergeSha": "24ea970fc89cd16381a47585259a6c74c9a9b8bf"
+  },
+  {
+    "pr": 716,
+    "name": "feat/giving-foundation-contracts-20261109",
+    "headSha": "ded917b654016960937d22f1b9bdf860c424f706",
+    "mergeSha": "52ef89bf07e8d6a679ae5d8c00552c91fb41e939"
+  },
+  {
+    "pr": 717,
+    "name": "test/isolated-root-error-browser-audit-20261109",
+    "headSha": "553552d129625452fd0e162ac32987d7eee30b91",
+    "mergeSha": "bde664476d16043b368b5796d444ab25aeb13e8a"
+  },
+  {
+    "pr": 718,
+    "name": "feat/giving-designation-snapshot-contract-20261109",
+    "headSha": "0fbf6e3b0c06334ff9bb3b5b056a504d7375a027",
+    "mergeSha": "961bcfedffbd3f0ea855ec06a38012a0f820f642"
+  },
+  {
+    "pr": 719,
+    "name": "feat/giving-capture-disposition-contract-20261109",
+    "headSha": "a1bc39917c1501e733143de67d096327d5396eaa",
+    "mergeSha": "4d7a0fe937cf47aa32784cb28fc7c8179ea46798"
   }
 ]
