@@ -9,7 +9,14 @@ export function sendBestEffortTelemetry(
   payload: Readonly<Record<string, string | number>>,
   transport: TelemetryTransport,
 ): void {
-  const body = JSON.stringify(payload);
+  let body: string;
+  try {
+    body = JSON.stringify(payload);
+    if (typeof body !== "string") return;
+  } catch {
+    // Malformed optional telemetry must not interrupt navigation or be sent.
+    return;
+  }
   try {
     if (transport.beacon?.(endpoint, new Blob([body], { type: "application/json" }))) return;
   } catch {
