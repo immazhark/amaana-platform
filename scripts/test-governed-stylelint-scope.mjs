@@ -24,3 +24,14 @@ test("AF-R066 inherits the existing hex-color and duplicate-selector rules", () 
   assert.match(config, /"color-no-hex"\s*:\s*true/u);
   assert.match(config, /"no-duplicate-selectors"\s*:\s*true/u);
 });
+
+test("AF-R066 includes public-route loading fallback in governed Stylelint targets", () => {
+  const manifest = JSON.parse(readFileSync(new URL("package.json", root), "utf8"));
+  const targets = manifest.scripts["stylelint:governed"].trim().split(/\\s+/u);
+  assert.ok(targets.includes("src/components/public-route-loading.module.css"), "Missing governed loading stylesheet");
+});
+
+test("AF-R066 public-route loading styles contain no ungoverned hex literals", () => {
+  const css = readFileSync(new URL("src/components/public-route-loading.module.css", root), "utf8");
+  assert.doesNotMatch(css, /#[0-9a-fA-F]{3,8}\\b/u);
+});
