@@ -1,152 +1,122 @@
 [
   {
-    "pr": 897,
-    "name": "docs/coordination-release-894-896-20261114",
-    "headSha": "9582b76cf0a5b67834e79623dcd6f25fab7108a6",
-    "mergeSha": "2d4e161752e5bd809a960c3ffe368d8125e8a2f9"
+    "pr": 700,
+    "name": "fix/admin-assistance-queue-ist-dates-20261108",
+    "headSha": "291400ce4b409e00126bfab4ede700208f8619a6",
+    "mergeSha": "f8ca478bff063fc64537abf3a59ae2dec4a73012"
   },
   {
-    "pr": 896,
-    "name": "fix/af-r024-additive-font-calc-audit-20261114",
-    "headSha": "09912dc3bbc70480a050b6acd4311a0750c163a7",
-    "mergeSha": "aaae17b5fd6789032806a7e7d87d28d8702b9f80"
+    "pr": 701,
+    "name": "fix/assistance-followup-focus-after-render-20261108",
+    "headSha": "918b4e8a2e8f1cccf51dfe1718cb5813b7abd578",
+    "mergeSha": "3c9a38fae7912646b9cd63627044c1de9dab65bd"
   },
   {
-    "pr": 895,
-    "name": "fix/af-r012-shadowed-admin-guard-audit-20261114",
-    "headSha": "c2e0749fae44b6e99d91f491e6d3b6177a044b73",
-    "mergeSha": "b2d472337ac44cc73c5d4974a7c7c6dd3f2ab515"
+    "pr": 702,
+    "name": "fix/admin-appeal-retention-ist-timestamps-20261108",
+    "headSha": "f9c43318433a916ba392c3e16bc2b6157c024768",
+    "mergeSha": "3d51d2ff08f28281af5cfc0549e468528ffc116e"
   },
   {
-    "pr": 894,
-    "name": "fix/impact-witness-invalid-records-20261114",
-    "headSha": "74b631336ac0f3c5c7b507c7a455adb7b2cdec04",
-    "mergeSha": "484eeed931b8a221389658c2f1d9ea416474dbb1"
+    "pr": 703,
+    "name": "fix/admin-unmatched-payment-event-ist-20261108",
+    "headSha": "4baffcf3afa16ae90d18622201baf0a8c139b763",
+    "mergeSha": "7876193c3da9fb9e0e6bdc76b2a318b33cbff39b"
   },
   {
-    "pr": 893,
-    "name": "fix/impact-compare-malformed-public-records-20261114",
-    "headSha": "178667fef54c02dc7cd52e3c2e713cec919ea93a",
-    "mergeSha": "1eb5543353b1359b2dce98f8afaad0a054ca8dcc"
+    "pr": 704,
+    "name": "test/af-r012-private-document-download-boundaries-20261108",
+    "headSha": "c454f905aec68bc86287f9c9c62056b29f895d9e",
+    "mergeSha": "b6f05a8b83746542a6bed325331de6d8c468a81f"
   },
   {
-    "pr": 892,
-    "name": "chore/session-ownership-claim-20261114",
-    "headSha": "5098faea4405d2808c918d496cc9031e238ce18a",
-    "mergeSha": "884b0913bcf14392ecdbd94a8bf47e6ee352eeb4"
+    "pr": 705,
+    "name": "fix/admin-retention-review-after-ist-20261108",
+    "headSha": "32fef2857e6bb657f2badf2b40394f89767b7217",
+    "mergeSha": "86727a98f78e529514765d9a23aeb8f3dd68fa5b"
   },
   {
-    "pr": 891,
-    "name": "docs/chatgpt-impact-public-copy-gallery-checkpoint-20261114",
-    "headSha": "611dbe12fdf3981637f88f3843f0b0685047fe33",
-    "mergeSha": "3628b6e90807862db29733c9e6f32d38e76d59d4"
+    "pr": 706,
+    "name": "fix/admin-retention-review-date-validation-20261109",
+    "headSha": "e0452fdb7c49fc3a19a570ae4a2fc13e617f1600",
+    "mergeSha": "33fbd54002c4c1e12bf5acf375caed4d3d305011"
   },
   {
-    "pr": 890,
-    "name": "fix/gallery-malformed-caption-guard-20261114",
-    "headSha": "9304314e98871d5345ab523a126c9c0f7d0efe4a",
-    "mergeSha": "1d4f187d753ae52076c6aa05ac8a28d72c253a17"
+    "pr": 707,
+    "name": "test/af-r012-retention-page-permission-before-reads-20261109",
+    "headSha": "8fa0ac8a16286b5e2149e2e83d242de17ef37cea",
+    "mergeSha": "b70dd68ddbbdb73e51b7d969e801a5b67ac26b81"
   },
   {
-    "pr": 889,
-    "name": "fix/public-record-fallback-invalid-metric-20261114",
-    "headSha": "8649449892a774fc1c21d3d7828982013cd41c2b",
-    "mergeSha": "ab1d281d95989f7cb7755ff6a5f84a98a402824c"
+    "pr": 708,
+    "name": "test/af-r012-retention-action-deny-before-mutation-20261109",
+    "headSha": "8508530644cecc9e4331c4108981351184746141",
+    "mergeSha": "9a97017200b6780a671f6186d30a22c1bf58d912"
   },
   {
-    "pr": 888,
-    "name": "fix/impact-filter-malformed-runtime-records-20261114",
-    "headSha": "e21f9437de3783ab7df988a6a559b0d072bf24aa",
-    "mergeSha": "81761608e9590f69b4399c75df8d6eafe0b0a6bc"
+    "pr": 709,
+    "name": "fix/admin-appeals-staff-name-only-projection-20261109",
+    "headSha": "735d5dc85b05de5a5aed4180f5a9fc085467dcbf",
+    "mergeSha": "df2ed63e6430127dcb3a42f198776aac7642876b"
   },
   {
-    "pr": 887,
-    "name": "docs/chatgpt-release-four-code-prs-20261114",
-    "headSha": "adfdbb99c6e34390695f25e0fe7e7955ddf88fea",
-    "mergeSha": "7592aae1bc8a395289be2a6b270f48476bd49444"
+    "pr": 710,
+    "name": "fix/admin-assistance-assignee-name-only-20261109",
+    "headSha": "048c609d7959155c4f4594c393321926fa079783",
+    "mergeSha": "95c57b39dc4fca725f54e3bdf49d40569cfb97f5"
   },
   {
-    "pr": 886,
-    "name": "fix/public-story-discovery-malformed-projection-20261114",
-    "headSha": "ab6a78f1d312bf3f446e30f71a151f8f0a72131c",
-    "mergeSha": "20f7d4c1c121a1f34cd3d8849a360f929f6a1b44"
+    "pr": 711,
+    "name": "fix/admin-media-linked-content-title-projection-20261109",
+    "headSha": "277ccafcbf0487849a2c3b130d78c8daffd94438",
+    "mergeSha": "2e0603e489b2ed708214a85f3e005d5a7a47d0dd"
   },
   {
-    "pr": 885,
-    "name": "fix/public-appeal-search-malformed-records-20261114",
-    "headSha": "9b9c777aaee5b0711dcf5a41881d79a9dc6a4f3b",
-    "mergeSha": "670ad68ee60bd6c6a861c6a84b9b0e0e7e98c7a1"
+    "pr": 712,
+    "name": "docs/codex-owner-handoff-20261109",
+    "headSha": "c93c09e9c2492a13ee74795477a29617f4cd7726",
+    "mergeSha": "d4a67cb359bba49d788a3cb19cb69b9fc3f4837d"
   },
   {
-    "pr": 884,
-    "name": "fix/work-filter-malformed-year-options-20261114",
-    "headSha": "ed2c4d701f8164130995abf8531d98f7ad82b367",
-    "mergeSha": "ad50c06d145c28fa4327703368ddff9823d5703d"
+    "pr": 713,
+    "name": "fix/admin-donation-detail-minimum-relations-20261109",
+    "headSha": "1a070db8c3a3fe6db839f9953733a379cd2fd247",
+    "mergeSha": "bcdaa47154e80ac1f93e49bdd03510f60816647b"
   },
   {
-    "pr": 883,
-    "name": "docs/chatgpt-three-merges-four-prs-20261114",
-    "headSha": "732b0c2d5f81568bd6e047aecad5e5826bfac8bb",
-    "mergeSha": "0d1a121b6c056fe9007d271126f674b1b999f20b"
+    "pr": 714,
+    "name": "fix/homepage-programme-membership-bound-20261109",
+    "headSha": "606ae1268a1eeaeac088615e566c55c6ae73d916",
+    "mergeSha": "5e1efb687a7d51abe217ddc9c851a2d14cd7918c"
   },
   {
-    "pr": 882,
-    "name": "fix/route-bundle-aggregate-asset-paths-20261114",
-    "headSha": "5d801be7cec2cc62ea04d3d8df607f209f4646a3",
-    "mergeSha": "571025532f8004a528ad8b26484b7fa3271bad75"
+    "pr": 715,
+    "name": "docs/repository-branch-audit-20261109",
+    "headSha": "0bda432cac76d2906aa6f1d428488f809dba5a48",
+    "mergeSha": "24ea970fc89cd16381a47585259a6c74c9a9b8bf"
   },
   {
-    "pr": 881,
-    "name": "fix/gallery-keyboard-selection-malformed-records-20261114",
-    "headSha": "b719eab9c357f981715c0c8ac8266d7c816644ed",
-    "mergeSha": "a50e5d98116e1518fbdcfcce5132090c04beb3ff"
+    "pr": 716,
+    "name": "feat/giving-foundation-contracts-20261109",
+    "headSha": "ded917b654016960937d22f1b9bdf860c424f706",
+    "mergeSha": "52ef89bf07e8d6a679ae5d8c00552c91fb41e939"
   },
   {
-    "pr": 880,
-    "name": "fix/public-media-selector-malformed-input-20261114",
-    "headSha": "0c6bfb426fa947e98b5209f4469664676e6e1c58",
-    "mergeSha": "8d4c367d1055f6e602f9265a58518294e625848e"
+    "pr": 717,
+    "name": "test/isolated-root-error-browser-audit-20261109",
+    "headSha": "553552d129625452fd0e162ac32987d7eee30b91",
+    "mergeSha": "bde664476d16043b368b5796d444ab25aeb13e8a"
   },
   {
-    "pr": 879,
-    "name": "docs/chatgpt-active-four-track-checkpoint-20261114",
-    "headSha": "549490f57a1414d5d8d2539123dc052060760894",
-    "mergeSha": "c9b9295bbcf0017338c39d48da6e4befce0018ea"
+    "pr": 718,
+    "name": "feat/giving-designation-snapshot-contract-20261109",
+    "headSha": "0fbf6e3b0c06334ff9bb3b5b056a504d7375a027",
+    "mergeSha": "961bcfedffbd3f0ea855ec06a38012a0f820f642"
   },
   {
-    "pr": 878,
-    "name": "fix/admin-edge-inventory-linked-root-20261114",
-    "headSha": "6162996484adc75c69980699dc6e45f9ddb1b45f",
-    "mergeSha": "1b2e5a2ddc39d9d0f5c81af4983b03449fa0036d"
-  },
-  {
-    "pr": 877,
-    "name": "fix/home-empty-appeals-contact-route-20261114",
-    "headSha": "8e7a29d19cdf433892caf775b6f1ff09da6d8fdc",
-    "mergeSha": "a4d3c00a65deb48ec37f28451037832444d83a80"
-  },
-  {
-    "pr": 876,
-    "name": "fix/public-gallery-projection-runtime-guard-20261114",
-    "headSha": "0f05ad93d1ddff332972cf9fa0fb36b9d2dd95f6",
-    "mergeSha": "d0f3ce008e622773b5d193040ee78002c81c864a"
-  },
-  {
-    "pr": 875,
-    "name": "docs/chatgpt-five-track-release-checkpoint-20261114",
-    "headSha": "3c0550fa27c16f03ed0513a5b6aabe4081a3e8ca",
-    "mergeSha": "8af483c07cc85426f10b7b9873c62182db939d52"
-  },
-  {
-    "pr": 874,
-    "name": "fix/public-asset-inventory-symlinks-20261114",
-    "headSha": "236b76ec137145ac81c5067b0141a3b2bcf30d1b",
-    "mergeSha": "d92f243c75a00231feb97cea99a5737e1306b882"
-  },
-  {
-    "pr": 873,
-    "name": "fix/home-multiline-section-leading-20261114",
-    "headSha": "70367735cd99017bd5854769fce677f0afbb0501",
-    "mergeSha": "2c9230cd9797e28e77a1a962c002805946a15441"
+    "pr": 719,
+    "name": "feat/giving-capture-disposition-contract-20261109",
+    "headSha": "a1bc39917c1501e733143de67d096327d5396eaa",
+    "mergeSha": "4d7a0fe937cf47aa32784cb28fc7c8179ea46798"
   }
 ]
