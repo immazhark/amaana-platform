@@ -47,7 +47,7 @@ export function planMergedBranchRetirement({ event, repository, branch, compare,
 const encodedBranch = name => name.split("/").map(encodeURIComponent).join("/");
 
 /** Fail closed, never print tokens, response bodies, or private API payloads. */
-async function githubRequest(path, token, { method = "GET", absentIsNull = false } = {}) {
+export async function githubRequest(path, token, { method = "GET", absentIsNull = false } = {}) {
   const response = await fetch("https://api.github.com" + path, {
     method,
     headers: { authorization: "Bearer " + token, accept: "application/vnd.github+json",
