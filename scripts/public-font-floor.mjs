@@ -101,7 +101,7 @@ export function auditFontSizes(source, path) {
     // its evaluated value, not its operands; do not treat a later calc()
     // after the size/line-height slash as the font-size.
     const shorthandCalcSize = shorthand
-      ? /(?:^|\\s)calc\\(\\s*(-?\\d*\\.?\\d+)\\s*(rem|px)\\s*([*/])\\s*(-?\\d*\\.?\\d+)\\s*\\)(?=\\s*(?:\\/|\\s|$))/i.exec(value)
+      ? /(?:^|\s)calc\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*([*/])\s*(-?\d*\.?\d+)\s*\)(?=\s*(?:\/|\s|$))/i.exec(value)
       : null;
     const shorthandCalcIsSize = shorthandCalcSize &&
       !value.slice(0, shorthandCalcSize.index).includes("/");
