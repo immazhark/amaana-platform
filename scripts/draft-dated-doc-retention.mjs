@@ -100,11 +100,19 @@ export function collectDatedDocumentBacklinks(rootDirectory = process.cwd()) {
   for (const source of paths) {
     const contents = readFileSync(source, "utf8");
     const sourcePath = pathWithin(root, source);
-    const pattern = /\]\(\s*(<[^>]+>|[^\s)]+)(?:\s+["'][^"']+["'])?\s*\)/g;
-    for (const match of contents.matchAll(pattern)) {
-      const target = resolveMarkdownLink(root, source, match[1] ?? "");
-      if (!target || target === sourcePath || !inbound.has(target)) continue;
-      inbound.get(target).add(sourcePath);
+    // A definition can be referenced by [text][id] elsewhere in the file.
+    // Count it conservatively as a potential backlink even when static use
+    // cannot be proved; this report never authorizes document deletion.
+    const patterns = [
+      /\]\(\s*(<[^>]+>|[^\s)]+)(?:\s+["'][^"']+["'])?\s*\)/g,
+      /^\s{0,3}\[[^\]\r\n]+\]:\s*(<[^>]+>|[^\s]+)/gm,
+    ];
+    for (const pattern of patterns) {
+      for (const match of contents.matchAll(pattern)) {
+        const target = resolveMarkdownLink(root, source, match[1] ?? "");
+        if (!target || target === sourcePath || !inbound.has(target)) continue;
+        inbound.get(target).add(sourcePath);
+      }
     }
   }
 
