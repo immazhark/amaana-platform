@@ -8,7 +8,14 @@ export type ParticipationPath = { marker: string; icon?: ActionIconKind; title: 
 function isSafeParticipationHref(href: unknown): href is string {
   if (typeof href !== "string" || !href || href.length > 2048 || href !== href.trim() || /[\u0000-\u001f\u007f]/.test(href)) return false;
   if (href.startsWith("/")) return /^\/(?:[a-z0-9-]+(?:\/[a-z0-9-]+)*)?$/.test(href) && !isPrivateRoute(href);
-  if (/^(?:mailto:|tel:)/i.test(href)) return href.length > href.indexOf(":") + 1;
+  if (/^mailto:/i.test(href)) {
+    const mail = /^mailto:([^?#]+)(?:\?[^#]*)?$/i.exec(href);
+    // Enforce an addressed email and reject encoded CR/LF even when nested.
+    const address = mail?.[1];
+    return typeof address === "string" && /^[^@\s:/?#\\]+@[a-z0-9.-]+$/i.test(address) &&
+      !/%(?:25)*0[ad]/i.test(href);
+  }
+  if (/^tel:/i.test(href)) return /^tel:\+?[0-9][0-9().-]*$/i.test(href);
   if (!/^https:\/\//i.test(href)) return false;
   try {
     const parsed = new URL(href);
