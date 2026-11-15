@@ -29,9 +29,10 @@ describe("PageHero public action destinations", () => {
       { label: "Read evidence", href: "#evidence" },
       { label: "Email Amaana", href: "mailto:amaanafoundation24@gmail.com" },
       { label: "Call Amaana", href: "tel:+919908002694" },
+      { label: "Absolute official public", href: "https://amaanafoundation.org/our-work" },
       { label: "Visit official channel", href: "https://www.instagram.com/amaanafoundation/" },
     ]);
-    for (const label of ["View public work", "Review payable appeal", "Track existing request", "Read evidence", "Email Amaana", "Call Amaana", "Visit official channel"]) {
+    for (const label of ["View public work", "Review payable appeal", "Track existing request", "Read evidence", "Email Amaana", "Call Amaana", "Absolute official public", "Visit official channel"]) {
       expect(html).toContain(label);
     }
     expect(html).toContain('data-next-link="true"');
@@ -50,6 +51,9 @@ describe("PageHero public action destinations", () => {
       { label: "Protocol relative", href: "//example.invalid" },
       { label: "Private admin", href: "/admin" },
       { label: "Private API", href: "/api/private" },
+      { label: "Absolute private admin", href: "https://amaanafoundation.org/admin" },
+      { label: "Absolute private API", href: "https://www.amaanafoundation.org/api/private" },
+      { label: "Encoded absolute private", href: "https://amaanafoundation.org/%61dmin" },
       { label: "Private receipt", href: "/request-assistance/received" },
       { label: "Private nested tracking", href: "/request-assistance/status/arbitrary-token" },
       { label: "Encoded private", href: "/%61dmin" },
