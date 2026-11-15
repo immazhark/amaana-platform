@@ -7,7 +7,9 @@ test("visitor compares two distinct published outcomes without making an aggrega
   const form = page.getByRole("form", { name: "Compare two published initiatives" });
   const first = form.getByRole("combobox", { name: "First initiative" });
   const second = form.getByRole("combobox", { name: "Second initiative" });
-  const options = await first.locator("option[value]:not([value=''])").evaluateAll(nodes => nodes.map(n => n.value));
+  const loadedOptions = first.locator("option[value]:not([value=''])");
+  await expect.poll(() => loadedOptions.count(), { timeout: 15_000 }).toBeGreaterThanOrEqual(2);
+  const options = await loadedOptions.evaluateAll(nodes => nodes.map(n => n.value));
   expect(options.length, "Browser fixture must publish two initiatives to exercise comparison").toBeGreaterThanOrEqual(2);
   await first.selectOption(options[0]);
   await second.selectOption(options[1]);
@@ -68,7 +70,9 @@ test("comparison handles marketing-only visits and reviewed pair links without e
   await expect(page.locator('main [role="alert"]')).toHaveCount(0);
   await expect(page.getByRole("region", { name: "Side-by-side published outcomes" })).toHaveCount(0);
   const first = page.getByRole("combobox", { name: "First initiative" });
-  const options = await first.locator("option[value]:not([value=''])").evaluateAll(nodes => nodes.map(node => node.value));
+  const loadedOptions = first.locator("option[value]:not([value=''])");
+  await expect.poll(() => loadedOptions.count(), { timeout: 15_000 }).toBeGreaterThanOrEqual(2);
+  const options = await loadedOptions.evaluateAll(nodes => nodes.map(node => node.value));
   expect(options.length).toBeGreaterThanOrEqual(2);
   const query = new URLSearchParams({ left: options[0], right: options[1], utm_medium: "LINK_TOKEN_493" });
   await page.goto(`/impact/compare?${query.toString()}`);
