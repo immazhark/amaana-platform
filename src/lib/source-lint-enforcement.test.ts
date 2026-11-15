@@ -54,9 +54,14 @@ describe("source lint enforcement", () => {
 
   it("AF-R069 rejects keyboard-unfocusable interactive controls", async () => {
     const eslint = new ESLint();
+    const scoped = await eslint.calculateConfigForFile("src/components/appeal-share.tsx");
+    expect(scoped?.rules?.["jsx-a11y/interactive-supports-focus"]?.[0]).toBe(2);
+    const roving = await eslint.calculateConfigForFile("src/components/islamic-companion-panel.tsx");
+    expect(roving?.rules?.["jsx-a11y/interactive-supports-focus"]?.[0]).not.toBe(2);
+
     const [unsafe] = await eslint.lintText(
       'export function Probe() { return <div role="button" onClick={() => undefined} onKeyDown={() => undefined}>Activate</div>; }',
-      { filePath: "src/components/__lint_interactive_focus_probe__.tsx" },
+      { filePath: "src/components/appeal-share.tsx" },
     );
     expect(unsafe).toBeDefined();
     expect(unsafe?.messages.some(message =>
@@ -65,7 +70,7 @@ describe("source lint enforcement", () => {
 
     const [safe] = await eslint.lintText(
       'export function Probe() { return <div role="button" tabIndex={0} onClick={() => undefined} onKeyDown={() => undefined}>Activate</div>; }',
-      { filePath: "src/components/__lint_interactive_focus_probe__.tsx" },
+      { filePath: "src/components/appeal-share.tsx" },
     );
     expect(safe).toBeDefined();
     expect(safe?.messages.some(message => message.ruleId === "jsx-a11y/interactive-supports-focus")).toBe(false);
