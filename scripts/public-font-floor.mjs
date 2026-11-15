@@ -97,7 +97,23 @@ export function auditFontSizes(source, path) {
       return !Number.isFinite(finalSize) ||
         finalSize < (unit.toLowerCase() === "px" ? MIN_FONT_PX : MIN_FONT_REM);
     });
-    if (tooSmall || nestedMinTooSmall || nestedMinAdditiveTooSmall) violations.push({ path, value });
+    // In font shorthands the size may itself be a constant calc(). Check
+    // its evaluated value, not its operands; do not treat a later calc()
+    // after the size/line-height slash as the font-size.
+    const shorthandCalcSize = shorthand
+      ? /(?:^|\\s)calc\\(\\s*(-?\\d*\\.?\\d+)\\s*(rem|px)\\s*([*/])\\s*(-?\\d*\\.?\\d+)\\s*\\)(?=\\s*(?:\\/|\\s|$))/i.exec(value)
+      : null;
+    const shorthandCalcIsSize = shorthandCalcSize &&
+      !value.slice(0, shorthandCalcSize.index).includes("/");
+    const shorthandSize = shorthandCalcIsSize
+      ? shorthandCalcSize[3] === "*"
+        ? Number(shorthandCalcSize[1]) * Number(shorthandCalcSize[4])
+        : Number(shorthandCalcSize[1]) / Number(shorthandCalcSize[4])
+      : null;
+    const shorthandCalcTooSmall = shorthandSize !== null &&
+      (!Number.isFinite(shorthandSize) ||
+        shorthandSize < (shorthandCalcSize[2].toLowerCase() === "px" ? MIN_FONT_PX : MIN_FONT_REM));
+    if (tooSmall || nestedMinTooSmall || nestedMinAdditiveTooSmall || shorthandCalcTooSmall) violations.push({ path, value });
   }
 
   return violations;
