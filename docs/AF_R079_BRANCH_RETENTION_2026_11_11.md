@@ -34,3 +34,19 @@ Synthetic regression coverage creates temporary isolated Git repositories, check
 Implemented: bounded read-only local inventory script, native synthetic tests and CI wiring. This is **not** a deletion queue, exact full GitHub ancestry audit, branch retention policy change, or historical 149-item closure. Do not run `git branch -D`, `git push --delete` or GitHub branch deletion through this scope.
 
 **Next guarded step:** review a complete non-shallow local ref snapshot and live open-PR mapping, then prepare a concrete per-branch retention recommendation for explicit owner review. No destructive operations were performed in this task. Rollback: revert script, test, workflow gate and coordination notes if needed; preserve branch history.
+
+## 15 November 2026 — future merged-branch lifecycle policy
+
+The earlier local `scripts/branch-retention-report.mjs` remains read-only and does **not** authorize deletion. The live connected GitHub name inventory returned **1,003** branches at this checkpoint. Name count alone does not prove merged ancestry, source preservation or deletion eligibility. The owner authorized a cleaner trunk-based lifecycle, with protected `main` and narrowly scoped short-lived task branches. An extra permanent staging Git branch is **not** required to create a staging environment.
+
+### New-merge automation (separate from historical cleanup)
+
+`.github/workflows/retire-merged-task-branch.yml` runs only on a merged same-repository PR into `main`, checks out current protected `main`, and invokes `scripts/retire-merged-branch.mjs`. The script refuses unmerged PRs, forks, PRs into other bases, unfamiliar branch prefixes, malformed names, protected refs, modified heads, open dependent PRs, explicit `retain-branch` labels, and merge commits that are not currently ancestors of `main`. It rechecks the original branch SHA directly before a single GitHub REST deletion; missing refs are treated as already retired. The script has no arbitrary branch CLI flags, and never works through names or dates alone. GitHub REST delete-ref has no atomic expected-SHA lease; the immediately preceding read reduces but cannot eliminate a concurrent-update race. Protect sensitive long-lived refs through GitHub branch rules and the explicit retention label.
+
+**Allowed short-lived prefixes:** `fix/`, `feat/`, `perf/`, `test/`, `docs/`, `chore/`, `refactor/`, `ui/`, `polish/`, `content/`, `build/`, `ci/`, `qa/`. Historical, release, integration, infrastructure, operations and audit prefixes are never automatically retired. Automatic deletion after merge does not remove PR review history. Repository setting **Automatically delete head branches** should be checked by an authorized operator; if enabled, this workflow will observe the branch already gone and safely no-op.
+
+### Historical backfill remains a separate verified operation
+
+Existing branches, including those that GitHub reports as merged, remain unchanged by this workflow. Before any historical deletion: pin live branch tip SHA, open PR heads, original and other associated PR state, merge-commit inclusion in current main, retention exceptions, unique/source commits, deployment/release refs and restoration path; recheck just before the action, and record the deletion manifest. A squash-merged PR head can be ahead of main even when its changes are present, so simple `merge-base` ancestry is insufficient. The old `phase-public-site-rebuild` integration and finance-held #684/#845 must remain protected.
+
+**Release contract:** exact-head tests; ready-state verification; protected SHA-guarded merge; automated ordinary merged-head retirement if eligible; independent runtime/deployment SHA check. One PR per coherent change, not per test iteration. Work on an existing active PR head where the same scoped cause applies. No 149-item reclassification is implied by branch hygiene.
