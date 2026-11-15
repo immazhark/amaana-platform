@@ -15,7 +15,8 @@ Before making any repo change, every agent MUST read:
 
 - Do not begin repo writes if another agent is marked `ACTIVE` in `docs/AI_ACTIVE_WORK.md` unless the user has explicitly handed implementation ownership over.
 - ChatGPT and Codex may work in parallel on research, copy, planning, QA, or analysis, but **not on repository implementation**.
-- The integration branch is `phase-public-site-rebuild` unless the active-work file says otherwise.
+- Protected `main` is the current integration and release trunk. `phase-public-site-rebuild` is retained historical source, not the active implementation base. Use a short-lived task branch from verified current `main`; a staging environment does not require a second permanent Git branch.
+- Once an eligible task PR is tested, promoted and SHA-guarded merged, retire its source branch through the guarded branch-lifecycle workflow. Preserve active PR heads, protected/release/history refs and explicit `retain-branch` exceptions; never delete a branch from name or age alone.
 - Do not make direct implementation commits to `main`.
 - Prefer a small task branch + PR for each atomic change.
 - Before coding, inspect open PRs and the latest integration-branch commit so you do not duplicate or overwrite work.
