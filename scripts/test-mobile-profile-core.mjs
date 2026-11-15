@@ -162,3 +162,35 @@ test("local synthetic profiler refuses private same-origin reads before tracing"
     assert.equal(isAllowedProfileRequest(local + pathname, "GET"), true, pathname);
   }
 });
+
+test("synthetic profile refuses unknown API reads and query-bearing identity endpoints", () => {
+  for (const url of [
+    "http://127.0.0.1:3000/api/private-records",
+    "http://127.0.0.1:3000/api/internal-export",
+    "http://127.0.0.1:3000/api/health/version?token=synthetic-private-value",
+    "http://127.0.0.1:3000/api/analytics/page-view?person=synthetic",
+  ]) {
+    assert.equal(isAllowedProfileRequest(url, "GET"), false, url);
+  }
+  for (const path of ["/api/health/ready", "/api/health/version", "/api/analytics/page-view"]) {
+    assert.equal(isAllowedProfileRequest("http://127.0.0.1:3000" + path, "GET"), true, path);
+  }
+});
+
+test("synthetic profile prevents local image optimizer from fetching remote or private URLs", () => {
+  const image = value => "http://127.0.0.1:3000/_next/image?url=" + encodeURIComponent(value) + "&w=640&q=75";
+  for (const url of [
+    image("https://external.invalid/asset.jpg"),
+    image("http://127.0.0.1:3000/hero/approved.webp"),
+    image("//external.invalid/asset.jpg"),
+    image("/api/private-document.jpg"),
+    image("/admin/photo.png"),
+    image("/hero/../private.jpg"),
+    image("/hero/%252e%252e/secret.jpg"),
+    "http://127.0.0.1:3000/_next/image?w=640&q=75",
+  ]) {
+    assert.equal(isAllowedProfileRequest(url), false, url);
+  }
+  assert.equal(isAllowedProfileRequest(image("/hero/approved.webp")), true);
+  assert.equal(isAllowedProfileRequest(image("/media/drive/photo.jpg")), true);
+});
