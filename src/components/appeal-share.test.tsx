@@ -130,6 +130,35 @@ describe("appeal sharing recovery", () => {
     }
   });
 
+  it("never silently rewrites a different appeal identity through dot segments", () => {
+    for (const path of [
+      "/appeals/first-appeal/../second-appeal",
+      "/appeals/first-appeal/%2e%2e/second-appeal",
+      "/appeals/first-appeal/%252e%252e/second-appeal",
+      "/appeals/first-appeal/./second-appeal",
+    ]) {
+      const html = renderToStaticMarkup(<AppealShare
+        title="Synthetic first-person identity"
+        summary="Synthetic confidential appeal narrative"
+        path={path}
+      />);
+      const whatsapp = html.match(/href="https:\/\/wa\.me\/\?text=([^"]+)"/)?.[1];
+      expect(whatsapp, path).toBeDefined();
+      const shared = decodeURIComponent(whatsapp ?? "");
+      expect(shared, path).toContain("https://amaanafoundation.org/");
+      expect(shared, path).not.toContain("/appeals/second-appeal");
+      expect(shared, path).not.toContain("Synthetic first-person identity");
+      expect(shared, path).not.toContain("Synthetic confidential appeal narrative");
+    }
+    const legitimate = renderToStaticMarkup(<AppealShare
+      title={appeal.title}
+      summary={appeal.summary}
+      path="/appeals/verified-education?draft=private#notes"
+    />);
+    expect(legitimate).toContain("https%3A%2F%2Famaanafoundation.org%2Fappeals%2Fverified-education");
+    expect(legitimate).not.toContain("draft%3Dprivate");
+  });
+
   it("does not carry identifying copy into a fallback homepage share", () => {
     const html = renderToStaticMarkup(<AppealShare
       title="Synthetic private beneficiary identity"
