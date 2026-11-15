@@ -1,22 +1,18 @@
 # Amaana Foundation — current source and release state
 
-**Checkpoint:** 15 November 2026 IST. Refresh GitHub, Railway and public endpoints before any new release. Keep this as one compact current-state document; historical decisions and CI evidence remain in Git/PR history.
+**Checkpoint:** 15 November 2026 IST. Re-check GitHub and deployed health endpoints before new production claims; source SHA and runtime SHA are distinct.
 
-| Boundary | Last independently checked state |
+| Boundary | Last verified observation |
 |---|---|
-| Protected source trunk | `main` at `b68936e012641976605e3ce74f338ad0f0e32008` (merged AF-R079 PR #981) |
-| Last successful website deployment | Railway `ffa8dcea-d24a-4783-b672-194390915840`, deployed SHA `83072e44e74c785f51f2b9213a3820fee7a34d8e` |
-| Public version and readiness | Fresh `/api/health/version`: commit `83072e44e74c785f51f2b9213a3820fee7a34d8e`, branch `main`, environment `production`; `/api/health/ready`: `ready` |
-| Source/runtime SHA difference | #979 and #981 were correctly Railway `SKIPPED` (out-of-watch script/docs paths). Do not force a deploy to align hashes |
-| Current implementation writer | `CHATGPT_ACTIVE`, working only on [PR #982](https://github.com/immazhark/amaana-platform/pull/982) |
-| Branch inventory | 1,004 before cleanup; 983 after first pilot; **957 after second pilot**, before temporary third-wave task branch |
-| Previous retirement results | 20 + 25 historical heads retired by guarded jobs, plus eligible merged PR source heads. No force-push or indiscriminate deletion |
-| Current cleanup candidate | PR #982, next 25 exact merged PR heads pinned in existing `docs/mission-control/af-r079-approved-retirement-batch-20261115.json`, unmerged and not deleted as of this checkpoint |
+| Protected source trunk | `main` at `b1a5b71872c201874a25c70d6a2b7dc632ac6e06`, AF-R066 PR #983 protected expected-head merge |
+| AF-R066 code/test acceptance | RED `43731128736`; GREEN full CI `43731243191`; separate ready-state verification `43734382955`; merged |
+| Railway website deployment | `56519fd5-b4f9-4200-84b0-3cdfab90c4d4` BUILDING for `b1a5b71872c201874a25c70d6a2b7dc632ac6e06` at this checkpoint; prior SUCCESS `ffa8dcea-d24a-4783-b672-194390915840` |
+| Independently live-verified public runtime | `83072e44e74c785f51f2b9213a3820fee7a34d8e`, branch `main`, environment `production`, readiness `ready` before the new rollout |
+| Implementation writer | `CHATGPT_ACTIVE`, sole repository writer |
+| Open implementation task | AF-R078 [PR #984](https://github.com/immazhark/amaana-platform/pull/984), read-only HTML-anchor backlink extraction, corrected candidate being reconciled to current main and requiring new exact-head acceptance |
+| Financial and infrastructure holds | PRs #684/#845 held; issue #446 IaC preview/plan and separately approved apply pending; no live money/notifications/config changes |
+| Canonical 149 classifications | 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A = 149, unchanged |
 
-**Release queue:** PR #982 requires full selected exact-head plan/fast/database/production/browser/verify, promotion after ready-state, zero unresolved reviews and protected expected-head merge. PR #979 and the earlier #974/#975/#977 are merged. Finance-held #684/#845 remain isolated; historical `phase-public-site-rebuild` and unreviewed refs remain preserved.
+**Proof and limits:** AF-R066 changed CSS literal notation to equal RGB values and extended existing pinned Stylelint coverage; this does not certify all CSS debt. AF-R078 adds a synthetic regression and read-only historical-document link extraction, not deletion approval or external-link inventory completeness. The parked notification worker did not deploy new code. No real donor records, payment provider activation, schema changes, secrets or publication of personal media.
 
-**Backlog denominator (unchanged):** 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A = **149**. Task-branch retirement and isolated test fixes do not promote full original items.
-
-**Hard locks:** Domestic INR only, no FCRA; 80G conflict unresolved; 12A/12AB wording provisional pending qualified evidence; public identifiable faces require reviewed redaction and EXIF/GPS removal. Never touch real donors, secret values, live payments, notifications, schema migrations or infrastructure without separately scoped authorization. Preserve official logo, cream/blue/gold styling, server safeguards and strict TypeScript.
-
-**Next action:** Recheck #982 head, CI and review; if fully green, promote, verify separate ready run, SHA-guarded merge, and inspect actual retirement job logs and post-merge ref count. Do not create per-PR documentation snapshots. [Active ownership](./AI_ACTIVE_WORK.md); [historical handoffs](./AI_HANDOFF_LEDGER.md).
+**Next:** finish PR #984 exact-head full CI, separate ready-state verification and guarded merge; confirm new Railway deployment's exact source SHA and independent public version/ready before calling AF-R066 deployed/live. Preserve older branches and legal/privacy/finance gates. See [active writer](./AI_ACTIVE_WORK.md) and [handoff history](./AI_HANDOFF_LEDGER.md).
