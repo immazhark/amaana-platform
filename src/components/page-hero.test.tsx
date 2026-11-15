@@ -53,6 +53,8 @@ describe("PageHero public action destinations", () => {
       { label: "Private API", href: "/api/private" },
       { label: "Absolute private admin", href: "https://amaanafoundation.org/admin" },
       { label: "Absolute private API", href: "https://www.amaanafoundation.org/api/private" },
+      { label: "DNS dot private admin", href: "https://amaanafoundation.org./admin" },
+      { label: "DNS dot private API", href: "https://www.amaanafoundation.org./api/private" },
       { label: "Encoded absolute private", href: "https://amaanafoundation.org/%61dmin" },
       { label: "Private receipt", href: "/request-assistance/received" },
       { label: "Private nested tracking", href: "/request-assistance/status/arbitrary-token" },
