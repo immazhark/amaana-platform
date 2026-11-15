@@ -32,9 +32,12 @@ function isReviewedHeroHref(href: unknown): href is string {
   if (href.startsWith("/")) {
     const pathname = href.split(/[?#]/, 1)[0] ?? "";
     if (!/^\/(?:[a-z0-9_-]+(?:\/[a-z0-9_-]+)*)?$/.test(pathname)) return false;
-    // A reviewed appeal's donation page is a public action, even though
-    // receipt and payment-data routes are intentionally private to sitemaps.
-    return !isPrivateRoute(pathname) || /^\/donate\/[a-z0-9_-]+$/.test(pathname);
+    // Some public navigation destinations are deliberately omitted from
+    // sitemap indexing: reviewed appeal giving and private tracking entry.
+    // Never allow tracking subroutes, receipts, or private API destinations.
+    return !isPrivateRoute(pathname) ||
+      /^\/donate\/[a-z0-9_-]+$/.test(pathname) ||
+      pathname === "/request-assistance/status";
   }
   if (/^mailto:/i.test(href)) return /^mailto:[^@?#]+@[^@/?#]+(?:\?[^#]*)?$/i.test(href);
   if (/^tel:/i.test(href)) return /^tel:\+?[0-9][0-9().-]*$/i.test(href);
