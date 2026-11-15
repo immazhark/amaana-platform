@@ -2,6 +2,7 @@ import "./team.css";
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { z } from "zod";
 import { getPublishedTeam } from "@/lib/team-data";
 import { normalizeStructuredDataSiteUrl, serializeStructuredData } from "@/lib/structured-data";
 
@@ -19,6 +20,21 @@ export const metadata: Metadata = {
   },
   twitter: { card: "summary_large_image", title: "Our Team | Amaana Foundation", description, images: ["/twitter-image"] },
 };
+
+const reviewedTeamEmail = z.email().max(254);
+
+/** Admin input validation is not a substitute for checking legacy public records. */
+function reviewedLinkedInUrl(value: unknown): string | null {
+  if (typeof value !== "string" || !value || value.length > 2048 || value.trim() !== value) return null;
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "https:" && !parsed.username && !parsed.password &&
+      (parsed.hostname === "linkedin.com" || parsed.hostname.endsWith(".linkedin.com"))
+      ? value : null;
+  } catch {
+    return null;
+  }
+}
 
 function initials(name: string) {
   const words = name.split(/\s+/).filter(Boolean);
@@ -63,6 +79,9 @@ export default async function TeamPage() {
             <ul className={group.key === "TRUSTEES" ? "team-grid team-grid--trustees" : "team-grid"}>
               {group.members.map(member => {
                 const hasPhoto = Boolean(member.photoStorageKey && member.photoConsentAt);
+                const linkedinUrl = reviewedLinkedInUrl(member.linkedinUrl);
+                const email = typeof member.email === "string" &&
+                  reviewedTeamEmail.safeParse(member.email).success ? member.email : null;
                 return (
                   <li className="team-member" key={member.id}>
                     <div className="team-portrait">
@@ -76,10 +95,10 @@ export default async function TeamPage() {
                       <h3>{member.fullName}</h3>
                       <div className="team-designation">{member.designation}</div>
                       {member.bio ? <p className="team-bio">{member.bio}</p> : null}
-                      {member.linkedinUrl || member.email ? (
+                      {linkedinUrl || email ? (
                         <div className="team-member-links">
-                          {member.linkedinUrl ? <a href={member.linkedinUrl} aria-label={`${member.fullName}, ${member.designation}, on LinkedIn (opens in a new tab)`} target="_blank" rel="noopener noreferrer">LinkedIn ↗</a> : null}
-                          {member.email ? <a href={`mailto:${member.email}`} aria-label={`Email ${member.fullName}, ${member.designation}`}>Email</a> : null}
+                          {linkedinUrl ? <a href={linkedinUrl} aria-label={`${member.fullName}, ${member.designation}, on LinkedIn (opens in a new tab)`} target="_blank" rel="noopener noreferrer">LinkedIn ↗</a> : null}
+                          {email ? <a href={`mailto:${email}`} aria-label={`Email ${member.fullName}, ${member.designation}`}>Email</a> : null}
                         </div>
                       ) : null}
                     </div>
