@@ -147,7 +147,7 @@ export function IslamicCompanion() {
             <div className="amaana-reminder-content" aria-live="polite" aria-atomic="true">
               <strong>{activeReminder?.title ?? "A moment for remembrance"}</strong>
               <p>{activeReminder?.text ?? "Daily readings and gentle reminders, on Hyderabad time."}</p>
-              {activeReminder && <a className="amaana-reminder-source" href={activeReminder.source} target="_blank" rel="noopener noreferrer">{activeReminder.reference}</a>}
+              {activeReminder && <a className="amaana-reminder-source" href={activeReminder.source} target="_blank" rel="noopener noreferrer">{activeReminder.reference}<span className="sr-only"> (opens in a new tab)</span></a>}
             </div>
           </div>
 
