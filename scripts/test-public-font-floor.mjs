@@ -273,3 +273,21 @@ test("AF-R024 catches sub-floor constant addition and subtraction inside min(cal
   ].join("");
   assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
 });
+
+test("AF-R024 checks computed constant calc font sizes in font shorthands, not line-height", () => {
+  const unsafe = [
+    ".smallRem{font:600 calc(1rem * .5)/1.4 system-ui}",
+    ".smallPx{font:italic calc(24px / 3) serif}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(unsafe, "fixture.css").map(item => item.value), [
+    "600 calc(1rem * .5)/1.4 system-ui",
+    "italic calc(24px / 3) serif",
+  ]);
+
+  const safe = [
+    ".large{font:700 calc(8px * 2)/1.4 system-ui}",
+    ".lineHeight{font:400 1rem / calc(.5rem * 2) system-ui}",
+    ".regular{font:600 1rem/1.2 system-ui}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
+});
