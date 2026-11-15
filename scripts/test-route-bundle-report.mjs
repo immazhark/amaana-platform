@@ -38,6 +38,17 @@ test("counts inherited layouts, unique assets and App Router pages", () => {
   assert.equal(byRoute["/about/team"].cssBytes, 20);
 });
 
+test("AF-R047 legacy App Router bundle labels omit non-URL route groups", () => {
+  const pages = {
+    "/layout": ["static/chunks/shared.js"],
+    "/(public)/page": ["static/chunks/home.js"],
+    "/(public)/about/(stories)/page": ["static/chunks/about.js"],
+  };
+  const rows = summarizeAppRouteBundles(pages, () => 10);
+  assert.deepEqual(rows.map(({ route }) => route).sort(), ["/", "/about"]);
+  assert.ok(rows.every(row => row.totalBytes === 20));
+});
+
 test("ignores unsafe paths and rejects malformed or empty manifests", () => {
   assert.throws(() => summarizeAppRouteBundles(null, () => 0), /valid pages map/);
   assert.throws(() => summarizeAppRouteBundles({}, () => 0), /No App Router/);
