@@ -35,3 +35,18 @@ test("AF-R069 enforces accessible form labels in governed TSX", async () => {
     "A label wrapping a control with meaningful nested text must remain accessible");
 
 });
+
+test("AF-R066 lints three existing token-safe public component styles", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const config = JSON.parse(await readFile("package.json", "utf8"));
+  assert.match(config.scripts.lint, /npm run stylelint:governed/);
+  const lintCommand = config.scripts["stylelint:governed"];
+  assert.ok(lintCommand.startsWith("npx --yes stylelint@17.16.0 "));
+  for (const file of [
+    "src/components/policy-toc.module.css",
+    "src/components/section-heading.module.css",
+    "src/components/site-header.module.css",
+  ]) {
+    assert.ok(lintCommand.split(/\s+/).includes(file), `Missing governed Stylelint coverage for ${file}`);
+  }
+});
