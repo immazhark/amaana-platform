@@ -48,7 +48,8 @@ function isReviewedHeroHref(href: unknown): href is string {
     if (url.protocol !== "https:" || !url.hostname || url.username || url.password) return false;
     // Absolute links to Amaana's official host must obey the same public
     // pathway boundary as relative links; external HTTPS destinations stay intact.
-    if (url.hostname === "amaanafoundation.org" || url.hostname === "www.amaanafoundation.org") {
+    const hostname = url.hostname.replace(/[.]+$/, "");
+    if (hostname === "amaanafoundation.org" || hostname === "www.amaanafoundation.org") {
       return isReviewedHeroHref(`${url.pathname}${url.search}${url.hash}`);
     }
     return true;
