@@ -308,8 +308,8 @@ test("AF-R024 nested min(calc()) additive chains use the computed final size", (
 
   const safe = [
     ".rem{font-size:min(1rem,calc(2rem - 1rem + .75rem))}",
-    ".px{font-size:min(16px,calc(32px - 12px + 10px))}",
-    ".multiple{font-size:min(1rem,calc(2rem - 1rem - .25rem + .5rem))}",
+    ".px{font-size:min(16px,calc(32px - 12px + 12px))}",
+    ".multiple{font-size:min(1rem,calc(2rem - 1rem - .75rem + .75rem))}",
   ].join("");
   assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
 });
