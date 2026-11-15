@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { appealStatusAfterRefund, getRemainingAppealAmount, isAppealOpenForDonations, shouldMarkAppealFunded } from "./appeals";
+import { describe, expect, it, vi } from "vitest";
+import { appealStatusAfterRefund, getRemainingAppealAmount, formatINR, isAppealOpenForDonations, shouldMarkAppealFunded } from "./appeals";
 
 const decimalLike = (value: number) => ({ toNumber: () => value });
 const now = new Date("2026-09-15T12:00:00.000Z");
@@ -142,5 +142,24 @@ describe("appealStatusAfterRefund", () => {
 
   it.each(["PAUSED", "CLOSED", "REJECTED", "DRAFT", "PUBLISHED"])("never overrides manually controlled %s state", status => {
     expect(appealStatusAfterRefund(status, 1, 75_000, null, now)).toBe(status);
+  });
+});
+
+describe("public INR display formatter", () => {
+  it("retains reviewed Indian Rupee formatting across typical amounts", () => {
+    expect(formatINR(0)).toBe("₹0");
+    expect(formatINR(1234)).toBe("₹1,234");
+    expect(formatINR(500000)).toBe("₹5,00,000");
+  });
+
+  it("does not allocate a fresh number formatter for every rendered amount", () => {
+    const constructor = vi.spyOn(Intl, "NumberFormat");
+    try {
+      expect(formatINR(500000)).toBe("₹5,00,000");
+      expect(formatINR(107520)).toBe("₹1,07,520");
+      expect(constructor).not.toHaveBeenCalled();
+    } finally {
+      constructor.mockRestore();
+    }
   });
 });
