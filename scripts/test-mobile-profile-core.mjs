@@ -172,7 +172,7 @@ test("synthetic profile refuses unknown API reads and query-bearing identity end
   ]) {
     assert.equal(isAllowedProfileRequest(url, "GET"), false, url);
   }
-  for (const path of ["/api/health/ready", "/api/health/version", "/api/analytics/page-view"]) {
+  for (const path of ["/api/health/ready", "/api/health/version", "/api/analytics/page-view", "/api/public/live-rail"]) {
     assert.equal(isAllowedProfileRequest("http://127.0.0.1:3000" + path, "GET"), true, path);
   }
 });
