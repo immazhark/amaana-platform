@@ -8,6 +8,7 @@ on:
 # It is never triggered for unmerged closures, old branches, or forks.
 permissions:
   contents: write
+  pull-requests: read
 
 concurrency:
   group: retire-task-${{ github.event.pull_request.head.ref }}
