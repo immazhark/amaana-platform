@@ -1,15 +1,19 @@
 # Amaana implementation ownership — current checkpoint
 
-**Updated:** 15 November 2026 IST. This is a replaceable current pointer, not a historical log.
+**Updated:** 15 November 2026 IST. Current pointer only; detailed history remains in GitHub PRs and `docs/AI_HANDOFF_LEDGER.md`.
 
-**Writer:** `CHATGPT_ACTIVE`, sole implementation writer; repository remains owner-controlled. Verify no competing session before writing. Protected integration/release trunk: `main`. Latest merged source: `b68936e012641976605e3ce74f338ad0f0e32008`; source and runtime SHAs differ intentionally when Railway correctly SKIPs docs/scripts-only commits.
+**Writer:** `CHATGPT_ACTIVE`. The owner explicitly directed ChatGPT to take implementation ownership in this session. One implementation writer only; other agents may perform read-only research/review, not competing repository writes.
 
-**Task in progress:** AF-R079 short-lived branch hygiene; existing workflow and manifest. Working branch `chore/af-r079-reviewed-history-wave3-20261115`; [PR #982](https://github.com/immazhark/amaana-platform/pull/982) is a draft third 25-ref retirement wave. PR #982 must pass exact-head selected CI, separate ready-state workflow, review and expected-head guarded merge; recheck head in GitHub, never rely on a copied candidate SHA.
+**Protected base:** `main` at `f03f9a7df181e5451471d998da2a8f668a6cf47e` (PR #982 merged). Current task branch: `fix/af-r066-evidence-stylelint-20261115`, created from that exact SHA. No PR yet at this checkpoint.
 
-**Already verified:** #980 merged `ee7d90fb1687b6bd73b711f6751dfaf84872ad4c` and enabled future automatic head retirement. First historical wave: 20/20 retired; #980 head also retired. #979 merged `ee7f6361f9a4f99d2d2f5b204b92ed06aa0e9f5e`, source head absent. #981 merged `b68936e012641976605e3ce74f338ad0f0e32008`; second historical wave 25/25 retired, #981 head absent. Fresh post-wave GitHub census **957 branches**; creation of the #982 task branch adds one temporary ref until merge.
+**Atomic task:** AF-R066 — extend existing CSS token/duplicate-selector governance to `src/components/evidence-pathway.module.css` without redesigning the approved public component. Write a failing scope-and-color regression first; replace the one unchanged-color hex literal with the same RGB value, add the component to the pinned existing Stylelint command, then run focused/exact-head CI and open one draft PR. No new runtime dependencies.
 
-**Production:** Railway last successful website deployment `ffa8dcea-d24a-4783-b672-194390915840` at `83072e44e74c785f51f2b9213a3820fee7a34d8e`; fresh public version/ready reports the same `main` production SHA and `ready`. Later script/docs merges were correctly `SKIPPED`; no forced rollout or live payment operation.
+**Previous task:** AF-R079 PR #982 is merged at `f03f9a7df181e5451471d998da2a8f668a6cf47e`. Do not repeat historical branch retirement or delete unreviewed refs. Review exact retirement-job evidence independently before claiming final census.
 
-**Held:** #684 domestic giving QR and #845 finance staging guard require independent scoped acceptance. Historical `phase-public-site-rebuild`, protected/finance/infrastructure refs and unreviewed history are not deletion targets. Original 149-item register remains **35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A**.
+**Railway:** production website service online, latest SUCCESS deployment `ffa8dcea-d24a-4783-b672-194390915840`; earlier independently verified deployed SHA `83072e44e74c785f51f2b9213a3820fee7a34d8e`. Later out-of-watch source commits were SKIPPED. Public version/readiness were not freshly re-fetched during this task. Worker is parked; historical preview offline.
 
-**Next:** Accept PR #982 only after all required exact-head and ready-state gates; verify automatic deletion log and complete ref census after merge. Continue classifying archived branch refs, but never bulk-delete by age/name alone. Keep this pointer concise; full evidence is in GitHub PRs, workflows and the existing [handoff ledger](./AI_HANDOFF_LEDGER.md).
+**Holds:** #684 UPI QR payment activation and #845 mixed-case synthetic appeal eligibility remain draft/finance-held; no changes to payment logic, RBAC, provider secrets, real donors, schema, infrastructure or notifications. Preserve approved brand and factual/privacy locks.
+
+**Canonical 149:** 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A; no reclassification from this sub-scope without full acceptance.
+
+**Next:** Prove RED test on the task branch, implement minimal GREEN, inspect CI on exact head, then follow draft-ready/separate-ready-state/protected SHA-guarded merge sequence only after all required checks and review. If a gate blocks, leave the draft and record the exact head/blocker.
