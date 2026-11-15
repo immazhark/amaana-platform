@@ -34,7 +34,7 @@ export function isAllowedProfileRequest(rawUrl, method = "GET") {
     // A localhost URL is not proof that an API is safe to read: prevent
     // tracing private records or token-bearing requests to unknown endpoints.
     if (/^\/api(?:\/|$)/i.test(pathname) &&
-        (!new Set(["/api/health/ready", "/api/health/version", "/api/analytics/page-view"]).has(pathname) ||
+        (!new Set(["/api/health/ready", "/api/health/version", "/api/analytics/page-view", "/api/public/live-rail"]).has(pathname) ||
           url.search || url.hash)) return false;
     // Next's image optimizer is a same-origin proxy. Keep its source local
     // and public rather than fetching a third-party/private URL via localhost.
