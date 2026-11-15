@@ -22,5 +22,41 @@
     "name": "fix/telemetry-serialization-fail-closed-20261115",
     "headSha": "2e7e8e3b1e46b60cc7d01f72f619f26b1f81fa5b",
     "mergeSha": "820578baef7103304394bcaa034eec9371bba4d7"
+  },
+  {
+    "pr": 967,
+    "name": "fix/team-public-contact-links-validated-20261115",
+    "headSha": "6b7be0beefe40587b86c544d4a63eb47e95de9a4",
+    "mergeSha": "54243df3d6bca80b861d4aa10fe72bbbd59119e8"
+  },
+  {
+    "pr": 966,
+    "name": "fix/verification-faq-canonical-origin-20261115",
+    "headSha": "3612a5f8562cd771b23e63a86855a946b8a68dc7",
+    "mergeSha": "4cbfddf5ad744ce074a57cd14cdaa1076cfd6a2d"
+  },
+  {
+    "pr": 969,
+    "name": "fix/appeal-share-preserve-route-identity-20261115",
+    "headSha": "3f108a1284a2bbe179d9fabbf8ad5db6b75430f0",
+    "mergeSha": "603529d9252885448b01dfa164b21fbac0c5ccda"
+  },
+  {
+    "pr": 959,
+    "name": "fix/page-hero-reviewed-action-hrefs-20261115",
+    "headSha": "2910b9b99e0273b1bf59ffd58b7a995ddb9e342d",
+    "mergeSha": "2f176b4ed5a4409446bf27d5b2fedd4c48e3d504"
+  },
+  {
+    "pr": 964,
+    "name": "fix/participation-contact-protocol-validation-20261115",
+    "headSha": "6cc311d3965f0d4ad5f5d42885fd48eabeafa329",
+    "mergeSha": "b8f36e0eb4d4563ffb792794e2ee3ecfa5f27e7c"
+  },
+  {
+    "pr": 960,
+    "name": "fix/canonical-pathway-public-route-validation-20261115",
+    "headSha": "12cd05ce500f2d9fc3ac494b16730afce428a618",
+    "mergeSha": "85ea2e57f59d035bdb3d4ae034fb21e3c7cf1a12"
   }
 ]
