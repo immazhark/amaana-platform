@@ -51,8 +51,26 @@ export function stylesheetsInHtml(html, origin = ORIGIN) {
     const rel = attr(match[2], "rel");
     const raw = attr(match[2], "href");
     if (!rel?.toLowerCase().split(/[\t\n\f\r ]+/).includes("stylesheet") || !raw) continue;
+    // URL() removes dot segments before inspection. Check the supplied path
+    // first so a malformed reference cannot be attributed to a different asset.
+    const href = raw.replaceAll("&amp;", "&");
+    const pathMatch = /^(?:https?:\/\/[^/?#]+)?(\/[^?#]*)/i.exec(href);
+    if (!pathMatch) continue;
+    const originalPath = pathMatch[1];
+    if (originalPath.includes("//")) continue;
+    let canonicalPath = true;
+    for (const segment of originalPath.split("/")) {
+      let decoded;
+      try { decoded = decodeURIComponent(segment); }
+      catch { canonicalPath = false; break; }
+      if (decoded === "." || decoded === ".." || decoded.includes("/") || decoded.includes("\\")) {
+        canonicalPath = false;
+        break;
+      }
+    }
+    if (!canonicalPath) continue;
     let asset;
-    try { asset = new URL(raw.replaceAll("&amp;", "&"), site); }
+    try { asset = new URL(href, site); }
     catch { continue; }
     if (asset.origin !== site.origin || asset.username || asset.password) continue;
     if (!/^\/_next\/static\/[A-Za-z0-9_./-]+\.css$/.test(asset.pathname)) continue;
