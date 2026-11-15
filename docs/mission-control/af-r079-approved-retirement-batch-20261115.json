@@ -1,0 +1,26 @@
+[
+  {
+    "pr": 970,
+    "name": "fix/mobile-profile-api-image-boundary-20261115",
+    "headSha": "4b98049ac3b60c48984a495fbf5b7bddbf256cf8",
+    "mergeSha": "26a956f07cc732aecaa2f8c7cd57c2271224db49"
+  },
+  {
+    "pr": 971,
+    "name": "fix/home-carousel-cta-dot-segments-20261115",
+    "headSha": "ea193a0ec18c556498c84c67c4ef7b332c3afcb9",
+    "mergeSha": "eafd6714b10bed21d47fdf09f4a96d30085feaf9"
+  },
+  {
+    "pr": 972,
+    "name": "fix/live-css-audit-bounded-responses-20261115",
+    "headSha": "9990de9c832e8494b2dc1a6a122754783db916dc",
+    "mergeSha": "a0086e9c22ed55be44b142ec19569301b1f675eb"
+  },
+  {
+    "pr": 973,
+    "name": "fix/telemetry-serialization-fail-closed-20261115",
+    "headSha": "2e7e8e3b1e46b60cc7d01f72f619f26b1f81fa5b",
+    "mergeSha": "820578baef7103304394bcaa034eec9371bba4d7"
+  }
+]
