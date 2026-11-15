@@ -23,6 +23,13 @@ function measuredBytes(value, label) {
   return value;
 }
 
+/** Route groups are filesystem-only segments, never public URL components. */
+function publicLabelForAppPage(page) {
+  const segments = page.slice(1, -"/page".length).split("/")
+    .filter(segment => segment && !/^\([A-Za-z0-9_.-]+\)$/.test(segment));
+  return segments.length ? "/" + segments.join("/") : "/";
+}
+
 export function summarizeAppRouteBundles(pages, byteSize) {
   if (!pages || typeof pages !== "object" || Array.isArray(pages)) {
     throw new Error("Next.js app build manifest has no valid pages map");
@@ -67,7 +74,7 @@ export function summarizeAppRouteBundles(pages, byteSize) {
     const jsBytes = measuredBytes(resources.filter(item => item.asset.endsWith(".js")).reduce((n, item) => n + item.bytes, 0), "JavaScript total");
     const cssBytes = measuredBytes(resources.filter(item => item.asset.endsWith(".css")).reduce((n, item) => n + item.bytes, 0), "CSS total");
     return {
-      route: page === "/page" ? "/" : page.slice(0, -"/page".length),
+      route: publicLabelForAppPage(page),
       entries: resources.length,
       jsBytes,
       cssBytes,
