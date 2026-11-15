@@ -19,7 +19,7 @@ function validTaskBranch(name) {
 }
 
 /** Pure fail-closed decision, without GitHub/network side effects. */
-export function planMergedBranchRetirement({ event, repository, branch, compare, otherOpenPrs } = {}) {
+export function planMergedBranchRetirement({ event, repository, branch, compare, otherOpenPrs, dependentBasePrs } = {}) {
   const pr = event?.pull_request;
   if (event?.action !== "closed" || pr?.merged !== true) return preserve("NOT_MERGED");
   if (!repositoryPattern.test(repository ?? "") || pr?.head?.repo?.full_name !== repository ||
@@ -34,7 +34,8 @@ export function planMergedBranchRetirement({ event, repository, branch, compare,
   }
   if (!branch || branch.name !== name || branch.protected !== false ||
       branch.commit?.sha !== pr.head.sha) return preserve("BRANCH_MISSING_CHANGED_OR_PROTECTED");
-  if (!Array.isArray(otherOpenPrs) || otherOpenPrs.length !== 0) {
+  if (!Array.isArray(otherOpenPrs) || otherOpenPrs.length !== 0 ||
+      !Array.isArray(dependentBasePrs) || dependentBasePrs.length !== 0) {
     return preserve("DEPENDENT_PR_OR_UNVERIFIED");
   }
   if (!compare || compare.behind_by !== 0 || !["ahead", "identical"].includes(compare.status)) {
@@ -76,9 +77,12 @@ export async function retireMergedBranch({ event, repository, token, request = g
   if (!branch) return preserve("ALREADY_REMOVED");
   const openPrs = await request(base + "/pulls?state=open&head=" +
     encodeURIComponent(repository.split("/")[0] + ":" + pr.head.ref) + "&per_page=100", token);
+  const baseDependents = await request(base + "/pulls?state=open&base=" +
+    encodeURIComponent(pr.head.ref) + "&per_page=100", token);
   const compare = shaPattern.test(pr.merge_commit_sha ?? "") ? await request(base + "/compare/" +
     pr.merge_commit_sha + "...main", token) : null;
-  const plan = planMergedBranchRetirement({ event, repository, branch, compare, otherOpenPrs: openPrs });
+  const plan = planMergedBranchRetirement({ event, repository, branch, compare, otherOpenPrs: openPrs,
+    dependentBasePrs: baseDependents });
   if (plan.action !== "RETIRE") return plan;
 
   // REST delete-ref has no atomic expected-SHA lease. Re-read immediately;
