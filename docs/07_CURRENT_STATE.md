@@ -1,19 +1,21 @@
 # Amaana Foundation — current source and release state
 
-**Checkpoint:** 15 November 2026 IST. Source, Railway deployment and public runtime are distinct verification boundaries.
+**Checkpoint: 16 November 2026 IST.** Sole implementation writer: `CHATGPT_ACTIVE`. GitHub source, Railway deployment and live website are different acceptance boundaries.
 
-| Boundary | Last verified observation |
+| Boundary | Independently verified state |
 |---|---|
-| Protected source trunk | `main` merged AF-R078 PR #984 at `69f7c7c43512c45eddcca4462f65f3a60fcf2d3b`; full exact-head CI `43734553764` and separate ready-state `43738571009` passed |
-| AF-R066 source release | PR #983 merged `b1a5b71872c201874a25c70d6a2b7dc632ac6e06`; full CI `43731243191` and separate ready-state `43734382955` passed |
-| Railway deployed website | `56519fd5-b4f9-4200-84b0-3cdfab90c4d4` SUCCESS for `b1a5b71872c201874a25c70d6a2b7dc632ac6e06` |
-| Independently live-verified website | Public `/api/health/version`: `b1a5b71872c201874a25c70d6a2b7dc632ac6e06`, branch `main`, environment `production`; `/api/health/ready`: `ready`; fresh public /compliance, /our-work, /stories content loaded |
-| AF-R078 merge rollout | Railway website and worker both SKIPPED for docs/script-only source `69f7c7c43512c45eddcca4462f65f3a60fcf2d3b`; do not force a rollout to equalize SHAs |
-| Sole implementation writer | `CHATGPT_ACTIVE`; one writer, no parallel repository implementation |
-| Current task | AF-R013 [PR #985](https://github.com/immazhark/amaana-platform/pull/985), synthetic admin route casing regression; RED `43734840150`; GREEN full CI `43734967338` for pre-integration head `d70fc7029bccbafdfce211392b51ae80e1d5f35b`; new integrated head awaiting exact-head CI |
-| Finance/infrastructure holds | PRs #684 and #845, issue #446 live Railway IaC apply, all payment/auth/secret/data/notification activation |
-| Canonical 149 classifications | 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A = 149, unchanged |
+| Protected main source | `fde49ad9953a786422c8b56b5bada688f73c3ca2`, after SHA-guarded merges #994, #996, #992 and #997 |
+| #994 Stylelint scope | merged `b97e93bdaa986409593b70e07acf4e77dbfb18a0`; full CI `43763379619`; ready CI `43766760511` |
+| #996 keyboard-focus lint | merged `c481cdf7a2a3de429682c635a595c2ec8816e6c1`; full CI `43765135091`; ready CI `43767767508` |
+| #992 report-label fix | merged `16cb7008e9beb976e813f1c30f3fe55fea9827c8`; full CI `43765279157`; ready CI `43767886938` |
+| #997 sixth cleanup wave | merged `fde49ad9953a786422c8b56b5bada688f73c3ca2`; full CI `43765639843`; ready CI `43767990401`; 25/25 historical refs RETIRED and absent, plus merged task branch absent |
+| Previous #991 cleanup | 20 historical refs RETIRED and verified absent, plus merged task branch absent |
+| Railway website deployment | SUCCESS at `c481cdf7a2a3de429682c635a595c2ec8816e6c1` |
+| Independent public runtime | `/api/health/version` returned `c481cdf7a2a3de429682c635a595c2ec8816e6c1`, branch main, environment production; `/api/health/ready` returned `ready` |
+| Later Railway watches | website and worker SKIPPED for #992 and #997, correct out-of-watch behavior |
+| Open work | seventh guarded retirement batch `chore/af-r079-reviewed-history-wave7-20261116`; source PRs #993/#995 awaiting current-head acceptance; finance drafts #684/#845 HELD |
+| Original 149-item classifications | 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A |
 
-**Limits:** AF-R078 identifies HTML backlinks in static local Markdown files; it does not approve deleting or archiving any historical document. AF-R013 improves local planning audit; actual Cloudflare enforcement and recovery are separately scoped. Current live payment mode is provider-controlled; no real funds were tested. The parked notification worker remains unchanged and historical preview remains offline. Finance, legal, religious and public-media privacy constraints remain binding.
+**Material limits:** protected merges do not by themselves certify payments, private admin journeys, field Core Web Vitals, assistive technology, historical media privacy or donor/legal claims. No FCRA registration; domestic INR only; 12A/12AB provisional and 80G status conflict remain under qualified review. No live payment/refund, donor communication, notification activation, infrastructure apply or forced production rollout.
 
-**Next:** finish #985 integrated-head full CI, distinct ready-state run, review and protected expected-head merge, then verify Railway outcome. Keep older archived references and identity-media constraints; do not inflate full backlog completion from test-only sub-scopes. See [active coordination](./AI_ACTIVE_WORK.md) and [handoff history](./AI_HANDOFF_LEDGER.md).
+**Next:** full CI plus separate ready-state and SHA-guarded merge for the seventh exact-head retirement batch; verify deletions one by one. Reconcile #993/#995 without force-push and complete their protected release acceptance. See [active work](./AI_ACTIVE_WORK.md), [retention manifest](./mission-control/af-r079-approved-retirement-batch-20261115.json) and [handoff ledger](./AI_HANDOFF_LEDGER.md).
