@@ -11,8 +11,9 @@ function isSafeParticipationHref(href: unknown): href is string {
   if (/^mailto:/i.test(href)) {
     const mail = /^mailto:([^?#]+)(?:\?[^#]*)?$/i.exec(href);
     // Enforce an addressed email and reject encoded CR/LF even when nested.
-    return Boolean(mail && /^[^@\s:/?#\\]+@[a-z0-9.-]+$/i.test(mail[1]) &&
-      !/%(?:25)*0[ad]/i.test(href));
+    const address = mail?.[1];
+    return typeof address === "string" && /^[^@\s:/?#\\]+@[a-z0-9.-]+$/i.test(address) &&
+      !/%(?:25)*0[ad]/i.test(href);
   }
   if (/^tel:/i.test(href)) return /^tel:\+?[0-9][0-9().-]*$/i.test(href);
   if (!/^https:\/\//i.test(href)) return false;
