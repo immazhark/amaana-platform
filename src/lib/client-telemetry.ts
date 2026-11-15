@@ -11,8 +11,9 @@ export function sendBestEffortTelemetry(
 ): void {
   let body: string;
   try {
-    body = JSON.stringify(payload);
-    if (typeof body !== "string") return;
+    const serialized = JSON.stringify(payload);
+    if (typeof serialized !== "string") return;
+    body = serialized;
   } catch {
     // Malformed optional telemetry must not interrupt navigation or be sent.
     return;
