@@ -291,3 +291,25 @@ test("AF-R024 checks computed constant calc font sizes in font shorthands, not l
   ].join("");
   assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
 });
+
+test("AF-R024 nested min(calc()) additive chains use the computed final size", () => {
+  const unsafe = [
+    ".rem{font-size:min(1rem,calc(2rem - 1rem - .75rem))}",
+    ".px{font-size:min(16px,calc(32px - 12px - 10px))}",
+    ".mixed{font-size:min(calc(1rem + .75rem - 1.5rem),2rem)}",
+    ".divide{font-size:min(calc(1rem + 1rem - 2rem),3rem)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(unsafe, "fixture.css").map(issue => issue.value), [
+    "min(1rem,calc(2rem - 1rem - .75rem))",
+    "min(16px,calc(32px - 12px - 10px))",
+    "min(calc(1rem + .75rem - 1.5rem),2rem)",
+    "min(calc(1rem + 1rem - 2rem),3rem)",
+  ]);
+
+  const safe = [
+    ".rem{font-size:min(1rem,calc(2rem - 1rem + .75rem))}",
+    ".px{font-size:min(16px,calc(32px - 12px + 12px))}",
+    ".multiple{font-size:min(1rem,calc(2rem - 1rem - .75rem + .75rem))}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
+});
