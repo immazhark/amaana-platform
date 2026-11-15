@@ -245,7 +245,7 @@ export async function auditPublicSchema(fetchImpl = fetch) {
       const maxVersionBytes = 16_384;
       const declared = version.headers?.get("content-length");
       if (declared !== null && declared !== undefined &&
-          (!/^\\d+$/.test(declared.trim()) || Number(declared) > maxVersionBytes)) {
+          (!/^\d+$/.test(declared.trim()) || Number(declared) > maxVersionBytes)) {
         throw new Error("Invalid runtime-version response size");
       }
       let data;
