@@ -52,6 +52,25 @@ describe("source lint enforcement", () => {
     }
   });
 
+  it("AF-R069 rejects keyboard-unfocusable interactive controls", async () => {
+    const eslint = new ESLint();
+    const [unsafe] = await eslint.lintText(
+      'export function Probe() { return <div role="button" onClick={() => undefined} onKeyDown={() => undefined}>Activate</div>; }',
+      { filePath: "src/components/__lint_interactive_focus_probe__.tsx" },
+    );
+    expect(unsafe).toBeDefined();
+    expect(unsafe?.messages.some(message =>
+      message.ruleId === "jsx-a11y/interactive-supports-focus" && message.severity === 2,
+    )).toBe(true);
+
+    const [safe] = await eslint.lintText(
+      'export function Probe() { return <div role="button" tabIndex={0} onClick={() => undefined} onKeyDown={() => undefined}>Activate</div>; }',
+      { filePath: "src/components/__lint_interactive_focus_probe__.tsx" },
+    );
+    expect(safe).toBeDefined();
+    expect(safe?.messages.some(message => message.ruleId === "jsx-a11y/interactive-supports-focus")).toBe(false);
+  });
+
   it("rejects a synthetic circular source import with error severity", async () => {
     const fixture = await mkdtemp(join(process.cwd(), "src", "__lint_cycle_probe_"));
     try {
