@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { mkdtempSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { evaluateImageWeights, MAX_ARTWORK_BYTES, readHeroImageInventory } from "./check-public-image-weight.mjs";
@@ -151,4 +151,15 @@ test("rejects a symlinked artwork scan root instead of inspecting an external tr
   } finally {
     rmSync(workspace, { recursive: true, force: true });
   }
+});
+
+test("AF-N21 enforces artwork weight after generation in the actual build lifecycle", () => {
+  const manifest = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
+  assert.equal(manifest.scripts.build, "next build");
+  assert.match(manifest.scripts.prebuild, /npm run artwork:refine/);
+  assert.match(manifest.scripts.postbuild, /node scripts\/check-public-image-weight\.mjs/);
+  const workflow = readFileSync(new URL("../.github/workflows/ci.yml", import.meta.url), "utf8");
+  assert.match(workflow, /run: npm run build/);
+  assert.match(workflow, /node --test scripts\/test-public-image-weight\.mjs/);
+  assert.match(workflow, /node --test scripts\/test-artwork-encoding\.mjs/);
 });
