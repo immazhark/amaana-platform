@@ -19,10 +19,10 @@ describe("campaign gallery managed image optimization", () => {
 
   it("AF-R062 keeps artwork containment in a higher-specificity normal declaration", () => {
     const css = readFileSync(join(process.cwd(), "src/components/campaign-media-gallery.module.css"), "utf8");
-    const base = css.match(/\\.trigger img\\s*\\{([^}]+)\\}/)?.[1] ?? "";
-    const artwork = css.match(/\\.graphicCard \\.trigger img\\s*\\{([^}]+)\\}/)?.[1] ?? "";
-    expect(base).toMatch(/(?:^|;)\\s*object-fit:cover\\s*;/);
-    expect(artwork).toMatch(/(?:^|;)\\s*object-fit:contain\\s*;/);
+    const base = css.match(/\.trigger img\s*\{([^}]+)\}/)?.[1] ?? "";
+    const artwork = css.match(/\.graphicCard \.trigger img\s*\{([^}]+)\}/)?.[1] ?? "";
+    expect(base).toMatch(/(?:^|;)\s*object-fit:cover\s*;/);
+    expect(artwork).toMatch(/(?:^|;)\s*object-fit:contain\s*;/);
     expect(artwork).not.toContain("!important");
   });
 
