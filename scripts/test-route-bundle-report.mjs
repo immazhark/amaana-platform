@@ -891,3 +891,40 @@ for (const filename of ['app-build-manifest.json', 'app-path-routes-manifest.jso
     });
   }
 }
+
+for (const kind of ["css", "js"]) {
+  test(`AF-R047 client-reference attribution rejects symlinked ${kind.toUpperCase()} assets`, () => {
+    const directory = mkdtempSync(join(tmpdir(), "amaana-client-bundle-link-"));
+    const build = join(directory, ".next");
+    const outside = join(directory, "outside");
+    try {
+      mkdirSync(join(build, "server/app"), { recursive: true });
+      mkdirSync(join(build, "static/css"), { recursive: true });
+      mkdirSync(join(build, "static/chunks"), { recursive: true });
+      mkdirSync(outside);
+      const asset = kind === "css" ? "static/css/site.css" : "static/chunks/site.js";
+      const content = join(outside, kind === "css" ? "site.css" : "site.js");
+      writeFileSync(content, kind === "css" ? "body{}" : "void 0;");
+      symlinkSync(content, join(build, asset), "file");
+      writeFileSync(join(build, "app-path-routes-manifest.json"), JSON.stringify({ "/page": "/" }));
+      writeFileSync(join(build, "server/app/page_client-reference-manifest.js"),
+        'globalThis.__RSC_MANIFEST = globalThis.__RSC_MANIFEST || {};globalThis.__RSC_MANIFEST["/page"] = ' +
+          JSON.stringify({
+            entryCSSFiles: { "[project]/src/app/layout": kind === "css" ? [{ path: asset, inlined: false }] : [] },
+            entryJSFiles: { "[project]/src/app/layout": kind === "js" ? [asset] : [] },
+          }));
+      if (kind === "js") {
+        writeFileSync(join(build, "build-manifest.json"), JSON.stringify({ rootMainFiles: [] }));
+      }
+      const cli = fileURLToPath(new URL("./report-route-bundles.mjs", import.meta.url));
+      const result = spawnSync(process.execPath, [cli, "--json"], {
+        cwd: directory, encoding: "utf8", timeout: 5000,
+      });
+      assert.equal(result.status, 1, "Assigned client-reference assets must not follow symlinks");
+      assert.equal(result.stdout, "", "An unsafe source must not emit a partial bundle report");
+      assert.match(result.stderr, /Symbolic links are not supported in static build assets/);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+}
