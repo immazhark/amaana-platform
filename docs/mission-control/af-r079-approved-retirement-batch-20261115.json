@@ -1,152 +1,152 @@
 [
   {
-    "pr": 962,
-    "name": "test/af-r069-explicit-no-autofocus-a11y-20261115",
-    "headSha": "a83fe438252b0082a3b77e3172cae77521c385cf",
-    "mergeSha": "53cb7461bdcdf93ccfa65e9c6be6143c35426944"
+    "pr": 922,
+    "name": "fix/af-r025-impact-metric-leading-20261114",
+    "headSha": "5b79025f4120d0993d57dd75ff9ab9163f2ba1ab",
+    "mergeSha": "eeb77b2e418117b266e53b6d811ef33f4e531c09"
   },
   {
-    "pr": 968,
-    "name": "docs/guarded-releases-branch-inventory-20261115",
-    "headSha": "bcc31aed13907d48782d98115f1d28088ebac46b",
-    "mergeSha": "db53bd7afbd239a5a041d36615215adfe9863969"
+    "pr": 923,
+    "name": "docs/af-20261114-appeal-release-and-independent-lanes",
+    "headSha": "8c97c15f9aed890eb8411b16f5204df2b3569ff4",
+    "mergeSha": "ac20de57888977c48c99b213887c51930cdae8e5"
   },
   {
-    "pr": 965,
-    "name": "docs/session-checkpoint-guarded-pr957-pr958-20261115",
-    "headSha": "2c20f2444eb2188d4028868ce797d6b3555d3ff0",
-    "mergeSha": "c54c3d0e88c13bc15c1c31c3754392e387711371"
+    "pr": 919,
+    "name": "fix/af-r025-appeal-funding-metric-leading-20261114",
+    "headSha": "7b4fb8685c0435bb68a2b596e7a38f058ddca9eb",
+    "mergeSha": "879028173c074e84615b3b68da5e85b2e430bb4f"
   },
   {
-    "pr": 961,
-    "name": "docs/nov15-two-guarded-merges-four-draft-queue",
-    "headSha": "206eee2b90139b6bb2e506e4ce116e028458cc8e",
-    "mergeSha": "45db58056018b63d5fa90d8b12c7f04972671534"
+    "pr": 920,
+    "name": "docs/af-20261114-homeguard-merged-appeal-a11y-pending",
+    "headSha": "a0cfe764b8b4e4c355f1e7a70bff92a68e8a4868",
+    "mergeSha": "f220520cddd9ef7ea3cd367ce471e3c06d47a431"
   },
   {
-    "pr": 956,
-    "name": "docs/chatgpt-four-merges-and-fifth-test-handoff-20261115",
-    "headSha": "005b9697d0c49d66924688ec156b5c35b83088b6",
-    "mergeSha": "ad87bed5698b8ccf5e04daa0aab79ec6a0ae963c"
+    "pr": 917,
+    "name": "fix/home-discovery-array-contract-20261114",
+    "headSha": "c6be3568c501616f008b2715a01699b52302a1ab",
+    "mergeSha": "e1d0e9cb88e299f572197dca890fa0835f128c7f"
   },
   {
-    "pr": 945,
-    "name": "fix/af-r072-home-meta-description-length-20261115",
-    "headSha": "f98585f4b39211e2b45a1873d96de39c10858360",
-    "mergeSha": "33cb6ff5906832047858b2570ff9c2c361bb19ef"
+    "pr": 918,
+    "name": "docs/af-20261114-three-merges-next-guard-handoff",
+    "headSha": "5c4177290150d214773573c8cfb298e29470d71e",
+    "mergeSha": "7febbe3e8c232571a00c54fc0ed97fed41d5efce"
   },
   {
-    "pr": 942,
-    "name": "fix/programme-child-projection-runtime-guard-20261115",
-    "headSha": "ebb9a0060451c5e7cb5980b447a4c07767c17fd2",
-    "mergeSha": "1a113f474d171054803728f7b728bd7911b5d26a"
+    "pr": 911,
+    "name": "fix/appeals-completed-showcase-records-20261114",
+    "headSha": "0b31d300e55169abc5c1b5e439e74bd35dfa2dbf",
+    "mergeSha": "f1da173534a613eb3fa8b790b8a97c3608f664bb"
   },
   {
-    "pr": 940,
-    "name": "fix/assistance-followup-new-tab-disclosure-20261115",
-    "headSha": "15d39da1b8bd1a17caf695c077c235063f6ec32e",
-    "mergeSha": "637bd820bd96b5693da0f77f6b857f8fb2b2bf6b"
+    "pr": 915,
+    "name": "fix/home-public-cause-media-projections-20261114",
+    "headSha": "6f8c79374f31b4ef9aa5dd2f7f96e1884280e11a",
+    "mergeSha": "ea0d5470d080f8d4898da421c3d0ac3d760ea832"
   },
   {
-    "pr": 941,
-    "name": "perf/verified-impact-linear-unique-metrics-20261115",
-    "headSha": "071d971e5c742e5e463d0d669562df67a08564a7",
-    "mergeSha": "6b7dabb91a32f6dbbf8b7b74643f3959d0fd6180"
+    "pr": 914,
+    "name": "fix/af-r025-private-status-heading-leading-20261114",
+    "headSha": "f370994508729f4e118c31ed7eece6fac4b4131a",
+    "mergeSha": "b1704ddac155c79d4e309776758c31fd6d9e0e56"
   },
   {
-    "pr": 939,
-    "name": "test/af-r071-public-detail-true-http404-20261115",
-    "headSha": "1af32a71a35d587da0a810a6c6aa26874b484cd5",
-    "mergeSha": "e4076e9b8a9985b6a8fb937ef08891535234c5d1"
+    "pr": 916,
+    "name": "docs/coordination-912-and-911-914-20261114",
+    "headSha": "55c1e0b46449ce3154959cc5d12531441c3db122",
+    "mergeSha": "86a82dead89fe21ae123a6a0f662f8e830951cf6"
   },
   {
-    "pr": 938,
-    "name": "perf/public-media-linear-url-dedupe-20261115",
-    "headSha": "2db43e2e03985a7b73595feda875c5710ef73af7",
-    "mergeSha": "b2166d9a0a35f67a8e930cbc7f33f431172bf8f6"
+    "pr": 912,
+    "name": "fix/work-index-corrupt-projection-20261114",
+    "headSha": "a353e2d9e1af7f71569f61d732a71a6e9d1ae3c9",
+    "mergeSha": "0200f3e7e48348b92b161503e45c16d89228f8e3"
   },
   {
-    "pr": 937,
-    "name": "docs/chatgpt-two-release-checkpoint-20261115",
-    "headSha": "82dd7995f3681fefeda05b3cd462f37c43cd0d94",
-    "mergeSha": "bf9037a6ad1e61cfe8c2ab0896af56a5f4d6f52c"
+    "pr": 913,
+    "name": "docs/coordination-releases-907-909-and-911-912-20261114",
+    "headSha": "47a47daa78f90eb93ba28988fb332b50abf2632d",
+    "mergeSha": "1874380178be23e40751541622ac4704339c0c02"
   },
   {
-    "pr": 935,
-    "name": "fix/af-r076-obfuscated-js-contact-href-20261115",
-    "headSha": "9037b4054584fb77af8b169e8ee9c19a7eea8925",
-    "mergeSha": "8960e61efa257ccdf64a579cf7a3bcad1e71a703"
+    "pr": 909,
+    "name": "fix/af-r019-privacy-matrix-label-contrast-20261114",
+    "headSha": "8388cd7529e634b4e6085a11aa3dc533523777d1",
+    "mergeSha": "5eda0912dc268f7e6fa8a89bb8c8842a8f88bd7e"
   },
   {
-    "pr": 933,
-    "name": "feat/af-r071-impact-compare-streaming-fallback-20261115",
-    "headSha": "d8348c8736104e458c985264d3f37e0cbcdac068",
-    "mergeSha": "2e1e48bfbe30c511819f73c5dda129b62bea97bc"
+    "pr": 908,
+    "name": "fix/home-public-projection-shape-20261114",
+    "headSha": "43141d8aa2654a8443d7e90e725fde25c5c3d55b",
+    "mergeSha": "bd913ccd9d14f731fc7ecd42f303328720238d04"
   },
   {
-    "pr": 932,
-    "name": "fix/faith-media-invalid-selected-ids-20261115",
-    "headSha": "c74fedf80a1b8e16feb396f56b254518d51b1c30",
-    "mergeSha": "5f2d740ee91bba30ce0dfa1ae66fcb5ecad04d2c"
+    "pr": 907,
+    "name": "fix/af-r025-not-found-heading-leading-20261114",
+    "headSha": "27d9a74c264a74cdb9c6057237ceb0a9cec4ce66",
+    "mergeSha": "331a711d89b0a6bcd9464ca11a1b1766c83edee4"
   },
   {
-    "pr": 936,
-    "name": "docs/af-20261115-source-audit-and-streaming-handoff",
-    "headSha": "2363cea9c422a92fe38bbb4d2e99841d8cfabc7f",
-    "mergeSha": "fcdee18e6fe3df69a3b2660b108edf9a9a2182dd"
+    "pr": 910,
+    "name": "docs/coordination-902-905-907-909-20261114",
+    "headSha": "aaf5ff4f62ed33062eaddc1e05c2168e62319d69",
+    "mergeSha": "c9996a7df6ead536f4c1d87532f020dd060ac7ad"
   },
   {
-    "pr": 931,
-    "name": "fix/af-r047-malformed-manifest-assets-20261115",
-    "headSha": "4d01ea739416bbda7cdc0336bd4c8eb6260d0fe9",
-    "mergeSha": "3e0cdad7e41221666f21bcfb7cce52737d2c095e"
+    "pr": 905,
+    "name": "fix/af-r025-route-error-heading-leading-20261114",
+    "headSha": "f947999172588f38e652f9df3c216dc453da1166",
+    "mergeSha": "608a2d216278341c4c85fa03f6712bf63f15ef2e"
   },
   {
-    "pr": 929,
-    "name": "fix/a11y-font-floor-min-multiple-arguments-20261114",
-    "headSha": "8273568b31bb5fe6ed09f2518238040551d5ea67",
-    "mergeSha": "3ed3869c824ee4391106a6b8a176bfd06d9aace9"
+    "pr": 904,
+    "name": "fix/faith-public-topics-projection-20261114",
+    "headSha": "8caa4442337f2785dc388042ab0fca8e1c33ecc5",
+    "mergeSha": "8ee23ef9a83482379536a0154e775ee479a7cd4d"
   },
   {
-    "pr": 930,
-    "name": "docs/af-20261114-story-faith-home-release-handoff",
-    "headSha": "88563f33997f0436d8957c821cd6255f7a3fef96",
-    "mergeSha": "3830cf98f554b0c2eb4512e0e82cafa51554ddf6"
+    "pr": 903,
+    "name": "fix/af-r025-global-error-heading-leading-20261114",
+    "headSha": "2c6b04294b6e15d81d2979f1025153acf9bcc829",
+    "mergeSha": "72eeee9cbbf3589116f5de2dcd2ea7691a44ab46"
   },
   {
-    "pr": 926,
-    "name": "fix/stories-published-context-shapes-20261114",
-    "headSha": "6a290e19dac7f36d5e6450037d476a3aa1dba03a",
-    "mergeSha": "cc2c7837073dde5d6244681496ab7176b9d1f9e9"
+    "pr": 902,
+    "name": "fix/faith-publication-malformed-review-predicate-20261114",
+    "headSha": "275c6558a3b93b63794d89d235f921e26df834ff",
+    "mergeSha": "12ee5df6f563c86b48cd700263cc6b2cc763852a"
   },
   {
-    "pr": 928,
-    "name": "fix/home-appeal-invalid-query-collection-20261114",
-    "headSha": "a77954de48ac2701edc4ecbead764a5fa5907855",
-    "mergeSha": "f7c1c51a49eab8fe46eecaf5c45b43ef5f3dafe2"
+    "pr": 906,
+    "name": "docs/coordination-release-898-900-and-code-902-905-20261114",
+    "headSha": "83ab8942a7717a08fc1130b9204d5f34f00b830e",
+    "mergeSha": "45225911cdfe8ebb498838a7c85191ea100f5cb1"
   },
   {
-    "pr": 927,
-    "name": "fix/faith-index-supported-format-types-20261114",
-    "headSha": "e7c5fab9bc5fed8e227e71237c373c5534edcc1e",
-    "mergeSha": "dd03b9d6508f8b57dea3fb39e371d900ad9b0dbe"
+    "pr": 900,
+    "name": "fix/faith-visible-media-record-boundary-20261114",
+    "headSha": "7263827d03e5789608427ddf32f3aea1b0cb1cb6",
+    "mergeSha": "83941ec33e10cb802defbfe7150c7305907617f0"
   },
   {
-    "pr": 925,
-    "name": "fix/stories-discovery-safe-index-20261114",
-    "headSha": "6a3f7c0c2f08069c64f5e6aed5a277d9adb98107",
-    "mergeSha": "3a1bf4641162db4256bcedc93d5bcc0ff2908a84"
+    "pr": 898,
+    "name": "fix/stories-second-read-public-card-guard-20261114",
+    "headSha": "5a3abfe1c6728ec68f00023de4a01bfff5134410",
+    "mergeSha": "62b08b3cb604808a766d0b2a6b468291a3a90ca8"
   },
   {
-    "pr": 924,
-    "name": "docs/af-20261114-release-921-922-verified",
-    "headSha": "932513b7f27c91f54885b9688f197201c1186e2b",
-    "mergeSha": "71c6bec6652245185137bb6b2005b2aa319635bf"
+    "pr": 899,
+    "name": "fix/public-outcome-metrics-malformed-projection-20261114",
+    "headSha": "c1d8e98d2fc07fc62ba795de5030937cbdc99a7b",
+    "mergeSha": "c3d2802487ea4954cba99b2eb7d0f639b1cbf0f0"
   },
   {
-    "pr": 921,
-    "name": "fix/home-carousel-invalid-stored-config-fallback-20261114",
-    "headSha": "3ef1ee2e4995dc4b2ff4ef3c6ce76e551bea3cc0",
-    "mergeSha": "a89df617e2babeffdd6f1b3e1d4c29c7c63c7262"
+    "pr": 901,
+    "name": "docs/coordination-draft-898-900-20261114",
+    "headSha": "21f12b02e93f1c42fd93e62b7ba15139b7c1ea58",
+    "mergeSha": "c1d349869c1bdbc2f939b9c399568f4f678b24a9"
   }
 ]
