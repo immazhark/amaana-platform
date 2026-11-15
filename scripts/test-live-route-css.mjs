@@ -773,6 +773,19 @@ test("public CSS audit cancels streamed oversized stylesheets before allocating 
   assert.equal(cancelled, true, "Cancel the oversized response stream");
 });
 
+test("AF-R068 does not reinterpret stylesheet dot segments into a different build asset", () => {
+  const html = [
+    '<link rel="stylesheet" href="/_next/static/chunks/../private.css">',
+    '<link rel="stylesheet" href="/_next/static/chunks/%2e%2e/private.css">',
+    '<link rel="stylesheet" href="/_next/static/chunks/%2e/private.css">',
+    '<link rel="stylesheet" href="/_next/static/chunks//site.css">',
+    '<link rel="stylesheet" href="/_next/static/chunks/site.css">',
+  ].join("");
+  assert.deepEqual(stylesheetsInHtml(html), [
+    "https://amaanafoundation.org/_next/static/chunks/site.css",
+  ]);
+});
+
 test("AF-R068 keeps oversized CSS rejection nonblocking when stream cancellation never settles", async () => {
   let cancelled = false;
   const html = '<link rel="stylesheet" href="/_next/static/large.css">';
@@ -798,17 +811,4 @@ test("AF-R068 keeps oversized CSS rejection nonblocking when stream cancellation
   ]);
   assert.match(outcome, /CSS response exceeds the audit size limit/);
   assert.equal(cancelled, true);
-});
-
-test("AF-R068 does not reinterpret stylesheet dot segments into a different build asset", () => {
-  const html = [
-    '<link rel="stylesheet" href="/_next/static/chunks/../private.css">',
-    '<link rel="stylesheet" href="/_next/static/chunks/%2e%2e/private.css">',
-    '<link rel="stylesheet" href="/_next/static/chunks/%2e/private.css">',
-    '<link rel="stylesheet" href="/_next/static/chunks//site.css">',
-    '<link rel="stylesheet" href="/_next/static/chunks/site.css">',
-  ].join("");
-  assert.deepEqual(stylesheetsInHtml(html), [
-    "https://amaanafoundation.org/_next/static/chunks/site.css",
-  ]);
 });
