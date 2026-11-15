@@ -253,3 +253,23 @@ test("public CSS audit rejects an aliased repository root before scanning extern
     await rm(workspace, { recursive: true, force: true });
   }
 });
+
+test("AF-R024 catches sub-floor constant addition and subtraction inside min(calc())", () => {
+  const unsafe = [
+    ".badRem{font-size:min(calc(2rem - 1.5rem),1rem)}",
+    ".badPx{font-size:min(20px,calc(28px - 18px))}",
+    ".badPlus{font-size:min(calc(-1rem + 1.5rem),1rem)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(unsafe, "fixture.css").map(({ value }) => value), [
+    "min(calc(2rem - 1.5rem),1rem)",
+    "min(20px,calc(28px - 18px))",
+    "min(calc(-1rem + 1.5rem),1rem)",
+  ]);
+
+  const safe = [
+    ".safeRem{font-size:min(calc(2rem - .75rem),1rem)}",
+    ".safePx{font-size:min(20px,calc(30px - 14px))}",
+    ".safePlus{font-size:min(calc(1rem + 1rem),2rem)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
+});
