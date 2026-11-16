@@ -5,7 +5,11 @@ import "@/app/our-work.css";
 import "@/app/our-work/work-filters.css";
 import styles from "@/app/our-work/work-filter-audit.module.css";
 export const dynamic = "force-dynamic";
-export default function PortfolioFixture() {
+export default async function PortfolioFixture({
+  searchParams,
+}: {
+  searchParams: Promise<{ scenario?: string }>;
+}) {
   if (process.env.AMAANA_BROWSER_ACCEPTANCE !== "true") notFound();
   const causes = programmeCategories.map(category => ({ ...category, id: category.slug, initiatives: programmes.filter(item => item.causeSlug === category.slug && !("parentSlug" in item)).map(item => ({
     id: item.slug, slug: item.slug, title: item.title, summary: item.summary,
@@ -15,8 +19,43 @@ export default function PortfolioFixture() {
     primaryMetricLabel: "primaryMetricLabel" in item ? String(item.primaryMetricLabel) : null,
     mediaAssets: [],
   })) }));
+  const { scenario } = await searchParams;
+  const base = causes.find(cause => cause.initiatives.length > 0);
+  const nullablePreviewCauses = base ? [{
+    ...base,
+    id: "synthetic-null-preview-cause",
+    slug: "synthetic-null-preview-cause",
+    title: "Synthetic nullable preview test",
+    summary: "Isolated browser acceptance fixture, not a public programme.",
+    initiatives: [{
+      id: "synthetic-null-preview",
+      slug: "synthetic-null-preview",
+      title: "Synthetic nullable preview",
+      summary: "Only the safe placeholder may appear.",
+      year: null,
+      startYear: null,
+      endYear: null,
+      isFeatured: false,
+      primaryMetric: null,
+      primaryMetricLabel: null,
+      mediaAssets: [{
+        id: "synthetic-null-image",
+        kind: "IMAGE" as const,
+        title: null,
+        publicUrl: null,
+        externalUrl: null,
+        altText: null,
+        caption: "PRIVATE_PREVIEW_FIELD",
+        sourceYear: null,
+        width: null,
+        height: null,
+        sortOrder: -1000,
+      }],
+    }],
+  }] : [];
+  const visibleCauses = scenario === "nullable-preview" ? nullablePreviewCauses : causes;
   return <div className="v2-home v2-work-index"><h1 className="v2-shell">Portfolio browser acceptance</h1><section className="v2-section paper"><div className="v2-shell">
     <form className={`work-filters ${styles.toolbar}`} aria-label="Filter fixture"><label className={styles.filterLabel}>Programme<select className={styles.filterSelect}><option>All programmes</option><option>Medical &amp; Financial Relief</option></select></label><label className={styles.filterLabel}>Year<select className={styles.filterSelect}><option>All years</option><option>2025</option></select></label><button className="v2-button">Apply filters</button></form>
-    <WorkPortfolio causes={causes} />
+    <WorkPortfolio causes={visibleCauses} />
   </div></section></div>;
 }

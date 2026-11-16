@@ -1,15 +1,19 @@
-# Amaana Foundation — current implementation writer
+# Amaana Foundation — active implementation writer
 
-**16 November 2026 IST — CHATGPT_ACTIVE.** Single repository writer; parallel QA/research read-only. Owner retains authority. GitHub PR state and Railway/public runtime are independently verified boundaries.
+**16 November 2026 IST — CHATGPT_ACTIVE.** Single GitHub implementation writer. Parallel inspection/QA is read-only. Owner retains authority.
 
-**Protected source main:** `6d902591b947703df3e07e5813ae4d21681e44de` after #995 AF-R061, guarded squash merge, full exact-head CI, separate ready-state success, Railway website SUCCESS and public version matching that SHA with readiness `ready`. #993 AF-R062 previously merged as `7f6fb5ed344861fb7ef5b76c7af5c1e58ec2592e`, deployed and verified.
+**Verified protected source main:** `e3bd30e741bc39ed5d94ff141996540d6ecb7a10` after:
+- #1000 AF-R034 Contact links — squash `59eaf65e79aa5032444503a4fb0e64069821c339`, full and ready-state CI passed, Railway SUCCESS, public version exact, readiness ready, public Threads/LinkedIn links verified;
+- #1004 AF-N14 bounded read-only HTML stream length validation — squash `5900eba222615d9a2a5121bcfcde0268b03510d4`, full and ready-state CI passed, release/runtime separate;
+- #1001 AF-FIXTURE nullable portfolio image regression — squash `e3bd30e741bc39ed5d94ff141996540d6ecb7a10`, full and ready-state CI passed, release/runtime separate.
+Prior #995 AF-R061 and #993 AF-R062 also merged and production-verified at their release SHAs.
 
-**Current branch:** `chore/af-r079-reviewed-history-wave9-20261116`, PR #1002. Its existing guarded JSON manifest pins 25 verified merged task refs #816–#840. Each live branch head matched its merged PR head and its merge SHA was found in main ancestry; runtime retirement must revalidate and fail closed. **No ninth-wave deletion counted before verified merge/deletion.** Prior #991 (20), #997 (25), #998 (25), #999 (25) = **95 verified historical branch retirements**; those cleanup task heads were absent.
+**Current task/branch:** PR #1002 `chore/af-r079-reviewed-history-wave9-20261116`. The existing manifest pins 25 individually verified merged PR heads #816–#840. At deletion time, the guarded branch-lifecycle workflow must independently verify merged status, current branch head, protected/current PR and retention exceptions, and merge ancestry. **No ninth-wave branch retirement counted before exact postmerge verification.** Earlier #991 (20), #997 (25), #998 (25), #999 (25) = 95 verified historical refs retired.
 
-**Other isolated active PRs:** #1000 AF-R034 Contact social parity at `272f78046eb35ba86683983162eb02d1f105f041` (reconciled to current main and full CI rerunning); #1001 AF-FIXTURE nullable image projection at `3f012b5e5c1f4afe1e1e98b4cecf96cad0e23dec` (test corrected after controlled browser RED; fresh CI); #1003 AF-N24 acknowledgement effect-disposal coverage at `f7e7a97c48ec647f930c725b29479b37b5d3da24` (test-only, strict TS guard corrected; fresh CI). Preserve finance-sensitive drafts #684 and #845.
+**Other active:** #1003 AF-N24 synthetic donation acknowledgement disposal regression, original branch `test/af-n24-acknowledgement-disposal-20261116`, reconciled head `4e8518837a2e52f63cec263e3c61bc672d364cf7`, draft with fresh full exact-head and separate ready-state CI pending. No production payment behavior changed. Held finance/privacy PRs #684 and #845 have not been merged or activated.
 
-**149-item ledger:** 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A = 149. No count change from bounded tests, branch retirement or component CSS.
+**Master 149:** 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 Not applicable = 149; no change from narrow merges.
 
-**Locks:** domestic INR only/no FCRA; provisional 12A/12AB and unresolved 80G; no unauthorised financial, auth, schema, checkout/CSP, donor outreach, infrastructure changes or unredacted public faces/metadata.
+**Locks:** Domestic INR only; no FCRA. 12A/12AB provisional, 80G unresolved. No unapproved payment/RBAC/schema/CSP/secret, infrastructure rollout, notification, donor communication, data migration, unredacted public faces, or image metadata.
 
-**Next:** exact-head full and separate ready-state checks for #1002; guarded squash merge; verify all 25 retirement outcomes. Finish #1000/#1001/#1003 on existing heads, no force-push or CI bypass; inspect Railway after each merge, SKIPPED permitted for out-of-watch scope.
+**Next:** verify #1002 full exact-head CI and independent ready-state CI; protected SHA-guarded squash merge; verify individual retired refs. Finish #1003 independently; inspect Railway and public version/readiness for any deployment. Do not force deployment for SHA parity.

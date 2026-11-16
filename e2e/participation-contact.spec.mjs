@@ -55,7 +55,19 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
         await expect(whatsapp).toHaveAttribute('target', '_blank');
         await expect(whatsapp).toHaveAttribute('rel', /noopener/);
         const socials = page.locator('.v2-contact-social-links a');
-        await expect(socials).toHaveCount(3);
+        await expect(socials).toHaveCount(5);
+        const expectedChannels = new Map([
+          ['Instagram', 'https://www.instagram.com/amaanafoundation/'],
+          ['Facebook', 'https://www.facebook.com/amaanafoundation24/'],
+          ['YouTube', 'https://www.youtube.com/@amaanafoundation'],
+          ['Threads', 'https://www.threads.com/@amaanafoundation'],
+          ['LinkedIn', 'https://www.linkedin.com/company/amaanafoundation'],
+        ]);
+        for (const [index, [label, href]] of [...expectedChannels].entries()) {
+          const social = socials.nth(index);
+          await expect(social).toHaveAttribute('href', href);
+          await expect(social).toHaveAttribute('aria-label', new RegExp('^' + label + ' '));
+        }
         for (const social of await socials.all()) {
           await expect(social.locator('svg')).toHaveCount(1);
           await expect(social).toHaveAttribute('target', '_blank');

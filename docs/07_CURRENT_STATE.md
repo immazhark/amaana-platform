@@ -1,20 +1,20 @@
-# Amaana Foundation — current source and release state
+# Amaana Foundation — current release state
 
-**Checkpoint: 16 November 2026 IST.** One implementation writer `CHATGPT_ACTIVE`. Source, Railway deployment and public runtime are separate acceptance boundaries.
+**Checkpoint 16 November 2026 IST.** `CHATGPT_ACTIVE` is the single implementation writer. Reconfirm GitHub, Railway and runtime before any release.
 
-| Boundary | Verified state |
+| Boundary | Verified evidence |
 |---|---|
-| Protected main | `6d902591b947703df3e07e5813ae4d21681e44de` after exact-head, ready-state, SHA-guarded merge #995 |
-| #995 AF-R061 | Merged, Railway website SUCCESS, independent public version exact `6d902591b947703df3e07e5813ae4d21681e44de`, ready |
-| #993 AF-R062 | Merged `7f6fb5ed344861fb7ef5b76c7af5c1e58ec2592e`, previous source and runtime accepted |
-| Historical retirement | 95 verified absent after #991 (20), #997 (25), #998 (25), #999 (25); merged cleanup task branches absent |
-| Ninth cleanup wave | PR #1002, existing manifest of 25 individually checked merged heads #816–#840; **not yet deleted** |
-| #1000 AF-R034 | `272f78046eb35ba86683983162eb02d1f105f041`, Contact channel fix, fresh exact-head CI |
-| #1001 AF-FIXTURE | `3f012b5e5c1f4afe1e1e98b4cecf96cad0e23dec`, nullable preview synthetic fixture corrected after RED test, fresh CI |
-| #1003 AF-N24 | `f7e7a97c48ec647f930c725b29479b37b5d3da24`, isolated acknowledgement disposal coverage, fresh CI |
-| Finance/privacy review | #684/#845 held |
-| Master 149-item ledger | 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A |
+| Protected source main | `e3bd30e741bc39ed5d94ff141996540d6ecb7a10` after #1001 squash |
+| #1000 Contact official channels | Merged `59eaf65e79aa5032444503a4fb0e64069821c339`; exact-head and separate ready-state CI success; Railway website SUCCESS; independent public version and ready exact; public Threads and LinkedIn verified |
+| #1004 public identity stream | Merged `5900eba222615d9a2a5121bcfcde0268b03510d4` after full/ready CI; separate runtime acceptance not presumed |
+| #1001 nullable preview browser fixture | Merged `e3bd30e741bc39ed5d94ff141996540d6ecb7a10` after full/ready CI; test-only browser fixture scope |
+| Previous frontend | #993 AF-R062 and #995 AF-R061 merged, Railway/public exact identities previously verified |
+| AF-R079 history | 95 verified historical refs retired across #991 20 + #997 25 + #998 25 + #999 25; ninth wave #1002 contains 25 independently checked merged ref candidates, not yet retired |
+| Active #1002 | `chore/af-r079-reviewed-history-wave9-20261116`; guarded manifest/coordination only; full/ready and postmerge guard pending |
+| Active #1003 | `test/af-n24-acknowledgement-disposal-20261116` at `4e8518837a2e52f63cec263e3c61bc672d364cf7`, synthetic test-only, fresh exact-head CI and ready-state acceptance pending |
+| Finance/privacy drafts | #684/#845 held; no payment activation |
+| Master backlog | 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A = 149 |
 
-The production health response establishes SHA and readiness, not payment-provider behavior, protected financial cases, field Web Vitals or physical accessibility. No FCRA registration; domestic INR only. 12A/12AB provisional; unresolved 80G conflict. Identifiable public faces require reviewed redaction and EXIF/GPS removal. Do not force a rollout for source/runtime SHA parity.
+**Release interpretation:** source merged, CI passed, Railway deployed, public live-verified and full provider/manual acceptance are distinct. Public health confirms only identity/basic readiness. Documentation and browser fixtures may correctly lead to Railway SKIPPED. Do not force deploy to align SHAs. Preserve the existing schema, INR-only/no FCRA boundaries, provisional 12A/12AB and unresolved 80G, face-redaction/EXIF requirements, and separately approved consequential operations.
 
-**Next executable task:** complete #1002 full and distinct ready-state gates; merge with expected head SHA; verify guarded historical retirement results. Finish independently tested #1000, #1001 and #1003, keep one branch per issue, update current source after merges. Canonical evidence: [active writer](./AI_ACTIVE_WORK.md), [149-item ledger](./mission-control/149-item-status-2026-11-15.csv), [guarded manifest](./mission-control/af-r079-approved-retirement-batch-20261115.json).
+**Next:** guarded #1002 full exact-head/ready-state/merge/deletion verification; independent #1003 CI and release; revalidate Railway if a website rollout actually occurs. Canonical records: [active writer](./AI_ACTIVE_WORK.md), [master status](./mission-control/149-item-status-2026-11-15.csv), [existing retirement manifest](./mission-control/af-r079-approved-retirement-batch-20261115.json).
