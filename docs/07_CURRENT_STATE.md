@@ -1,21 +1,20 @@
 # Amaana Foundation — current source and release state
 
-**Checkpoint: 16 November 2026 IST.** Sole implementation writer: `CHATGPT_ACTIVE`. GitHub source, Railway deployment and live website are different acceptance boundaries.
+**Checkpoint: 16 November 2026 IST.** Single repository implementation writer: `CHATGPT_ACTIVE`. Source, Railway deployment and independent public runtime are distinct.
 
-| Boundary | Independently verified state |
+| Boundary | Verified result |
 |---|---|
-| Protected main source | `fde49ad9953a786422c8b56b5bada688f73c3ca2`, after SHA-guarded merges #994, #996, #992 and #997 |
-| #994 Stylelint scope | merged `b97e93bdaa986409593b70e07acf4e77dbfb18a0`; full CI `43763379619`; ready CI `43766760511` |
-| #996 keyboard-focus lint | merged `c481cdf7a2a3de429682c635a595c2ec8816e6c1`; full CI `43765135091`; ready CI `43767767508` |
-| #992 report-label fix | merged `16cb7008e9beb976e813f1c30f3fe55fea9827c8`; full CI `43765279157`; ready CI `43767886938` |
-| #997 sixth cleanup wave | merged `fde49ad9953a786422c8b56b5bada688f73c3ca2`; full CI `43765639843`; ready CI `43767990401`; 25/25 historical refs RETIRED and absent, plus merged task branch absent |
-| Previous #991 cleanup | 20 historical refs RETIRED and verified absent, plus merged task branch absent |
-| Railway website deployment | SUCCESS at `c481cdf7a2a3de429682c635a595c2ec8816e6c1` |
-| Independent public runtime | `/api/health/version` returned `c481cdf7a2a3de429682c635a595c2ec8816e6c1`, branch main, environment production; `/api/health/ready` returned `ready` |
-| Later Railway watches | website and worker SKIPPED for #992 and #997, correct out-of-watch behavior |
-| Open work | seventh guarded retirement batch `chore/af-r079-reviewed-history-wave7-20261116`; source PRs #993/#995 awaiting current-head acceptance; finance drafts #684/#845 HELD |
-| Original 149-item classifications | 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A |
+| Protected main source | `edfcc40b72aa4139165f83909a75aa5b5331f95f`, guarded squash merge #999 |
+| Historic branch retirement | 95 pinned old refs independently absent after #991 (20), #997 (25), #998 (25) and #999 (25); merged task heads absent |
+| Latest cleanup implementation | ninth reviewed batch, 25 live merged PR heads #816–#840, `chore/af-r079-reviewed-history-wave9-20261116`; no deletion counted before acceptance |
+| #993 AF-R062 | `d127eb9dce4d94cc23fa56f6069269d6304f12f4`; fast/production/database green, browser in progress |
+| #995 AF-R061 | `9fd1bfd53136b775b2a473156f60d3e793117602`; fast/production/database green, browser in progress |
+| #1000 AF-R034 | `154d7be8a0a544308ed4307f1d3ac2bcb0f99c32`; draft, exact-head CI underway |
+| #1001 AF-FIXTURE | `ccdec6cc54f260e66bd0a908e77da11af5c8cc70`; draft test-only nullable media-preview coverage, exact-head CI awaiting verification |
+| Finance drafts | #684/#845 held, no activation |
+| Railway/public runtime | Website SUCCESS `c481cdf7a2a3de429682c635a595c2ec8816e6c1`; #999 correctly SKIPPED; public version matched runtime and readiness returned ready |
+| 149-item ledger | 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A |
 
-**Material limits:** protected merges do not by themselves certify payments, private admin journeys, field Core Web Vitals, assistive technology, historical media privacy or donor/legal claims. No FCRA registration; domestic INR only; 12A/12AB provisional and 80G status conflict remain under qualified review. No live payment/refund, donor communication, notification activation, infrastructure apply or forced production rollout.
+**Acceptance boundaries:** No arbitrary branch/document purge, unauthorised finance/auth/payment/schema/CSP/infrastructure change, forced deployment, outbound donor communication, or production migration. Domestic INR only; no FCRA; 12A/12AB provisional and 80G unresolved. Identifiable public faces require reviewed redaction and EXIF/GPS removal. Passing source/CI is not proof of production provider behavior or field Core Web Vitals.
 
-**Next:** full CI plus separate ready-state and SHA-guarded merge for the seventh exact-head retirement batch; verify deletions one by one. Reconcile #993/#995 without force-push and complete their protected release acceptance. See [active work](./AI_ACTIVE_WORK.md), [retention manifest](./mission-control/af-r079-approved-retirement-batch-20261115.json) and [handoff ledger](./AI_HANDOFF_LEDGER.md).
+**Next:** verify wave-nine full/ready checks, guarded merge and deletion outcomes; finalize each independent frontend PR on an exact clean head, reconcile remaining branches after any merge, and inspect Railway/public readiness after a deployed release. See [active work](./AI_ACTIVE_WORK.md), [149-item status](./mission-control/149-item-status-2026-11-15.csv), and [current retirement manifest](./mission-control/af-r079-approved-retirement-batch-20261115.json).
