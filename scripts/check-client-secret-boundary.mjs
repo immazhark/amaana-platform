@@ -42,6 +42,11 @@ async function filesUnder(directory) {
 
 let files;
 try {
+  // lstat of static alone follows a symlinked .next parent.
+  // Reject an aliased build root before accepting any client artifact.
+  if ((await lstat(path.dirname(root))).isSymbolicLink()) {
+    throw new Error("Symbolic link in public client bundle");
+  }
   files = await filesUnder(root);
   // Next serves public/ directly; these files never enter .next/static.
   const publicRoot = path.resolve("public");

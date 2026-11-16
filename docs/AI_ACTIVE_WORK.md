@@ -8,10 +8,10 @@
 
 **Independently verified branch state:** 739 unique existing refs in a nine-page remote census; every one of the 25 #1009 batch-11 manifest heads is absent. #1011 merged task branch is absent. Do not equate branch age with deletion permission.
 
-**Other active/held work:** #1012 AF-R005 client-secret scanner parent-symlink correction remains draft, head `f4abe3d0d62f81846f3dde5a0f4512de44654511`, two-file source scope, new exact-head CI `43879100931` in progress at the last check. #684 QR fallback and #845 synthetic staging donation eligibility remain held for separate scoped finance decisions. Preserve all their branches.
+**Current protected main after #1012:** `ec4257e3019100e40bc12b94785588bf9b150c7b`. AF-R005 client-bundle scanner parent-symlink correction merged from existing #1012 after exact-head CI `43879100931` and distinct ready-state `43903458365`, merge `ec4257e3019100e40bc12b94785588bf9b150c7b`; Railway website deployment `393f5551-ba22-4910-896c-2c01f266b1e8` correctly SKIPPED because only `scripts/**` changed. Last public live identity remains the previously verified #1011 SHA.  #684 QR fallback and #845 synthetic staging donation eligibility remain held for separate scoped finance decisions. Preserve all their branches.
 
 **149 master:** 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 Not applicable = 149. Branch retirement alone does not change statuses.
 
 **Locks:** Domestic INR only; no FCRA; 12A/12AB provisional; 80G unresolved. No unilateral payment/webhook, RBAC/schema/CSP/secret, live infrastructure/notifications, donor outreach, or public identifiable unredacted faces/EXIF/GPS.
 
-**Next:** Complete guarded retirement manifest exact-head CI and separate ready-state validation; only then SHA-guarded merge and independent branch census. #1012 acceptance can progress independently without a competing implementation writer. Re-verify fresh main, source/runtime and reviews before release.
+**Next:** Reconcile existing #1013 wave-12 branch with current protected main without force. Run full new exact-head CI and distinct ready-state acceptance on the reconciled SHA; then guarded merge and independently verify retired refs. Do not infer branch deletion from a manifest.

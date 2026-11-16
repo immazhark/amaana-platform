@@ -200,3 +200,24 @@ test("AF-R007 accepts clean binary assets and catches embedded canary bytes", ()
   assert.match(leaked.stderr, /REDACTED SECRET VALUE/);
   assert.equal((leaked.stderr + leaked.stdout).includes(canary), false);
 });
+
+
+test("AF-R005 rejects a symlinked .next parent even when static files appear clean", () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "amaana-client-build-parent-"));
+  try {
+    const external = path.join(root, "outside-build");
+    mkdirSync(path.join(external, "static"), { recursive: true });
+    writeFileSync(path.join(external, "static", "bundle.js"), "console.log('synthetic clean build')");
+    symlinkSync(external, path.join(root, ".next"), "dir");
+    const result = spawnSync(process.execPath, [scanner], {
+      cwd: root,
+      encoding: "utf8",
+      env: { ...process.env, AMAANA_CLIENT_SECRET_CANARY: canary },
+    });
+    assert.equal(result.status, 1, "Scanner must not accept a linked Next.js build parent");
+    assert.match(result.stderr, /Symbolic link in public client bundle/);
+    assert.equal(result.stderr.includes(canary), false);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
