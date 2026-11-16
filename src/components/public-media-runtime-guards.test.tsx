@@ -39,14 +39,14 @@ describe("AF-R052 PublicMedia untrusted runtime props", () => {
     const inheritedAll = Object.create(approved) as Parameters<typeof PublicMedia>[0]["asset"];
     expect(renderToStaticMarkup(<PublicMedia asset={inheritedAll} />)).toBe("");
 
-    const { publicUrl: _publicUrl, ...withoutPublicUrl } = approved;
+    const withoutPublicUrl = Object.fromEntries(Object.entries(approved).filter(([key]) => key !== "publicUrl"));
     const inheritedUrl = Object.assign(
       Object.create({ publicUrl: "/media/inherited-unreviewed.webp" }),
       withoutPublicUrl,
     ) as Parameters<typeof PublicMedia>[0]["asset"];
     expect(renderToStaticMarkup(<PublicMedia asset={inheritedUrl} />)).toBe("");
 
-    const { caption: _caption, ...withoutCaption } = approved;
+    const withoutCaption = Object.fromEntries(Object.entries(approved).filter(([key]) => key !== "caption"));
     const inheritedCaption = Object.assign(
       Object.create({ caption: "PRIVATE_EDITORIAL_NOTE" }),
       withoutCaption,
