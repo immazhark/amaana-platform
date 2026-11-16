@@ -672,3 +672,35 @@ test("AF-R012 rejects unguarded TypeScript-wrapped async server actions", () => 
       action.name + " must not acquire a synthetic permission guard");
   }
 });
+
+
+test("AF-R012 ignores unawaited permission promises in async server actions", () => {
+  const unguarded = [
+    "requirePermission('appeal.update');",
+    "void requirePermission('appeal.update');",
+    "const pendingPermission = requirePermission('appeal.update');",
+    "const pending = Promise.resolve(requirePermission('appeal.update'));",
+  ];
+  for (const statement of unguarded) {
+    const code = "'use server'; export async function save() { " + statement + " return 'unguarded'; }";
+    const ast = ts.createSourceFile("unawaited-action.ts", code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    const [action] = exportedAsyncProtectedActions(ast);
+    assert.ok(action?.body);
+    assert.equal(actionHasPermissionGuard(action.body), false,
+      "An unawaited Promise must not satisfy server-action authorization: " + statement);
+  }
+
+  const guarded = [
+    "await requirePermission('appeal.update');",
+    "const user = await requirePermission('appeal.update');",
+    "return await requirePermission('appeal.update');",
+  ];
+  for (const statement of guarded) {
+    const code = "'use server'; export async function save() { " + statement + " }";
+    const ast = ts.createSourceFile("awaited-action.ts", code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    const [action] = exportedAsyncProtectedActions(ast);
+    assert.ok(action?.body);
+    assert.equal(actionHasPermissionGuard(action.body), true,
+      "Awaited permission guards must remain detectable: " + statement);
+  }
+});
