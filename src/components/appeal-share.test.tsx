@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { AppealShare, runAppealShare } from "./appeal-share";
 
 const appeal = {
@@ -11,6 +13,17 @@ const appeal = {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("appeal sharing recovery", () => {
+  it("AF-R061 reuses the exact approved Amaana blue token for share hover and focus", () => {
+    const globals = readFileSync(join(process.cwd(), "src/app/globals.css"), "utf8");
+    const css = readFileSync(join(process.cwd(), "src/components/appeal-share.module.css"), "utf8");
+    expect(globals).toMatch(/--af-color-blue-600:\s*#466faa\s*;/i);
+    const hover = css.match(/\.action:hover\{([^}]+)\}/)?.[1] ?? "";
+    const focus = css.match(/\.action:focus-visible\{([^}]+)\}/)?.[1] ?? "";
+    expect(hover).toContain("border-color:var(--af-color-blue-600)");
+    expect(focus).toContain("outline:3px solid var(--af-color-blue-600)!important");
+    expect(css).not.toMatch(/#466faa/i);
+  });
+
   it("sends a complete canonical appeal to native sharing", async () => {
     const share = vi.fn().mockResolvedValue(undefined);
     const writeText = vi.fn();
