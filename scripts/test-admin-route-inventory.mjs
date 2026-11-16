@@ -106,11 +106,28 @@ function isDirectlyAwaitedAsyncGuardCall(call) {
     expression.parent.expression === expression);
 }
 
+// This is a conservative static inventory rule, not a full dataflow proof.
+// Direct Prisma or db operations must not precede an awaited auth guard.
+function isDirectDatabaseOperation(node) {
+  if (!ts.isCallExpression(node)) return false;
+  let expression = node.expression;
+  while (ts.isPropertyAccessExpression(expression) ||
+    ts.isElementAccessExpression(expression) ||
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isSatisfiesExpression(expression) ||
+    ts.isNonNullExpression(expression)) {
+    expression = expression.expression;
+  }
+  return ts.isIdentifier(expression) && (expression.text === "prisma" || expression.text === "db");
+}
+
 // Only statements before a direct unconditional return/throw can satisfy
 // a guard. Nested function bodies do not execute as part of the route/action.
 function bodyHasReachableDirectCall(body, name) {
   if (bodyShadowsGuardName(body, name)) return false;
   let found = false;
+  let accessedDatabaseBeforeGuard = false;
   function visit(node) {
     if (found || ts.isFunctionLike(node)) return;
     // Nested try bodies must obey the same direct return/throw boundary as the
@@ -159,8 +176,15 @@ function bodyHasReachableDirectCall(body, name) {
       visit(node.left);
       return;
     }
+    if (isDirectDatabaseOperation(node)) {
+      accessedDatabaseBeforeGuard = true;
+      return;
+    }
     if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === name) {
-      if ((name !== "requirePermission" && name !== "getCurrentUser") || isDirectlyAwaitedAsyncGuardCall(node)) found = true;
+      if (!accessedDatabaseBeforeGuard &&
+        ((name !== "requirePermission" && name !== "getCurrentUser") || isDirectlyAwaitedAsyncGuardCall(node))) {
+        found = true;
+      }
       return;
     }
     ts.forEachChild(node, visit);
@@ -761,4 +785,65 @@ test("AF-R012 recognizes transparent async-guard await wrappers, not voided call
       assert.equal(actionHasPermissionGuard(action.body), allowed, statement);
     }
   }
+});
+
+test("AF-R012 rejects late async guards after direct private database access", () => {
+  const lateAction = [
+    "export async function save() {",
+    "  await prisma.donation.update({ where: { id: 'synthetic' }, data: {} });",
+    "  await requirePermission('donations.manage');",
+    "}",
+  ].join("\n");
+  const actionSource = ts.createSourceFile("synthetic-late-action.ts", lateAction,
+    ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const [action] = exportedAsyncProtectedActions(actionSource);
+  assert.ok(action);
+  assert.equal(actionHasPermissionGuard(action.body, action.parameters), false,
+    "A database mutation before authorization cannot be certified by a later guard");
+
+  const lateRoute = [
+    "export async function GET() {",
+    "  const records = await prisma.donation.findMany();",
+    "  await getCurrentUser();",
+    "  return Response.json(records);",
+    "}",
+  ].join("\n");
+  assert.equal(sourceHasGuardCall(lateRoute, "getCurrentUser", "GET"), false,
+    "Private read before authentication cannot be certified by a later guard");
+
+  const orderedAction = [
+    "export async function save() {",
+    "  await requirePermission('donations.manage');",
+    "  return await prisma.donation.update({ where: { id: 'synthetic' }, data: {} });",
+    "}",
+  ].join("\n");
+  const orderedSource = ts.createSourceFile("synthetic-ordered-action.ts", orderedAction,
+    ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const [ordered] = exportedAsyncProtectedActions(orderedSource);
+  assert.ok(ordered);
+  assert.equal(actionHasPermissionGuard(ordered.body, ordered.parameters), true,
+    "A direct awaited guard before a database operation remains detectable");
+
+  assert.equal(sourceHasGuardCall(
+    "export async function GET() { await getCurrentUser(); return prisma.donation.findMany(); }",
+    "getCurrentUser", "GET"), true);
+
+  assert.equal(sourceHasGuardCall(
+    "export async function GET() { await db.records.findMany(); await getCurrentUser(); }",
+    "getCurrentUser", "GET"), false,
+    "An aliased db read before authentication must also fail the static inventory");
+
+  assert.equal(sourceHasGuardCall(
+    "export async function GET() { await getCurrentUser(); return db.records.findMany(); }",
+    "getCurrentUser", "GET"), true,
+    "The same db alias remains acceptable when authentication precedes the read");
+
+  assert.equal(sourceHasGuardCall(
+    "export async function GET() { await prisma['donation']['findMany'](); await getCurrentUser(); }",
+    "getCurrentUser", "GET"), false,
+    "Computed property access must not conceal private work before the guard");
+  assert.equal(sourceHasGuardCall(
+    "export async function GET() { await (db.records.findMany)(); await getCurrentUser(); }",
+    "getCurrentUser", "GET"), false,
+    "Parenthesized database operations must not bypass the order check");
 });
