@@ -235,7 +235,7 @@ export async function auditPublicSchema(fetchImpl = fetch) {
     const declared = response.headers.get("content-length");
     let expectedIdentityBytes = null;
     if (declared !== null) {
-      if (!/^(?:0|[1-9]\d*)$/.test(declared.trim())) {
+      if (!/^\d+$/.test(declared.trim())) {
         throw new Error("Invalid declared public document length on route: " + path);
       }
       const declaredBytes = Number(declared.trim());
