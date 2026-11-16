@@ -70,3 +70,26 @@ describe("private acknowledgement exact monetary display", () => {
     expect(formatAcknowledgementINR(399.71)).toMatch(/399[.]71/);
   });
 });
+
+describe("AF-N23 private acknowledgement shape provenance", () => {
+  it("rejects inherited found flags, donation properties and appeal labels", () => {
+    expect(isAcknowledgementResponse(Object.create({ found: false }), reference)).toBe(false);
+    expect(isAcknowledgementResponse(Object.create(valid), reference)).toBe(false);
+    expect(isAcknowledgementResponse({
+      ...valid, donation: Object.create(valid.donation),
+    }, reference)).toBe(false);
+    expect(isAcknowledgementResponse({
+      ...valid, donation: {
+        ...valid.donation, appeal: Object.create(valid.donation.appeal),
+      },
+    }, reference)).toBe(false);
+  });
+
+  it("rejects private data attached to a not-found response", () => {
+    expect(isAcknowledgementResponse({
+      found: false, donation: valid.donation,
+    }, reference)).toBe(false);
+    expect(isAcknowledgementResponse({ found: false, presentation: valid.presentation }, reference)).toBe(false);
+    expect(isAcknowledgementResponse({ found: false }, reference)).toBe(true);
+  });
+});
