@@ -27,6 +27,8 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
   // Runtime records can be malformed even when TypeScript callers are correct.
   // Reject them before reading public URLs, optional labels or media-kind branches.
   if (!asset ||
+      !["id", "kind", "title", "publicUrl", "externalUrl", "altText", "caption", "sourceYear"]
+        .every(key => Object.hasOwn(asset, key)) ||
       typeof asset.id !== "string" || !asset.id.trim() ||
       !["IMAGE", "VIDEO", "DOCUMENT", "EXTERNAL_VIDEO"].includes(asset.kind) ||
       [asset.title, asset.publicUrl, asset.externalUrl, asset.altText, asset.caption].some(
