@@ -4,13 +4,13 @@
 
 | Boundary | Verified result |
 |---|---|
-| Protected main source | `edfcc40b72aa4139165f83909a75aa5b5331f95f`, guarded squash merge #999 |
+| Protected main source | `7f6fb5ed344861fb7ef5b76c7af5c1e58ec2592e`, guarded squash merge #993; previous #999 `edfcc40b72aa4139165f83909a75aa5b5331f95f` |
 | Historic branch retirement | 95 pinned old refs independently absent after #991 (20), #997 (25), #998 (25) and #999 (25); merged task heads absent |
 | Latest cleanup implementation | ninth reviewed batch, 25 live merged PR heads #816–#840, `chore/af-r079-reviewed-history-wave9-20261116`; no deletion counted before acceptance |
-| #993 AF-R062 | `d127eb9dce4d94cc23fa56f6069269d6304f12f4`; fast/production/database green, browser in progress |
-| #995 AF-R061 | `9fd1bfd53136b775b2a473156f60d3e793117602`; fast/production/database green, browser in progress |
-| #1000 AF-R034 | `154d7be8a0a544308ed4307f1d3ac2bcb0f99c32`; draft, exact-head CI underway |
-| #1001 AF-FIXTURE | `ccdec6cc54f260e66bd0a908e77da11af5c8cc70`; draft test-only nullable media-preview coverage, exact-head CI awaiting verification |
+| #993 AF-R062 | MERGED `7f6fb5ed344861fb7ef5b76c7af5c1e58ec2592e`; exact-head full and separate ready-state CI success; source branch absent |
+| #995 AF-R061 | Reconciled head `71e77acbebf2587d91d77e804eafc98551764d04`; fresh exact-head checks required |
+| #1000 AF-R034 | Reconciled head `8515b8acedca976e113e84b0d5f8f725dcf141ff`; verified browser locator failure corrected, fresh checks required |
+| #1001 AF-FIXTURE | Reconciled head `2acb18de9914150775beab219975420995241449`; fixture TypeScript failure corrected, fresh checks required |
 | Finance drafts | #684/#845 held, no activation |
 | Railway/public runtime | Website SUCCESS `c481cdf7a2a3de429682c635a595c2ec8816e6c1`; #999 correctly SKIPPED; public version matched runtime and readiness returned ready |
 | 149-item ledger | 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A |
