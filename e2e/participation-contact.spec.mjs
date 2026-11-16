@@ -63,8 +63,10 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
           ['Threads', 'https://www.threads.com/@amaanafoundation'],
           ['LinkedIn', 'https://www.linkedin.com/company/amaanafoundation'],
         ]);
-        for (const [label, href] of expectedChannels) {
-          await expect(socials.getByRole('link', { name: new RegExp('^' + label + ' ') })).toHaveAttribute('href', href);
+        for (const [index, [label, href]] of [...expectedChannels].entries()) {
+          const social = socials.nth(index);
+          await expect(social).toHaveAttribute('href', href);
+          await expect(social).toHaveAttribute('aria-label', new RegExp('^' + label + ' '));
         }
         for (const social of await socials.all()) {
           await expect(social.locator('svg')).toHaveCount(1);
