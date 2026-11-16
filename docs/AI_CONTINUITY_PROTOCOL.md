@@ -11,6 +11,8 @@ For **repository implementation**, there is only one active writer at any moment
 
 The user controls ownership transitions.
 
+**Claude Code continuity:** When the owner delegates an implementation session to Claude Code, use the distinct `CLAUDE_CODE_ACTIVE` writer state (not `CODEX_ACTIVE`). Apply the same single-writer, `HANDOFF_PENDING`, exact-head and release rules. Claude Code must verify GitHub and claim state in the existing coordination file before implementation. When its usage limit ends, it should record a safe stop; if unexpectedly interrupted, the owner can explicitly return the writer role to ChatGPT, which reconstructs the actual repo state before any edits.
+
 ## Normal operating cycle
 
 ### When Codex is available
