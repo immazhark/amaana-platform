@@ -1,17 +1,16 @@
 # Amaana Foundation — current release state
 
-**17 November 2026 IST — CHATGPT_ACTIVE**, sole owner-authorized implementation writer. Dated snapshot; source, Railway and public runtime are independently verified.
+**17 November 2026 IST — CHATGPT_ACTIVE.** Dated checkpoint; do not confuse source and deployed runtime.
 
 | Boundary | Verified |
 |---|---|
-| Protected source main | `d5c4cf56a78bc4d6ec0717b9db42ff848829b8bc` after guarded #1016 AF-R012 static async-auth scanner |
-| #1016 | Exact-head full `43951343590` 7/7 SUCCESS; independent ready-state `43955569429` SUCCESS; merged `d5c4cf56a78bc4d6ec0717b9db42ff848829b8bc`; guarded source branch retirement verify pending |
-| Public UI / performance | #1020 footer fallback `751ad21fa1ce0fe82eb602dbcfcc1339b049e4ed`; #1018 Highlights alignment `2677020ac5f07b7950fed85eb9a49510418eb083`; #1019 logo containment `8be5c81ae2bda6ff1a489d3d3bcee122c3998b91`; all fully gated merged, task branches independently absent |
-| #1021 branch cleanup | Merged `9067536359198d90245f2e88fee0a707f8688aed` after full and ready gates; historical retirement `43955154571` FAIL CLOSED before deletion because first pinned `content/` name is not allowlisted |
-| #1022 recovery | Existing `fix/af-r079-manifest-ci-validation-20261117`; hosted RED test `43955501195` exposed invalid checked-in manifest. Replace disallowed #686 with exact-SHA-pinned approved-category #697; preserve other nine. Fresh full + separate ready checks + guarded merge/deletion verification pending |
-| Held PRs | #684 domestic UPI QR and #845 staging financial/privacy eligibility, no unilateral merge |
-| Railway | Website source `8be5c81ae2bda6ff1a489d3d3bcee122c3998b91` SUCCESS; later docs/scripts-only source merges SKIPPED |
-| Public website | Fresh version SHA `8be5c81ae2bda6ff1a489d3d3bcee122c3998b91` main/production; readiness `ready` |
-| 149 status | 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 Not applicable = **149** |
+| Protected main | `96a62de3e99ce24168c09980a50a461f5f71f819` after #1022 SHA-guarded squash merge |
+| #1022 full acceptance | Exact head `1bc9be30af3168b20e92bd3017df66036a0eb636`, full CI `43956024008` 7/7 SUCCESS; separate ready `43960428982` plan/promotion/verify SUCCESS |
+| AF-R079 retirement | Workflow `43960534772` SUCCESS: 10/10 approved historical refs absent in independent census; #1022 task branch also retired via `43960534915` SUCCESS |
+| Branch census | 678 refs after wave 14; intentionally preserved disallowed #686 `content/` branch; no blanket deletion |
+| Current task | Wave-15 two-ref retirement manifest, branch `chore/af-r079-reviewed-retirement-wave15-20261117`. #698 and #699 independently matched merged PR head, merge ancestry and no retention labels; full CI, separate ready, guarded merge, post-run verification pending |
+| Open finance holds | #684 and #845 remain unmerged; no payment activation |
+| Public runtime | Last independently verified website `8be5c81ae2bda6ff1a489d3d3bcee122c3998b91`, ready. No current-wave live verification yet; scripts/docs may legitimately skip deployment |
+| Original 149 | 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 Not applicable = **149** |
 
-**Next:** Accept and SHA-guarded merge #1022 only after exact-head full CI, distinct ready-state checks and review. Verify history workflow and 10/10 actual eligible branches absent. Preserve unmerged, protected and retention-marked refs. Audit additional branches/docs only with direct evidence. Do not assume source/runtime parity, settled tax status, published donor/beneficiary identity or payment acceptance.
+**Next:** Complete full exact-head CI on wave 15, then separate ready-state verification and expected-head guarded squash merge. Verify exact branches absent and Railway outcome. Never delete open, retained, protected, drifted or unmerged refs. Preserve factual/privacy/financial locks and the approved cream/blue/gold brand.
