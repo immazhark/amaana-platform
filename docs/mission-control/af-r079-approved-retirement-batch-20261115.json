@@ -1,152 +1,62 @@
 [
   {
-    "pr": 659,
-    "name": "fix/css-timing-fragment-identity-20261105",
-    "headSha": "85b307ebb08f8b6548af63d19e84e78621600c73",
-    "mergeSha": "24ef1c6508bc5b6cb322fd7f91157f67744581b4"
+    "pr": 686,
+    "name": "content/mr-khaja-public-information-20261107",
+    "headSha": "1c4104600d3126b259047a110c5ea0ba1d979052",
+    "mergeSha": "04f65403c9b55b9c8b3a416337469fcdb602d782"
   },
   {
-    "pr": 660,
-    "name": "test/af-r047-css-unmatched-manifest-entry-20261106",
-    "headSha": "3d1b258bea41daa45e40d2a05aab98968dd4acaa",
-    "mergeSha": "375863b7592a2454608389b73daa50acb8846dc3"
+    "pr": 687,
+    "name": "fix/admin-form-accessibility-spacing-20261107",
+    "headSha": "4196fc1a84bd8b1a38ab1610742477217187c785",
+    "mergeSha": "c44b05b1eb8e6c9725b1b84fb15d8002736bd971"
   },
   {
-    "pr": 661,
-    "name": "test/af-r012-action-nested-guard-decoy-20261106",
-    "headSha": "25ad873e98e360faf84390efab327b70f593848e",
-    "mergeSha": "043cca64c890e776a4edf1de702880db898d538d"
+    "pr": 688,
+    "name": "fix/admin-appeal-editor-inline-feedback-20261107",
+    "headSha": "a3893b82599969abf3ebc2912fbdba85cd3c360e",
+    "mergeSha": "0b2317cb9a79308d0a3869f291540f8ed04ab530"
   },
   {
-    "pr": 662,
-    "name": "test/af-r012-async-export-action-inventory-20261106",
-    "headSha": "61b5695ea080208b08edb218a08cf9aa297dcce3",
-    "mergeSha": "b018443f4f40fc6e6261461776864a3f55211f57"
+    "pr": 689,
+    "name": "fix/af-r057-quoted-context-openers-20261107",
+    "headSha": "a9e1970775549492dad37620269930f0eeedb309",
+    "mergeSha": "03a45b373ee59cd349d11845d4aafdf5b4e04d15"
   },
   {
-    "pr": 663,
-    "name": "test/af-r012-exported-api-const-guard-20261106",
-    "headSha": "70ac217c9eb66b2d8ecb15b47c8c6ef455369528",
-    "mergeSha": "b702b75eea572e7117836afe4ab510ce150ee2fa"
+    "pr": 690,
+    "name": "fix/companion-copy-reading-identity-20261107",
+    "headSha": "07eb2ee03cd7db1e4dc24fc49c982eca512369dc",
+    "mergeSha": "a45cd519fe5c8bcd6a3780bc059d2a21fae10e67"
   },
   {
-    "pr": 664,
-    "name": "test/af-r069-label-association-lint-20261106",
-    "headSha": "26becd7872ce9f65813aceeb2ba924a6610797a7",
-    "mergeSha": "5d1bb80274a9a332a9d58c25902966f936e18526"
+    "pr": 692,
+    "name": "feat/mr-khaja-reviewed-appeal-page-20261107",
+    "headSha": "90d221317c92abb6a22717bf582f2663adbb12a1",
+    "mergeSha": "1a707c914277e0bed022c85943d48f225b6d8ab2"
   },
   {
-    "pr": 665,
-    "name": "fix/af-r047-legacy-sibling-layout-integrity-20261106",
-    "headSha": "a98c167f1117a39d20f49b3cc7e0cb569a2c6c40",
-    "mergeSha": "9988e61e2cc97a8b9ce31e4e902010b4b3522808"
+    "pr": 693,
+    "name": "fix/admin-media-appeal-workflow-clarity-20261108",
+    "headSha": "aaccb058d5c0e5c27b5ac0040c885127f3b3cecb",
+    "mergeSha": "f6807e75fb1c56540c1a0a2e5268e23920df7556"
   },
   {
-    "pr": 666,
-    "name": "test/af-r048-cls-session-overflow-20261106",
-    "headSha": "18154a8de18b4ead4fd34b6b7b6ec3f0d863ddab",
-    "mergeSha": "4d1054b8b7a7fb4690df01490b88ac315eb1168f"
+    "pr": 694,
+    "name": "fix/donor-checkout-appeal-responsive-20261108",
+    "headSha": "7882f3fb0ba42b16245d2a5b6519594fc48eb53b",
+    "mergeSha": "440f03dfbf99e5e81d91c65d749d4c12654c78fc"
   },
   {
-    "pr": 667,
-    "name": "perf/af-r057-appeal-card-css-route-scope-20261106",
-    "headSha": "fd06aae69410e97a494a0821e49a22aaaef2abba",
-    "mergeSha": "37d3049c3c6ef4cd2be64caa43d01857d7fb4614"
+    "pr": 695,
+    "name": "fix/mobile-menu-route-return-reconciled-20261108",
+    "headSha": "23ece08ec39da8c1daa96788f31424b929596db7",
+    "mergeSha": "c65eb6fd368b0c0ce3895a948cf5f92a6a68ada4"
   },
   {
-    "pr": 668,
-    "name": "fix/af-r092-invalid-public-progress-20261106",
-    "headSha": "0e9a48ce53f3917988e3fa275140e16ea9ef2907",
-    "mergeSha": "21ce52e067e08571b6f0210ae97afadb1d25517a"
-  },
-  {
-    "pr": 669,
-    "name": "feat/af-r071-donate-safe-loading-20261106",
-    "headSha": "5ffd14cb9e7cb1d9717e594b914f98e8774cc828",
-    "mergeSha": "499fd1c89f71f6419e30f37603bf1ea6558920e2"
-  },
-  {
-    "pr": 670,
-    "name": "test/af-r012-unreachable-admin-guard-20261106",
-    "headSha": "3aeb6af8ce4c036e9389d031c13a03c8dce4a616",
-    "mergeSha": "51628e91b41d20db401bc738b2f0b6125bcaf8b7"
-  },
-  {
-    "pr": 671,
-    "name": "fix/af-r068-css-coverage-fragment-alias-20261106",
-    "headSha": "010553b0551fa273ec85abe5375840d6b8dbb6a0",
-    "mergeSha": "0b71d9f5d3d80f8a1838b9bc9a458576b7b7777a"
-  },
-  {
-    "pr": 672,
-    "name": "test/af-r012-conditional-guard-failclosed-20261106",
-    "headSha": "6b2008eaa5a63ddf07c638ec8e90145ddf78a9c2",
-    "mergeSha": "f325569703502a41a945aae2b19ae60769af11f1"
-  },
-  {
-    "pr": 673,
-    "name": "test/af-r012-try-exit-guard-inventory-20261106",
-    "headSha": "1686512a2b56299ac131e9c0e377094849e5561c",
-    "mergeSha": "3cebdcfae4a7a33665ec7fc1943aa702996f55af"
-  },
-  {
-    "pr": 674,
-    "name": "fix/af-r019-admin-text-button-contrast-20261106",
-    "headSha": "55a27617604c05aa88ee3f7710d5eb7509bcb7d4",
-    "mergeSha": "514e7f6d463656f98270d860ebb0a87af206c0de"
-  },
-  {
-    "pr": 675,
-    "name": "fix/af-r047-noncanonical-build-asset-alias-20261106",
-    "headSha": "f603e8ca5d4f4678ef3b936a5cdcf8deca66792d",
-    "mergeSha": "57ae5dae4f428f3b24cbcd61e425247bd5274bbb"
-  },
-  {
-    "pr": 676,
-    "name": "fix/af-r025-home-recognition-heading-leading-20261106",
-    "headSha": "73467b5be4b63b559f1d210f9900d8f3575aa98d",
-    "mergeSha": "9d5fef7477ecc9f4708b74179b9999610f070452"
-  },
-  {
-    "pr": 677,
-    "name": "fix/af-r047-noncanonical-page-route-20261106",
-    "headSha": "5bbd143326806112b6734e95b127f4b278166332",
-    "mergeSha": "4d9f5d4ca9606b237fcf6158f4d173317250dfd6"
-  },
-  {
-    "pr": 678,
-    "name": "test/af-r012-optional-loop-switch-guards-20261106",
-    "headSha": "35953be3dec15f50cfab8caed67d768cb48da385",
-    "mergeSha": "1cdac63fa7113e1adc79b6263110316417d36e84"
-  },
-  {
-    "pr": 680,
-    "name": "fix/af-r047-route-label-integrity-20261106",
-    "headSha": "26e3eafcb86130b87503f5150a0bd78f0401553f",
-    "mergeSha": "1a28cd2f79995e23920589c4ca7480b7e2781915"
-  },
-  {
-    "pr": 681,
-    "name": "fix/af-r057-ignore-inert-html-styles-20261106",
-    "headSha": "b4410638202f34e08428b87680c9fd8514f4e7c6",
-    "mergeSha": "61e4f4624276ac608aa78b607521ffe00b9b1581"
-  },
-  {
-    "pr": 682,
-    "name": "fix/af-r057-public-css-route-preflight-20261106",
-    "headSha": "8d5aef4cfc3d3d52270c4e39acdce184a9bffe6e",
-    "mergeSha": "9f4b37f0db1c64c3dae39540c7d8f0f22c44239e"
-  },
-  {
-    "pr": 683,
-    "name": "test/af-r012-ts-wrapped-action-guards-20261106",
-    "headSha": "1885c5f391066733d236b386aa30ee0bddaf4414",
-    "mergeSha": "3a6fbfc4e4018bd3efe5a8b13e2cbd51c66ffd96"
-  },
-  {
-    "pr": 685,
-    "name": "fix/admin-assistance-queue-404-linked-appeal-20261107",
-    "headSha": "625e6b579649c9fa4b92ef13b8d3d0429b880442",
-    "mergeSha": "a26146a6259652351b4816587a136adcfefadd71"
+    "pr": 696,
+    "name": "fix/admin-appeal-inline-feedback-reconciled-20261108",
+    "headSha": "7abd9ba173c3d961b9c2b055e204cefec0e9b199",
+    "mergeSha": "0b2317cb9a79308d0a3869f291540f8ed04ab530"
   }
 ]
