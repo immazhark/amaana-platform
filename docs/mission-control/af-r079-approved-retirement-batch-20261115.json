@@ -1,152 +1,152 @@
 [
   {
-    "pr": 756,
-    "name": "docs/chatgpt-ownership-reconciled-20261111",
-    "headSha": "ea721e26cfd536c862c1c37ee622f0dcf96901e6",
-    "mergeSha": "4172a02756182cce70348cdf5fe1177bb016f48f"
+    "pr": 783,
+    "name": "docs/af-r002-r003-deployed-security-closure-20261112",
+    "headSha": "a48facd463130f698ee403b86446c40460ea7ff0",
+    "mergeSha": "7e0f429f450301355f7511dd32e35e0586ffe2ca"
   },
   {
-    "pr": 757,
-    "name": "fix/web-vitals-exact-document-attribution-20261111",
-    "headSha": "8c328d83d2aaf938a63a0c197a322b15e3daa8ae",
-    "mergeSha": "fc202afab220a37008dc6743b4e9576d55178f3c"
+    "pr": 784,
+    "name": "test/af-r004-storage-server-only-boundary-20261112",
+    "headSha": "41149c499a98e06f602264694afabd00d2b237e5",
+    "mergeSha": "3c227d267dfc5ba65a2afa242a7bda0fd667d282"
   },
   {
-    "pr": 758,
-    "name": "fix/legacy-route-manifest-symlink-20261111",
-    "headSha": "ca3cf16fd6bbb1b0f4bfd9d8a01e36beede30cbe",
-    "mergeSha": "86135173653dcbdfb601be8c0dc7633f9bafab8e"
+    "pr": 786,
+    "name": "docs/af-r010-n09-source-closure-20261112",
+    "headSha": "6914dbba177697062f1f522a1ecd86a3cc8e3c5a",
+    "mergeSha": "4e6a19911afa4957f1e745416be97cb8c62fe2cd"
   },
   {
-    "pr": 759,
-    "name": "docs/af-n13-withdrawn-advisory-20261111",
-    "headSha": "91c6c777546e86a2653677b0d05e482286fab63f",
-    "mergeSha": "e25987dd2223bfa459e15a1f9f0b4d99760237a9"
+    "pr": 788,
+    "name": "fix/af-r008-structured-data-runtime-guards-20261112",
+    "headSha": "bb79e2a55817c26eeaa6bd1ca5dc26a18317d830",
+    "mergeSha": "6e5dbf1bbdb353ecbac88c71d91df833d94d0b2c"
   },
   {
-    "pr": 761,
-    "name": "test/contact-email-link-integrity-20261111",
-    "headSha": "a1d483f97ccc6f3968cad7ed934e404fa328c089",
-    "mergeSha": "ac3e13353da445d4a4924a3974d5d15213d0898e"
+    "pr": 789,
+    "name": "fix/af-r024-team-inline-css-audit-20261112",
+    "headSha": "5db5a03f9a92ad1a41bf4b9f4d8a2c05fa61f07a",
+    "mergeSha": "7aa76e515d45ccea673ab6490bd8ae162847b724"
   },
   {
-    "pr": 762,
-    "name": "fix/web-vitals-navigation-invalidation-20261111",
-    "headSha": "818021d8fa2913221b01ec2cfef0c377eba274f4",
-    "mergeSha": "b85ede6c7c51c189fbb7eb0b99dba562e9bd4478"
+    "pr": 790,
+    "name": "docs/af-r009-n08-security-acceptance-20261112",
+    "headSha": "b86a3fb81f74911af6746bcb16cf3d7eb0526a8f",
+    "mergeSha": "672d5e61545b949055f9715bcc7e75ce26893942"
   },
   {
-    "pr": 763,
-    "name": "test/cloudflare-beacon-csp-boundary-20261111",
-    "headSha": "fbcd5f45f0b0fd4f456225a18a44f0d873e3b3d8",
-    "mergeSha": "2b062d798a1688bec8e36b7558f5f0d4ab4ef961"
+    "pr": 791,
+    "name": "fix/af-r025-canonical-desktop-leading-20261112",
+    "headSha": "232b03ee7b325375912368c1ca9fa8e838d5e3df",
+    "mergeSha": "9c163beb875f9d2537ecc5d6428b9da303a14af2"
   },
   {
-    "pr": 764,
-    "name": "fix/campaign-gallery-absolute-first-party-optimization-20261111",
-    "headSha": "531011614e978306a1d7202fcb523ad8457bbabf",
-    "mergeSha": "2b84ae44818238a553cad2b3cbc4c5c7e1bbc40d"
+    "pr": 792,
+    "name": "fix/af-r025-team-hero-multiline-leading-20261112",
+    "headSha": "3f3efa94548fe66fcee940d7053f1afca3457de7",
+    "mergeSha": "3af06b98cbe37a9e427da8d1fe001e6d9d5cab43"
   },
   {
-    "pr": 765,
-    "name": "fix/public-font-floor-constant-calc-20261111",
-    "headSha": "937666b7e3422cbe1aa68148a6fb316d0771c9bc",
-    "mergeSha": "531877cad4a6c7f04c7472720ed409a91f3b55aa"
+    "pr": 793,
+    "name": "fix/af-r025-programme-card-heading-leading-20261112",
+    "headSha": "c97bd5a23d199098495f3dd942d4d46e2f6d2199",
+    "mergeSha": "28d0bdc291383d9004af57d75312c080b4543fa9"
   },
   {
-    "pr": 766,
-    "name": "fix/campaign-data-heading-leading-20261111",
-    "headSha": "8a924b10cf53004e4521d819db234b2322209829",
-    "mergeSha": "945b1b65457209c5cd5a17811c110da93ebe201b"
+    "pr": 794,
+    "name": "fix/af-r052-malformed-public-gallery-items-20261112",
+    "headSha": "3c8c28993d15747440a7ccbc18083b62aab86940",
+    "mergeSha": "7bab5d566e772a50eb21c62b1ba36a75a4a18769"
   },
   {
-    "pr": 767,
-    "name": "fix/public-font-floor-additive-calc-20261111",
-    "headSha": "eb2498ba363d9d8f591c49054343162d9dd749f4",
-    "mergeSha": "1701f111b4fb25134ba5b02b3c97646f8174bbc6"
+    "pr": 795,
+    "name": "fix/af-r052-public-media-runtime-guard-20261112",
+    "headSha": "c7b385a84475f1a54b9d4069e8739a0220540ddd",
+    "mergeSha": "d435cdf6bb027808eaf4f937b5ed74f26e919efc"
   },
   {
-    "pr": 768,
-    "name": "fix/public-font-floor-chained-scalar-calc-20261111",
-    "headSha": "3e6b71bb99288ff17ceb0a681defc175a3ab623f",
-    "mergeSha": "131bcec01f50c7c1d23e9eeb7b83472d758104b6"
+    "pr": 797,
+    "name": "fix/af-funnel-public-discovery-analytics-20261112",
+    "headSha": "895f827f18460a0509ea7f8ba32427b10ab45513",
+    "mergeSha": "ab8e5e3d9229bd1abd6747f9cde7c4e77930a393"
   },
   {
-    "pr": 769,
-    "name": "fix/public-font-floor-symlink-failclosed-20261111",
-    "headSha": "d4c74e8933108c977e5207c26c0bc2109d1188c3",
-    "mergeSha": "fd4030e0885ac60c0533ce536c4323e4420efd2a"
+    "pr": 798,
+    "name": "docs/af-n17-public-media-db-error-acceptance-20261112",
+    "headSha": "fbaddf1e2f1b2c40808466ac325825ea064db1e8",
+    "mergeSha": "e63d7ebbfe6ffbf5e309794dfc0917e9198c3f8b"
   },
   {
-    "pr": 770,
-    "name": "fix/impact-principle-gold-ink-contrast-20261111",
-    "headSha": "2f2b2c42544200cc8e0a255a0127a38ba49f3c2e",
-    "mergeSha": "3ded5c93e4af7cbde8e0c50e0021dc5cdfc7268d"
+    "pr": 799,
+    "name": "fix/khaja-approved-target-hero-20261112",
+    "headSha": "fec5917d589c1880f3c161d6bf3501512753055c",
+    "mergeSha": "164712b0eb1a2c54db4deb4f3b1283dc4cbdaaaa"
   },
   {
-    "pr": 771,
-    "name": "fix/faith-library-action-contrast-20261111",
-    "headSha": "7a063ae358bd9e2f194120ad68a4ac0d6ec4ee29",
-    "mergeSha": "3f5f221fcfdeee7b8e3407710aab542a100685ca"
+    "pr": 801,
+    "name": "fix/af-r025-trust-evidence-heading-leading-20261112",
+    "headSha": "4e7cb751b0751ed772c472e51d75e88d82b0b6bc",
+    "mergeSha": "f4625fb04c6b8e0a94bc8797058a0b395c7e7a0f"
   },
   {
-    "pr": 772,
-    "name": "fix/sponsorship-multiline-heading-leading-20261111",
-    "headSha": "598fb4adffbdbd0599398c25e961e696beb16a94",
-    "mergeSha": "145c6cb4381b8fadfee2d60fe758cb001bc08e9e"
+    "pr": 802,
+    "name": "fix/af-funnel-static-discovery-paths-20261112",
+    "headSha": "7e835f7db40eed7ac4111fd2ae22c390d2629b11",
+    "mergeSha": "cbb113a1fdc44bc2a9ef7f0bd36eb08ecf5097ac"
   },
   {
-    "pr": 773,
-    "name": "fix/programme-story-heading-leading-20261111",
-    "headSha": "b601e3eb74489912fdc56b457af80bc8c95fb9f5",
-    "mergeSha": "2f461a233ac4c622e8d88b93a357018115b9bbe1"
+    "pr": 803,
+    "name": "docs/af-r004-storage-boundary-reconciled-20261112",
+    "headSha": "9674f1f69bc736b82e37776bbf78144fa2d5151c",
+    "mergeSha": "df258d98c51aee0353ab7197fa2a9765f831b92e"
   },
   {
-    "pr": 774,
-    "name": "fix/stories-ethic-heading-leading-20261111",
-    "headSha": "8904fefd120c75f7fdaefe7e4153cf0a5b504d6f",
-    "mergeSha": "e4a63e399d791d67bf94743b0070c66e44c22a98"
+    "pr": 805,
+    "name": "fix/mobile-footer-route-accordion-reset-20261112",
+    "headSha": "b3d6ec34a0353ed9c68453e21b0bbbf63ea01dc4",
+    "mergeSha": "1e536c50e50674720750d49aac71f2a41ac21592"
   },
   {
-    "pr": 775,
-    "name": "fix/impact-tile-h3-line-height-20261111",
-    "headSha": "03978d27084e6bcd42b5e1a3bb425ef96ba4063f",
-    "mergeSha": "e49d9fe3d0a6ce1f3a1ce7b451f9913f1044fe89"
+    "pr": 806,
+    "name": "fix/af-r080-structured-data-query-boundary-20261112",
+    "headSha": "00fc4feedb7cf52d10e1597a61a757d9c6ff1281",
+    "mergeSha": "1815c2692efea5937b4cc7db5be9fed2f974f4dc"
   },
   {
-    "pr": 776,
-    "name": "fix/af-r047-client-manifest-symlink-boundary-20261111",
-    "headSha": "1e872e03e34232204651f73d34c3ececbc51f044",
-    "mergeSha": "0d4d02d904605cd870c52b189d59dd80f03e8fb1"
+    "pr": 810,
+    "name": "fix/gallery-collection-guard-clean-20261112",
+    "headSha": "3d1f9f9289abc06158adf62eba22f3193fa240c4",
+    "mergeSha": "65ed2af7283b247827e400eb8f76dd55f7bed886"
   },
   {
-    "pr": 778,
-    "name": "fix/af-r011-no-dynamic-test-execution-20261112",
-    "headSha": "58521d6047548d4c47956638736c7c4ae3dba258",
-    "mergeSha": "47152209927ae5df8be185af5c0af13ef0658a9b"
+    "pr": 811,
+    "name": "fix/edition-runtime-guard-clean-20261112",
+    "headSha": "17bdf0a640d6e7f9656d7da89c05f1f3d22abd4e",
+    "mergeSha": "6e9200e71038fb95dd1612a1ba1e4f0b74f05451"
   },
   {
-    "pr": 779,
-    "name": "docs/af-149-verified-release-overlay-20261112",
-    "headSha": "b3316e871dd7ea91337c08d2db6ba6c71daf3209",
-    "mergeSha": "3654b551a182709a3803ae6845340dacef227ba0"
+    "pr": 812,
+    "name": "fix/impact-strip-runtime-guard-clean-20261112",
+    "headSha": "d74d86f0d72c7b8c04e0f1761d8519bbed9a22fd",
+    "mergeSha": "99fef460d493d21629f83f9612c33808e8ca8ec8"
   },
   {
-    "pr": 780,
-    "name": "test/af-r008-r009-public-content-schema-20261112",
-    "headSha": "af50da5955dd85064af528477c3b214c96e7f663",
-    "mergeSha": "b18e1518e938049f12876a069ebfa8e8cfee39cb"
+    "pr": 813,
+    "name": "docs/coordination-release-805-812-20261112",
+    "headSha": "1b989d9a36ed68372c8920cac7eb817a202d3595",
+    "mergeSha": "5ea106ef4cf1630d2547d368c73e814655eb7f3d"
   },
   {
-    "pr": 781,
-    "name": "fix/branch-inventory-canonical-refs-20261112",
-    "headSha": "655424e1b7fa6516e25bc4a21c422368409b757f",
-    "mergeSha": "f21f8995da138d86d3a4951b0a5f11a9aad4d7df"
+    "pr": 814,
+    "name": "fix/participation-card-safe-links-20261112",
+    "headSha": "904d7e8b8bf25fef1070d2edfe8ed2ffd61e2bb7",
+    "mergeSha": "8db799fc8f349f4c7bc471ff4382d4af093e7e6b"
   },
   {
-    "pr": 782,
-    "name": "docs/af-r079-release-checkpoint-20261112",
-    "headSha": "5d59d4b76430f552b62b6f271524a08f30c99863",
-    "mergeSha": "bd720b5567147dde624cd4d5cf0ce5a7a0fe793d"
+    "pr": 815,
+    "name": "fix/scroll-carousel-nonfinite-start-20261112",
+    "headSha": "42b29649d79980323dc4ac44d9187a5db35a35f1",
+    "mergeSha": "de6d8c4a38b5b3a4dfcbac542361d815fdaf1c92"
   }
 ]
