@@ -1,7 +1,8 @@
 /* Canonical site chrome authority — 2026-09-30.
    Header, reminder/live rail and footer resolve here after legacy polish layers. */
 :root{
-  --af-chrome-height:5rem;
+  /* 4.65rem mark x 1.14 = 5.3rem; the desktop track must contain the scaled mark. */
+  --af-chrome-height:5.5rem;
   --af-chrome-logo:4.65rem;
   --af-footer-gold:#f1cf52;
   --af-footer-gold-bright:#ffd95a;

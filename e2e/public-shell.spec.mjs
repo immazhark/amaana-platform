@@ -683,3 +683,23 @@ test('Our Work text search combines filters, recovers empty results and clears t
   await expect(page.getByRole('status')).toContainText('These filters could not be read');
   await expect(page.getByLabel('Search public initiatives')).toHaveValue('');
 });
+
+for (const width of [320, 390, 768, 1024, 1280, 1440, 1920]) {
+  test(`official header mark stays inside the header bar at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
+    const logo = page.locator('.site-header .brand-lockup');
+    await expect(logo).toBeVisible();
+    // The enlarged mark is a visual transform; it must not paint above the
+    // viewport or across the header's bottom rule at any breakpoint.
+    const box = await page.evaluate(() => {
+      const header = document.querySelector('header.site-header').getBoundingClientRect();
+      const mark = document.querySelector('.site-header .brand-lockup').getBoundingClientRect();
+      return { above: header.top - mark.top, below: mark.bottom - header.bottom, width: mark.width };
+    });
+    expect(box.above, 'mark must not extend above the header').toBeLessThanOrEqual(0.5);
+    expect(box.below, 'mark must not extend below the header').toBeLessThanOrEqual(0.5);
+    expect(box.width, 'mark keeps a legible header size').toBeGreaterThanOrEqual(width < 360 ? 50 : 60);
+  });
+}
