@@ -89,6 +89,23 @@ function bodyShadowsGuardName(body, name) {
   return shadowed;
 }
 
+// requirePermission is async. A floating Promise cannot deny a server
+// action before its protected mutation; only directly awaited calls count.
+// Keep transparent TypeScript/parenthesis wrappers, not void or arbitrary calls.
+function isDirectlyAwaitedPermissionCall(call) {
+  let expression = call;
+  while (expression.parent && expression.parent.expression === expression &&
+    (ts.isParenthesizedExpression(expression.parent) ||
+      ts.isAsExpression(expression.parent) ||
+      ts.isSatisfiesExpression(expression.parent) ||
+      ts.isNonNullExpression(expression.parent))) {
+    expression = expression.parent;
+  }
+  return Boolean(expression.parent &&
+    ts.isAwaitExpression(expression.parent) &&
+    expression.parent.expression === expression);
+}
+
 // Only statements before a direct unconditional return/throw can satisfy
 // a guard. Nested function bodies do not execute as part of the route/action.
 function bodyHasReachableDirectCall(body, name) {
@@ -143,7 +160,7 @@ function bodyHasReachableDirectCall(body, name) {
       return;
     }
     if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === name) {
-      found = true;
+      if (name !== "requirePermission" || isDirectlyAwaitedPermissionCall(node)) found = true;
       return;
     }
     ts.forEachChild(node, visit);
