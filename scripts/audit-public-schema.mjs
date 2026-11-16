@@ -195,7 +195,7 @@ export function analyzePublicSchemaHtml(path, html) {
   };
 }
 
-async function readHtmlLimited(response) {
+async function readHtmlLimited(response, expectedIdentityBytes = null) {
   if (!response.body) throw new Error("Public document body missing");
   const reader = response.body.getReader();
   const chunks = [];
@@ -216,6 +216,9 @@ async function readHtmlLimited(response) {
   } finally {
     reader.releaseLock();
   }
+  if (expectedIdentityBytes !== null && bytes !== expectedIdentityBytes) {
+    throw new Error("Declared identity response length differs from streamed bytes");
+  }
   return new TextDecoder("utf-8", { fatal: true }).decode(Buffer.concat(chunks));
 }
 
@@ -229,10 +232,21 @@ export async function auditPublicSchema(fetchImpl = fetch) {
         response.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase() !== "text/html") {
       throw new Error("Unexpected HTTP response/redirect/content type on public route: " + path);
     }
-    if (Number(response.headers.get("content-length")) > maxHtmlBytes) {
-      throw new Error("Unexpectedly large public document on route: " + path);
+    const declared = response.headers.get("content-length");
+    let expectedIdentityBytes = null;
+    if (declared !== null) {
+      if (!/^\d+$/.test(declared.trim())) {
+        throw new Error("Invalid declared public document length on route: " + path);
+      }
+      const declaredBytes = Number(declared.trim());
+      if (!Number.isSafeInteger(declaredBytes) || declaredBytes > maxHtmlBytes) {
+        throw new Error("Unexpectedly large public document on route: " + path);
+      }
+      // Fetch may decompress gzip/br content while retaining the wire length header.
+      const encoding = response.headers.get("content-encoding")?.trim().toLowerCase();
+      if (!encoding || encoding === "identity") expectedIdentityBytes = declaredBytes;
     }
-    const result = analyzePublicSchemaHtml(path, await readHtmlLimited(response));
+    const result = analyzePublicSchemaHtml(path, await readHtmlLimited(response, expectedIdentityBytes));
     pages.push({ ...result,
       httpIndexingDirective: /(?:^|[,;:\s])noindex(?=$|[,;\s])/i.test(response.headers.get("x-robots-tag") ?? "") ? "NOINDEX" : "UNSPECIFIED" });
   }
