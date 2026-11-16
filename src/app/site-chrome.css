@@ -1,7 +1,8 @@
 /* Canonical site chrome authority — 2026-09-30.
    Header, reminder/live rail and footer resolve here after legacy polish layers. */
 :root{
-  --af-chrome-height:5rem;
+  /* 4.65rem mark x 1.14 = 5.3rem; the desktop track must contain the scaled mark. */
+  --af-chrome-height:5.5rem;
   --af-chrome-logo:4.65rem;
   --af-footer-gold:#f1cf52;
   --af-footer-gold-bright:#ffd95a;
@@ -217,8 +218,7 @@
 
 /* Owner monitor QA: the official mark must read clearly at header scale without growing the chrome track. */
 .site-header .brand-official{overflow:visible}
-/* 4.65rem x 1.07 = 4.98rem: the largest mark that stays inside the 5rem desktop track. */
-.site-header .brand-lockup{transform:scale(1.07);transform-origin:left center}
+.site-header .brand-lockup{transform:scale(1.14);transform-origin:left center}
 @media(max-width:1020px){.site-header .brand-lockup{transform:scale(1.1)}}
 @media(prefers-reduced-motion:reduce){.site-header .brand-lockup{transition:none}}
 
