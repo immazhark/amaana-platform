@@ -20,6 +20,15 @@ export function auditFontSizes(source, path) {
     // A clamp's first argument is the lower bound. Its middle calc() may
     // legitimately subtract a small length without reducing that bound.
     const clampFloor = !shorthand && /^clamp\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*,/i.exec(value);
+    // A constant calc() in clamp's lower-bound position must be evaluated,
+    // not judged by a single operand (which could be falsely below 12px).
+    const clampCalcFloor = !shorthand &&
+      /^clamp\(\s*calc\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*([*/])\s*(-?\d*\.?\d+)\s*\)\s*,/i.exec(value);
+    const clampCalcValue = clampCalcFloor
+      ? (clampCalcFloor[3] === "*"
+        ? Number(clampCalcFloor[1]) * Number(clampCalcFloor[4])
+        : Number(clampCalcFloor[1]) / Number(clampCalcFloor[4]))
+      : null;
     // Fold only standalone constant calc products, quotients, and same-unit sums/differences in font-size.
     // Operand-only scanning misses calc(1rem * .5), while it rejects
     // calc(11px * 2) despite the computed size being above the floor.
@@ -65,6 +74,7 @@ export function auditFontSizes(source, path) {
     const measurements = folded
       ? folded
       : clampFloor ? [clampFloor]
+      : clampCalcFloor ? [] // The entire constant floor is checked below.
       : [...value.matchAll(/(?:^|[^\w.])(-?\d*\.?\d+)\s*(rem|px)\b/gi)];
     // A font shorthand contains a size followed by an optional /line-height.
     // Check its first literal px/rem size only; a smaller line-height is not
@@ -124,7 +134,10 @@ export function auditFontSizes(source, path) {
     const shorthandCalcTooSmall = shorthandSize !== null &&
       (!Number.isFinite(shorthandSize) ||
         shorthandSize < (shorthandCalcSize[2].toLowerCase() === "px" ? MIN_FONT_PX : MIN_FONT_REM));
-    if ((shorthandCalcIsSize ? shorthandCalcTooSmall : tooSmall) || nestedMinTooSmall || nestedMinAdditiveTooSmall || nestedMinAdditiveChainTooSmall) violations.push({ path, value });
+    if ((shorthandCalcIsSize ? shorthandCalcTooSmall : tooSmall) ||
+      (clampCalcValue !== null && (!Number.isFinite(clampCalcValue) ||
+        clampCalcValue < (clampCalcFloor[2].toLowerCase() === "px" ? MIN_FONT_PX : MIN_FONT_REM))) ||
+      nestedMinTooSmall || nestedMinAdditiveTooSmall || nestedMinAdditiveChainTooSmall) violations.push({ path, value });
   }
 
   return violations;
