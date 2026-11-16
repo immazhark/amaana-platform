@@ -739,3 +739,26 @@ test("AF-R012 ignores unawaited authentication promises in admin APIs", () => {
     "getCurrentUser", "POST"), true,
     "Awaited session lookup remains visible to static API audit");
 });
+
+
+test("AF-R012 recognizes transparent async-guard await wrappers, not voided calls", () => {
+  const cases = [
+    ["getCurrentUser", "await (getCurrentUser());", true],
+    ["getCurrentUser", "const user = await (getCurrentUser() as Promise<unknown>);", true],
+    ["requirePermission", "await (requirePermission('appeal.update'));", true],
+    ["requirePermission", "await (void requirePermission('appeal.update'));", false],
+    ["getCurrentUser", "await (void getCurrentUser());", false],
+  ];
+  for (const [guard, statement, allowed] of cases) {
+    if (guard === "getCurrentUser") {
+      const source = "export async function POST() { " + statement + " return Response.json({}); }";
+      assert.equal(sourceHasGuardCall(source, guard, "POST"), allowed, statement);
+    } else {
+      const source = "'use server'; export async function save() { " + statement + " }";
+      const ast = ts.createSourceFile("wrapped-await-action.ts", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+      const [action] = exportedAsyncProtectedActions(ast);
+      assert.ok(action?.body);
+      assert.equal(actionHasPermissionGuard(action.body), allowed, statement);
+    }
+  }
+});
