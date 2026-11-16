@@ -80,7 +80,7 @@ it.each([
   fireFrame!(0);
 
   await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
-  const options = fetchMock.mock.calls[0][1] as RequestInit;
+  const options = fetchMock.mock.calls.at(0)?.[1] as RequestInit | undefined;
   expect(options.signal?.aborted).toBe(false);
   expect(replaceState).toHaveBeenCalledOnce();
 
