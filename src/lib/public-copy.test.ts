@@ -77,6 +77,19 @@ describe("heroTeaser factual sentence boundaries", () => {
   });
 });
 
+describe("heroTeaser Unicode truncation", () => {
+  it("does not emit a lone surrogate when an emoji crosses the character cap", () => {
+    const teaser = heroTeaser("A".repeat(176) + "😊" + "B".repeat(12));
+    expect(teaser).toBe("A".repeat(176) + "…");
+    expect(teaser.length).toBeLessThanOrEqual(180);
+  });
+
+  it("preserves an emoji that ends exactly at the character cap", () => {
+    expect(heroTeaser("A".repeat(175) + "😊" + "B".repeat(12)))
+      .toBe("A".repeat(175) + "😊…");
+  });
+});
+
 describe("public record fallback rejects unreviewed metric metadata", () => {
   it("omits malformed and whitespace-only metric claims while retaining the privacy notice", () => {
     for (const metric of [null, undefined, "", "   ", { amount: "999" }, 999]) {
