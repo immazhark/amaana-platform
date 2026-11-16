@@ -35,6 +35,25 @@ describe("AF-R052 PublicMedia untrusted runtime props", () => {
     expect(forged.trim).not.toHaveBeenCalled();
   });
 
+  it("rejects prototype-inherited media identity, URL and editorial metadata", () => {
+    const inheritedAll = Object.create(approved) as Parameters<typeof PublicMedia>[0]["asset"];
+    expect(renderToStaticMarkup(<PublicMedia asset={inheritedAll} />)).toBe("");
+
+    const inheritedUrl = Object.assign(
+      Object.create({ publicUrl: "/media/inherited-unreviewed.webp" }),
+      { ...approved, publicUrl: undefined },
+    ) as Parameters<typeof PublicMedia>[0]["asset"];
+    expect(renderToStaticMarkup(<PublicMedia asset={inheritedUrl} />)).toBe("");
+
+    const inheritedCaption = Object.assign(
+      Object.create({ caption: "PRIVATE_EDITORIAL_NOTE" }),
+      { ...approved, caption: undefined },
+    ) as Parameters<typeof PublicMedia>[0]["asset"];
+    expect(renderToStaticMarkup(<PublicMedia asset={inheritedCaption} />)).toBe("");
+
+    expect(renderToStaticMarkup(<PublicMedia asset={approved} />)).toContain("Reviewed programme materials");
+  });
+
   it("preserves an ordinary reviewed image with valid metadata", () => {
     const html = renderToStaticMarkup(<PublicMedia asset={approved} />);
     expect(html).toContain('alt="Reviewed programme materials"');
