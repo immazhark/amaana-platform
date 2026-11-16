@@ -111,7 +111,14 @@ function isDirectlyAwaitedAsyncGuardCall(call) {
 function isDirectDatabaseOperation(node) {
   if (!ts.isCallExpression(node)) return false;
   let expression = node.expression;
-  while (ts.isPropertyAccessExpression(expression)) expression = expression.expression;
+  while (ts.isPropertyAccessExpression(expression) ||
+    ts.isElementAccessExpression(expression) ||
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isSatisfiesExpression(expression) ||
+    ts.isNonNullExpression(expression)) {
+    expression = expression.expression;
+  }
   return ts.isIdentifier(expression) && (expression.text === "prisma" || expression.text === "db");
 }
 
@@ -830,4 +837,13 @@ test("AF-R012 rejects late async guards after direct private database access", (
     "export async function GET() { await getCurrentUser(); return db.records.findMany(); }",
     "getCurrentUser", "GET"), true,
     "The same db alias remains acceptable when authentication precedes the read");
+
+  assert.equal(sourceHasGuardCall(
+    "export async function GET() { await prisma['donation']['findMany'](); await getCurrentUser(); }",
+    "getCurrentUser", "GET"), false,
+    "Computed property access must not conceal private work before the guard");
+  assert.equal(sourceHasGuardCall(
+    "export async function GET() { await (db.records.findMany)(); await getCurrentUser(); }",
+    "getCurrentUser", "GET"), false,
+    "Parenthesized database operations must not bypass the order check");
 });
