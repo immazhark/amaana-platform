@@ -33,6 +33,8 @@ export function ParticipationCards({ paths }: { paths: readonly ParticipationPat
   if (!Array.isArray(paths)) return null;
   const reviewed = paths.filter(path =>
     path != null && typeof path === "object" && !Array.isArray(path) &&
+    ["marker", "title", "copy", "action", "href"].every(field => Object.hasOwn(path, field)) &&
+    (!("icon" in path) || Object.hasOwn(path, "icon")) &&
     [path.marker, path.title, path.copy, path.action].every(field => typeof field === "string") &&
     (path.icon == null || supportedIcons.has(path.icon)) &&
     isSafeParticipationHref(path.href),

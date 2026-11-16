@@ -128,3 +128,26 @@ it("rejects malformed mail and phone actions without hiding normal contact links
   expect(html).not.toContain("%0d%0a");
   expect(html).not.toContain("not-a-number");
 });
+
+it("AF-R034 rejects prototype-inherited participation destinations and public labels", () => {
+  const entirelyInherited = Object.create(paths[0]!) as ParticipationPath;
+  const inheritedHref = Object.assign(
+    Object.create({ href: "mailto:amaanafoundation24@gmail.com" }),
+    { marker: "inherited-href", title: "Unreviewed inherited address",
+      copy: "Unreviewed description", action: "Email unreviewed contact" },
+  ) as ParticipationPath;
+  const inheritedOptionalIcon = Object.assign(
+    Object.create({ icon: "message" }),
+    { ...paths[2]!, marker: "inherited-icon", title: "Unreviewed icon" },
+  ) as ParticipationPath;
+
+  const html = renderToStaticMarkup(<ParticipationCards paths={[
+    entirelyInherited, inheritedHref, inheritedOptionalIcon, paths[2]!,
+  ]} />);
+  expect(html).toContain('href="/request-assistance"');
+  expect(html).toContain("Request support");
+  expect(html).not.toContain("Unreviewed inherited address");
+  expect(html).not.toContain("Unreviewed icon");
+  expect(html).not.toContain('mailto:amaanafoundation24@gmail.com');
+  expect(html).not.toContain("Email Amaana");
+});
