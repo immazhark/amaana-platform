@@ -221,6 +221,18 @@ for (const width of [1440, 1280, 1024, 768, 390, 320]) {
     await expect(page.locator('.v3-proof-item').last()).toContainText('₹12,14,520');
     const metricWidths = await page.locator('.v3-proof-item strong').evaluateAll(nodes => nodes.map(node => ({ width: node.clientWidth, scroll: node.scrollWidth })));
     for (const metric of metricWidths) expect(metric.scroll).toBeLessThanOrEqual(metric.width + 1);
+    // Figures that share a visual row must start on one line; vertically centring
+    // each cell lets a longer wrapped label lift its figure above its neighbours.
+    const figureRows = await page.locator('.v3-proof-item').evaluateAll(items => {
+      const rows = new Map();
+      for (const item of items) {
+        const row = Math.round(item.getBoundingClientRect().top);
+        const figure = item.querySelector('strong').getBoundingClientRect().top;
+        rows.set(row, [...(rows.get(row) ?? []), figure]);
+      }
+      return [...rows.values()].map(tops => Math.max(...tops) - Math.min(...tops));
+    });
+    for (const spread of figureRows) expect(spread, 'Highlights figures share one top edge per row').toBeLessThanOrEqual(1);
     const geometry = await page.evaluate(() => {
       const rect = selector => document.querySelector(selector).getBoundingClientRect();
       const hero = rect('.v3-home-banner-carousel');
