@@ -1,152 +1,152 @@
 [
   {
-    "pr": 783,
-    "name": "docs/af-r002-r003-deployed-security-closure-20261112",
-    "headSha": "a48facd463130f698ee403b86446c40460ea7ff0",
-    "mergeSha": "7e0f429f450301355f7511dd32e35e0586ffe2ca"
+    "pr": 816,
+    "name": "fix/appeal-share-canonical-path-boundary-20261112",
+    "headSha": "fae1b88d9ee095f71cdc5d0cd3d0733f499a2112",
+    "mergeSha": "6bd58c74252227dbce68ed35fa3d160f5f423078"
   },
   {
-    "pr": 784,
-    "name": "test/af-r004-storage-server-only-boundary-20261112",
-    "headSha": "41149c499a98e06f602264694afabd00d2b237e5",
-    "mergeSha": "3c227d267dfc5ba65a2afa242a7bda0fd667d282"
+    "pr": 817,
+    "name": "fix/story-discovery-nested-public-cause-20261112",
+    "headSha": "119c78f0faae0aac335642067375583d28d8138d",
+    "mergeSha": "49214ea6fa2f70408a1bf9fe4814af5f22ccce23"
   },
   {
-    "pr": 786,
-    "name": "docs/af-r010-n09-source-closure-20261112",
-    "headSha": "6914dbba177697062f1f522a1ecd86a3cc8e3c5a",
-    "mergeSha": "4e6a19911afa4957f1e745416be97cb8c62fe2cd"
+    "pr": 818,
+    "name": "fix/public-detail-related-cause-boundary-20261112",
+    "headSha": "ae6a6ed919bd6c42c3ae3dcca0fe7342ee083288",
+    "mergeSha": "247259a6d1ec43fadfa2091e8a446ab37aa062ef"
   },
   {
-    "pr": 788,
-    "name": "fix/af-r008-structured-data-runtime-guards-20261112",
-    "headSha": "bb79e2a55817c26eeaa6bd1ca5dc26a18317d830",
-    "mergeSha": "6e5dbf1bbdb353ecbac88c71d91df833d94d0b2c"
+    "pr": 819,
+    "name": "docs/codex-parallel-ownership-20261112",
+    "headSha": "64a84af3b44ef05a213a0c78a8aa71e3134a8601",
+    "mergeSha": "618bb96e5a5986197ff50e9ce7033a0d9204cd45"
   },
   {
-    "pr": 789,
-    "name": "fix/af-r024-team-inline-css-audit-20261112",
-    "headSha": "5db5a03f9a92ad1a41bf4b9f4d8a2c05fa61f07a",
-    "mergeSha": "7aa76e515d45ccea673ab6490bd8ae162847b724"
+    "pr": 820,
+    "name": "fix/schema-audit-exact-html-tags-20261112",
+    "headSha": "2675880421caa57bc118926907e66c03fdf7e2d4",
+    "mergeSha": "10d918d67ee21afc0773e9bd4aa743701784b73f"
   },
   {
-    "pr": 790,
-    "name": "docs/af-r009-n08-security-acceptance-20261112",
-    "headSha": "b86a3fb81f74911af6746bcb16cf3d7eb0526a8f",
-    "mergeSha": "672d5e61545b949055f9715bcc7e75ce26893942"
+    "pr": 821,
+    "name": "fix/work-filter-invalid-range-20261112",
+    "headSha": "ff6f7ccb7d2637ce5b69197bcc85470e1a74b075",
+    "mergeSha": "5b92d26598289ce0a4f58d3edb506d5de733e2d4"
   },
   {
-    "pr": 791,
-    "name": "fix/af-r025-canonical-desktop-leading-20261112",
-    "headSha": "232b03ee7b325375912368c1ca9fa8e838d5e3df",
-    "mergeSha": "9c163beb875f9d2537ecc5d6428b9da303a14af2"
+    "pr": 822,
+    "name": "fix/mobile-current-link-focus-20261112",
+    "headSha": "fd6519156954f62e58079ba510a93cfa598a9f00",
+    "mergeSha": "dbc1196458df24028b54cf485e5f2222d5e73dd7"
   },
   {
-    "pr": 792,
-    "name": "fix/af-r025-team-hero-multiline-leading-20261112",
-    "headSha": "3f3efa94548fe66fcee940d7053f1afca3457de7",
-    "mergeSha": "3af06b98cbe37a9e427da8d1fe001e6d9d5cab43"
+    "pr": 823,
+    "name": "fix/gallery-dialog-root-focus-20261112",
+    "headSha": "c37da2122abe4cb3143c816ad964faaf968e9eff",
+    "mergeSha": "28f9d21d2874a22aeb182e47b01a6b53451395f9"
   },
   {
-    "pr": 793,
-    "name": "fix/af-r025-programme-card-heading-leading-20261112",
-    "headSha": "c97bd5a23d199098495f3dd942d4d46e2f6d2199",
-    "mergeSha": "28d0bdc291383d9004af57d75312c080b4543fa9"
+    "pr": 824,
+    "name": "fix/schema-audit-remaining-tag-boundaries-20261112",
+    "headSha": "24c843ac4214460cdb357f857a7031c3a135b728",
+    "mergeSha": "6ba1dc152cf2469205e43c8df63ca1ace668202f"
   },
   {
-    "pr": 794,
-    "name": "fix/af-r052-malformed-public-gallery-items-20261112",
-    "headSha": "3c8c28993d15747440a7ccbc18083b62aab86940",
-    "mergeSha": "7bab5d566e772a50eb21c62b1ba36a75a4a18769"
+    "pr": 825,
+    "name": "fix/live-css-route-html-content-type-20261113",
+    "headSha": "14006ff2172822b871050ec23d3374795140a448",
+    "mergeSha": "0942404357b0979402b20a86e2f62262d6d5ba53"
   },
   {
-    "pr": 795,
-    "name": "fix/af-r052-public-media-runtime-guard-20261112",
-    "headSha": "c7b385a84475f1a54b9d4069e8739a0220540ddd",
-    "mergeSha": "d435cdf6bb027808eaf4f937b5ed74f26e919efc"
+    "pr": 826,
+    "name": "fix/carousel-keyboard-resume-20261113",
+    "headSha": "1ff127d844d2483720956014335d76a808a9f73e",
+    "mergeSha": "5e52652bb7f058b8ab38f493015ef24d940db1c1"
   },
   {
-    "pr": 797,
-    "name": "fix/af-funnel-public-discovery-analytics-20261112",
-    "headSha": "895f827f18460a0509ea7f8ba32427b10ab45513",
-    "mergeSha": "ab8e5e3d9229bd1abd6747f9cde7c4e77930a393"
+    "pr": 827,
+    "name": "chore/chatgpt-ownership-handoff-20261113",
+    "headSha": "025c3069537f8c4a0f7b32d3703e8ed5683b7c37",
+    "mergeSha": "07f76c7745f1d78c0f21b209dac4566380c1e576"
   },
   {
-    "pr": 798,
-    "name": "docs/af-n17-public-media-db-error-acceptance-20261112",
-    "headSha": "fbaddf1e2f1b2c40808466ac325825ea064db1e8",
-    "mergeSha": "e63d7ebbfe6ffbf5e309794dfc0917e9198c3f8b"
+    "pr": 828,
+    "name": "docs/release-823-827-checkpoint-20261113",
+    "headSha": "5787cab4f2de22261fca113d8f628bb8118f910e",
+    "mergeSha": "2f759111fd2f3f1fac622f7bee75b898709b1571"
   },
   {
-    "pr": 799,
-    "name": "fix/khaja-approved-target-hero-20261112",
-    "headSha": "fec5917d589c1880f3c161d6bf3501512753055c",
-    "mergeSha": "164712b0eb1a2c54db4deb4f3b1283dc4cbdaaaa"
+    "pr": 829,
+    "name": "fix/schema-image-query-metadata-20261113",
+    "headSha": "c4a460d0793e16ee84881605cc2c6476097b128d",
+    "mergeSha": "d47799f73ef301d0716c13a4cc6a703240c9e74c"
   },
   {
-    "pr": 801,
-    "name": "fix/af-r025-trust-evidence-heading-leading-20261112",
-    "headSha": "4e7cb751b0751ed772c472e51d75e88d82b0b6bc",
-    "mergeSha": "f4625fb04c6b8e0a94bc8797058a0b395c7e7a0f"
+    "pr": 830,
+    "name": "fix/public-locales-invalid-list-20261113",
+    "headSha": "ac46e4c337dbae9f597e89abe5ff9100a10ef4d9",
+    "mergeSha": "e17c2fb9531f3f13353e687ee523db397ea47887"
   },
   {
-    "pr": 802,
-    "name": "fix/af-funnel-static-discovery-paths-20261112",
-    "headSha": "7e835f7db40eed7ac4111fd2ae22c390d2629b11",
-    "mergeSha": "cbb113a1fdc44bc2a9ef7f0bd36eb08ecf5097ac"
+    "pr": 831,
+    "name": "fix/route-bundle-duplicate-records-20261113",
+    "headSha": "792a6481d43324e8da54a92be61a8da8689494fd",
+    "mergeSha": "22090a0e1c9002066060e96db54259d23e8f3ad9"
   },
   {
-    "pr": 803,
-    "name": "docs/af-r004-storage-boundary-reconciled-20261112",
-    "headSha": "9674f1f69bc736b82e37776bbf78144fa2d5151c",
-    "mergeSha": "df258d98c51aee0353ab7197fa2a9765f831b92e"
+    "pr": 832,
+    "name": "fix/carousel-invalid-rotation-interval-20261113",
+    "headSha": "f67e93855fdd4bee96dc33814883a4e3e3c45773",
+    "mergeSha": "35f478f0215b5b414add6642940f77e9e56089c3"
   },
   {
-    "pr": 805,
-    "name": "fix/mobile-footer-route-accordion-reset-20261112",
-    "headSha": "b3d6ec34a0353ed9c68453e21b0bbbf63ea01dc4",
-    "mergeSha": "1e536c50e50674720750d49aac71f2a41ac21592"
+    "pr": 833,
+    "name": "fix/admin-pagination-unsafe-total-20261113",
+    "headSha": "b0681aa62bdf050d751a950ac6245e74e552b3d2",
+    "mergeSha": "19b4b40830318cc1ae1c9a7158447b164e17a964"
   },
   {
-    "pr": 806,
-    "name": "fix/af-r080-structured-data-query-boundary-20261112",
-    "headSha": "00fc4feedb7cf52d10e1597a61a757d9c6ff1281",
-    "mergeSha": "1815c2692efea5937b4cc7db5be9fed2f974f4dc"
+    "pr": 834,
+    "name": "fix/home-carousel-decimal-input-20261113",
+    "headSha": "ef02c57bbd3103e51554d61e5c5c3cf13c59e053",
+    "mergeSha": "eb44210d673ea168c679241290474d51b9fe03ef"
   },
   {
-    "pr": 810,
-    "name": "fix/gallery-collection-guard-clean-20261112",
-    "headSha": "3d1f9f9289abc06158adf62eba22f3193fa240c4",
-    "mergeSha": "65ed2af7283b247827e400eb8f76dd55f7bed886"
+    "pr": 835,
+    "name": "fix/public-schema-stalled-cancel-20261113",
+    "headSha": "621f8f2068dc9c45dd65c63b454cf4ac6d45941c",
+    "mergeSha": "dc216aaa2c5c7ebb656e71d5898d6221cca89a4e"
   },
   {
-    "pr": 811,
-    "name": "fix/edition-runtime-guard-clean-20261112",
-    "headSha": "17bdf0a640d6e7f9656d7da89c05f1f3d22abd4e",
-    "mergeSha": "6e9200e71038fb95dd1612a1ba1e4f0b74f05451"
+    "pr": 836,
+    "name": "fix/feedback-option-phrasing-20261113",
+    "headSha": "1b05b9bbf5b17066ae286a98b345e9c9f5e4a0aa",
+    "mergeSha": "99237ba944d2fe806af6029586411e445b15eaee"
   },
   {
-    "pr": 812,
-    "name": "fix/impact-strip-runtime-guard-clean-20261112",
-    "headSha": "d74d86f0d72c7b8c04e0f1761d8519bbed9a22fd",
-    "mergeSha": "99fef460d493d21629f83f9612c33808e8ca8ec8"
+    "pr": 837,
+    "name": "fix/participation-public-path-boundary-20261113",
+    "headSha": "8c13be38b99564adf710376f139adebd61df1a1d",
+    "mergeSha": "0ade54161f0231289ff931a218f94621b232f370"
   },
   {
-    "pr": 813,
-    "name": "docs/coordination-release-805-812-20261112",
-    "headSha": "1b989d9a36ed68372c8920cac7eb817a202d3595",
-    "mergeSha": "5ea106ef4cf1630d2547d368c73e814655eb7f3d"
+    "pr": 838,
+    "name": "fix/volunteer-choice-phrasing-20261113",
+    "headSha": "b53fbaeb2fa36f43f68e224ae113d61a766d19d7",
+    "mergeSha": "2a95efd28c78177b93fc2eccc1295a3c1ae91909"
   },
   {
-    "pr": 814,
-    "name": "fix/participation-card-safe-links-20261112",
-    "headSha": "904d7e8b8bf25fef1070d2edfe8ed2ffd61e2bb7",
-    "mergeSha": "8db799fc8f349f4c7bc471ff4382d4af093e7e6b"
+    "pr": 839,
+    "name": "fix/impact-comparison-duplicate-slugs-20261113",
+    "headSha": "7796d9687755f2cf2a65cfb558764c3cf7aeca1c",
+    "mergeSha": "c6a183d6f82a9a364611d4a8a503111502dc0206"
   },
   {
-    "pr": 815,
-    "name": "fix/scroll-carousel-nonfinite-start-20261112",
-    "headSha": "42b29649d79980323dc4ac44d9187a5db35a35f1",
-    "mergeSha": "de6d8c4a38b5b3a4dfcbac542361d815fdaf1c92"
+    "pr": 840,
+    "name": "fix/our-work-oversized-slugs-20261113",
+    "headSha": "1531a8804b832191ddd2f12a6ddbce1968c06bc1",
+    "mergeSha": "86b4192bde8dc100e17b9ef5bba2b3d0a35e18ae"
   }
 ]
