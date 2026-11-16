@@ -107,6 +107,21 @@ describe("public gallery projection", () => {
     assert.equal(items[0]?.caption, "Distribution record");
   });
 
+  it("rejects prototype-inherited media identity, caption and editorial title", () => {
+    const inheritedImage = Object.create(image) as typeof image;
+    const inheritedCaption = Object.assign(
+      Object.create({ caption: "PRIVATE_REVIEW_NOTE" }),
+      Object.fromEntries(Object.entries(image).filter(([key]) => key !== "caption")),
+    ) as typeof image;
+    const inheritedTitle = Object.assign(
+      Object.create({ title: "Unreviewed confidential poster" }),
+      { ...image, id: "inherited-title", publicUrl: "/media/second.jpg" },
+    ) as typeof image;
+    assert.deepEqual(toPublicGalleryItems([
+      inheritedImage, inheritedCaption, inheritedTitle, image,
+    ]).map(item => item.id), ["landscape"]);
+  });
+
   it("honours title-only poster labels without exposing the reviewed title", () => {
     const [item] = toPublicGalleryItems([{
       ...image, title: "Thank you poster", altText: "Community annual update",
