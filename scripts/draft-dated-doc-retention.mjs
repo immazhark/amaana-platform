@@ -35,9 +35,23 @@ function pathWithin(root, path) {
 
 function resolveMarkdownLink(root, from, raw) {
   let target = raw.trim();
-  if (!target || target.startsWith("#") || target.startsWith("//") ||
-      /^[a-z][a-z\d+.-]*:/i.test(target)) return null;
   if (target.startsWith("<") && target.endsWith(">")) target = target.slice(1, -1);
+  if (!target || target.startsWith("#") || target.startsWith("//")) return null;
+
+  // Canonical HTTPS links to this repository's main-branch docs are local
+  // backlinks too. Other origins, repositories and refs remain external.
+  if (/^[a-z][a-z\d+.-]*:/i.test(target)) {
+    let url;
+    try { url = new URL(target); } catch { return null; }
+    const prefix = url.origin === "https://github.com"
+      ? "/immazhark/amaana-platform/blob/main/docs/"
+      : url.origin === "https://raw.githubusercontent.com"
+        ? "/immazhark/amaana-platform/main/docs/"
+        : null;
+    if (!prefix || url.username || url.password || !url.pathname.startsWith(prefix)) return null;
+    target = "docs/" + url.pathname.slice(prefix.length);
+  }
+
   target = target.split(/[?#]/, 1)[0] ?? "";
   try { target = decodeURIComponent(target); } catch { return null; }
   if (!target.toLowerCase().endsWith(".md")) return null;
