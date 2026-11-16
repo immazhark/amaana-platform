@@ -411,3 +411,50 @@ test("AF-N14 preserves legitimate exact-size identity responses", async () => {
   };
   assert.equal((await auditPublicSchema(fetchImpl)).pages.length, PUBLIC_SCHEMA_ROUTES.length);
 });
+
+
+test("AF-N14 does not compare a decompressed body to its compressed wire length", async () => {
+  const fetchImpl = async target => {
+    if (target.endsWith("/api/health/version")) throw new Error("synthetic version not needed");
+    const html = page(graph, target);
+    const response = new Response(html, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/html",
+        "Content-Encoding": "gzip",
+        "Content-Length": "17",
+      },
+    });
+    Object.defineProperty(response, "url", { value: target });
+    return response;
+  };
+  assert.equal((await auditPublicSchema(fetchImpl)).pages.length, PUBLIC_SCHEMA_ROUTES.length);
+});
+
+test("AF-N14 accepts zero-padded decimal identity lengths but rejects malformed lengths", async () => {
+  const fetchImpl = async target => {
+    if (target.endsWith("/api/health/version")) throw new Error("synthetic version not needed");
+    const html = page(graph, target);
+    const response = new Response(html, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/html",
+        "Content-Length": "00" + Buffer.byteLength(html, "utf8"),
+      },
+    });
+    Object.defineProperty(response, "url", { value: target });
+    return response;
+  };
+  assert.equal((await auditPublicSchema(fetchImpl)).pages.length, PUBLIC_SCHEMA_ROUTES.length);
+  for (const invalid of ["", "-1", "1e3", "NaN"]) {
+    const badFetch = async target => {
+      const response = new Response(page(graph, target), {
+        status: 200,
+        headers: { "Content-Type": "text/html", "Content-Length": invalid },
+      });
+      Object.defineProperty(response, "url", { value: target });
+      return response;
+    };
+    await assert.rejects(auditPublicSchema(badFetch), /length/i);
+  }
+});
