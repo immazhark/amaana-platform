@@ -1,21 +1,18 @@
 # Amaana Foundation — current release state
 
-**16 November 2026 IST.** Dated checkpoint, not a live feed. Single writer: `CHATGPT_ACTIVE`. Always recheck GitHub, Railway and public endpoints before release.
+**16 November 2026 IST.** Dated checkpoint; one implementation writer `CHATGPT_ACTIVE`. Live main and Railway must be checked independently before release.
 
 | Boundary | Last verified result |
 |---|---|
-| Protected source main | `ec4257e3019100e40bc12b94785588bf9b150c7b` after reviewed #1012 scanner hardening squash merge |
-| #1011 release | Full exact-head CI `43874155904` and separate ready-state CI `43878838986` succeeded; Railway website `d2f140cf-7c87-4dfd-ab5e-113847162445` SUCCESS |
-| #1012 release | Exact-head CI `43879100931` and separate ready-state `43903458365` SUCCESS; merged `ec4257e3019100e40bc12b94785588bf9b150c7b`; Railway website `393f5551-ba22-4910-896c-2c01f266b1e8` SKIPPED correctly for out-of-watch scripts |
-| Public runtime | Fresh public version endpoint reported `edcaf99ff21733c37937e8c326624e8e41a14267`, branch main, environment production, paymentMode live; independent readiness returned ready |
-| Branch cleanup | 739 existing remote refs in complete nine-page census; 25/25 prior #1009 batch-11 manifest refs absent, #1011 task head absent |
-| Active cleanup task | `chore/af-r079-reviewed-history-wave12-20261116`, batch-12 proposal: 25 merged, exact-SHA-pinned unprotected refs from PR #634–#658. No batch-12 deletions yet; guard must revalidate before deletion |
-| Open cleanup PR | #1013 existing branch `chore/af-r079-reviewed-history-wave12-20261116` reconciled to new main, exact-head and ready-state need fresh verification before merge |
-| Held financial PRs | #684 (receiving-account/UPI settlement and activation), #845 (payment eligibility) remain unmerged |
-| 149 canonical total | 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 Not applicable |
+| Protected source main | `5b1ed49c419c0e411df0b4d55d34f1fb15289136` after SHA-guarded #1013 squash merge |
+| Prior source fix | #1011 public Unicode boundary merged `edcaf99ff21733c37937e8c326624e8e41a14267`; full and ready-state CI passed |
+| AF-R005 scanner hardening | #1012 merged `ec4257e3019100e40bc12b94785588bf9b150c7b`; full CI `43879100931`, separate ready `43903458365`; Railway SKIPPED for scripts-only change |
+| AF-R079 wave 12 | #1013 merged `5b1ed49c419c0e411df0b4d55d34f1fb15289136`; full CI `43903831773`, ready `43909188218`; guarded retirement workflow `43909362176` SUCCESS; all 25 manifest refs and #1013 task branch independently absent |
+| Website runtime | Last independently fetched public version `edcaf99ff21733c37937e8c326624e8e41a14267`, main/production; readiness `ready`. Out-of-watch subsequent merges SKIPPED; do not force rollout |
+| Current cleanup task | `chore/af-r079-reviewed-history-wave13-20261116`: proposed AF-R079 wave 13, 25 new exact-SHA-pinned merged refs from #659–#685 excluding unmerged #679 and held finance #684. No wave-13 deletions before guarded workflow |
+| Held PRs | #684 official domestic UPI QR (account/settlement/provider authorization) and #845 staging eligibility/payment scope are unmerged; preserve both |
+| 149-item master | 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 Not applicable = **149** |
 
-**Infrastructure:** Railway project `amaana-platform-staging` contains environment `production`, with website, historical preview and parked annual notification worker, plus three buckets and zero volumes; no staged change at inspection. Do not activate parked worker or make an infrastructure apply.
+**Safety:** Manifest is a reviewed proposal, not evidence of deletion. Guard rechecks original merged PR, live branch SHA, current-main ancestry, retain/protected state and open dependent PRs. Domestic INR only, no FCRA; 12A/12AB provisional, 80G unresolved. Redact public identifiable donor/beneficiary faces and remove EXIF/GPS. No unsolicited finance/payment/RBAC/CSP/schema/secret, infrastructure, cron, donor messages or production-data changes.
 
-**Safety:** Distinguish source, tested, merged, deployed, live-verified and full acceptance. Domestic INR only, no FCRA; provisional 12A/12AB, unresolved 80G evidence; redact identifiable faces and remove metadata for public derivatives. No arbitrary historical-branch or document purge. No unapproved live finance, donor messaging, secret, payment/RBAC/schema/CSP or infrastructure mutation.
-
-**Next:** Run fresh exact-head CI for reconciled #1013 and its separate ready-state validation; protected SHA-guarded merge only after acceptance. Independently verify actually removed refs and preserve financial/unmerged/recovery branches.
+**Next:** Run #1014 wave-13 exact-head full and separate ready-state CI, protected SHA-guarded merge if green, then independently census actual retirement; continue isolated source hardening after safe boundary.

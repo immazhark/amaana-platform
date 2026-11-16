@@ -1,152 +1,152 @@
 [
   {
-    "pr": 634,
-    "name": "fix/live-home-canonical-schema-audit-20261103",
-    "headSha": "5fd241707c28180499762a16265518efd815ebb4",
-    "mergeSha": "6df1d4bcb24cf93979e3f8a01a6772e611da9fe3"
+    "pr": 659,
+    "name": "fix/css-timing-fragment-identity-20261105",
+    "headSha": "85b307ebb08f8b6548af63d19e84e78621600c73",
+    "mergeSha": "24ef1c6508bc5b6cb322fd7f91157f67744581b4"
   },
   {
-    "pr": 635,
-    "name": "fix/mobile-profile-method-fail-closed-20261103",
-    "headSha": "a6620dfadb47e028580e06d79596ba24b5599958",
-    "mergeSha": "3db049ac05d2dac52127c6e3e737baf2f43f9385"
+    "pr": 660,
+    "name": "test/af-r047-css-unmatched-manifest-entry-20261106",
+    "headSha": "3d1b258bea41daa45e40d2a05aab98968dd4acaa",
+    "mergeSha": "375863b7592a2454608389b73daa50acb8846dc3"
   },
   {
-    "pr": 636,
-    "name": "fix/page-hero-title-leading-20261103",
-    "headSha": "add9f6c9ad7e84d4b6cc7fbc9b1eeda18460011b",
-    "mergeSha": "22b6a7ace59b1a2dcc44e7a2186df03ad535c294"
+    "pr": 661,
+    "name": "test/af-r012-action-nested-guard-decoy-20261106",
+    "headSha": "25ad873e98e360faf84390efab327b70f593848e",
+    "mergeSha": "043cca64c890e776a4edf1de702880db898d538d"
   },
   {
-    "pr": 637,
-    "name": "feat/css-coverage-sampled-unobserved-ratio-20261103",
-    "headSha": "a1fff21382d03f648fcf77a09ba07ef85c286f84",
-    "mergeSha": "cd94a21c012ed6afca09f68d0e5017bd976405d0"
+    "pr": 662,
+    "name": "test/af-r012-async-export-action-inventory-20261106",
+    "headSha": "61b5695ea080208b08edb218a08cf9aa297dcce3",
+    "mergeSha": "b018443f4f40fc6e6261461776864a3f55211f57"
   },
   {
-    "pr": 638,
-    "name": "perf/team-reorder-bounded-writes-20261103",
-    "headSha": "c8c8f7f7a9a1e2e6b972582d38c7ded7b4f2240f",
-    "mergeSha": "a9692b2246f2dd86f9ae76a1e0f81eed9b3a8828"
+    "pr": 663,
+    "name": "test/af-r012-exported-api-const-guard-20261106",
+    "headSha": "70ac217c9eb66b2d8ecb15b47c8c6ef455369528",
+    "mergeSha": "b702b75eea572e7117836afe4ab510ce150ee2fa"
   },
   {
-    "pr": 639,
-    "name": "fix/shared-section-heading-leading-20261104",
-    "headSha": "5e412601b2a2aefbba23b3b0ffaf3d39ba97671d",
-    "mergeSha": "b07567af02d73ba59296dcf41a3f98db3fa18e94"
+    "pr": 664,
+    "name": "test/af-r069-label-association-lint-20261106",
+    "headSha": "26becd7872ce9f65813aceeb2ba924a6610797a7",
+    "mergeSha": "5d1bb80274a9a332a9d58c25902966f936e18526"
   },
   {
-    "pr": 640,
-    "name": "fix/direct-editorial-heading-leading-20261104",
-    "headSha": "675b142670f0e1dabad04c21121b3a3bc10034c6",
-    "mergeSha": "4acb5fe255fff915a3e1bffbe05964e373dd5bce"
+    "pr": 665,
+    "name": "fix/af-r047-legacy-sibling-layout-integrity-20261106",
+    "headSha": "a98c167f1117a39d20f49b3cc7e0cb569a2c6c40",
+    "mergeSha": "9988e61e2cc97a8b9ce31e4e902010b4b3522808"
   },
   {
-    "pr": 641,
-    "name": "test/public-critical-text-resize-20261104",
-    "headSha": "9403b8c1fc676845e8f4b352294f297fac3726c5",
-    "mergeSha": "230d539d76a44d60d516c7f5862591099bd17692"
+    "pr": 666,
+    "name": "test/af-r048-cls-session-overflow-20261106",
+    "headSha": "18154a8de18b4ead4fd34b6b7b6ec3f0d863ddab",
+    "mergeSha": "4d1054b8b7a7fb4690df01490b88ac315eb1168f"
   },
   {
-    "pr": 642,
-    "name": "fix/css-audit-ignore-inert-comments-20261104",
-    "headSha": "7c457a67c5358f160e83bfd23fb7c8bb411f5d50",
-    "mergeSha": "2c1db4e8e526d193291f0f31cdf6bcfc37b60619"
+    "pr": 667,
+    "name": "perf/af-r057-appeal-card-css-route-scope-20261106",
+    "headSha": "fd06aae69410e97a494a0821e49a22aaaef2abba",
+    "mergeSha": "37d3049c3c6ef4cd2be64caa43d01857d7fb4614"
   },
   {
-    "pr": 643,
-    "name": "test/admin-route-guard-comment-spoof-20261104",
-    "headSha": "ce3416a5c04d21bf25911c2a6250a5c1d6b0d870",
-    "mergeSha": "18ea9f47436ff4b21fe8304115ade23d14b1fe72"
+    "pr": 668,
+    "name": "fix/af-r092-invalid-public-progress-20261106",
+    "headSha": "0e9a48ce53f3917988e3fa275140e16ea9ef2907",
+    "mergeSha": "21ce52e067e08571b6f0210ae97afadb1d25517a"
   },
   {
-    "pr": 644,
-    "name": "fix/route-attribution-malformed-pages-20261104",
-    "headSha": "06511cd3573a9fb9dd752ff8b1d2c6e7986fa901",
-    "mergeSha": "c20096242420726df132557cb0dcb28d91d8641c"
+    "pr": 669,
+    "name": "feat/af-r071-donate-safe-loading-20261106",
+    "headSha": "5ffd14cb9e7cb1d9717e594b914f98e8774cc828",
+    "mergeSha": "499fd1c89f71f6419e30f37603bf1ea6558920e2"
   },
   {
-    "pr": 645,
-    "name": "fix/css-audit-ignore-script-rawtext-20261104",
-    "headSha": "587c56492618ff4fbee8f355c33d8e3d7f1911aa",
-    "mergeSha": "4473ec2dff03c39e4124692a675515ec86a5cdec"
+    "pr": 670,
+    "name": "test/af-r012-unreachable-admin-guard-20261106",
+    "headSha": "3aeb6af8ce4c036e9389d031c13a03c8dce4a616",
+    "mergeSha": "51628e91b41d20db401bc738b2f0b6125bcaf8b7"
   },
   {
-    "pr": 646,
-    "name": "fix/schema-audit-ignore-script-rawtext-angle-20261104",
-    "headSha": "fcb06c4c7d467d6fa79ab51fb45a27db7bb3eda5",
-    "mergeSha": "df4c5c23b5b4ecaa7c96a3de0036e4bfb70eb874"
+    "pr": 671,
+    "name": "fix/af-r068-css-coverage-fragment-alias-20261106",
+    "headSha": "010553b0551fa273ec85abe5375840d6b8dbb6a0",
+    "mergeSha": "0b71d9f5d3d80f8a1838b9bc9a458576b7b7777a"
   },
   {
-    "pr": 647,
-    "name": "fix/footer-official-social-channels-20261104",
-    "headSha": "a272dfa44a967c5dd1fd05bed411917ff753653b",
-    "mergeSha": "912c26b03b036dea0403493813e4aaefeecdc55f"
+    "pr": 672,
+    "name": "test/af-r012-conditional-guard-failclosed-20261106",
+    "headSha": "6b2008eaa5a63ddf07c638ec8e90145ddf78a9c2",
+    "mergeSha": "f325569703502a41a945aae2b19ae60769af11f1"
   },
   {
-    "pr": 648,
-    "name": "fix/lenis-route-handoff-wheel-race-20261104",
-    "headSha": "7440eb5dc33f3a26f5f5abff70e0f9998c54d40c",
-    "mergeSha": "101782f1196746be4601ffb1eeb1b95994f0560e"
+    "pr": 673,
+    "name": "test/af-r012-try-exit-guard-inventory-20261106",
+    "headSha": "1686512a2b56299ac131e9c0e377094849e5561c",
+    "mergeSha": "3cebdcfae4a7a33665ec7fc1943aa702996f55af"
   },
   {
-    "pr": 649,
-    "name": "fix/af-r047-malformed-layout-assets-20261105",
-    "headSha": "9ff0502a155b6a3819a5e88c85a7b0dcdd4403fc",
-    "mergeSha": "0f6dbb3cc7d2db7f477ee957e222c5c13a77b6cd"
+    "pr": 674,
+    "name": "fix/af-r019-admin-text-button-contrast-20261106",
+    "headSha": "55a27617604c05aa88ee3f7710d5eb7509bcb7d4",
+    "mergeSha": "514e7f6d463656f98270d860ebb0a87af206c0de"
   },
   {
-    "pr": 650,
-    "name": "test/af-r080-inert-css-title-20261105",
-    "headSha": "282bcabb8148a2d400591b37dc27797ce3cfd711",
-    "mergeSha": "68fac018d34d7e07733de1d27d782aae0001ce66"
+    "pr": 675,
+    "name": "fix/af-r047-noncanonical-build-asset-alias-20261106",
+    "headSha": "f603e8ca5d4f4678ef3b936a5cdcf8deca66792d",
+    "mergeSha": "57ae5dae4f428f3b24cbcd61e425247bd5274bbb"
   },
   {
-    "pr": 651,
-    "name": "test/af-r012-exported-handler-guards-20261105",
-    "headSha": "04ff4d005aa665dc54733f4926d3272060b498f7",
-    "mergeSha": "e5009d09a2742eaead209890d36fa886e96844f2"
+    "pr": 676,
+    "name": "fix/af-r025-home-recognition-heading-leading-20261106",
+    "headSha": "73467b5be4b63b559f1d210f9900d8f3575aa98d",
+    "mergeSha": "9d5fef7477ecc9f4708b74179b9999610f070452"
   },
   {
-    "pr": 652,
-    "name": "test/af-r007-database-admin-secret-values-20261105",
-    "headSha": "c57729579d0e7689b6fab717eb2d80b4e6e043be",
-    "mergeSha": "8d432c90df534a8146d38616c849863fcd417528"
+    "pr": 677,
+    "name": "fix/af-r047-noncanonical-page-route-20261106",
+    "headSha": "5bbd143326806112b6734e95b127f4b278166332",
+    "mergeSha": "4d9f5d4ca9606b237fcf6158f4d173317250dfd6"
   },
   {
-    "pr": 653,
-    "name": "fix/css-audit-inert-rawtext-20261105",
-    "headSha": "31014d1f7b3fe34c0f6767faf619b3a8cb89bb2d",
-    "mergeSha": "84e2a678b5ff18b9d6d49ee1da354bd3b922cde2"
+    "pr": 678,
+    "name": "test/af-r012-optional-loop-switch-guards-20261106",
+    "headSha": "35953be3dec15f50cfab8caed67d768cb48da385",
+    "mergeSha": "1cdac63fa7113e1adc79b6263110316417d36e84"
   },
   {
-    "pr": 654,
-    "name": "fix/route-report-invalid-page-values-20261105",
-    "headSha": "54ad7b8f0fddb812c5f0cdb40dd5057d31e3151b",
-    "mergeSha": "92d6a839d347169faf6e93e909f03839e4435112"
+    "pr": 680,
+    "name": "fix/af-r047-route-label-integrity-20261106",
+    "headSha": "26e3eafcb86130b87503f5150a0bd78f0401553f",
+    "mergeSha": "1a28cd2f79995e23920589c4ca7480b7e2781915"
   },
   {
-    "pr": 655,
-    "name": "fix/css-audit-quoted-link-attributes-20261105",
-    "headSha": "3263766da80a77881432bc9a7e407ad035ccb985",
-    "mergeSha": "811621d94423c6b29825a1a49c1b0c55ce029661"
+    "pr": 681,
+    "name": "fix/af-r057-ignore-inert-html-styles-20261106",
+    "headSha": "b4410638202f34e08428b87680c9fd8514f4e7c6",
+    "mergeSha": "61e4f4624276ac608aa78b607521ffe00b9b1581"
   },
   {
-    "pr": 656,
-    "name": "fix/appeal-share-identity-feedback-20261105",
-    "headSha": "099658605c77c0cdbe78259eb6bb8f471b4a4e7d",
-    "mergeSha": "f86d66cd7222d4120232465eadd051e550f844e4"
+    "pr": 682,
+    "name": "fix/af-r057-public-css-route-preflight-20261106",
+    "headSha": "8d5aef4cfc3d3d52270c4e39acdce184a9bffe6e",
+    "mergeSha": "9f4b37f0db1c64c3dae39540c7d8f0f22c44239e"
   },
   {
-    "pr": 657,
-    "name": "fix/lenis-native-timer-teardown-20261105",
-    "headSha": "00a5f37ca6f1316e16d8597b95d245dae26116ef",
-    "mergeSha": "dc682ce2b5689ff6e6d7c63384879bed8b81a7ce"
+    "pr": 683,
+    "name": "test/af-r012-ts-wrapped-action-guards-20261106",
+    "headSha": "1885c5f391066733d236b386aa30ee0bddaf4414",
+    "mergeSha": "3a6fbfc4e4018bd3efe5a8b13e2cbd51c66ffd96"
   },
   {
-    "pr": 658,
-    "name": "fix/js-timing-fragment-identity-20261105",
-    "headSha": "6c93e9b539dd114143385686ea2e845a9c079088",
-    "mergeSha": "c034faa8ff599632e7f6b02930ce965663de08e6"
+    "pr": 685,
+    "name": "fix/admin-assistance-queue-404-linked-appeal-20261107",
+    "headSha": "625e6b579649c9fa4b92ef13b8d3d0429b880442",
+    "mergeSha": "a26146a6259652351b4816587a136adcfefadd71"
   }
 ]
