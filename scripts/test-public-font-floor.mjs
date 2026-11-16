@@ -334,3 +334,21 @@ test("AF-R024 evaluates literal calc() lower bounds inside clamp() instead of in
   ].join("");
   assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
 });
+
+
+test("AF-R024 clamp additive calc minimum uses the computed lower bound", () => {
+  const unsafe = [
+    ".smallRem{font-size:clamp(calc(2rem - 1.5rem),1vw,3rem)}",
+    ".smallPx{font-size:clamp(calc(24px - 16px),2vw,32px)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(unsafe, "fixture.css").map(issue => issue.value), [
+    "clamp(calc(2rem - 1.5rem),1vw,3rem)",
+    "clamp(calc(24px - 16px),2vw,32px)",
+  ]);
+
+  const safe = [
+    ".safeRem{font-size:clamp(calc(.5rem + .25rem),2vw,1rem)}",
+    ".safePx{font-size:clamp(calc(10px + 2px),2vw,24px)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
+});

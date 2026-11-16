@@ -15,3 +15,5 @@
 **Locks:** Domestic INR only; no FCRA; 12A/12AB provisional; 80G unresolved. No unilateral payment/webhook, RBAC/schema/CSP/secret, live infrastructure/notifications, donor outreach, or public identifiable unredacted faces/EXIF/GPS.
 
 **Next:** Reconcile existing #1013 wave-12 branch with current protected main without force. Run full new exact-head CI and distinct ready-state acceptance on the reconciled SHA; then guarded merge and independently verify retired refs. Do not infer branch deletion from a manifest.
+
+**Additional AF-R024 test-first source task (same sole implementation writer):** `fix/af-r024-clamp-additive-font-floor-20261116`, based on protected `5b1ed49c419c0e411df0b4d55d34f1fb15289136`. New standalone synthetic RED test checks additive constant `calc()` in the lower bound of `clamp()`: reject evaluated sub-12px values and accept evaluated 12px floors. No production source behavior change yet. Existing #1014 AF-R079 wave-13 cleanup CI is independent and remains in review. Reconcile this branch against main after #1014 before a protected merge.
