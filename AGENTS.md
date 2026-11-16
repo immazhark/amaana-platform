@@ -1,6 +1,6 @@
 # Amaana Platform — Agent Working Agreement
 
-This repository may be implemented alternately by Codex and ChatGPT. Only **one implementation agent may write to the repository at a time**.
+This repository may be implemented alternately by Codex, ChatGPT and Claude Code. Only **one implementation agent may write to the repository at a time**.
 
 Before making any repo change, every agent MUST read:
 
@@ -39,6 +39,8 @@ Before making any repo change, every agent MUST read:
 `IDLE` — no implementation agent is writing.
 
 `CODEX_ACTIVE` — Codex owns all repo implementation.
+
+`CLAUDE_CODE_ACTIVE` — Claude Code owns all repo implementation after explicit owner handoff and a fresh repo/PR claim.
 
 `CHATGPT_ACTIVE` — ChatGPT owns all repo implementation.
 

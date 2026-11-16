@@ -1,18 +1,18 @@
 # Amaana Foundation — current release state
 
-**16 November 2026 IST.** Dated checkpoint, not live status; always verify GitHub, Railway and public health before release. One repository implementation writer: `CHATGPT_ACTIVE`.
+**17 November 2026 IST — CLAUDE_CODE_ACTIVE (single writer, one owner-authorized session).** Dated checkpoint, not a live feed. Incoming writer must independently check GitHub, Railway and public endpoints.
 
-| Boundary | Last verified state |
+| Boundary | Last verified evidence |
 |---|---|
-| Protected source main | `eab2d44d5ce1b83f60476aa3dbe142156e4cac3b`, SHA-guarded #1014 squash merge |
-| AF-R079 wave 12 | #1013 merged `5b1ed49c419c0e411df0b4d55d34f1fb15289136`; full CI `43903831773`, separate ready-state `43909188218`; 25/25 history heads plus source branch independently absent |
-| AF-R079 wave 13 | #1014 full CI `43910196497` and ready-state `43914652760` success, merged `eab2d44d5ce1b83f60476aa3dbe142156e4cac3b`; guarded workflow `43914765982` pending independent outcome/ref census at latest observation |
-| AF-R024 | #1015 additive clamp font-floor scanner RED `43910992881`, updated GREEN head `09cf993d72c1020a78fab6252a1f736ac96f00bf` fast CI passed; now reconciling same branch onto source main and requiring fresh exact-head CI |
-| AF-R012 | #1016 independent synthetic unawaited async admin guard negative tests RED `43914072957` and `43914588767`; GREEN head `189a8daa233a5c8cb298f83e31f6ec92f72a893d` pending acceptance |
-| Public runtime | Fresh prior /api/health/version `edcaf99ff21733c37937e8c326624e8e41a14267`, branch main, environment production; readiness `ready`. Later scripts/docs-only deployments correctly SKIPPED; no forced rollout |
-| Held financial PRs | #684 and #845 unmerged; separate reviewed ownership/payment/provider activation needed |
-| Original 149 statuses | 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 Not applicable = **149** |
+| Protected source `main` | `2e222d876e62c0d196bb55562258ae1ce5877e98` after docs-only handoff #1017 (full CI `43932068073`, ready-state `43937723528`), protected |
+| #1014 guarded cleanup | Wave 13: full exact-head `43910196497` and distinct ready-state `43914652760` SUCCESS, merged `eab2d44d5ce1b83f60476aa3dbe142156e4cac3b`; retirement `43914765982` SUCCESS, all 25 historical refs and task branch independently absent |
+| #1015 open draft | AF-R024 CSS scanner `fix/af-r024-clamp-additive-font-floor-20261116`, reconciled non-force with main `2e222d876e62c0d196bb55562258ae1ce5877e98` (prior head `e55183c3bfead98e7373a1edfc9bba5f85ce8c32` full CI `43915060143` 7/7 SUCCESS); fresh exact-head CI, separate ready-state and merge pending |
+| #1016 open draft | AF-R012 async auth static inventory `test/af-r012-unawaited-permission-guard-20261116`, head `74ce306c42be20cacc45778138e9dd3d9ffd196f`, full CI `43915598906` **7/7 SUCCESS**; separate ready-state and merge not done; reconcile after #1015 moves main |
+| Held PRs | #684 official UPI QR receiving/settlement; #845 financial eligibility: unmerged, separate financial gates |
+| Production website | Uncached `/api/health/version`: `edcaf99ff21733c37937e8c326624e8e41a14267`, main/production, paymentMode live; `/api/health/ready`: ready |
+| Railway latest | Website `81f2dc93-0477-44d5-9f0a-287876d49926` SKIPPED for `eab2d44d5ce1b83f60476aa3dbe142156e4cac3b` (out-of-watch docs); no forced rollout |
+| Master 149 | 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 Not applicable |
 
-**Safety:** No unverified branch/deletion claims; the guarded workflow rechecks original merged PRs, protected/retained/open dependencies, exact SHA and ancestry. Domestic INR only, no FCRA, 12A/12AB provisional, 80G unresolved. Public identifiable faces redacted and EXIF/GPS removed. No unilateral production migration, payment/RBAC/CSP/secret, notification or donor communication.
+**Next executable:** Claude Code finishes existing #1015 first under full/ready/expected-SHA gates, then reconciles and completes #1016. Continue new unblocked scoped work only after these source boundaries are safe. Avoid duplicating shipped changes.
 
-**Next:** Complete exact-head CI and separate ready-state promotion on reconciled #1015, then protected expected-SHA merge, branch lifecycle check, and #1016 reconciliation. Preserve legal/privacy/recovery files and unique audit evidence.
+**Safety:** Preserve domestic INR/no FCRA; provisional 12A/12AB, unresolved 80G; redact all identifiable public donor/beneficiary faces and strip EXIF/GPS. Do not force-push, delete historical protected/retained/unreviewed refs, weaken CI, publish unsupported impact/medical claims, activate notifications/cron or run live financial/infrastructure/database operations without separate reviewed authorization.
