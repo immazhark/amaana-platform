@@ -520,7 +520,7 @@ test("CLI tolerates a closed output reader while malformed builds still fail", a
 
 test("AF-R047 fails closed on non-string page and inherited-layout asset entries", () => {
   // Invalid manifest types must never turn a partially measured build into a
-  // successful smaller total. Unsafe string paths retain the existing skip rule.
+  // successful smaller total. Malformed JS/CSS paths also fail closed.
   for (const invalid of [null, undefined, 24, { path: "static/chunks/private.js" }, ["static/chunks/nested.js"]]) {
     assert.throws(() => summarizeAppRouteBundles({
       "/page": ["static/chunks/valid.js", invalid],
@@ -531,9 +531,9 @@ test("AF-R047 fails closed on non-string page and inherited-layout asset entries
       "/layout": [invalid],
     }, () => 12), /Invalid App Router layout asset entry/);
   }
-  assert.equal(summarizeAppRouteBundles({
+  assert.throws(() => summarizeAppRouteBundles({
     "/page": ["static/chunks/valid.js", "../unsafe.js"],
-  }, () => 12)[0].totalBytes, 12);
+  }, () => 12), /Unsafe App Router bundle asset path/);
 });
 
 test("AF-R047 rejects malformed page asset lists instead of silently omitting routes", () => {
@@ -584,19 +584,21 @@ test("AF-R047 rejects malformed unmatched legacy layout manifest entries", () =>
   }
 });
 
-test("AF-R047 does not double-count aliased on-disk bundle paths", () => {
+test("AF-R047 rejects aliased legacy paths instead of silently undercounting assets", () => {
   const legacy = summarizeAppRouteBundles({
-    "/page": [
-      "static/chunks/shared.js",
-      "static/chunks/./shared.js",
-      "static/chunks//shared.js",
-    ],
+    "/page": ["static/chunks/shared.js", "static/chunks/shared.js"],
   }, asset => {
     assert.equal(asset, "static/chunks/shared.js", "Only canonical asset paths may be measured");
     return 13;
   });
   assert.equal(legacy[0].jsBytes, 13,
-    "One on-disk file must not be counted as three different manifest assets");
+    "An exact repeated canonical path is counted once");
+  for (const path of ["static/chunks/./shared.js", "static/chunks//shared.js"]) {
+    assert.throws(() => summarizeAppRouteBundles({
+      "/page": ["static/chunks/shared.js", path],
+    }, () => 13), /Unsafe App Router bundle asset path/,
+    "A malformed alias must never produce a deceptively smaller successful total");
+  }
 
   for (const path of [
     "static/css/./site.css",
