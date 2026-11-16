@@ -106,11 +106,21 @@ function isDirectlyAwaitedAsyncGuardCall(call) {
     expression.parent.expression === expression);
 }
 
+// This is a conservative static inventory rule, not a full dataflow proof.
+// Direct Prisma or db operations must not precede an awaited auth guard.
+function isDirectDatabaseOperation(node) {
+  if (!ts.isCallExpression(node)) return false;
+  let expression = node.expression;
+  while (ts.isPropertyAccessExpression(expression)) expression = expression.expression;
+  return ts.isIdentifier(expression) && (expression.text === "prisma" || expression.text === "db");
+}
+
 // Only statements before a direct unconditional return/throw can satisfy
 // a guard. Nested function bodies do not execute as part of the route/action.
 function bodyHasReachableDirectCall(body, name) {
   if (bodyShadowsGuardName(body, name)) return false;
   let found = false;
+  let accessedDatabaseBeforeGuard = false;
   function visit(node) {
     if (found || ts.isFunctionLike(node)) return;
     // Nested try bodies must obey the same direct return/throw boundary as the
@@ -159,8 +169,15 @@ function bodyHasReachableDirectCall(body, name) {
       visit(node.left);
       return;
     }
+    if (isDirectDatabaseOperation(node)) {
+      accessedDatabaseBeforeGuard = true;
+      return;
+    }
     if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === name) {
-      if ((name !== "requirePermission" && name !== "getCurrentUser") || isDirectlyAwaitedAsyncGuardCall(node)) found = true;
+      if (!accessedDatabaseBeforeGuard &&
+        ((name !== "requirePermission" && name !== "getCurrentUser") || isDirectlyAwaitedAsyncGuardCall(node))) {
+        found = true;
+      }
       return;
     }
     ts.forEachChild(node, visit);
