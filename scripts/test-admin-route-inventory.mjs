@@ -89,10 +89,10 @@ function bodyShadowsGuardName(body, name) {
   return shadowed;
 }
 
-// requirePermission is async. A floating Promise cannot deny a server
-// action before its protected mutation; only directly awaited calls count.
+// getCurrentUser and requirePermission are async. A floating Promise cannot
+// secure an admin API/action before its protected work; only awaited calls count.
 // Keep transparent TypeScript/parenthesis wrappers, not void or arbitrary calls.
-function isDirectlyAwaitedPermissionCall(call) {
+function isDirectlyAwaitedAsyncGuardCall(call) {
   let expression = call;
   while (expression.parent && expression.parent.expression === expression &&
     (ts.isParenthesizedExpression(expression.parent) ||
@@ -160,7 +160,7 @@ function bodyHasReachableDirectCall(body, name) {
       return;
     }
     if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === name) {
-      if (name !== "requirePermission" || isDirectlyAwaitedPermissionCall(node)) found = true;
+      if ((name !== "requirePermission" && name !== "getCurrentUser") || isDirectlyAwaitedAsyncGuardCall(node)) found = true;
       return;
     }
     ts.forEachChild(node, visit);
@@ -644,7 +644,7 @@ test("AF-R012 does not accept permission guards confined to a switch server-acti
 test("AF-R012 still counts mandatory loop and switch expressions", () => {
   const required = [
     ["export async function POST() { while (!isSameOrigin({})) { break; } return Response.json({}); }", "isSameOrigin"],
-    ["export async function POST() { for (let user = getCurrentUser(); false;) { break; } return Response.json({}); }", "getCurrentUser"],
+    ["export async function POST() { for (let user = await getCurrentUser(); false;) { break; } return Response.json({}); }", "getCurrentUser"],
     ["export async function POST() { switch (hasPermission({}, 'content.update')) { default: break; } return Response.json({}); }", "hasPermission"],
   ];
   for (const [source, name] of required) {
