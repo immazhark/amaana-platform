@@ -1,4 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CampaignMediaGallery } from "./campaign-media-gallery";
 import { toPublicGalleryItems } from "@/lib/public-gallery-projection";
@@ -14,6 +16,16 @@ const reviewedItem = {
 };
 
 describe("campaign gallery managed image optimization", () => {
+
+  it("AF-R062 keeps artwork containment in a higher-specificity normal declaration", () => {
+    const css = readFileSync(join(process.cwd(), "src/components/campaign-media-gallery.module.css"), "utf8");
+    const base = css.match(/\.trigger img\s*\{([^}]+)\}/)?.[1] ?? "";
+    const artwork = css.match(/\.graphicCard \.trigger img\s*\{([^}]+)\}/)?.[1] ?? "";
+    expect(base).toMatch(/(?:^|;)\s*object-fit:cover\s*;/);
+    expect(artwork).toMatch(/(?:^|;)\s*object-fit:contain\s*;/);
+    expect(artwork).not.toContain("!important");
+  });
+
   it("fails closed for unsafe directly supplied gallery URLs and missing descriptive alt text", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
     // Client-side rendering has no server-only PUBLIC_MEDIA_BASE_URL variable.
