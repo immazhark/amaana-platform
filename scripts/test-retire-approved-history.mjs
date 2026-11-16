@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { retireApprovedHistory } from "./retire-approved-history.mjs";
 
@@ -53,4 +54,24 @@ test("duplicate, malformed, or unbounded history batches fail before any network
       token: "synthetic", request: () => { throw new Error("Network must not be used"); },
     }));
   }
+});
+
+test("AF-R079 checked-in retirement manifest passes the exact CLI guard before dispatch", async () => {
+  // A manifest can pass synthetic guard tests yet fail the live retirement
+  // workflow if it contains a non-allowlisted category such as content/.
+  const entries = JSON.parse(readFileSync(new URL(
+    "../docs/mission-control/af-r079-approved-retirement-batch-20261115.json", import.meta.url,
+  ), "utf8"));
+  let requests = 0;
+  const outcomes = await retireApprovedHistory({
+    entries, repository: "immazhark/amaana-platform", token: "synthetic",
+    request: async () => {
+      requests += 1;
+      return { merged: false };
+    },
+  });
+  assert.equal(requests, entries.length, "Every syntactically valid manifest entry should be reviewed");
+  assert.equal(outcomes.length, entries.length);
+  assert.ok(outcomes.every(outcome =>
+    outcome.action === "PRESERVE" && outcome.reason === "MANIFEST_PR_MISMATCH"));
 });
