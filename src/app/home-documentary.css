@@ -77,7 +77,7 @@
 .v3-home .v3-heading{font-size:clamp(2.25rem,4vw,3.5rem);line-height:1.15}
 .v3-proof{padding-block:.45rem!important}
 .v3-proof-label{margin:0;padding:.85rem 0 .15rem;color:var(--af-color-gold-ink);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase}
-.v3-proof-item{min-height:6.7rem!important;padding:1rem clamp(.9rem,2vw,1.55rem)!important;justify-content:center}
+.v3-proof-item{min-height:6.7rem!important;padding:1rem clamp(.9rem,2vw,1.55rem)!important;justify-content:flex-start}
 .v3-proof-item strong{font-size:clamp(1.75rem,2.2vw,2.2rem)}
 .v3-proof-item span{min-height:0!important;margin-top:.4rem;font-size:.82rem}
 .v3-eid .v3-section-head{margin-bottom:2.25rem}
