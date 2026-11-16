@@ -1,3 +1,15 @@
+## 17 November 2026 IST — explicit ChatGPT → Claude Code single-writer handoff
+
+**Outgoing:** ChatGPT. **Incoming:** Claude Code for one owner-authorized implementation session. **State:** `HANDOFF_PENDING` until Claude Code verifies the live repo, updates `docs/AI_ACTIVE_WORK.md` to `CLAUDE_CODE_ACTIVE`, and begins its task. ChatGPT stops repository writes once this coordination PR is safely merged.
+
+**Protected main:** `eab2d44d5ce1b83f60476aa3dbe142156e4cac3b`; **public runtime:** `edcaf99ff21733c37937e8c326624e8e41a14267`/main/production, readiness ready. Railway website deployment `81f2dc93-0477-44d5-9f0a-287876d49926` SKIPPED (docs). #1014 AF-R079 wave 13 guarded merge and 25/25 historical branch retirements were independently verified; no unrelated history/retained refs purged.
+
+**Ready to finish, not yet merged:** #1015 (`fix/af-r024-clamp-additive-font-floor-20261116`, head `e55183c3bfead98e7373a1edfc9bba5f85ce8c32`, full CI `43915060143` all seven SUCCESS); #1016 (`test/af-r012-unawaited-permission-guard-20261116`, head `74ce306c42be20cacc45778138e9dd3d9ffd196f`, full CI `43915598906` all seven SUCCESS). Both draft and lack distinct ready-state release acceptance. #1015 RED proof `43910992881`; #1016 RED proofs `43914072957` and `43914588767`; the latter changes only static audit logic, not production RBAC. After #1015 guarded merge, reconcile same #1016 branch against new main non-force, rerun full CI and separate ready gate.
+
+**Preserve:** financial held #684/#845; parked cron, live financial/provider/data/secret/infrastructure locks; statutory uncertainty; face redaction/media provenance. **149 unchanged:** 35/24/71/17/1/1. **Return:** Claude Code must leave an exact-head branch/PR/CI handoff or, upon abrupt limit, owner explicitly invites ChatGPT to reconstruct current GitHub and resume. No automatic background resumption.
+
+---
+
 ## 15 November 2026 IST — AF-R079 verified guarded cleanup and next handoff
 
 Sole writer `CHATGPT_ACTIVE`. Protected source `b68936e012641976605e3ce74f338ad0f0e32008`. PR #980 merged `ee7d90fb1687b6bd73b711f6751dfaf84872ad4c` after full + ready checks; guarded workflow independently retired 20 historical task heads and its source branch. PR #979 merged `ee7f6361f9a4f99d2d2f5b204b92ed06aa0e9f5e`, head absent; PR #981 merged `b68936e012641976605e3ce74f338ad0f0e32008`, historical wave 25/25 retired and head absent. Branch census **957** before new task branch. Railway latest SUCCESS/public-ready runtime `83072e44e74c785f51f2b9213a3820fee7a34d8e`; later out-of-watch source `SKIPPED`. Current one-writer task: PR #982, `chore/af-r079-reviewed-history-wave3-20261115`, replacing only the existing manifest with 25 additional SHA-pinned merged heads and refreshing canonical active/state files; full CI/ready/merge pending. Finance-held #684/#845 and historic sensitive refs protected. No change to 149-item counts. Next: full CI, separate ready check, guarded merge, then verify actual deletion outcomes and branch census; preserve failed/mismatched refs.
