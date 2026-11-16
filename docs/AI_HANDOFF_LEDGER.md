@@ -1,3 +1,15 @@
+## 17 November 2026 IST — Claude Code usage exhaustion; ChatGPT reconstructed owner-authorized takeover
+
+**Outgoing:** Claude Code (usage limit reported by owner, no final handoff entry). **Incoming:** ChatGPT (single implementation writer, `CHATGPT_ACTIVE`). Source main `8b2bed92ef2649fc0d25f0e87b0099de69b11247`, still protected. Claimed via existing #1016 branch so no redundant handoff-only PR.
+
+**Claude Code completed:** #1017 merge/continuity handoff `2e222d876e62c0d196bb55562258ae1ce5877e98`; #1015 AF-R024 scanner guarded merge `8b2bed92ef2649fc0d25f0e87b0099de69b11247` after exact-head CI `43937946004` and independent ready `43943227518`; subsequent Railway website SKIPPED and public remains ready at runtime `edcaf99ff21733c37937e8c326624e8e41a14267`. This is source-delivered, not whole AF-R024 UX acceptance.
+
+**Reconstructed open scopes:** #1016 AF-R012 static async guard audit old head `ca12fd8155e46b9585c694c6c68631255f509999`, full exact-head CI `43943641280`, separate ready `43947721233` SUCCESS. This claim commit changes head and mandates fresh full+ready checks before merge. #1018 Highlights alignment `ac3a7f4d92b0cc75463b9b5fce4574d50d45bda6` full+ready green on previous base; #1019 header-logo `f106d591ed2eff320255c3304d45c75fe8dc644c` browser in progress; #1020 streamed fallback/footer CLS `badd5b193d81eadc6472da0a7e043f9ef94e7272` full green but draft. Keep separate task branches; reconcile each to latest main. No unresolved reviews at latest inspection.
+
+**Financial holds** #684/#845 and all safety/privacy/provider controls unchanged. The original 149-item totals remain 35/24/71/17/1/1. No forced rollout. Exact next: finish existing #1016 head checks/ready-state merge then focused UI PRs in independent bounded sequence.
+
+---
+
 ## 17 November 2026 IST — explicit ChatGPT → Claude Code single-writer handoff
 
 **Outgoing:** ChatGPT. **Incoming:** Claude Code for one owner-authorized implementation session. **State:** `HANDOFF_PENDING` until Claude Code verifies the live repo, updates `docs/AI_ACTIVE_WORK.md` to `CLAUDE_CODE_ACTIVE`, and begins its task. ChatGPT stops repository writes once this coordination PR is safely merged.

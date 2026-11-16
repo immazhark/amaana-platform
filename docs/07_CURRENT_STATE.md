@@ -1,18 +1,19 @@
 # Amaana Foundation — current release state
 
-**17 November 2026 IST — CLAUDE_CODE_ACTIVE (single writer, one owner-authorized session).** Dated checkpoint, not a live feed. Incoming writer must independently check GitHub, Railway and public endpoints.
+**17 November 2026 IST — CHATGPT_ACTIVE after owner-confirmed Claude Code limit.** Dated checkpoint; independently refresh source/CI/Railway/public identity before release.
 
-| Boundary | Last verified evidence |
+| Boundary | Latest independently checked state |
 |---|---|
-| Protected source `main` | `2e222d876e62c0d196bb55562258ae1ce5877e98` after docs-only handoff #1017 (full CI `43932068073`, ready-state `43937723528`), protected |
-| #1014 guarded cleanup | Wave 13: full exact-head `43910196497` and distinct ready-state `43914652760` SUCCESS, merged `eab2d44d5ce1b83f60476aa3dbe142156e4cac3b`; retirement `43914765982` SUCCESS, all 25 historical refs and task branch independently absent |
-| #1015 open draft | AF-R024 CSS scanner `fix/af-r024-clamp-additive-font-floor-20261116`, reconciled non-force with main `2e222d876e62c0d196bb55562258ae1ce5877e98` (prior head `e55183c3bfead98e7373a1edfc9bba5f85ce8c32` full CI `43915060143` 7/7 SUCCESS); fresh exact-head CI, separate ready-state and merge pending |
-| #1016 open draft | AF-R012 async auth static inventory `test/af-r012-unawaited-permission-guard-20261116`, head `74ce306c42be20cacc45778138e9dd3d9ffd196f`, full CI `43915598906` **7/7 SUCCESS**; separate ready-state and merge not done; reconcile after #1015 moves main |
-| Held PRs | #684 official UPI QR receiving/settlement; #845 financial eligibility: unmerged, separate financial gates |
-| Production website | Uncached `/api/health/version`: `edcaf99ff21733c37937e8c326624e8e41a14267`, main/production, paymentMode live; `/api/health/ready`: ready |
-| Railway latest | Website `81f2dc93-0477-44d5-9f0a-287876d49926` SKIPPED for `eab2d44d5ce1b83f60476aa3dbe142156e4cac3b` (out-of-watch docs); no forced rollout |
-| Master 149 | 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 Not applicable |
+| Protected source main | `8be5c81ae2bda6ff1a489d3d3bcee122c3998b91` |
+| #1015 Claude Code source | AF-R024 font floor scanner merged `8b2bed92ef2649fc0d25f0e87b0099de69b11247`; prior full CI `43937946004`, ready `43943227518`; branch retired |
+| #1020 footer shift | Merged `751ad21fa1ce0fe82eb602dbcfcc1339b049e4ed`; full `43942789521`, distinct ready `43950639660`; public source SHA/runtime independently matched and readiness ready before later website builds |
+| #1018 Highlights | Merged `2677020ac5f07b7950fed85eb9a49510418eb083`; full `43939069984`, ready `43947293967` |
+| #1019 header logo | Merged `8be5c81ae2bda6ff1a489d3d3bcee122c3998b91`; full `43944909479`, ready `43950682573` |
+| #1016 static auth audit | Existing draft `test/af-r012-unawaited-permission-guard-20261116`, previous head `53773711652aca67d08df1de24d33f8abfd3fb55`, RED `43914072957` and `43914588767`; fresh full CI `43948869738` was browser-in-progress at branch reconciliation. Must rerun full checks and separate ready-state on new head, then SHA-guarded merge |
+| #1021 historical cleanup | Draft `chore/af-r079-reviewed-history-wave14-20261117` head `ee3c930e848e7035d9edd5f757262c7df974602f`: 10 individually verified merged refs, CI `43950471414` under review, **no deletion yet** |
+| Held PRs | #684 receiving account/provider UPI, #845 financial staging eligibility: unmerged |
+| Railway website | #1020 deployment `10171874-d4b1-4d9e-bb14-fbefcdb068b0` SUCCESS; #1018/#1019 latest builds not yet completed at last check |
+| Public version/ready | Independently verified production runtime `751ad21fa1ce0fe82eb602dbcfcc1339b049e4ed` and `ready`; later source `8be5c81ae2bda6ff1a489d3d3bcee122c3998b91` not yet public-verified |
+| Original 149 statuses | 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A = **149** |
 
-**Next executable:** Claude Code finishes existing #1015 first under full/ready/expected-SHA gates, then reconciles and completes #1016. Continue new unblocked scoped work only after these source boundaries are safe. Avoid duplicating shipped changes.
-
-**Safety:** Preserve domestic INR/no FCRA; provisional 12A/12AB, unresolved 80G; redact all identifiable public donor/beneficiary faces and strip EXIF/GPS. Do not force-push, delete historical protected/retained/unreviewed refs, weaken CI, publish unsupported impact/medical claims, activate notifications/cron or run live financial/infrastructure/database operations without separate reviewed authorization.
+**Next:** complete #1016 full exact-head and distinct ready-state CI after same-branch non-force reconciliation; expected-head-SHA squash merge, verify branch lifecycle and Railway source/run identity. Then reconcile and accept #1021's verified guarded batch without deleting protected/unmerged/retained refs. Preserve domestic INR-only, FCRA absence, provisional 12A/12AB, unresolved 80G, redacted public faces/removed EXIF/GPS, donor privacy and all financial release locks.
