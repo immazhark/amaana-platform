@@ -820,4 +820,14 @@ test("AF-R012 rejects late async guards after direct private database access", (
   assert.equal(sourceHasGuardCall(
     "export async function GET() { await getCurrentUser(); return prisma.donation.findMany(); }",
     "getCurrentUser", "GET"), true);
+
+  assert.equal(sourceHasGuardCall(
+    "export async function GET() { await db.records.findMany(); await getCurrentUser(); }",
+    "getCurrentUser", "GET"), false,
+    "An aliased db read before authentication must also fail the static inventory");
+
+  assert.equal(sourceHasGuardCall(
+    "export async function GET() { await getCurrentUser(); return db.records.findMany(); }",
+    "getCurrentUser", "GET"), true,
+    "The same db alias remains acceptable when authentication precedes the read");
 });
