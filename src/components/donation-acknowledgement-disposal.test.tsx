@@ -81,6 +81,7 @@ it.each([
 
   await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
   const options = fetchMock.mock.calls.at(0)?.[1] as RequestInit | undefined;
+  if (!options) throw new Error("Synthetic acknowledgement POST not captured");
   expect(options.signal?.aborted).toBe(false);
   expect(replaceState).toHaveBeenCalledOnce();
 
