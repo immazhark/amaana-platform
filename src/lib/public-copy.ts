@@ -13,7 +13,10 @@ export function heroTeaser(summary: string) {
   // or end of text, so published values such as 2.5 are not truncated to 2.
   const first = clean.match(/^.*?[.!?](?=\s|$)/)?.[0]?.trim() || clean;
   if (first.length <= 180) return first;
-  const clipped = first.slice(0, 177).replace(/\s+\S*$/, "").trim();
+  // Do not emit an orphan high surrogate when the UTF-16 cap cuts an emoji.
+  const prefix = first.slice(0, 177);
+  const clipped = (/[\uD800-\uDBFF]$/.test(prefix) ? prefix.slice(0, -1) : prefix)
+    .replace(/\s+\S*$/, "").trim();
   return `${clipped}…`;
 }
 
