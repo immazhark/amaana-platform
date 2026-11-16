@@ -53,3 +53,24 @@ test('branded placeholders are responsive and do not animate when reduced motion
   assert.match(css, /@media\s*\(prefers-reduced-motion:\s*reduce\)/);
   assert.match(css, /animation:\s*none/);
 });
+
+test('AF-R071 dynamic public detail pages provide static, privacy-safe loading boundaries', () => {
+  const detailRoutes = [
+    ['stories', 'stories'],
+    ['our-work', 'our-work'],
+    ['faith-and-reflections', 'faith-and-reflections'],
+    ['appeals', 'appeals'],
+    ['donate', 'donate'],
+  ];
+  for (const [directory, identity] of detailRoutes) {
+    const pagePath = `src/app/${directory}/[slug]/page.tsx`;
+    const loadingPath = `src/app/${directory}/[slug]/loading.tsx`;
+    assert.ok(existsSync(join(root, pagePath)), `${directory} must already have a detail page`);
+    assert.ok(existsSync(join(root, loadingPath)), `${directory} needs a detail loading boundary`);
+    const source = read(loadingPath);
+    assert.match(source, /import \{ PublicRouteLoading \} from ['"]@\/components\/public-route-loading['"]/);
+    assert.ok(source.includes(`route="${identity}"`), `${directory} must reuse its existing safe loading identity`);
+    assert.doesNotMatch(source, /use client|fetch\(|prisma\.|searchParams|window\.|params\b|<img\b|<video\b|Math\.random|Date\(/,
+      `${directory} loading fallback must not query, reveal, or invent unpublished record data`);
+  }
+});
