@@ -1,5 +1,8 @@
+/* Reserve a full viewport so the footer never paints above the fold and then
+   jumps when the streamed page replaces this fallback (AF-R044). */
+.reserve { min-height: 100dvh; }
 .root {
-  min-height: 65dvh;
+  min-height: 100dvh;
   background: var(--af-color-canvas);
   color: var(--af-color-navy-950);
 }

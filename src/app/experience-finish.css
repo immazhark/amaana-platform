@@ -21,7 +21,7 @@ main{overflow:clip}.container,.v3-shell{padding-inline:max(0px,env(safe-area-ins
 }
 
 /* Proof strip: clearer baseline and stronger grouping */
-.v3-proof-grid{align-items:stretch}.v3-proof-item{display:flex;min-height:9rem;flex-direction:column;justify-content:center}.v3-proof-item strong{font-variant-numeric:tabular-nums}.v3-proof-item span{max-width:17rem}
+.v3-proof-grid{align-items:stretch}.v3-proof-item{display:flex;min-height:9rem;flex-direction:column;justify-content:flex-start}.v3-proof-item strong{font-variant-numeric:tabular-nums}.v3-proof-item span{max-width:17rem}
 
 /* Eid timeline: legible on wide and narrow screens */
 .v3-timeline{gap:clamp(.65rem,2vw,1.5rem)}.v3-year{min-width:0}.v3-year span{font-variant-numeric:tabular-nums}.v3-year small{line-height:1.35}.v3-eid .v3-actions{margin-top:clamp(2.5rem,5vw,4.5rem)}

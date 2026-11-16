@@ -28,20 +28,22 @@ export function PublicRouteLoading({ route }: { route: PublicLoadingRoute }) {
   // while current checkout eligibility and verified balances are resolved.
   if (route === "donate") {
     return (
-      <CanonicalArticle
-        title={title}
-        eyebrow="Donate · Amaana Foundation"
-        intro="Checking current domestic giving availability."
-        heroVariant="action"
-        heroVisualTitle={title}
-        heroVisualNote={message}
-        heroActions={[]}
-        blocks={[]}
-      >
-        <p className={styles.status} role="status" aria-live="polite" aria-atomic="true">
-          {message}
-        </p>
-      </CanonicalArticle>
+      <div className={styles.reserve}>
+        <CanonicalArticle
+          title={title}
+          eyebrow="Donate · Amaana Foundation"
+          intro="Checking current domestic giving availability."
+          heroVariant="action"
+          heroVisualTitle={title}
+          heroVisualNote={message}
+          heroActions={[]}
+          blocks={[]}
+        >
+          <p className={styles.status} role="status" aria-live="polite" aria-atomic="true">
+            {message}
+          </p>
+        </CanonicalArticle>
+      </div>
     );
   }
 
