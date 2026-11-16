@@ -49,16 +49,29 @@ test("AF-R047 legacy App Router bundle labels omit non-URL route groups", () => 
   assert.ok(rows.every(row => row.totalBytes === 20));
 });
 
-test("ignores unsafe paths and rejects malformed or empty manifests", () => {
+test("rejects unsafe JS/CSS manifest assets without silently lowering legacy route byte totals", () => {
   assert.throws(() => summarizeAppRouteBundles(null, () => 0), /valid pages map/);
   assert.throws(() => summarizeAppRouteBundles({}, () => 0), /No App Router/);
+  for (const unsafe of [
+    "../outside.js", "static/../outside.js", "static/./alias.css",
+    "static//chunks/duplicate.js", "https://outside.invalid/app.js",
+    "/absolute/outside.css", "static/chunks/script.js?variant=2",
+  ]) {
+    assert.throws(() => summarizeAppRouteBundles({
+      "/page": ["_next/static/chunks/ok.js", unsafe],
+    }, () => 42), /Unsafe App Router bundle asset path/, unsafe);
+    assert.throws(() => summarizeAppRouteBundles({
+      "/page": ["_next/static/chunks/ok.js"],
+      "/layout": [unsafe],
+    }, () => 42), /Unsafe App Router bundle asset path/, `inherited layout: ${unsafe}`);
+  }
   const data = summarizeAppRouteBundles({
-    "/page": ["../outside.js", "static/../outside.js", "_next/static/chunks/ok.js", "static/media/font.woff2"],
+    "/page": ["_next/static/chunks/ok.js", "static/media/font.woff2"],
   }, asset => {
     assert.equal(asset, "static/chunks/ok.js");
     return 42;
   });
-  assert.equal(data[0].totalBytes, 42);
+  assert.equal(data[0].totalBytes, 42, "Non-JS/CSS font assets remain outside this metric");
 });
 
 test("AF-R047 rejects malformed inherited layout asset lists instead of undercounting bytes", () => {
