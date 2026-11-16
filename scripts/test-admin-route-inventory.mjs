@@ -762,3 +762,45 @@ test("AF-R012 recognizes transparent async-guard await wrappers, not voided call
     }
   }
 });
+
+test("AF-R012 rejects late async guards after direct private database access", () => {
+  const lateAction = [
+    "export async function save() {",
+    "  await prisma.donation.update({ where: { id: 'synthetic' }, data: {} });",
+    "  await requirePermission('donations.manage');",
+    "}",
+  ].join("\n");
+  const actionSource = ts.createSourceFile("synthetic-late-action.ts", lateAction,
+    ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const [action] = exportedAsyncProtectedActions(actionSource);
+  assert.ok(action);
+  assert.equal(actionHasPermissionGuard(action.body, action.parameters), false,
+    "A database mutation before authorization cannot be certified by a later guard");
+
+  const lateRoute = [
+    "export async function GET() {",
+    "  const records = await prisma.donation.findMany();",
+    "  await getCurrentUser();",
+    "  return Response.json(records);",
+    "}",
+  ].join("\n");
+  assert.equal(sourceHasGuardCall(lateRoute, "getCurrentUser", "GET"), false,
+    "Private read before authentication cannot be certified by a later guard");
+
+  const orderedAction = [
+    "export async function save() {",
+    "  await requirePermission('donations.manage');",
+    "  return await prisma.donation.update({ where: { id: 'synthetic' }, data: {} });",
+    "}",
+  ].join("\n");
+  const orderedSource = ts.createSourceFile("synthetic-ordered-action.ts", orderedAction,
+    ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const [ordered] = exportedAsyncProtectedActions(orderedSource);
+  assert.ok(ordered);
+  assert.equal(actionHasPermissionGuard(ordered.body, ordered.parameters), true,
+    "A direct awaited guard before a database operation remains detectable");
+
+  assert.equal(sourceHasGuardCall(
+    "export async function GET() { await getCurrentUser(); return prisma.donation.findMany(); }",
+    "getCurrentUser", "GET"), true);
+});
