@@ -1,11 +1,5 @@
 [
   {
-    "pr": 686,
-    "name": "content/mr-khaja-public-information-20261107",
-    "headSha": "1c4104600d3126b259047a110c5ea0ba1d979052",
-    "mergeSha": "04f65403c9b55b9c8b3a416337469fcdb602d782"
-  },
-  {
     "pr": 687,
     "name": "fix/admin-form-accessibility-spacing-20261107",
     "headSha": "4196fc1a84bd8b1a38ab1610742477217187c785",
@@ -58,5 +52,11 @@
     "name": "fix/admin-appeal-inline-feedback-reconciled-20261108",
     "headSha": "7abd9ba173c3d961b9c2b055e204cefec0e9b199",
     "mergeSha": "0b2317cb9a79308d0a3869f291540f8ed04ab530"
+  },
+  {
+    "pr": 697,
+    "name": "test/af-r012-donation-detail-permission-boundaries-20261108",
+    "headSha": "b7e3d4cf8c8c2d05adb3a443241d593f4539e07f",
+    "mergeSha": "f8ca478bff063fc64537abf3a59ae2dec4a73012"
   }
 ]

@@ -1,18 +1,17 @@
 # Amaana Foundation — current release state
 
-**17 November 2026 IST — CLAUDE_CODE_ACTIVE (single writer, one owner-authorized session).** Dated checkpoint, not a live feed. Incoming writer must independently check GitHub, Railway and public endpoints.
+**17 November 2026 IST — CHATGPT_ACTIVE**, sole owner-authorized implementation writer. Dated snapshot; source, Railway and public runtime are independently verified.
 
-| Boundary | Last verified evidence |
+| Boundary | Verified |
 |---|---|
-| Protected source `main` | `2e222d876e62c0d196bb55562258ae1ce5877e98` after docs-only handoff #1017 (full CI `43932068073`, ready-state `43937723528`), protected |
-| #1014 guarded cleanup | Wave 13: full exact-head `43910196497` and distinct ready-state `43914652760` SUCCESS, merged `eab2d44d5ce1b83f60476aa3dbe142156e4cac3b`; retirement `43914765982` SUCCESS, all 25 historical refs and task branch independently absent |
-| #1015 open draft | AF-R024 CSS scanner `fix/af-r024-clamp-additive-font-floor-20261116`, reconciled non-force with main `2e222d876e62c0d196bb55562258ae1ce5877e98` (prior head `e55183c3bfead98e7373a1edfc9bba5f85ce8c32` full CI `43915060143` 7/7 SUCCESS); fresh exact-head CI, separate ready-state and merge pending |
-| #1016 open draft | AF-R012 async auth static inventory `test/af-r012-unawaited-permission-guard-20261116`, head `74ce306c42be20cacc45778138e9dd3d9ffd196f`, full CI `43915598906` **7/7 SUCCESS**; separate ready-state and merge not done; reconcile after #1015 moves main |
-| Held PRs | #684 official UPI QR receiving/settlement; #845 financial eligibility: unmerged, separate financial gates |
-| Production website | Uncached `/api/health/version`: `edcaf99ff21733c37937e8c326624e8e41a14267`, main/production, paymentMode live; `/api/health/ready`: ready |
-| Railway latest | Website `81f2dc93-0477-44d5-9f0a-287876d49926` SKIPPED for `eab2d44d5ce1b83f60476aa3dbe142156e4cac3b` (out-of-watch docs); no forced rollout |
-| Master 149 | 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 Not applicable |
+| Protected source main | `d5c4cf56a78bc4d6ec0717b9db42ff848829b8bc` after guarded #1016 AF-R012 static async-auth scanner |
+| #1016 | Exact-head full `43951343590` 7/7 SUCCESS; independent ready-state `43955569429` SUCCESS; merged `d5c4cf56a78bc4d6ec0717b9db42ff848829b8bc`; guarded source branch retirement verify pending |
+| Public UI / performance | #1020 footer fallback `751ad21fa1ce0fe82eb602dbcfcc1339b049e4ed`; #1018 Highlights alignment `2677020ac5f07b7950fed85eb9a49510418eb083`; #1019 logo containment `8be5c81ae2bda6ff1a489d3d3bcee122c3998b91`; all fully gated merged, task branches independently absent |
+| #1021 branch cleanup | Merged `9067536359198d90245f2e88fee0a707f8688aed` after full and ready gates; historical retirement `43955154571` FAIL CLOSED before deletion because first pinned `content/` name is not allowlisted |
+| #1022 recovery | Existing `fix/af-r079-manifest-ci-validation-20261117`; hosted RED test `43955501195` exposed invalid checked-in manifest. Replace disallowed #686 with exact-SHA-pinned approved-category #697; preserve other nine. Fresh full + separate ready checks + guarded merge/deletion verification pending |
+| Held PRs | #684 domestic UPI QR and #845 staging financial/privacy eligibility, no unilateral merge |
+| Railway | Website source `8be5c81ae2bda6ff1a489d3d3bcee122c3998b91` SUCCESS; later docs/scripts-only source merges SKIPPED |
+| Public website | Fresh version SHA `8be5c81ae2bda6ff1a489d3d3bcee122c3998b91` main/production; readiness `ready` |
+| 149 status | 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 Not applicable = **149** |
 
-**Next executable:** Claude Code finishes existing #1015 first under full/ready/expected-SHA gates, then reconciles and completes #1016. Continue new unblocked scoped work only after these source boundaries are safe. Avoid duplicating shipped changes.
-
-**Safety:** Preserve domestic INR/no FCRA; provisional 12A/12AB, unresolved 80G; redact all identifiable public donor/beneficiary faces and strip EXIF/GPS. Do not force-push, delete historical protected/retained/unreviewed refs, weaken CI, publish unsupported impact/medical claims, activate notifications/cron or run live financial/infrastructure/database operations without separate reviewed authorization.
+**Next:** Accept and SHA-guarded merge #1022 only after exact-head full CI, distinct ready-state checks and review. Verify history workflow and 10/10 actual eligible branches absent. Preserve unmerged, protected and retention-marked refs. Audit additional branches/docs only with direct evidence. Do not assume source/runtime parity, settled tax status, published donor/beneficiary identity or payment acceptance.

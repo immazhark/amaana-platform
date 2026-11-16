@@ -89,6 +89,23 @@ function bodyShadowsGuardName(body, name) {
   return shadowed;
 }
 
+// getCurrentUser and requirePermission are async. A floating Promise cannot
+// secure an admin API/action before its protected work; only awaited calls count.
+// Keep transparent TypeScript/parenthesis wrappers, not void or arbitrary calls.
+function isDirectlyAwaitedAsyncGuardCall(call) {
+  let expression = call;
+  while (expression.parent && expression.parent.expression === expression &&
+    (ts.isParenthesizedExpression(expression.parent) ||
+      ts.isAsExpression(expression.parent) ||
+      ts.isSatisfiesExpression(expression.parent) ||
+      ts.isNonNullExpression(expression.parent))) {
+    expression = expression.parent;
+  }
+  return Boolean(expression.parent &&
+    ts.isAwaitExpression(expression.parent) &&
+    expression.parent.expression === expression);
+}
+
 // Only statements before a direct unconditional return/throw can satisfy
 // a guard. Nested function bodies do not execute as part of the route/action.
 function bodyHasReachableDirectCall(body, name) {
@@ -143,7 +160,7 @@ function bodyHasReachableDirectCall(body, name) {
       return;
     }
     if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === name) {
-      found = true;
+      if ((name !== "requirePermission" && name !== "getCurrentUser") || isDirectlyAwaitedAsyncGuardCall(node)) found = true;
       return;
     }
     ts.forEachChild(node, visit);
@@ -627,7 +644,7 @@ test("AF-R012 does not accept permission guards confined to a switch server-acti
 test("AF-R012 still counts mandatory loop and switch expressions", () => {
   const required = [
     ["export async function POST() { while (!isSameOrigin({})) { break; } return Response.json({}); }", "isSameOrigin"],
-    ["export async function POST() { for (let user = getCurrentUser(); false;) { break; } return Response.json({}); }", "getCurrentUser"],
+    ["export async function POST() { for (let user = await getCurrentUser(); false;) { break; } return Response.json({}); }", "getCurrentUser"],
     ["export async function POST() { switch (hasPermission({}, 'content.update')) { default: break; } return Response.json({}); }", "hasPermission"],
   ];
   for (const [source, name] of required) {
@@ -670,5 +687,78 @@ test("AF-R012 rejects unguarded TypeScript-wrapped async server actions", () => 
   for (const action of actions) {
     assert.equal(actionHasPermissionGuard(action.body), false,
       action.name + " must not acquire a synthetic permission guard");
+  }
+});
+
+
+test("AF-R012 ignores unawaited permission promises in async server actions", () => {
+  const unguarded = [
+    "requirePermission('appeal.update');",
+    "void requirePermission('appeal.update');",
+    "const pendingPermission = requirePermission('appeal.update');",
+    "const pending = Promise.resolve(requirePermission('appeal.update'));",
+  ];
+  for (const statement of unguarded) {
+    const code = "'use server'; export async function save() { " + statement + " return 'unguarded'; }";
+    const ast = ts.createSourceFile("unawaited-action.ts", code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    const [action] = exportedAsyncProtectedActions(ast);
+    assert.ok(action?.body);
+    assert.equal(actionHasPermissionGuard(action.body), false,
+      "An unawaited Promise must not satisfy server-action authorization: " + statement);
+  }
+
+  const guarded = [
+    "await requirePermission('appeal.update');",
+    "const user = await requirePermission('appeal.update');",
+    "return await requirePermission('appeal.update');",
+  ];
+  for (const statement of guarded) {
+    const code = "'use server'; export async function save() { " + statement + " }";
+    const ast = ts.createSourceFile("awaited-action.ts", code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    const [action] = exportedAsyncProtectedActions(ast);
+    assert.ok(action?.body);
+    assert.equal(actionHasPermissionGuard(action.body), true,
+      "Awaited permission guards must remain detectable: " + statement);
+  }
+});
+
+
+test("AF-R012 ignores unawaited authentication promises in admin APIs", () => {
+  for (const body of [
+    "getCurrentUser();",
+    "void getCurrentUser();",
+    "const pendingUser = getCurrentUser();",
+    "const pending = Promise.resolve(getCurrentUser());",
+  ]) {
+    const source = "export async function POST() { " + body + " return Response.json({ public: true }); }";
+    assert.equal(sourceHasGuardCall(source, "getCurrentUser", "POST"), false,
+      "Floating authentication Promise must not satisfy protected API inventory: " + body);
+  }
+  assert.equal(sourceHasGuardCall(
+    "export async function POST() { const user = await getCurrentUser(); return Response.json({ ok: Boolean(user) }); }",
+    "getCurrentUser", "POST"), true,
+    "Awaited session lookup remains visible to static API audit");
+});
+
+
+test("AF-R012 recognizes transparent async-guard await wrappers, not voided calls", () => {
+  const cases = [
+    ["getCurrentUser", "await (getCurrentUser());", true],
+    ["getCurrentUser", "const user = await (getCurrentUser() as Promise<unknown>);", true],
+    ["requirePermission", "await (requirePermission('appeal.update'));", true],
+    ["requirePermission", "await (void requirePermission('appeal.update'));", false],
+    ["getCurrentUser", "await (void getCurrentUser());", false],
+  ];
+  for (const [guard, statement, allowed] of cases) {
+    if (guard === "getCurrentUser") {
+      const source = "export async function POST() { " + statement + " return Response.json({}); }";
+      assert.equal(sourceHasGuardCall(source, guard, "POST"), allowed, statement);
+    } else {
+      const source = "'use server'; export async function save() { " + statement + " }";
+      const ast = ts.createSourceFile("wrapped-await-action.ts", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+      const [action] = exportedAsyncProtectedActions(ast);
+      assert.ok(action?.body);
+      assert.equal(actionHasPermissionGuard(action.body), allowed, statement);
+    }
   }
 });
