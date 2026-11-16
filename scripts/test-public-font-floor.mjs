@@ -313,3 +313,24 @@ test("AF-R024 nested min(calc()) additive chains use the computed final size", (
   ].join("");
   assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
 });
+
+
+test("AF-R024 evaluates literal calc() lower bounds inside clamp() instead of inspecting operands", () => {
+  const unsafe = [
+    ".smallRem{font-size:clamp(calc(1rem / 2), 2vw, 1rem)}",
+    ".smallPx{font-size:clamp(calc(20px * .5), 2vw, 2rem)}",
+    ".invalid{font-size:clamp(calc(1rem / 0), 2vw, 2rem)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(unsafe, "fixture.css").map(issue => issue.value), [
+    "clamp(calc(1rem / 2), 2vw, 1rem)",
+    "clamp(calc(20px * .5), 2vw, 2rem)",
+    "clamp(calc(1rem / 0), 2vw, 2rem)",
+  ]);
+
+  const safe = [
+    ".restored{font-size:clamp(calc(.5rem * 2), 2vw, 2rem)}",
+    ".px{font-size:clamp(calc(10px * 2), 2vw, 2rem)}",
+    ".literal{font-size:clamp(.75rem, 2vw, 2rem)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
+});
