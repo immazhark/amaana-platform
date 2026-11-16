@@ -38,6 +38,8 @@ const socialLinks = [
   { network: "instagram", label: "Instagram", handle: "@amaanafoundation", href: "https://www.instagram.com/amaanafoundation/" },
   { network: "facebook", label: "Facebook", handle: "amaanafoundation24", href: "https://www.facebook.com/amaanafoundation24/" },
   { network: "youtube", label: "YouTube", handle: "@amaanafoundation", href: "https://www.youtube.com/@amaanafoundation" },
+  { network: "threads", label: "Threads", handle: "@amaanafoundation", href: "https://www.threads.com/@amaanafoundation" },
+  { network: "linkedin", label: "LinkedIn", handle: "amaanafoundation", href: "https://www.linkedin.com/company/amaanafoundation" },
 ] as const;
 
 export default function ContactPage() {
