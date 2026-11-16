@@ -104,3 +104,37 @@ test("AF-R078 retains dated Markdown linked by valid unquoted HTML anchor href",
     assert.equal(report.deletionApproved, false);
   } finally { f.dispose(); }
 });
+
+test("AF-R078 retains same-repository GitHub blob and raw Markdown backlinks", () => {
+  const f = fixture();
+  try {
+    writeFileSync(join(f.nested, "current.md"), [
+      "[Checkpoint](https://github.com/immazhark/amaana-platform/blob/main/docs/mission-control/2026-11-12-checkpoint.md#summary)",
+      "[Archive](<https://raw.githubusercontent.com/immazhark/amaana-platform/main/docs/AUDIT_2026-10-25.md>)",
+    ].join("\n"));
+    const report = collectDatedDocumentBacklinks(f.root);
+    const checkpoint = report.documents.find(d =>
+      d.path === "docs/mission-control/2026-11-12-checkpoint.md");
+    const archive = report.documents.find(d => d.path === "docs/AUDIT_2026-10-25.md");
+    assert.deepEqual(checkpoint?.referencedBy, ["docs/mission-control/current.md"]);
+    assert.deepEqual(archive?.referencedBy, ["README.md", "docs/mission-control/current.md"]);
+    assert.equal(report.deletionApproved, false);
+  } finally { f.dispose(); }
+});
+
+test("AF-R078 does not mistake external lookalike GitHub links for local document backlinks", () => {
+  const f = fixture();
+  try {
+    writeFileSync(join(f.nested, "current.md"), [
+      "[Lookalike](https://github.com.evil.example/immazhark/amaana-platform/blob/main/docs/mission-control/2026-11-12-checkpoint.md)",
+      "[Other repository](https://github.com/other/amaana-platform/blob/main/docs/mission-control/2026-11-12-checkpoint.md)",
+      "[Other branch](https://github.com/immazhark/amaana-platform/blob/unknown/docs/mission-control/2026-11-12-checkpoint.md)",
+      "[Insecure](http://github.com/immazhark/amaana-platform/blob/main/docs/mission-control/2026-11-12-checkpoint.md)",
+    ].join("\n"));
+    const report = collectDatedDocumentBacklinks(f.root);
+    const checkpoint = report.documents.find(d =>
+      d.path === "docs/mission-control/2026-11-12-checkpoint.md");
+    assert.deepEqual(checkpoint?.referencedBy, []);
+    assert.equal(report.deletionApproved, false);
+  } finally { f.dispose(); }
+});
