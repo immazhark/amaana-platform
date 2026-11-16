@@ -1,17 +1,17 @@
 # Amaana Foundation — current implementation writer
 
-**16 November 2026 IST — CHATGPT_ACTIVE.** One repository implementation writer; parallel analysis and QA are read-only. Owner retains authority.
+**16 November 2026 IST — CHATGPT_ACTIVE.** Single repository writer; parallel QA/research read-only. Owner retains authority.
 
-**Protected source main:** `8801ca786262ca7fc6f6f4e0e136cebfceffca48` after reviewed squash merge #998. Seventh historical retirement wave was independently verified: 25 historical refs and the merged task head absent. Across #991, #997 and #998, **70 historical refs** have been retired.
+**Protected source main:** `edfcc40b72aa4139165f83909a75aa5b5331f95f` after exact-head full CI, independent ready-state CI, and SHA-guarded squash merge of #999. Verified guarded historical retirement: #991 (20), #997 (25), #998 (25), #999 (25) = **95 exact historical refs retired**; the corresponding merged task heads were also absent.
 
-**Current branch:** `chore/af-r079-reviewed-history-wave8-20261116` (AF-R079). The existing guarded JSON manifest pins 25 live merged-PR heads #783–#815, excluding unmerged/unsupported #785, #787, #796, #800, #807–#809, and #804 (its merge SHA cannot be verified as an ancestor of current main). Each included live branch head matched the recorded merged PR head SHA, and each merge SHA was independently confirmed an ancestor of current `main`. The guard must still verify live PR/ref identity, retention exceptions, merge ancestry and exact SHA at deletion time. **Candidates are not deletions.** Full exact-head CI, distinct ready-state checks, guarded squash merge and postmerge retirement verification remain required.
+**Current branch:** `chore/af-r079-reviewed-history-wave9-20261116`. AF-R079 wave nine updates the existing JSON manifest only for the 25 reviewed, still-live merged task heads #816–#840. Each exact head SHA and merge SHA was independently checked against the live GitHub branch and current main ancestry. The existing lifecycle workflow must independently revalidate retention/open-PR/ref/ancestry conditions at execution and fail closed on change. **No retirement counted before postmerge verification.**
 
-**Other existing same-writer branches:** #993 AF-R062 gallery CSS at `70bde7fa91ba2ee8071dcaa0e1a7aee2002a96f9`, and #995 AF-R061 share-token CSS at `cfc4ca364a0dd3ab217a5848cc7d4a0ac4fc53ba`. Both are based on current main, with fast, database and production checks passed; browser acceptance was still running at last check (runs `43777396213` / `43777417557`). Promote/merge only after exact-head full and separate ready-state checks. Finance drafts #684/#845 are held.
+**Other active work:** #993 AF-R062 gallery CSS `d127eb9dce4d94cc23fa56f6069269d6304f12f4`; #995 AF-R061 sharing token `9fd1bfd53136b775b2a473156f60d3e793117602`; #1000 AF-R034 contact social parity `154d7be8a0a544308ed4307f1d3ac2bcb0f99c32`; #1001 AF-FIXTURE nullable preview fixture `ccdec6cc54f260e66bd0a908e77da11af5c8cc70`. All are isolated draft PRs on current main, with exact-head CI running; do not merge on a partial check. Finance PRs #684/#845 remain held.
 
-**Runtime boundary:** Railway website last SUCCESS and public version/ready verified at `c481cdf7a2a3de429682c635a595c2ec8816e6c1`; #998 Railway website and parked worker SKIPPED. Never force a rollout just to equalize source and runtime.
+**Runtime:** Railway latest website SUCCESS and independent public version remained `c481cdf7a2a3de429682c635a595c2ec8816e6c1`; later docs-only #999 correctly SKIPPED. Public ready returned ready. Do not force a rollout solely for SHA parity.
 
-**149-item master ledger:** **35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A = 149**. No classification change from branch retirement or isolated UI regression work.
+**149 master items:** 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A = 149. Isolated regressions and retirement do not alter classification.
 
-**Locks:** Domestic INR only/no FCRA; provisional 12A/12AB and unresolved 80G status; no unapproved payment/auth/schema/secret/CSP activation. Public identifiable faces require redaction and EXIF/GPS stripping. Do not activate notifications, send donor messages, migrate production data or change live infrastructure without separate reviewed authorization.
+**Locks:** domestic INR only, no FCRA; provisional 12A/12AB, unresolved 80G; no unauthorised financial/auth/schema/checkout, donor outreach, infrastructure changes, unredacted public faces, or uncensored metadata.
 
-**Next:** review wave-eight PR on exact head; finish #993/#995 browser acceptance and protected release; independently verify any actual branch retirement and Railway/public runtime afterward.
+**Next:** full exact-head and separate ready-state verification on wave-nine PR; guarded squash merge; verify actual retirement for all 25 and task head. Independently complete #993/#995/#1000/#1001 acceptance, reconcile after each protected merge, and verify Railway/public runtime where deployed.
