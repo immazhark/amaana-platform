@@ -56,6 +56,17 @@ describe("AF-R052 PublicMedia untrusted runtime props", () => {
     expect(renderToStaticMarkup(<PublicMedia asset={approved} />)).toContain("Reviewed programme materials");
   });
 
+  it("uses safe fallback geometry instead of inherited image dimensions", () => {
+    const forgedDimensions = Object.assign(
+      Object.create({ width: 1, height: 1 }),
+      approved,
+    ) as Parameters<typeof PublicMedia>[0]["asset"];
+    const html = renderToStaticMarkup(<PublicMedia asset={forgedDimensions} />);
+    expect(html).toContain('width="1600"');
+    expect(html).toContain('height="1200"');
+    expect(html).toContain('alt="Reviewed programme materials"');
+  });
+
   it("preserves an ordinary reviewed image with valid metadata", () => {
     const html = renderToStaticMarkup(<PublicMedia asset={approved} />);
     expect(html).toContain('alt="Reviewed programme materials"');
