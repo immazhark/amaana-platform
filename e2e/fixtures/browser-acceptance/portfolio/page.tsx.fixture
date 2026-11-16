@@ -28,11 +28,16 @@ export default async function PortfolioFixture({
     title: "Synthetic nullable preview test",
     summary: "Isolated browser acceptance fixture, not a public programme.",
     initiatives: [{
-      ...base.initiatives[0],
       id: "synthetic-null-preview",
       slug: "synthetic-null-preview",
       title: "Synthetic nullable preview",
       summary: "Only the safe placeholder may appear.",
+      year: null,
+      startYear: null,
+      endYear: null,
+      isFeatured: false,
+      primaryMetric: null,
+      primaryMetricLabel: null,
       mediaAssets: [{
         id: "synthetic-null-image",
         kind: "IMAGE" as const,
