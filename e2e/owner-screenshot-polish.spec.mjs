@@ -134,6 +134,10 @@ test('AF-FIXTURE nullable preview never renders a public image or leaks private 
   const preview = page.locator('#synthetic-null-preview');
   await expect(preview).toHaveCount(1);
   await expect(preview.locator('.work-visual-placeholder')).toHaveCount(1);
-  // The reviewed decorative logo is permitted; nullable private media is not.\n  const placeholderLogo = preview.locator('.work-visual-placeholder img');\n  await expect(preview.locator('img')).toHaveCount(1);\n  await expect(placeholderLogo).toHaveAttribute('src', /\\/brand\\/amaana-mark\\.svg(?:\\?|$)/);\n  await expect(placeholderLogo).toHaveAttribute('alt', '');
+  // An approved decorative logo is safe; nullable private media must not render.
+  const placeholderLogo = preview.locator('.work-visual-placeholder img');
+  await expect(preview.locator('img')).toHaveCount(1);
+  await expect(placeholderLogo).toHaveAttribute('src', /amaana-mark[.]svg(?:[?]|$)/);
+  await expect(placeholderLogo).toHaveAttribute('alt', '');
   await expect(page.locator('body')).not.toContainText('PRIVATE_PREVIEW_FIELD');
 });
