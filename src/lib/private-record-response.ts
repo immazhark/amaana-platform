@@ -35,6 +35,10 @@ function object(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
+function ownsFields(value: Record<string, unknown>, fields: readonly string[]): boolean {
+  return fields.every(field => Object.hasOwn(value, field));
+}
+
 function text(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0 && value.length <= 4096;
 }
@@ -58,12 +62,19 @@ function serverTimestamp(value: unknown): value is string {
 /** Fail closed on malformed private financial reads. Never turn a failed read
  * into a new donation or an apparently invalid donor receipt. */
 export function isAcknowledgementResponse(value: unknown, expectedReference: string): value is AcknowledgementRecord | { found: false } {
-  if (!object(value)) return false;
-  if (value.found === false) return true;
-  if (value.found !== true || !object(value.presentation) || !object(value.donation)) return false;
+  if (!object(value) || !Object.hasOwn(value, "found")) return false;
+  if (value.found === false) return Reflect.ownKeys(value).length === 1;
+  if (value.found !== true || !ownsFields(value, ["presentation", "donation"]) ||
+      !object(value.presentation) || !object(value.donation)) return false;
 
   const p = value.presentation;
   const d = value.donation;
+  if (!ownsFields(p, ["tone", "heading", "summary", "statusLabel"]) ||
+      !ownsFields(d, [
+        "referenceNumber", "receiptNumber", "donorName", "givingIntent", "amount",
+        "refundedAmount", "recordDate", "providerPaymentId", "appeal",
+      ]) ||
+      !object(d.appeal) || !ownsFields(d.appeal, ["title", "slug"])) return false;
   if (
     (typeof p.tone !== "string" || !["captured", "pending", "failed", "refunded"].includes(p.tone)) ||
     !text(p.heading) || !text(p.summary) || !text(p.statusLabel) ||
