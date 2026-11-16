@@ -721,3 +721,21 @@ test("AF-R012 ignores unawaited permission promises in async server actions", ()
       "Awaited permission guards must remain detectable: " + statement);
   }
 });
+
+
+test("AF-R012 ignores unawaited authentication promises in admin APIs", () => {
+  for (const body of [
+    "getCurrentUser();",
+    "void getCurrentUser();",
+    "const pendingUser = getCurrentUser();",
+    "const pending = Promise.resolve(getCurrentUser());",
+  ]) {
+    const source = "export async function POST() { " + body + " return Response.json({ public: true }); }";
+    assert.equal(sourceHasGuardCall(source, "getCurrentUser", "POST"), false,
+      "Floating authentication Promise must not satisfy protected API inventory: " + body);
+  }
+  assert.equal(sourceHasGuardCall(
+    "export async function POST() { const user = await getCurrentUser(); return Response.json({ ok: Boolean(user) }); }",
+    "getCurrentUser", "POST"), true,
+    "Awaited session lookup remains visible to static API audit");
+});
