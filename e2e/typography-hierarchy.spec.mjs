@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
 import { waitForPublicOverview } from './helpers/public-overview-ready.mjs';
+import { settleStyles } from './helpers/settle-styles.mjs';
 
 // AF-R025: verify every actual shared heading is horizontally contained and
 // readable, plus at least one real multiline heading per public overview route.
@@ -403,6 +404,7 @@ for (const width of [390, 1280]) {
         expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(12);
       }
       await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+      await settleStyles(page);
       for (const label of await labels.all()) {
         expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(24);
         expect(await label.evaluate(node => node.scrollWidth <= node.clientWidth + 1)).toBe(true);
@@ -422,6 +424,7 @@ for (const width of [390, 1280]) {
     await expect(label).toHaveText('Private submission');
     expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(12);
     await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+    await settleStyles(page);
     expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(24);
     const contained = await label.evaluate(node => {
       const range = document.createRange();
@@ -474,6 +477,7 @@ for (const width of [390, 1280]) {
       expect(await headingRatio(), `${state} heading leading`).toBeGreaterThanOrEqual(1.14);
 
       await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+      await settleStyles(page);
       expect(await headingRatio(), `${state} heading leading at 200% text`).toBeGreaterThanOrEqual(1.14);
       for (const selector of selectors) {
         const label = page.locator(selector);
@@ -572,6 +576,7 @@ for (const width of [390, 1280]) {
       });
       expect((await page.reload({ waitUntil: 'load' }))?.ok()).toBeTruthy();
       await waitForPublicOverview(page, path);
+      await settleStyles(page);
       const scaled = await page.evaluate(selector => ({
         root: parseFloat(getComputedStyle(document.documentElement).fontSize),
         labels: [...document.querySelectorAll(selector)]
@@ -636,6 +641,7 @@ for (const width of [390, 1280]) {
         const label = page.locator(selector);
         await expect(label).toHaveCount(1);
         await expect(label).toBeVisible();
+        await settleStyles(page);
         const metrics = await label.evaluate(node => ({
           root: Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
           text: Number.parseFloat(getComputedStyle(node).fontSize),
@@ -649,6 +655,7 @@ for (const width of [390, 1280]) {
       const reading = page.locator('.amaana-daily-ayah blockquote');
       for (const [label, minimum] of [[kicker, 12], [note, 12], [reading, 20]]) {
         await expect(label).toBeVisible();
+        await settleStyles(page);
         const metrics = await label.evaluate(node => ({
           root: Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
           text: Number.parseFloat(getComputedStyle(node).fontSize),
@@ -661,6 +668,7 @@ for (const width of [390, 1280]) {
       const hijriNote = page.locator('.amaana-hijri small');
       for (const label of [location, hijriNote]) {
         await expect(label).toBeVisible();
+        await settleStyles(page);
         const metrics = await label.evaluate(node => ({
           root: Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
           text: Number.parseFloat(getComputedStyle(node).fontSize),
