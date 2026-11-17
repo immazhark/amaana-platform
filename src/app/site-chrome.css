@@ -77,6 +77,24 @@
 .amaana-reminder-content p{
   min-width:0;overflow:hidden;margin:0;color:#4e5e5c;font-size:.75rem;line-height:1.25;text-overflow:ellipsis;white-space:nowrap
 }
+/* Desktop rail: wrap to two lines inside the existing rail height instead of an
+   ellipsis that can cut a citation or hide the live headline. Narrower desktop
+   widths also drop the decorative eyebrow (the AMAANA LIVE badge already labels
+   the lane) and the secondary reminder line, as the phone layout does. */
+@media(min-width:901px){
+  .amaana-reminder-content strong,.amaana-live-content strong,.amaana-reminder-content p{
+    display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;
+    white-space:normal;text-overflow:clip;text-wrap:pretty
+  }
+}
+@media(min-width:901px) and (max-width:1599px){
+  .amaana-live-content{grid-template-columns:minmax(0,1fr) auto}
+  .amaana-live-content .amaana-reminder-eyebrow{display:none}
+}
+@media(min-width:901px) and (max-width:1279px){
+  .amaana-reminder-content{grid-template-columns:minmax(0,1fr) auto}
+  .amaana-reminder-content p{display:none}
+}
 .amaana-reminder-eyebrow{font-size:.75rem}
 .amaana-reminder-source{font-size:.75rem}
 .amaana-live-actions{display:flex;align-items:center;justify-content:flex-end;gap:.35rem;white-space:nowrap}
