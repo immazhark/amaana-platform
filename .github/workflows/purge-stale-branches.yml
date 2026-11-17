@@ -1,0 +1,38 @@
+name: Purge stale branches (one-off)
+
+# Dry run by default. Set apply=true to delete. Remove this workflow and
+# scripts/purge-stale-branches.mjs once the purge has run.
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "true to delete, anything else is a dry run"
+        required: true
+        default: "false"
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: purge-stale-branches
+  cancel-in-progress: false
+
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Plan and, when apply is true, purge
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PURGE_APPLY: ${{ inputs.apply }}
+        run: node scripts/purge-stale-branches.mjs
