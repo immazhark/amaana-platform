@@ -81,6 +81,31 @@ for (const path of publicStaticRoutes) {
   });
 }
 
+// Search results show roughly 155 characters. Long programme, about and
+// governance summaries were published verbatim as meta, Open Graph and Twitter
+// descriptions (up to 700+ characters).
+const descriptionLengthRoutes = [
+  '/about', '/governance', '/transparency', '/how-we-verify',
+  '/our-work/eid-gift-kits', '/our-work/taleem', '/our-work/winter-relief',
+  '/our-work/dates-distribution', '/our-work/qurbani-meat-distribution',
+  '/our-work/hyderabad-flood-relief-2020',
+];
+for (const path of descriptionLengthRoutes) {
+  test(`${path} keeps its search, Open Graph and Twitter descriptions snippet-sized`, async ({ page }) => {
+    const response = await page.goto(path, { waitUntil: 'domcontentloaded' });
+    expect(response?.ok()).toBeTruthy();
+    const descriptions = await page.evaluate(() => ({
+      meta: document.querySelector('meta[name="description"]')?.content ?? '',
+      og: document.querySelector('meta[property="og:description"]')?.content ?? '',
+      twitter: document.querySelector('meta[name="twitter:description"]')?.content ?? '',
+    }));
+    for (const [kind, value] of Object.entries(descriptions)) {
+      expect(value.length, `${path} ${kind} description exists`).toBeGreaterThan(0);
+      expect(value.length, `${path} ${kind} description is at most 160 characters`).toBeLessThanOrEqual(160);
+    }
+  });
+}
+
 test('default social share images are privacy-safe generated PNG assets', async ({ request }) => {
   for (const path of ['/opengraph-image', '/twitter-image']) {
     const response = await request.get(path);
