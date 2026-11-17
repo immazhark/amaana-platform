@@ -161,3 +161,27 @@ test("AF-R005 dotenv preflight fails closed on a concatenated public secret alia
     await rm(workspace, { recursive: true, force: true });
   }
 });
+
+test("AF-R005 rejects compact secret and credential-name suffixes without blocking public identifiers", async () => {
+  const { rejectPublicCredentialNames } = await import("./check-public-env-secret-names.mjs");
+  const privateAliases = [
+    "NEXT_PUBLIC_RAZORPAYWEBHOOKSECRET",
+    "NEXT_PUBLIC_ADMINPASSWORD",
+    "NEXT_PUBLIC_SERVICEAPITOKEN",
+    "NEXT_PUBLIC_MEDIAACCESSKEY",
+    "NEXT_PUBLIC_PROVIDERPRIVATEKEY",
+  ];
+  const issues = rejectPublicCredentialNames(Object.fromEntries(
+    privateAliases.map(name => [name, "synthetic-private-only-fixture"]),
+  ));
+  assert.deepEqual(
+    issues.map(item => item.split(" must not")[0]).sort(),
+    privateAliases.sort(),
+  );
+  assert.equal(issues.join("\n").includes("synthetic-private-only-fixture"), false);
+  assert.deepEqual(rejectPublicCredentialNames({
+    NEXT_PUBLIC_APP_URL: "https://amaanafoundation.org",
+    NEXT_PUBLIC_RAZORPAY_KEY_ID: "rzp_test_public_identifier",
+    NEXT_PUBLIC_ALLOW_INDEXING: "false",
+  }), []);
+});
