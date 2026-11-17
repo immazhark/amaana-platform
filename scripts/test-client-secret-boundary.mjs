@@ -78,6 +78,18 @@ test("client bundle guard catches inlined configured server secrets", () => {
   assert.doesNotMatch(result.stderr, new RegExp(value));
 });
 
+test("AF-R005 rejects configured 12–15 character server secrets in public assets", () => {
+  for (const value of ["short-key-12", "short-key-123", "short-key-1234", "short-key-12345"]) {
+    const result = runScanner(JSON.stringify({ leakedFixture: value }), {
+      RAZORPAY_WEBHOOK_SECRET: value,
+    });
+    assert.equal(result.status, 1, "Configured 12–15 character server credentials must be scanned");
+    assert.match(result.stderr, /REDACTED SECRET VALUE/);
+    assert.equal((result.stderr + result.stdout).includes(value), false,
+      "The scanner must never print a matched credential");
+  }
+});
+
 test("client bundle scanner checks public JSON and other textual static assets", () => {
   for (const filename of [
     "data/config.json", "brand/mark.svg", "metadata.txt", "index.html",
