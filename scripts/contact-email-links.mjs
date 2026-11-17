@@ -24,11 +24,14 @@ function staticHrefValues(source, path) {
         && node.initializer.expression && ts.isStringLiteralLike(node.initializer.expression)) {
         found.push(node.initializer.expression.text);
       } else if (node.initializer && ts.isJsxExpression(node.initializer)
-        && node.initializer.expression &&
-        (ts.isTemplateExpression(node.initializer.expression) ||
-         ts.isBinaryExpression(node.initializer.expression) ||
-         ts.isCallExpression(node.initializer.expression))) {
-        dynamic++;
+        && node.initializer.expression) {
+        const expression = node.initializer.expression;
+        // Only the reviewed contact/footer array mappings may pass a
+        // runtime href binding. All other expressions require review.
+        const reviewedArrayBinding = ts.isPropertyAccessExpression(expression) &&
+          expression.name.text === 'href' && ts.isIdentifier(expression.expression) &&
+          ['link', 'item'].includes(expression.expression.text);
+        if (!reviewedArrayBinding) dynamic++;
       }
     }
     ts.forEachChild(node, visit);
