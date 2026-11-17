@@ -9,30 +9,39 @@ function staticHrefValues(source, path) {
   const ast = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   if (ast.parseDiagnostics.length) throw new Error(`Unable to parse ${path} for link validation`);
   const found = [];
+  let dynamic = 0;
   const visit = node => {
     if (ts.isPropertyAssignment(node) && (ts.isIdentifier(node.name) || ts.isStringLiteral(node.name))
       && node.name.text === 'href' && ts.isStringLiteralLike(node.initializer)) {
       found.push(node.initializer.text);
+    } else if (ts.isPropertyAssignment(node) && (ts.isIdentifier(node.name) || ts.isStringLiteral(node.name))
+      && node.name.text === 'href' && ts.isTemplateExpression(node.initializer)) {
+      dynamic++;
     }
     if (ts.isJsxAttribute(node) && node.name.text === 'href') {
       if (node.initializer && ts.isStringLiteral(node.initializer)) found.push(node.initializer.text);
       else if (node.initializer && ts.isJsxExpression(node.initializer)
         && node.initializer.expression && ts.isStringLiteralLike(node.initializer.expression)) {
         found.push(node.initializer.expression.text);
+      } else if (node.initializer && ts.isJsxExpression(node.initializer)
+        && node.initializer.expression && ts.isTemplateExpression(node.initializer.expression)) {
+        dynamic++;
       }
     }
     ts.forEachChild(node, visit);
   };
   visit(ast);
-  return found;
+  return { found, dynamic };
 }
 
 export function auditContactEmailLinks(contactSource, footerSource) {
   const problems = [];
   for (const [name, source, minimum] of [['Contact', contactSource, 3], ['footer', footerSource, 1]]) {
     let hrefs;
-    try { hrefs = staticHrefValues(source, name); }
+    let dynamic;
+    try { ({ found: hrefs, dynamic } = staticHrefValues(source, name)); }
     catch { problems.push(`${name} link source cannot be parsed`); continue; }
+    if (dynamic) problems.push(`${name} dynamic href cannot be verified`);
     if (hrefs.some(href => PROTECTED_LINK.test(href))) problems.push(`${name} has an invalid Cloudflare email-protection link`);
     if (hrefs.some(href => /^javascript:/i.test(href.trimStart()))) problems.push(`${name} includes a javascript: link`);
     if (hrefs.some(href => href.startsWith('mailto:') && href !== GENERAL && href !== DONATION)) {
