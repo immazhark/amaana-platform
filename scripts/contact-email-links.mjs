@@ -18,7 +18,11 @@ function staticHrefValues(source, path) {
       && node.name.text === 'href' && !ts.isStringLiteralLike(node.initializer)) {
       dynamic++;
     }
+    if (ts.isShorthandPropertyAssignment(node) && node.name.text === 'href') dynamic++;
     if (ts.isJsxAttribute(node) && node.name.text === 'href') {
+      if (!node.initializer || (ts.isJsxExpression(node.initializer) && !node.initializer.expression)) {
+        dynamic++;
+      }
       if (node.initializer && ts.isStringLiteral(node.initializer)) found.push(node.initializer.text);
       else if (node.initializer && ts.isJsxExpression(node.initializer)
         && node.initializer.expression && ts.isStringLiteralLike(node.initializer.expression)) {
