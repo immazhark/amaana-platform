@@ -1,14 +1,20 @@
 [
   {
-    "pr": 698,
-    "name": "fix/admin-donation-list-ist-date-20261108",
-    "headSha": "8140ddddeb9abf74b2a94e385ac392f3b0bc2e96",
-    "mergeSha": "f8ca478bff063fc64537abf3a59ae2dec4a73012"
+    "pr": 485,
+    "name": "fix/admin-filter-empty-recovery-20261027",
+    "headSha": "f6881073cab795195cce8d29f27a26a1d19dbefe",
+    "mergeSha": "511b0869ec13ed819db9e553f0f6e7436d61ad69"
   },
   {
-    "pr": 699,
-    "name": "fix/admin-assistance-review-ist-timeline-20261108",
-    "headSha": "0c40884ca3be533915149b56b03a760b8e72dcf4",
-    "mergeSha": "f8ca478bff063fc64537abf3a59ae2dec4a73012"
+    "pr": 490,
+    "name": "fix/admin-media-filter-empty-20261027",
+    "headSha": "dbcd93de30c99f302ec8cc99fe7b6de09a2c7db0",
+    "mergeSha": "c38fe0fd023c221b3dcad6bcca48cb810e039df8"
+  },
+  {
+    "pr": 366,
+    "name": "fix/admin-donation-form-duplicates-20261019",
+    "headSha": "08e3b526b1f7d84d0955f25ef444f3e017e0338f",
+    "mergeSha": "5cf9e7066f81c2715787e9fcf80e7158cc8acb5e"
   }
 ]
