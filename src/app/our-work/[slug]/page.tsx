@@ -1,3 +1,4 @@
+import { metaDescription } from "@/lib/meta-description";
 import { PUBLIC_DETAIL_MEDIA_LIMIT } from "@/lib/public-content";
 import { toPublicGalleryItems } from "@/lib/public-gallery-projection";
 import bannerStyles from "@/components/initiative-banner.module.css";
@@ -41,19 +42,19 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const canonical = legacyRoute.destination;
     return {
       title: category.title,
-      description: category.summary,
+      description: metaDescription(category.summary),
       alternates: { canonical },
       openGraph: {
         type: "website",
         url: canonical,
         title: `${category.title} | Amaana Foundation`,
-        description: category.summary,
+        description: metaDescription(category.summary),
         images: openGraphShareImages(),
       },
       twitter: {
         card: "summary_large_image",
         title: `${category.title} | Amaana Foundation`,
-        description: category.summary,
+        description: metaDescription(category.summary),
         images: twitterShareImages(),
       },
     };
@@ -70,19 +71,19 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     const canonical = legacyRoute.destination;
     return {
       title: programme.title,
-      description: programme.summary,
+      description: metaDescription(programme.summary),
       alternates: { canonical },
       openGraph: {
         type: "article",
         url: canonical,
         title: `${programme.title} | Amaana Foundation`,
-        description: programme.summary,
+        description: metaDescription(programme.summary),
         images: openGraphShareImages(),
       },
       twitter: {
         card: "summary_large_image",
         title: `${programme.title} | Amaana Foundation`,
-        description: programme.summary,
+        description: metaDescription(programme.summary),
         images: twitterShareImages(),
       },
     };
@@ -93,7 +94,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const canonical = `/our-work/${initiative.slug}`;
   const identity = selectIdentityPublicImage(initiative.mediaAssets);
   const leadImage = identity ? resolvePublicMediaUrl(identity) ?? undefined : undefined;
-  return { title: initiative.title, description: initiative.summary, alternates: { canonical }, openGraph: { type: "article", url: canonical, title: `${initiative.title} | Amaana Foundation`, description: initiative.summary, images: openGraphShareImages(leadImage, identity?.altText ?? initiative.title) }, twitter: { card: "summary_large_image", title: `${initiative.title} | Amaana Foundation`, description: initiative.summary, images: twitterShareImages(leadImage) } };
+  return { title: initiative.title, description: metaDescription(initiative.summary), alternates: { canonical }, openGraph: { type: "article", url: canonical, title: `${initiative.title} | Amaana Foundation`, description: metaDescription(initiative.summary), images: openGraphShareImages(leadImage, identity?.altText ?? initiative.title) }, twitter: { card: "summary_large_image", title: `${initiative.title} | Amaana Foundation`, description: metaDescription(initiative.summary), images: twitterShareImages(leadImage) } };
 }
 
 export default async function InitiativePage({ params }: { params: Promise<{ slug: string }> }) {
