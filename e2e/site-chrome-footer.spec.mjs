@@ -419,3 +419,41 @@ test('Mobile menu stays closed after a history return to its previous open route
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   await expect(toggle).toBeFocused();
 });
+
+// The desktop reminder and live rail must show its text, not an ellipsis that
+// can cut a citation (a verse range read as a different verse) or hide the live
+// headline entirely. Text may wrap to two lines inside the existing rail height.
+for (const width of [1024, 1280, 1440, 1920]) {
+  for (const [name, live] of [
+    ['fallback headline', { id: 'f', kind: 'foundation', eyebrow: 'Foundation updates', title: "Explore Amaana's public work.", subtitle: 's', detailsHref: '/our-work', detailsCta: 'Explore our work' }],
+    ['appeal with two actions', { id: 'a', kind: 'appeal', eyebrow: 'Live appeal', title: 'Verified medical support', subtitle: 's', detailsHref: '/appeals', supportHref: '/donate', detailsCta: 'View', supportCta: 'Donate' }],
+  ]) {
+    test(`desktop rail text is not clipped at ${width}px: ${name}`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.clock.setFixedTime(new Date('2026-11-17T09:00:00+05:30'));
+      await page.route('**/api/public/live-rail', route => route.fulfill({ json: { items: [live] } }));
+      await page.goto('/browser-acceptance/home-hero', { waitUntil: 'load' });
+      await expect(page.locator('.amaana-live-content strong')).toContainText(live.title);
+      const rail = await page.evaluate(() => {
+        const sel = '.amaana-reminder-content strong, .amaana-reminder-content p, .amaana-live-content strong';
+        const texts = [...document.querySelectorAll(sel)]
+          .filter(node => node.getClientRects().length > 0)
+          .map(node => ({
+            text: node.textContent.trim().slice(0, 40),
+            clippedX: node.scrollWidth > node.clientWidth + 1,
+            clippedY: node.scrollHeight > node.clientHeight + 1,
+            width: node.clientWidth,
+          }));
+        return { texts, height: document.querySelector('.amaana-reminders').getBoundingClientRect().height };
+      });
+      expect(rail.texts.length, 'rail exposes visible reminder and live text').toBeGreaterThanOrEqual(2);
+      for (const item of rail.texts) {
+        expect(item.width, `${item.text} keeps a readable column`).toBeGreaterThan(60);
+        expect(item.clippedX, `${item.text} is not clipped horizontally`).toBe(false);
+        expect(item.clippedY, `${item.text} is not clipped vertically`).toBe(false);
+      }
+      expect(rail.height, 'wrapping stays inside the existing rail height').toBeLessThanOrEqual(60);
+    });
+  }
+}
