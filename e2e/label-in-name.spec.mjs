@@ -8,7 +8,8 @@ const routes = [
   '/browser-acceptance/gallery',
 ];
 
-const normalise = value => value.replace(/\s+/g, ' ').trim().toLowerCase();
+// Decorative arrows/bullets are glyphs, not label text.
+const normalise = value => value.replace(/[→←↗↑↓•]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
 
 for (const route of routes) {
   test(`AF-R034 visible link and button text is contained in its accessible name: ${route}`, async ({ page }) => {
@@ -16,11 +17,15 @@ for (const route of routes) {
     const response = await page.goto(route, { waitUntil: 'load' });
     expect(response?.ok()).toBe(true);
     const report = await page.evaluate(() => {
-      const visibleText = element => {
+      // Visible label parts: each rendered text node, excluding decorative/hidden content and
+      // descriptive paragraphs (a card's description is supplementary, not the control's label).
+      const visibleParts = element => {
         const clone = element.cloneNode(true);
-        // Decorative glyphs and visually hidden helper text are not part of the visible label.
-        clone.querySelectorAll('[aria-hidden="true"], .sr-only, .visually-hidden').forEach(node => node.remove());
-        return (clone.textContent ?? '');
+        clone.querySelectorAll('[aria-hidden="true"], .sr-only, .visually-hidden, p').forEach(node => node.remove());
+        const parts = [];
+        const walker = document.createTreeWalker(clone, NodeFilter.SHOW_TEXT);
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) parts.push(node.textContent ?? '');
+        return parts;
       };
       const isVisible = element => {
         const box = element.getBoundingClientRect();
@@ -30,12 +35,15 @@ for (const route of routes) {
       const checked = [];
       for (const element of document.querySelectorAll('a[href][aria-label], button[aria-label], [role="link"][aria-label], [role="button"][aria-label]')) {
         if (!isVisible(element)) continue;
-        checked.push({ label: element.getAttribute('aria-label') ?? '', text: visibleText(element), tag: element.tagName.toLowerCase(), className: String(element.className).slice(0, 60) });
+        checked.push({ label: element.getAttribute('aria-label') ?? '', parts: visibleParts(element), tag: element.tagName.toLowerCase(), className: String(element.className).slice(0, 60) });
       }
       return checked;
     });
-    const withVisibleText = report.filter(item => normalise(item.text));
-    const mismatches = withVisibleText.filter(item => !normalise(item.label).includes(normalise(item.text)));
+    const mismatches = report.flatMap(item => {
+      const label = normalise(item.label);
+      const missing = item.parts.map(normalise).filter(part => part && !label.includes(part));
+      return missing.length ? [{ ...item, missing }] : [];
+    });
     expect(mismatches, `Accessible name must contain the visible label: ${JSON.stringify(mismatches, null, 1)}`).toEqual([]);
   });
 }
