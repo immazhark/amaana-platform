@@ -1,16 +1,18 @@
 # Amaana Foundation — active implementation writer
 
-**17 November 2026 IST — CLAUDE_CODE_ACTIVE.** Owner explicitly handed the single implementation-writer role from ChatGPT to Claude Code (second owner-authorised session). At claim time main had no commits since 07:49 IST, the only open PRs were the held #684 and #845, and no ChatGPT branch was open. ChatGPT performs no repository writes while this state holds; independent read-only review is permitted. Routine task-branch commits and qualifying expected-head squash merges have owner standing approval; follow `AGENTS.md` and protected exact-head full and ready-state checks.
+**17 November 2026 IST — CLAUDE_CODE_ACTIVE.** Owner explicitly handed the single implementation-writer role from ChatGPT to Claude Code. ChatGPT performs no repository writes while this state holds; independent read-only review is permitted. Owner standing authorisation (17 November 2026): routine task-branch commits, expected-head squash merges, guarded branch retirement and removal of obsolete documentation. Follow `AGENTS.md` and protected exact-head full and ready-state checks.
 
-**Protected main:** `3d337ca0491dff22be6d42d55a0e0931d972ab98`. Merged since the previous record: #1016 AF-R012 async-guard audit `d5c4cf5`, #1018 Highlights alignment `2677020`, #1019 desktop header containment `8be5c81`, #1020 AF-R044 streamed-fallback footer shift `751ad21`, #1028 AF-R052 public-media provenance `199c890`, #1031 AF-R005 `d18c5a8`, #1030 AF-R076 `ee87069`, #1032 AF-R079 wave 16 `3d337ca` (head `5454bcd`).
+**Protected main:** `045a2a078df54fd0d7fac2c5a7a137d536ce73ab`. Merged this session: #1015 AF-R024 `8b2bed9`, #1016 AF-R012 `d5c4cf5`, #1018 Highlights alignment `2677020`, #1019 desktop header containment `8be5c81`, #1020 AF-R044 footer shift `751ad21`, #1033 desktop rail text `76e53ea`, #1034 SEO description clamp `54405a6`, #1036 documentation prune `d6478e0`, #1035 purge workflow `045a2a0`.
 
-**Wave 16 outcome (independently verified):** the three pinned heads (#485, #490, #366 branches) and the #1032 task branch are absent from the remote. Branch count 674.
+**Branch purge (owner directive, verified):** dry run `44022457155` planned 671 removals; apply run `44022594184` succeeded. Remote heads now: `main` and the two held PR branches only. 628 removed tips are preserved by pull request refs (`refs/pull/N/head`); 43 branches with unique commits were first parked under `refs/archive/<name>`. Recreate any branch with `git push origin <sha>:refs/heads/<name>`. The one-off workflow and script were removed in the follow-up PR.
 
-**Deployed state:** Railway website deployment `e60d2701-fb53-491f-98c7-9d20a0c4219f` SUCCESS for `199c890190f9660be30b88e06da0e77b29838a17`. Public `/api/health/version` returned that SHA (main, production) and `/api/health/ready` returned `ready` at the time of claim. Later merges (#1031, #1030, #1032) were SKIPPED by Railway watch rules (scripts or docs only); do not force a rollout.
+**Documentation prune:** 159 markdown files reduced to 53 (#1036); removed files remain in Git history.
 
-**Current bounded task:** `fix/live-rail-desktop-text-clipping-20261117` — the desktop reminder and live rail clip the reminder citation and live headline with an ellipsis (for example a verse range cut to "2:28…"). Test first, then a CSS correction; PR to follow.
+**Deployed state:** Railway website deployment `d35e7520-7575-4250-8dc4-9e0f386e0566` SUCCESS for `54405a609303d66ac12340c4cb54513107c25606`; public `/api/health/version` returned that SHA and `/api/health/ready` returned `ready`. The docs-only #1036 and the scripts and workflow-only #1035 were SKIPPED by Railway watch rules; do not force a rollout.
 
 **Held:** #684 official UPI QR fallback and #845 privacy staging-marker PR remain unmerged. #1026 was closed unmerged after a verified HTTP 404/redirect regression; do not reintroduce nested loading boundaries without a status-preserving design.
+
+**Open decisions for the owner:** below 1280px the desktop rail hides the secondary reminder line (#1033); five page titles exceed about 60 characters with the site suffix and were left as editorial copy.
 
 **149-item register:** 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 Not applicable. Bounded PRs do not close whole items. Domestic INR only, no FCRA, 12A/12AB provisional, 80G conflict unresolved, identifiable faces need redaction and EXIF/GPS removal, official logo and cream/blue/gold identity protected. No live financial, schema, auth/RBAC, checkout CSP, cron, notification or infrastructure change without separate scoped authority.
 
