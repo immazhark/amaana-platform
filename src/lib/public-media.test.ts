@@ -29,6 +29,22 @@ describe("public media safety", () => {
     expect(selectGalleryPublicImage([...broken, approved])?.publicUrl).toBe("/media/approved.webp");
   });
 
+  it("AF-FIXTURE fails closed for a nullable preview relation even at the identity sort order", () => {
+    // Same shape as the isolated browser portfolio fixture: identity slot, every public field null.
+    const nullable = {
+      id: "synthetic-null-image", kind: "IMAGE" as const, title: null, publicUrl: null, externalUrl: null,
+      altText: null, caption: "PRIVATE_PREVIEW_FIELD", sourceYear: null, width: null, height: null,
+      sortOrder: IDENTITY_MEDIA_SORT_ORDER,
+    };
+    const approved = { kind: "IMAGE" as const, publicUrl: "/media/approved.webp", altText: "Reviewed photo", sortOrder: IDENTITY_MEDIA_SORT_ORDER };
+    expect(canRenderPublicMedia(nullable)).toBe(false);
+    expect(isDocumentaryPublicImage(nullable)).toBe(false);
+    expect(selectIdentityPublicImage([nullable])).toBeUndefined();
+    expect(selectGalleryPublicImage([nullable])).toBeNull();
+    // A nullable record never displaces or hides a reviewed photograph behind it.
+    expect(selectIdentityPublicImage([nullable, approved])?.publicUrl).toBe("/media/approved.webp");
+  });
+
   it("never promotes supporting gallery images into an unassigned identity slot", () => {
     expect(selectIdentityPublicImage([
       { kind: "IMAGE", publicUrl: "/media/gallery.jpg", altText: "Eid kits", sortOrder: 0 },

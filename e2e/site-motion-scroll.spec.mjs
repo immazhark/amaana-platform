@@ -336,3 +336,36 @@ for (const route of ['/', '/about', '/our-work', '/impact', '/stories', '/faith-
     expect(audit.violations.map(v => ({ id: v.id, targets: v.nodes.map(n => n.target) }))).toEqual([]);
   });
 }
+
+for (const key of ['Tab', 'PageDown', 'End']) {
+  test(`AF-R050 ${key} pressed while the lazy Lenis chunk is in flight keeps native scrolling after it arrives`, async ({ page }) => {
+    // Hold only script chunks requested after load: the first wheel imports Lenis on demand.
+    let hold = false;
+    const held = [];
+    await page.route('**/_next/static/**/*.js', route => (hold ? held.push(route) : route.continue()));
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await open(page);
+    await page.mouse.move(700, 600);
+    hold = true;
+    await page.mouse.wheel(0, 120);
+    await expect.poll(() => held.length).toBeGreaterThan(0);
+    await expect(page.locator('html')).not.toHaveClass(/lenis/);
+
+    await page.keyboard.press(key);
+    hold = false;
+    await Promise.all(held.splice(0).map(route => route.continue()));
+    // Let the delayed import resolve and any late mount run before asserting.
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 500)));
+    await expect(page.locator('html')).not.toHaveClass(/lenis/);
+
+    // Native keyboard navigation still works with no vendor scroll state left behind.
+    if (key !== 'Tab') await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(0);
+    await expect(page.locator('html')).not.toHaveClass(/lenis-(?:smooth|scrolling|stopped)/);
+
+    // Control: a later wheel gesture restarts the enhancement, so the chunk really did load.
+    await page.mouse.wheel(0, 200);
+    await expect(page.locator('html')).toHaveClass(/lenis/);
+    expect(errors).toEqual([]);
+  });
+}
