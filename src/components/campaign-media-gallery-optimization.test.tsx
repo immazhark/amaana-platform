@@ -177,6 +177,34 @@ describe("campaign gallery managed image optimization", () => {
     expect(valid).toContain("Enlarge image 1 of 1: Reviewed gallery photo");
   });
 
+  it("rejects prototype-inherited gallery URLs, captions and external-approval flags", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const inheritedItem = Object.assign(
+      Object.create({
+        id: "inherited", url: "/media/unreviewed.webp",
+        alt: "Inherited unreviewed image", caption: "PRIVATE_REVIEW_NOTE",
+      }),
+      {},
+    );
+    const inheritedApproval = Object.assign(
+      Object.create({ serverApprovedExternal: true }),
+      { id: "forged-external", url: "https://untrusted.invalid/private.webp",
+        alt: "Unreviewed external origin" },
+    );
+    const inheritedCaption = Object.assign(
+      Object.create({ caption: "PRIVATE_REVIEW_NOTE" }),
+      { id: "inherited-caption", url: "/media/reviewed.webp", alt: "Reviewed image" },
+    );
+    const html = renderToStaticMarkup(<CampaignMediaGallery items={[
+      inheritedItem, inheritedApproval, inheritedCaption,
+      { id: "normal", url: "/media/allowed.webp", alt: "Reviewed image" },
+    ]} />);
+    expect(html).toContain("Enlarge image 1 of 1: Reviewed image");
+    expect(html).not.toContain("PRIVATE_REVIEW_NOTE");
+    expect(html).not.toContain("untrusted.invalid");
+    expect(html).not.toContain("unreviewed.webp");
+  });
+
   it("fails closed for malformed JS gallery items without dropping reviewed entries", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
     const html = renderToStaticMarkup(<CampaignMediaGallery items={[

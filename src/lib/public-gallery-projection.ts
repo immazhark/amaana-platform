@@ -15,6 +15,9 @@ export function toPublicGalleryItems<T extends PublicMediaCandidate & {
     // Stored media metadata can be malformed despite the TypeScript contract.
     // Reject unsafe records before URL checks, caption projection or styling.
     if (!asset || typeof asset !== "object" || Array.isArray(asset) ||
+        !["id", "kind", "publicUrl", "altText"].every(key => Object.hasOwn(asset, key)) ||
+        ["caption", "title", "externalUrl", "width", "height", "sourceYear", "sortOrder"]
+          .some(key => key in asset && !Object.hasOwn(asset, key)) ||
         typeof asset.id !== "string" || !asset.id.trim() ||
         asset.kind !== "IMAGE" || typeof asset.altText !== "string" ||
         [asset.title, asset.caption, asset.publicUrl, asset.externalUrl].some(

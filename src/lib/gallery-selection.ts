@@ -6,7 +6,8 @@ export function adjacentGalleryId(
 ): string | null {
   if (!Array.isArray(items)) return null;
   const eligible = items.filter(item =>
-    item && typeof item === "object" && typeof item.id === "string" && !!item.id.trim(),
+    item && typeof item === "object" && Object.hasOwn(item, "id") &&
+    typeof item.id === "string" && !!item.id.trim(),
   );
   const length = eligible.length;
   if (!length) return null;

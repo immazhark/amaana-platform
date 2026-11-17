@@ -23,6 +23,14 @@ describe("stable gallery selection", () => {
     expect(adjacentGalleryId(mixed, "second", 1)).toBe("first");
   });
 
+  it("rejects inherited gallery IDs without changing valid keyboard wraparound", () => {
+    const inherited = Object.create({ id: "private-prototype-id" }) as { id: string };
+    const valid = [{ id: "approved-first" }, { id: "approved-second" }];
+    expect(adjacentGalleryId([inherited, ...valid], null, 1)).toBe("approved-first");
+    expect(adjacentGalleryId([inherited, ...valid], "approved-first", -1)).toBe("approved-second");
+    expect(adjacentGalleryId([inherited], null, 1)).toBeNull();
+  });
+
   it.each([
     [[], null, 1, null], [[], null, -1, null],
     [items, null, 1, "a"], [items, null, -1, "a"],
