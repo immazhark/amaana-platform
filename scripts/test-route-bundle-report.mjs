@@ -917,3 +917,65 @@ for (const filename of ['app-build-manifest.json', 'app-path-routes-manifest.jso
     });
   }
 }
+
+// AF-R047: opt-in compressed attribution reuses the same fail-closed summarizers.
+test("gzip attribution measures compressed bytes once per asset and rejects non-files", async () => {
+  const { gzipSync } = await import("node:zlib");
+  const directory = mkdtempSync(join(tmpdir(), "amaana-gzip-asset-"));
+  try {
+    mkdirSync(join(directory, "static/chunks"), { recursive: true });
+    const body = "export const synthetic = 'repeat';\n".repeat(400);
+    writeFileSync(join(directory, "static/chunks/a.js"), body);
+    const cache = new Map();
+    const bytes = reporter.gzipStaticAssetBytes(directory, "static/chunks/a.js", cache);
+    assert.equal(bytes, gzipSync(body, { level: 9 }).length);
+    assert.ok(bytes < body.length / 10, "repetitive source must compress well");
+    assert.equal(cache.get("static/chunks/a.js"), bytes);
+    // The cache is authoritative: a changed file is not re-read within one report.
+    writeFileSync(join(directory, "static/chunks/a.js"), "x");
+    assert.equal(reporter.gzipStaticAssetBytes(directory, "static/chunks/a.js", cache), bytes);
+    assert.throws(() => reporter.gzipStaticAssetBytes(directory, "static/chunks", new Map()), /not a file/);
+    assert.throws(() => reporter.gzipStaticAssetBytes(directory, "static/chunks/missing.js", new Map()), /ENOENT/);
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
+test("CLI --compressed adds gzip route attribution beside the unchanged uncompressed report", () => {
+  const directory = mkdtempSync(join(tmpdir(), "amaana-gzip-report-"));
+  const build = join(directory, ".next");
+  const cli = fileURLToPath(new URL("./report-route-bundles.mjs", import.meta.url));
+  try {
+    for (const path of ["static/chunks", "static/css", "server/app"]) mkdirSync(join(build, path), { recursive: true });
+    const shared = "console.log('shared runtime');\n".repeat(300);
+    writeFileSync(join(build, "static/chunks/shared.js"), shared);
+    writeFileSync(join(build, "static/css/root.css"), "body{margin:0}\n".repeat(200));
+    writeFileSync(join(build, "app-path-routes-manifest.json"), JSON.stringify({ "/page": "/" }));
+    writeFileSync(join(build, "build-manifest.json"), JSON.stringify({ rootMainFiles: ["static/chunks/shared.js"] }));
+    writeFileSync(join(build, "server/app/page_client-reference-manifest.js"),
+      'globalThis.__RSC_MANIFEST = globalThis.__RSC_MANIFEST || {};globalThis.__RSC_MANIFEST["/page"] = ' + JSON.stringify({
+        entryCSSFiles: { "[project]/src/app/layout": [{ path: "static/css/root.css", inlined: false }] },
+        entryJSFiles: { "[project]/src/app/layout": ["static/chunks/shared.js"] },
+      }));
+    const plain = spawnSync(process.execPath, [cli, "--json"], { cwd: directory, encoding: "utf8", timeout: 10000 });
+    assert.equal(plain.status, 0, plain.stderr);
+    assert.equal(JSON.parse(plain.stdout).jsRoutesGzip, undefined, "gzip is opt-in");
+    const packed = spawnSync(process.execPath, [cli, "--json", "--compressed"], { cwd: directory, encoding: "utf8", timeout: 10000 });
+    assert.equal(packed.status, 0, packed.stderr);
+    const report = JSON.parse(packed.stdout);
+    // Uncompressed attribution is unchanged by the flag.
+    assert.deepEqual(report.jsRoutes, JSON.parse(plain.stdout).jsRoutes);
+    assert.equal(report.jsGzipMetric, "client-reference-assigned-gzip-js-bytes");
+    assert.equal(report.jsRoutesGzip.length, 1);
+    assert.equal(report.jsRoutesGzip[0].route, "/");
+    assert.ok(report.jsRoutesGzip[0].jsBytes > 0 && report.jsRoutesGzip[0].jsBytes < report.jsRoutes[0].jsBytes / 10);
+    assert.equal(report.cssGzipMetric, "client-reference-assigned-gzip-css-bytes");
+    assert.ok(report.cssRoutesGzip[0].cssBytes < report.cssRoutes[0].cssBytes);
+    const text = spawnSync(process.execPath, [cli, "--compressed"], { cwd: directory, encoding: "utf8", timeout: 10000 });
+    assert.equal(text.status, 0, text.stderr);
+    assert.match(text.stdout, /Gzip \(level 9\) JavaScript attribution: 1 page entries/);
+    // Fail closed: a manifest naming a missing asset must not shrink the compressed total.
+    rmSync(join(build, "static/chunks/shared.js"));
+    const missing = spawnSync(process.execPath, [cli, "--json", "--compressed"], { cwd: directory, encoding: "utf8", timeout: 10000 });
+    assert.equal(missing.status, 1);
+    assert.equal(missing.stdout, "");
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+});

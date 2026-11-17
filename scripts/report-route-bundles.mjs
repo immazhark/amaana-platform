@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync, statSync, lstatSync } from "node:fs";
 import { join } from "node:path";
+import { gzipSync } from "node:zlib";
 import { pathToFileURL } from "node:url";
 
 /** Report static assets assigned by Next.js' App Router build manifest.
@@ -298,6 +299,25 @@ function legacyStaticAssetBytes(buildDir, asset) {
   return measuredBytes(stat.size, "bundle");
 }
 
+/** Gzip level-9 size of a generated static asset, with the same no-symlink rule as
+ *  legacyStaticAssetBytes. An estimate of compressed size, not CDN/brotli transfer bytes. */
+export function gzipStaticAssetBytes(buildDir, asset, cache = new Map()) {
+  if (cache.has(asset)) return cache.get(asset);
+  let current = buildDir;
+  let stat;
+  for (const segment of asset.split("/")) {
+    current = join(current, segment);
+    stat = lstatSync(current);
+    if (stat.isSymbolicLink()) {
+      throw new Error("Symbolic links are not supported in static build assets");
+    }
+  }
+  if (!stat?.isFile()) throw new Error("Next.js static asset path is not a file");
+  const bytes = measuredBytes(gzipSync(readFileSync(current), { level: 9 }).length, "compressed bundle");
+  cache.set(asset, bytes);
+  return bytes;
+}
+
 /** Inspect each generated client-reference segment without following symlinks.
  * A missing file preserves the normal unavailable-attribution fallback.
  * A broken link must not silently masquerade as a missing manifest.
@@ -343,6 +363,9 @@ function run() {
     throw new Error("Symbolic links are not supported in static build assets");
   }
   const manifestPath = join(buildDir, "app-build-manifest.json");
+  const compressed = process.argv.includes("--compressed");
+  const gzipCache = new Map();
+  const gzipBytes = asset => gzipStaticAssetBytes(buildDir, asset, gzipCache);
   let result;
   if (buildMetadataExists(manifestPath)) {
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
@@ -353,6 +376,10 @@ function run() {
         return legacyStaticAssetBytes(buildDir, asset);
       }),
     };
+    if (compressed) {
+      result.compressedMetric = "manifest-assigned-gzip-bytes";
+      result.routesGzip = summarizeAppRouteBundles(manifest.pages, gzipBytes);
+    }
   } else {
     const routesPath = join(buildDir, "app-path-routes-manifest.json");
     if (!buildMetadataExists(routesPath)) throw new Error("App Router route path manifest missing after build");
@@ -370,6 +397,11 @@ function run() {
       result.cssMetric = "client-reference-assigned-uncompressed-css-bytes";
       result.cssRoutes = summarizeClientReferenceCss(appPaths,
         page => readFileSync(clientPath(page), "utf8"), asset => statSync(join(buildDir, asset)).size);
+      if (compressed) {
+        result.cssGzipMetric = "client-reference-assigned-gzip-css-bytes";
+        result.cssRoutesGzip = summarizeClientReferenceCss(appPaths,
+          page => readFileSync(clientPath(page), "utf8"), gzipBytes);
+      }
       const buildManifestPath = join(buildDir, "build-manifest.json");
       result.jsRouteAttributionAvailable = buildMetadataExists(buildManifestPath) && pages.every(page =>
         Object.hasOwn(parseClientReferenceManifest(readFileSync(clientPath(page), "utf8"), page), "entryJSFiles"));
@@ -379,6 +411,11 @@ function run() {
         result.jsRoutes = summarizeClientReferenceJs(appPaths,
           page => readFileSync(clientPath(page), "utf8"), buildManifest.rootMainFiles,
           asset => statSync(join(buildDir, asset)).size);
+        if (compressed) {
+          result.jsGzipMetric = "client-reference-assigned-gzip-js-bytes";
+          result.jsRoutesGzip = summarizeClientReferenceJs(appPaths,
+            page => readFileSync(clientPath(page), "utf8"), buildManifest.rootMainFiles, gzipBytes);
+        }
       }
     }
   }
@@ -413,6 +450,13 @@ function run() {
     }
     for (const asset of walkBuildAssets(join(buildDir, "static")).filter(item => item.path.endsWith(".js")).sort((a,b) => b.bytes-a.bytes).slice(0,12)) {
       process.stdout.write(`Static JS contributor ${asset.bytes} bytes: ${asset.path}\n`);
+    }
+  }
+  if (compressed) {
+    const rows = result.routesGzip ?? result.jsRoutesGzip ?? [];
+    process.stdout.write(`Gzip (level 9) JavaScript attribution: ${rows.length} page entries (estimate; includes shared runtime).\n`);
+    for (const row of [...rows].sort((a, b) => b.jsBytes - a.jsBytes).slice(0, 20)) {
+      process.stdout.write(`${row.route.padEnd(46)} JS gzip ${String(row.jsBytes).padStart(9)}\n`);
     }
   }
   process.stdout.write("Not measured transfer size, LCP, INP, or Core Web Vitals.\n");
