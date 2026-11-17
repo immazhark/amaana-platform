@@ -67,6 +67,12 @@ export function summarizeAppRouteBundles(pages, byteSize) {
       }
       for (const raw of pages[entry] ?? []) {
         const normalized = normalizedStaticAsset(raw);
+        // Legacy builds may list non-JS/CSS resources (for example fonts),
+        // which are intentionally excluded. A malformed JS/CSS reference,
+        // however, must fail closed instead of shrinking the reported bytes.
+        if (!normalized && /\.(?:js|css)(?:[?#]|$)/iu.test(raw)) {
+          throw new Error("Unsafe App Router bundle asset path");
+        }
         if (normalized) assets.add(normalized);
       }
     }

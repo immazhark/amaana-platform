@@ -49,16 +49,29 @@ test("AF-R047 legacy App Router bundle labels omit non-URL route groups", () => 
   assert.ok(rows.every(row => row.totalBytes === 20));
 });
 
-test("ignores unsafe paths and rejects malformed or empty manifests", () => {
+test("rejects unsafe JS/CSS manifest assets without silently lowering legacy route byte totals", () => {
   assert.throws(() => summarizeAppRouteBundles(null, () => 0), /valid pages map/);
   assert.throws(() => summarizeAppRouteBundles({}, () => 0), /No App Router/);
+  for (const unsafe of [
+    "../outside.js", "static/../outside.js", "static/./alias.css",
+    "static//chunks/duplicate.js", "https://outside.invalid/app.js",
+    "/absolute/outside.css", "static/chunks/script.js?variant=2",
+  ]) {
+    assert.throws(() => summarizeAppRouteBundles({
+      "/page": ["_next/static/chunks/ok.js", unsafe],
+    }, () => 42), /Unsafe App Router bundle asset path/, unsafe);
+    assert.throws(() => summarizeAppRouteBundles({
+      "/page": ["_next/static/chunks/ok.js"],
+      "/layout": [unsafe],
+    }, () => 42), /Unsafe App Router bundle asset path/, `inherited layout: ${unsafe}`);
+  }
   const data = summarizeAppRouteBundles({
-    "/page": ["../outside.js", "static/../outside.js", "_next/static/chunks/ok.js", "static/media/font.woff2"],
+    "/page": ["_next/static/chunks/ok.js", "static/media/font.woff2"],
   }, asset => {
     assert.equal(asset, "static/chunks/ok.js");
     return 42;
   });
-  assert.equal(data[0].totalBytes, 42);
+  assert.equal(data[0].totalBytes, 42, "Non-JS/CSS font assets remain outside this metric");
 });
 
 test("AF-R047 rejects malformed inherited layout asset lists instead of undercounting bytes", () => {
@@ -507,7 +520,7 @@ test("CLI tolerates a closed output reader while malformed builds still fail", a
 
 test("AF-R047 fails closed on non-string page and inherited-layout asset entries", () => {
   // Invalid manifest types must never turn a partially measured build into a
-  // successful smaller total. Unsafe string paths retain the existing skip rule.
+  // successful smaller total. Malformed JS/CSS paths also fail closed.
   for (const invalid of [null, undefined, 24, { path: "static/chunks/private.js" }, ["static/chunks/nested.js"]]) {
     assert.throws(() => summarizeAppRouteBundles({
       "/page": ["static/chunks/valid.js", invalid],
@@ -518,9 +531,9 @@ test("AF-R047 fails closed on non-string page and inherited-layout asset entries
       "/layout": [invalid],
     }, () => 12), /Invalid App Router layout asset entry/);
   }
-  assert.equal(summarizeAppRouteBundles({
+  assert.throws(() => summarizeAppRouteBundles({
     "/page": ["static/chunks/valid.js", "../unsafe.js"],
-  }, () => 12)[0].totalBytes, 12);
+  }, () => 12), /Unsafe App Router bundle asset path/);
 });
 
 test("AF-R047 rejects malformed page asset lists instead of silently omitting routes", () => {
@@ -571,19 +584,21 @@ test("AF-R047 rejects malformed unmatched legacy layout manifest entries", () =>
   }
 });
 
-test("AF-R047 does not double-count aliased on-disk bundle paths", () => {
+test("AF-R047 rejects aliased legacy paths instead of silently undercounting assets", () => {
   const legacy = summarizeAppRouteBundles({
-    "/page": [
-      "static/chunks/shared.js",
-      "static/chunks/./shared.js",
-      "static/chunks//shared.js",
-    ],
+    "/page": ["static/chunks/shared.js", "static/chunks/shared.js"],
   }, asset => {
     assert.equal(asset, "static/chunks/shared.js", "Only canonical asset paths may be measured");
     return 13;
   });
   assert.equal(legacy[0].jsBytes, 13,
-    "One on-disk file must not be counted as three different manifest assets");
+    "An exact repeated canonical path is counted once");
+  for (const path of ["static/chunks/./shared.js", "static/chunks//shared.js"]) {
+    assert.throws(() => summarizeAppRouteBundles({
+      "/page": ["static/chunks/shared.js", path],
+    }, () => 13), /Unsafe App Router bundle asset path/,
+    "A malformed alias must never produce a deceptively smaller successful total");
+  }
 
   for (const path of [
     "static/css/./site.css",
