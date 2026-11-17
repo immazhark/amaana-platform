@@ -6,6 +6,9 @@ const credentialMarker = /(?:^|_)(?:SECRET|PASSWORD|PRIVATE_KEY|ACCESS_KEY|API_T
 // Reject common compact spellings too. The reserved NEXT_PUBLIC_RAZORPAY_KEY_ID
 // is a public identifier; do not block all variables containing "KEY".
 const compactCredentialMarker = /(?:^|_)(?:SECRETKEY|APIKEY|ACCESSTOKEN|AUTHTOKEN|PRIVATEKEY|ACCESSKEY)(?:_|$)/;
+// Also reject suffix-concatenated credentials such as WEBHOOKSECRET and
+// ADMINPASSWORD. Do not reject benign public KEY_ID identifiers.
+const compactCredentialSuffix = /(?:SECRET|PASSWORD|PRIVATEKEY|ACCESSKEY|APIKEY|AUTHTOKEN|ACCESSTOKEN|APITOKEN)$/;
 const storageMarker = /(?:^|_)(?:S3|R2|AWS|MEDIA|STORAGE)(?:_|$)/;
 const keyMarker = /(?:^|_)(?:KEY|TOKEN)(?:_|$)/;
 
@@ -15,6 +18,7 @@ export function rejectPublicCredentialNames(env, declaredNames = []) {
       if (!/^NEXT_PUBLIC_[A-Za-z0-9_]+$/.test(name)) return false;
       const suffix = name.slice("NEXT_PUBLIC_".length).toUpperCase();
       return credentialMarker.test(suffix) || compactCredentialMarker.test(suffix) ||
+        compactCredentialSuffix.test(suffix) ||
         (storageMarker.test(suffix) && keyMarker.test(suffix));
     })
     .sort()

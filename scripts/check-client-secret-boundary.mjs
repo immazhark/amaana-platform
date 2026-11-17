@@ -69,7 +69,9 @@ try {
 const secretValues = [...new Set([
   ...forbiddenMarkers.map((name) => process.env[name]),
   process.env.AMAANA_CLIENT_SECRET_CANARY,
-].filter((value) => typeof value === "string" && value.length >= 16))];
+// Reject configured 12–15 character private credentials as well. Very short
+// environment values stay excluded to avoid incidental matches in all assets.
+].filter((value) => typeof value === "string" && value.length >= 12))];
 
 const offenders = [];
 for (const file of files) {
