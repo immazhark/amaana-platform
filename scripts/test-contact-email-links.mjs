@@ -97,3 +97,17 @@ test('AF-R076 rejects unreviewed dynamic href object expressions and JSX templat
   );
   assert.deepEqual(auditContactEmailLinks(staticTemplate, footer), []);
 });
+
+test('AF-R076 fails closed on shorthand object destinations and valueless JSX hrefs', () => {
+  const shorthand = contact + '\nconst unreviewedDestination = { href };\n';
+  assert.match(auditContactEmailLinks(shorthand, footer).join('\n'),
+    /dynamic href.*cannot be verified/i);
+
+  const valueless = footer + '\nconst unreviewedDestination = <a href>Unreviewed link</a>;\n';
+  assert.match(auditContactEmailLinks(contact, valueless).join('\n'),
+    /dynamic href.*cannot be verified/i);
+
+  const emptyExpression = footer + '\nconst unreviewedDestination = <a href={}>Unreviewed link</a>;\n';
+  assert.match(auditContactEmailLinks(contact, emptyExpression).join('\n'),
+    /dynamic href.*cannot be verified|cannot be parsed/i);
+});
