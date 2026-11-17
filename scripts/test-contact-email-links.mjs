@@ -59,6 +59,22 @@ test('AF-R076 rejects unreviewed dynamic href object expressions and JSX templat
   assert.match(auditContactEmailLinks(contact, dynamicJsx).join('\n'),
     /dynamic href.*cannot be verified/i);
 
+  const dynamicFunction = contact.replace(
+    `href: "${canonical}"`,
+    'href: computeUnreviewedDestination()',
+  );
+  assert.notEqual(dynamicFunction, contact);
+  assert.match(auditContactEmailLinks(dynamicFunction, footer).join('\n'),
+    /dynamic href.*cannot be verified/i);
+
+  const dynamicConcatenation = footer.replace(
+    `href="${canonical}"`,
+    'href={"mailto:" + unreviewedAddress}',
+  );
+  assert.notEqual(dynamicConcatenation, footer);
+  assert.match(auditContactEmailLinks(contact, dynamicConcatenation).join('\n'),
+    /dynamic href.*cannot be verified/i);
+
   const staticTemplate = contact.replace(
     `href: "${canonical}"`,
     'href: `mailto:amaanafoundation24@gmail.com`',
