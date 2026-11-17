@@ -1,3 +1,9 @@
+## 17 November 2026 IST — Claude Code writer reclaim and operating setup
+
+**Owner re-confirmed** Claude Code as sole implementation writer after GitHub access and git identity were fixed; other writers stopped. Main `3a04803b0906b134877ae6cf6b676fca8798a3a2`. Added root `CLAUDE.md` (references AGENTS.md, no imports) and ignored `.claude/settings.local.json`. No product, financial, privacy or release-gate change. Holds #684/#845 unchanged.
+
+---
+
 ## 17 November 2026 IST — Claude Code usage exhaustion; ChatGPT reconstructed owner-authorized takeover
 
 **Outgoing:** Claude Code (usage limit reported by owner, no final handoff entry). **Incoming:** ChatGPT (single implementation writer, `CHATGPT_ACTIVE`). Source main `8b2bed92ef2649fc0d25f0e87b0099de69b11247`, still protected. Claimed via existing #1016 branch so no redundant handoff-only PR.
