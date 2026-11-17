@@ -16,3 +16,6 @@ public/apple-icon.png
 public/icon-192.png
 public/icon-512.png
 public/icon-maskable-512.png
+
+# Claude Code personal settings (local only)
+.claude/settings.local.json
