@@ -41,3 +41,27 @@ test('AF-R076 detects a removed footer mailto link and malformed link target', (
   assert.match(problems, /Cloudflare email-protection/i);
   assert.match(problems, /footer/i);
 });
+
+test('AF-R076 rejects unreviewed dynamic href object expressions and JSX template strings', () => {
+  const dynamicObject = contact.replace(
+    `href: "${canonical}"`,
+    'href: `/cdn-cgi/l/email-protection#${syntheticToken}`',
+  );
+  assert.notEqual(dynamicObject, contact);
+  assert.match(auditContactEmailLinks(dynamicObject, footer).join('\n'),
+    /dynamic href.*cannot be verified/i);
+
+  const dynamicJsx = footer.replace(
+    `href="${canonical}"`,
+    'href={`javascript:${syntheticScheme}`}',
+  );
+  assert.notEqual(dynamicJsx, footer);
+  assert.match(auditContactEmailLinks(contact, dynamicJsx).join('\n'),
+    /dynamic href.*cannot be verified/i);
+
+  const staticTemplate = contact.replace(
+    `href: "${canonical}"`,
+    'href: `mailto:amaanafoundation24@gmail.com`',
+  );
+  assert.deepEqual(auditContactEmailLinks(staticTemplate, footer), []);
+});
