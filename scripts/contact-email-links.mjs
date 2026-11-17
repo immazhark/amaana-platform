@@ -15,7 +15,7 @@ function staticHrefValues(source, path) {
       && node.name.text === 'href' && ts.isStringLiteralLike(node.initializer)) {
       found.push(node.initializer.text);
     } else if (ts.isPropertyAssignment(node) && (ts.isIdentifier(node.name) || ts.isStringLiteral(node.name))
-      && node.name.text === 'href' && ts.isTemplateExpression(node.initializer)) {
+      && node.name.text === 'href' && !ts.isStringLiteralLike(node.initializer)) {
       dynamic++;
     }
     if (ts.isJsxAttribute(node) && node.name.text === 'href') {
@@ -24,7 +24,10 @@ function staticHrefValues(source, path) {
         && node.initializer.expression && ts.isStringLiteralLike(node.initializer.expression)) {
         found.push(node.initializer.expression.text);
       } else if (node.initializer && ts.isJsxExpression(node.initializer)
-        && node.initializer.expression && ts.isTemplateExpression(node.initializer.expression)) {
+        && node.initializer.expression &&
+        (ts.isTemplateExpression(node.initializer.expression) ||
+         ts.isBinaryExpression(node.initializer.expression) ||
+         ts.isCallExpression(node.initializer.expression))) {
         dynamic++;
       }
     }
