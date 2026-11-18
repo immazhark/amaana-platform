@@ -66,7 +66,7 @@
 .glyph :global(.accent-stroke) { stroke: var(--af-color-gold-ink); }
 .card[data-selected="true"] .glyph { color: var(--af-color-navy-950); background: var(--af-color-gold-soft); transform: scale(1.06); }
 
-.cardBody { grid-area: body; display: grid; gap: .25rem; min-width: 0; }
+.cardBody { grid-area: body; display: grid; gap: .25rem; min-width: 0; padding-inline-end: 1.9rem; }
 .cardName { font-size: 1.06rem; line-height: 1.2; }
 .cardSummary { font-size: .88rem; line-height: 1.42; color: var(--af-color-muted); }
 
