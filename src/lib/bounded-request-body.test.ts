@@ -253,7 +253,7 @@ describe("AF-N14 early-closed and broken source streams", () => {
   });
 
   it("releases the reader lock after a broken stream so the body is not left pinned", async () => {
-    const stream = new ReadableStream<Uint8Array>({ start(controller) { controller.error(new Error("aborted")); } });
+    const stream = new ReadableStream<Uint8Array<ArrayBuffer>>({ start(controller) { controller.error(new Error("aborted")); } });
     await expect(readBodyBytesWithLimit({ headers: new Headers(), body: stream }, 16)).rejects.toThrow("aborted");
     expect(stream.locked).toBe(false);
   });
