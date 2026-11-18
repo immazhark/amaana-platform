@@ -92,4 +92,14 @@ describe("AF-N23 private acknowledgement shape provenance", () => {
     expect(isAcknowledgementResponse({ found: false, presentation: valid.presentation }, reference)).toBe(false);
     expect(isAcknowledgementResponse({ found: false }, reference)).toBe(true);
   });
+
+  // Policy: unknown own keys are tolerated but never read by the client, which renders
+  // only the validated fields. Required fields stay strictly checked alongside them.
+  it("tolerates unknown own keys without weakening required-field validation", () => {
+    const extra = { ...valid, internalNote: "never rendered", donation: { ...valid.donation, extra: 1 } };
+    expect(isAcknowledgementResponse(extra, reference)).toBe(true);
+    expect(isAcknowledgementResponse({ ...extra, donation: { ...extra.donation, amount: "500" } }, reference)).toBe(false);
+    expect(isAcknowledgementResponse({ ...extra, presentation: { ...valid.presentation, tone: "unknown" } }, reference)).toBe(false);
+    expect(isAcknowledgementResponse({ found: false, internalNote: "x" }, reference)).toBe(false);
+  });
 });
