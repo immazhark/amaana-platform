@@ -58,6 +58,13 @@ describe("fund accounting", () => {
     expect(orphan.total.balancePaise).toBe(400_000);
     expect(zakatAccount.balancePaise).toBe(300_000);
   });
+  it("returns a covered gateway fee first: only a refund beyond the fee reduces the fund", () => {
+    const fee = (refundedPaise: number) => summariseFunds([{ fundId: "orphan", givingIntent: "SADAQAH", status: "CAPTURED", amountPaise: 500_000, refundedPaise, feePaise: 12_086 }], []).byFund.orphan!.total;
+    expect(fee(0).receivedPaise).toBe(500_000);
+    expect(fee(12_086).receivedPaise).toBe(500_000);
+    expect(fee(112_086)).toMatchObject({ receivedPaise: 400_000, refundedPaise: 100_000 });
+    expect(fee(512_086).receivedPaise).toBe(0);
+  });
   it("the 100k Orphan Fund example: 50k stationery + 50k school fees leaves nothing", () => {
     const { byFund } = summariseFunds([d("orphan", "SADAQAH", "CAPTURED", 10_000_000)], [s("orphan", "NON_ZAKAT", "PUBLISHED", 5_000_000), s("orphan", "NON_ZAKAT", "PUBLISHED", 5_000_000)]);
     expect(byFund.orphan?.total.balancePaise).toBe(0);

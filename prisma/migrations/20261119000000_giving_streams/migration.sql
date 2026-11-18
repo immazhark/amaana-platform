@@ -55,6 +55,9 @@ ALTER TABLE "FundDisbursement" ADD CONSTRAINT "FundDisbursement_createdById_fkey
 
 ALTER TABLE "Donation" ADD COLUMN "fundId" TEXT;
 ALTER TABLE "Donation" ADD COLUMN "donorDirective" VARCHAR(500);
+-- Optional gateway-fee cover added by the donor on top of the chosen donation amount (never part of the fund).
+ALTER TABLE "Donation" ADD COLUMN "feeContributionAmount" DECIMAL(12,2) NOT NULL DEFAULT 0;
+ALTER TABLE "Donation" ADD CONSTRAINT "Donation_fee_contribution_nonnegative" CHECK ("feeContributionAmount" >= 0);
 ALTER TABLE "Donation" ALTER COLUMN "appealId" DROP NOT NULL;
 ALTER TABLE "Donation" ADD CONSTRAINT "Donation_fundId_fkey" FOREIGN KEY ("fundId") REFERENCES "Fund"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 -- Every donation belongs to exactly one destination: an appeal or a fund.

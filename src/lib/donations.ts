@@ -18,6 +18,8 @@ export const donationSchema = z.object({
   ]).pipe(z.number().int().min(1).max(MAX_DONATION_AMOUNT)),
   givingIntent: z.enum(DONATION_INTENTS),
   isAnonymous: z.boolean().optional().default(false),
+  // Gateway payments only: the donor opts to add the estimated processing fee on top of their chosen amount.
+  coverProcessingFee: z.boolean().optional().default(false),
   domesticConfirmed: z.literal(true),
 });
 

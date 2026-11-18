@@ -449,6 +449,7 @@ model Donation {
   appealId                 String?
   fundId                   String?
   donorDirective           String?               @db.VarChar(500)
+  feeContributionAmount    Decimal               @default(0) @db.Decimal(12, 2)
   donorName                String
   donorEmail               String
   donorPhone               String?

@@ -11,6 +11,7 @@ import { calculateRefundAccounting } from "@/lib/refund-accounting";
 import { validateProductionEnvironment } from "@/lib/env";
 import { isMatchingPaymentEventReplay, isPrismaUniqueConstraintError } from "@/lib/webhook-idempotency";
 import { logServerError } from "@/lib/server-log";
+import { donationChargePaise, feeContributionPaise } from "@/lib/donation-charge";
 
 const MAX_RAZORPAY_WEBHOOK_BYTES = 256 * 1024;
 
@@ -163,7 +164,7 @@ export async function POST(request: Request) {
       await withSerializableTransactionRetry(async tx => {
         const donation = await tx.donation.findUnique({
           where: { providerOrderId: payment.order_id },
-          select: { id: true, amount: true },
+          select: { id: true, amount: true, feeContributionAmount: true },
         });
 
         await tx.paymentEvent.create({
@@ -176,7 +177,7 @@ export async function POST(request: Request) {
         });
 
         if (donation) {
-          const expectedAmountPaise = decimalRupeesToPaise(donation.amount);
+          const expectedAmountPaise = donationChargePaise(donation);
           if (payment.amount !== expectedAmountPaise) {
             throw new Error("Failed payment amount does not match the local donation order");
           }
@@ -212,6 +213,7 @@ export async function POST(request: Request) {
             id: true,
             appealId: true,
             amount: true,
+            feeContributionAmount: true,
             refundedAmount: true,
             donorEmail: true,
             referenceNumber: true,
@@ -266,20 +268,28 @@ export async function POST(request: Request) {
           throw new Error("Refund donation is missing its appeal");
         }
 
+        // The donor may also have covered the gateway fee. A refund returns that fee first; only the
+        // part beyond it reduces the donation itself and any appeal total.
+        const feePaise = feeContributionPaise(donation);
+        const chargedPaise = decimalRupeesToPaise(donation.amount) + feePaise;
+        const previousRefundedPaise = Math.min(decimalRupeesToPaise(donation.refundedAmount), chargedPaise);
         const accounting = calculateRefundAccounting({
-          donationAmountPaise: decimalRupeesToPaise(donation.amount),
-          refundedAmountPaise: decimalRupeesToPaise(donation.refundedAmount),
-          // Non-appeal streams have no appeal total to reduce; the donation's own balance is the bound.
-          appealRaisedPaise: appeal ? decimalRupeesToPaise(appeal.amountRaised) : decimalRupeesToPaise(donation.amount),
+          donationAmountPaise: chargedPaise,
+          refundedAmountPaise: previousRefundedPaise,
+          appealRaisedPaise: Number.MAX_SAFE_INTEGER,
           requestedRefundPaise: refund.amount,
         });
+        const donationShare = (refundedPaise: number) => Math.max(0, refundedPaise - feePaise);
+        const appealRefundPaise = donationShare(accounting.nextRefundedAmountPaise) - donationShare(previousRefundedPaise);
+        const appealRaisedPaise = appeal ? decimalRupeesToPaise(appeal.amountRaised) : 0;
+        const nextAppealRaisedPaise = appealRaisedPaise - appealRefundPaise;
 
         // A signed provider refund must be reflected at its full value in
         // BOTH the donation's refunded ledger and the appeal's raised total.
         // calculateRefundAccounting caps amounts to prevent negative balances;
         // silently accepting a cap here would acknowledge funds that we
         // cannot reconcile. Roll back the entire transaction for investigation.
-        if (accounting.wasCapped) {
+        if (accounting.wasCapped || (appeal && appealRefundPaise > appealRaisedPaise)) {
           throw new Error("Provider refund exceeds reconcilable financial balances");
         }
 
@@ -295,8 +305,8 @@ export async function POST(request: Request) {
           });
         }
 
-        if (appeal && donation.appealId && accounting.appealRefundPaise > 0) {
-          const nextAmountRaised = accounting.nextAppealRaisedPaise / 100;
+        if (appeal && donation.appealId && appealRefundPaise > 0) {
+          const nextAmountRaised = nextAppealRaisedPaise / 100;
           const nextStatus = appealStatusAfterRefund(
             appeal.status,
             nextAmountRaised,
@@ -307,7 +317,7 @@ export async function POST(request: Request) {
           await tx.appeal.update({
             where: { id: donation.appealId },
             data: {
-              amountRaised: { decrement: accounting.appealRefundPaise / 100 },
+              amountRaised: { decrement: appealRefundPaise / 100 },
               ...(nextStatus !== appeal.status ? { status: nextStatus as "PUBLISHED" | "CLOSED" } : {}),
             },
           });

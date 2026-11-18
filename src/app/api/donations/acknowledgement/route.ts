@@ -68,6 +68,7 @@ export async function POST(request: Request) {
         status: true,
         amount: true,
         refundedAmount: true,
+        feeContributionAmount: true,
         receiptNumber: true,
         referenceNumber: true,
         donorName: true,
@@ -88,7 +89,10 @@ export async function POST(request: Request) {
 
     const amount = donation.amount.toNumber();
     const refundedAmount = donation.refundedAmount.toNumber();
-    const presentation = getDonationAcknowledgementPresentation(donation.status, amount, refundedAmount);
+    // A refund returns any covered gateway fee first; only the excess is a refund of the donation itself.
+    const feeContribution = donation.feeContributionAmount.toNumber();
+    const donationRefunded = Math.max(0, Math.round((refundedAmount - feeContribution) * 100) / 100);
+    const presentation = getDonationAcknowledgementPresentation(donation.status, amount, donationRefunded);
     const recordDate = donation.refundedAt ?? donation.capturedAt ?? donation.createdAt;
 
     return NextResponse.json(
@@ -102,6 +106,7 @@ export async function POST(request: Request) {
           givingIntent: donation.givingIntent,
           amount,
           refundedAmount,
+          feeContributionAmount: feeContribution,
           recordDate: recordDate.toISOString(),
           providerPaymentId: donation.providerPaymentId,
           appeal: donation.appeal,

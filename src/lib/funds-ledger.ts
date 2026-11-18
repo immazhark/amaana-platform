@@ -11,7 +11,7 @@ export async function getFundsLedger() {
     prisma.donation.groupBy({
       by: ["fundId", "givingIntent", "status"],
       where: { status: { in: ["CAPTURED", "REFUNDED", "PENDING_VERIFICATION"] } },
-      _sum: { amount: true, refundedAmount: true },
+      _sum: { amount: true, refundedAmount: true, feeContributionAmount: true },
     }),
     prisma.fundDisbursement.groupBy({
       by: ["fundId", "pool", "status"],
@@ -25,6 +25,7 @@ export async function getFundsLedger() {
     status: group.status,
     amountPaise: toPaise(group._sum.amount),
     refundedPaise: toPaise(group._sum.refundedAmount),
+    feePaise: toPaise(group._sum.feeContributionAmount),
   }));
   const disbursements: DisbursementLedgerRow[] = disbursementGroups.map(group => ({
     fundId: group.fundId,

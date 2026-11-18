@@ -9,6 +9,7 @@ import { enforceDonationRateLimit, isSameOrigin } from "@/lib/request-security";
 import { validateProductionEnvironment } from "@/lib/env";
 import { canExposePublicAppeal } from "@/lib/public-environment";
 import { logServerError } from "@/lib/server-log";
+import { calculateFeeCover } from "@/lib/processing-fee";
 
 const privateHeaders = {
   "Cache-Control": "no-store, private",
@@ -122,8 +123,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const referenceNumber = createDonationReference(); const receiptToken = createReceiptToken(); const amountPaise = parsed.data.amount * 100;
-    if (!Number.isSafeInteger(amountPaise) || amountPaise <= 0) throw new Error("Donation amount cannot be represented safely in paise");
+    const referenceNumber = createDonationReference(); const receiptToken = createReceiptToken(); const donationPaise = parsed.data.amount * 100;
+    if (!Number.isSafeInteger(donationPaise) || donationPaise <= 0) throw new Error("Donation amount cannot be represented safely in paise");
+    // The server alone decides the fee cover; the amount charged is the chosen donation plus that fee.
+    const feePaise = parsed.data.coverProcessingFee ? calculateFeeCover(donationPaise).feePaise : 0;
+    const amountPaise = donationPaise + feePaise;
     // Once the provider request starts, transport errors or failed persistence
     // cannot prove that no Razorpay order was created. Never invite a replay.
     providerAttempted = true;
@@ -154,6 +158,7 @@ export async function POST(request: Request) {
           givingIntent: parsed.data.givingIntent,
           domesticConfirmedAt: new Date(),
           amount: parsed.data.amount,
+          feeContributionAmount: feePaise / 100,
           paymentMethod: "RAZORPAY",
           provider: "RAZORPAY",
           providerOrderId: order.id,

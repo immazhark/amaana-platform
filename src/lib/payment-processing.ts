@@ -4,6 +4,7 @@ import { createReceiptNumber } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 import { fetchRazorpayPayment } from "@/lib/razorpay";
+import { donationChargePaise } from "@/lib/donation-charge";
 
 /**
  * Marks a verified Razorpay payment as captured exactly once.
@@ -52,6 +53,7 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
         paymentMethod: true,
         provider: true,
         amount: true,
+        feeContributionAmount: true,
         referenceNumber: true,
         appealId: true,
         donorEmail: true,
@@ -61,7 +63,7 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
         providerPaymentId: true,
       },
     });
-    const expectedAmountPaise = donation ? donation.amount.mul(100).toNumber() : null;
+    const expectedAmountPaise = donation ? donationChargePaise(donation) : null;
     if (
       !donation ||
       donation.currency !== "INR" ||
@@ -172,7 +174,7 @@ export async function ensureCapturedDonationForRefund(paymentId: string) {
 
   const donationByOrder = await prisma.donation.findUnique({
     where: { providerOrderId: providerPayment.order_id },
-    select: { id: true, amount: true, paymentMethod: true, provider: true },
+    select: { id: true, amount: true, feeContributionAmount: true, paymentMethod: true, provider: true },
   });
 
   if (!donationByOrder) {
@@ -183,7 +185,7 @@ export async function ensureCapturedDonationForRefund(paymentId: string) {
     throw new Error("Refund payment order belongs to another donation method");
   }
 
-  const expectedAmountPaise = donationByOrder.amount.mul(100).toNumber();
+  const expectedAmountPaise = donationChargePaise(donationByOrder);
   if (!Number.isSafeInteger(expectedAmountPaise) || expectedAmountPaise < 0 || providerPayment.amount !== expectedAmountPaise) {
     throw new Error("Refund payment amount does not match the local donation order");
   }

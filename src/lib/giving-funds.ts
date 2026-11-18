@@ -25,7 +25,8 @@ export function indianFinancialYear(at: Date): string {
   return `${start}-${String((start + 1) % 100).padStart(2, "0")}`;
 }
 
-export type DonationLedgerRow = { fundId: string | null; givingIntent: string; status: string; amountPaise: number; refundedPaise: number };
+// refundedPaise is the total returned to the donor; a refund returns the covered gateway fee (feePaise) first.
+export type DonationLedgerRow = { fundId: string | null; givingIntent: string; status: string; amountPaise: number; refundedPaise: number; feePaise?: number };
 export type DisbursementLedgerRow = { fundId: string; pool: "ZAKAT" | "NON_ZAKAT"; status: string; amountPaise: number };
 export type PoolTotals = { receivedPaise: number; pendingPaise: number; refundedPaise: number; spentPaise: number; publishedSpentPaise: number; balancePaise: number };
 export type FundTotals = { zakat: PoolTotals; nonZakat: PoolTotals; total: PoolTotals };
@@ -45,8 +46,9 @@ export function summariseFunds(donations: DonationLedgerRow[], disbursements: Di
     const targets = [isZakat ? fund.zakat : fund.nonZakat, fund.total, ...(isZakat ? [zakatAccount] : [])];
     for (const pool of targets) {
       if (row.status === "CAPTURED" || row.status === "REFUNDED") {
-        pool.receivedPaise += row.amountPaise - row.refundedPaise;
-        pool.refundedPaise += row.refundedPaise;
+        const donationRefundedPaise = Math.max(0, row.refundedPaise - (row.feePaise ?? 0));
+        pool.receivedPaise += row.amountPaise - donationRefundedPaise;
+        pool.refundedPaise += donationRefundedPaise;
       } else if (row.status === "PENDING_VERIFICATION") {
         pool.pendingPaise += row.amountPaise;
       }
