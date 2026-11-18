@@ -22,6 +22,6 @@ export const overviewPaths = new Set([
 export async function waitForPublicOverview(page, pathname) {
   const path = new URL(pathname, 'https://amaanafoundation.org').pathname;
   if (!overviewPaths.has(path)) return;
-  await expect(page.locator('main .page-hero__title')).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('main h1.page-hero__title')).toBeVisible({ timeout: 15_000 });
   await expect(page.locator('main #public-route-loading-title')).toHaveCount(0);
 }
