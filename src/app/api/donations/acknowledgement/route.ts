@@ -78,6 +78,7 @@ export async function POST(request: Request) {
         createdAt: true,
         providerPaymentId: true,
         appeal: { select: { title: true, slug: true } },
+        fund: { select: { name: true, slug: true } },
       },
     });
 
@@ -105,11 +106,13 @@ export async function POST(request: Request) {
           donorName: donation.donorName,
           givingIntent: donation.givingIntent,
           amount,
-          refundedAmount,
+          // The donation's own refunded share; the covered gateway fee is returned first and shown separately.
+          refundedAmount: donationRefunded,
           feeContributionAmount: feeContribution,
           recordDate: recordDate.toISOString(),
           providerPaymentId: donation.providerPaymentId,
           appeal: donation.appeal,
+          fund: donation.fund,
         },
       },
       { headers: privateHeaders },

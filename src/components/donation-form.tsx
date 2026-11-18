@@ -3,7 +3,8 @@
 import { getDonationAmountPresets, getWholeRupeeCheckoutRange, updateDonationAmountValidity } from "@/lib/donation-amount-input";
 
 import Script from "next/script";
-import { type FormEvent, useEffect, useRef, useState } from "react";
+import { type FormEvent, type ReactNode, useEffect, useRef, useState } from "react";
+import { calculateFeeCover } from "@/lib/processing-fee";
 import { useRouter } from "next/navigation";
 import { privateDonationAcknowledgementPath } from "@/lib/private-donation-ack";
 import type { DonationFormCopy } from "./donation-form-copy";
@@ -19,7 +20,7 @@ const ORDER_UNCERTAIN = "Checkout status is uncertain. An order may have been cr
 
 declare global { interface Window { Razorpay: new (options: RazorpayOptions) => { open(): void } } }
 
-export function DonationForm({ appealId, appealTitle, maxAmount, copy, onLockChange }: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible?: boolean; copy: DonationFormCopy; onLockChange?: (locked: boolean) => void }) {
+export function DonationForm({ appealId, fundSlug, feeBps, extraFields, appealTitle, maxAmount, copy, onLockChange }: { appealId?: string; fundSlug?: string; feeBps?: number; extraFields?: ReactNode; appealTitle: string; maxAmount: number; zakatEligible?: boolean; copy: DonationFormCopy; onLockChange?: (locked: boolean) => void }) {
   const router = useRouter();
   const errorRef = useRef<HTMLDivElement>(null);
   const focusedErrorRef = useRef<string | null>(null);
@@ -30,6 +31,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, copy, onLockCha
   const [remainingHint, setRemainingHint] = useState<number | null>(null);
   const [liveRange, setLiveRange] = useState<{ minimum: number; maximum: number } | null>(null);
   const [phase, setPhase] = useState<CheckoutPhase>("loading");
+  const [feeView, setFeeView] = useState<{ feePaise: number; totalPaise: number; donationPaise: number } | null>(null);
   const transactionMax = liveRange?.maximum ?? Math.min(maxAmount, 1_000_000);
   const transactionMin = liveRange?.minimum ?? (transactionMax < 10 ? transactionMax : 10);
   const presetAmounts = getDonationAmountPresets(transactionMax);
@@ -127,6 +129,18 @@ export function DonationForm({ appealId, appealTitle, maxAmount, copy, onLockCha
     }
   }
 
+  // Live preview of the optional fee cover. The server recalculates the charge; this is display only.
+  function refreshFee() {
+    if (feeBps === undefined || !formRef.current) return;
+    const current = new FormData(formRef.current);
+    const amount = Number(current.get("amount"));
+    if (current.get("coverProcessingFee") === "on" && Number.isSafeInteger(amount) && amount >= 1 && amount <= 1_000_000) {
+      setFeeView({ ...calculateFeeCover(amount * 100, feeBps), donationPaise: amount * 100 });
+    } else {
+      setFeeView(null);
+    }
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (orderLocked.current || submissionLocked) return;
@@ -148,11 +162,15 @@ export function DonationForm({ appealId, appealTitle, maxAmount, copy, onLockCha
     const values = new FormData(event.currentTarget);
 
     try {
+      const intendedPaise = Number(values.get("amount")) * 100;
+      const expectedChargePaise = feeBps !== undefined && values.get("coverProcessingFee") === "on" ? calculateFeeCover(intendedPaise, feeBps).totalPaise : intendedPaise;
       const orderResponse = await fetch("/api/donations/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          appealId,
+          ...(fundSlug ? { fundSlug } : { appealId }),
+          ...(String(values.get("donorDirective") ?? "").trim() ? { donorDirective: values.get("donorDirective") } : {}),
+          coverProcessingFee: feeBps !== undefined && values.get("coverProcessingFee") === "on",
           donorName: values.get("donorName"),
           donorEmail: values.get("donorEmail"),
           donorPhone: values.get("donorPhone"),
@@ -203,7 +221,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, copy, onLockCha
       // Malformed success is ambiguous: never open checkout or issue a new order.
       if (orderResponse.status !== 201 ||
           typeof order.orderId !== "string" || !/^order_[A-Za-z0-9_]{1,120}$/.test(order.orderId) ||
-          !Number.isSafeInteger(order.amount) || order.amount !== Number(values.get("amount")) * 100 ||
+          !Number.isSafeInteger(order.amount) || order.amount !== expectedChargePaise ||
           order.currency !== "INR" ||
           typeof order.keyId !== "string" || !/^rzp_(test|live)_[A-Za-z0-9_]{1,120}$/.test(order.keyId) ||
           typeof order.receiptToken !== "string" || !/^[A-Za-z0-9_-]{20,512}$/.test(order.receiptToken) ||
@@ -276,7 +294,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, copy, onLockCha
         showError("Secure checkout could not load. Please refresh and try again.");
       }}
     />
-    <form ref={formRef} className="v2-premium-form v2-donation-form" onSubmit={submit} onInvalid={handleInvalid} aria-busy={busy} aria-labelledby="donation-form-heading" aria-describedby="donation-form-description donation-checkout-status">
+    <form ref={formRef} className="v2-premium-form v2-donation-form" onInput={refreshFee} onChange={refreshFee} onSubmit={submit} onInvalid={handleInvalid} aria-busy={busy} aria-labelledby="donation-form-heading" aria-describedby="donation-form-description donation-checkout-status">
       {copy.heading}
       <p id="donation-checkout-status" className={styles.status} role="status" aria-live="polite">{statusText}</p>
       {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}{remainingHint !== null ? <p><button type="button" className="v2-text-link" onClick={() => { const input = formRef.current?.elements.namedItem("amount"); if (input instanceof HTMLInputElement) { input.value = String(remainingHint); updateDonationAmountValidity(input, transactionMin, transactionMax); clearFieldError("amount"); input.focus(); } }}>Use the payable amount: ₹{remainingHint.toLocaleString("en-IN")}</button></p> : null}</div>}
@@ -295,6 +313,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, copy, onLockCha
               input.value = String(amount);
               updateDonationAmountValidity(input, transactionMin, transactionMax);
               clearFieldError("amount");
+              refreshFee();
               input.focus();
             }}
           >₹{amount.toLocaleString("en-IN")}</button>)}
@@ -313,6 +332,11 @@ export function DonationForm({ appealId, appealTitle, maxAmount, copy, onLockCha
         </fieldset>
         <div className={`field full v2-form-choice ${styles.choice}`}><label className="checkbox"><input name="isAnonymous" type="checkbox" disabled={submissionLocked}/>{copy.anonymityText}</label></div>
         <div className={`field full v2-form-choice ${styles.choice}`}><label className="checkbox"><input name="domesticConfirmed" type="checkbox" required disabled={submissionLocked} aria-invalid={Boolean(fieldError("domesticConfirmed")) || undefined} aria-describedby={fieldError("domesticConfirmed") ? "domestic-confirmation-error" : undefined} onChange={() => clearFieldError("domesticConfirmed")}/>{copy.domesticText}</label>{fieldError("domesticConfirmed") && <small id="domestic-confirmation-error" className="v2-field-error">{fieldError("domesticConfirmed")}</small>}</div>
+        {extraFields}
+        {feeBps !== undefined && <div className="field full v2-form-choice">
+          <label className="checkbox"><input name="coverProcessingFee" type="checkbox" disabled={submissionLocked} /><span><strong>Cover the payment fee</strong><small>Add the estimated gateway fee so your chosen amount reaches the fund in full. Optional, and never counted as part of your donation.</small></span></label>
+          <p role="status" aria-live="polite" className={styles.status}>{feeView ? `₹${(feeView.donationPaise / 100).toLocaleString("en-IN")} donation + ₹${(feeView.feePaise / 100).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} fee = ₹${(feeView.totalPaise / 100).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} charged.` : ""}</p>
+        </div>}
         <div className="field full v2-form-submit"><button className="v2-button" type="submit" disabled={busy || !scriptReady || lockedForReconciliation}>{phase === "opening" ? "Opening secure checkout…" : phase === "verifying" ? "Verifying donation…" : phase === "reconciliation" ? "Verification follow-up required" : scriptReady ? "Continue securely →" : "Preparing secure checkout…"}</button>{lockedForReconciliation ? <small>Do not submit another payment for this donation. Keep your Razorpay confirmation so the payment can be reconciled safely.</small> : copy.readyHelp}</div>
       </div>
     </form>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { getWholeRupeeCheckoutRange } from "@/lib/donation-amount-input";
 import { formatCheckoutRemainingINR } from "@/lib/donation-checkout-balance";
 import { DonationForm } from "@/components/donation-form";
@@ -11,7 +11,7 @@ import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
 import styles from "./donation-methods.module.css";
 
 type Method = "RAZORPAY" | "DIRECT_UPI" | "BANK_TRANSFER";
-export function DonationMethods(props: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible: boolean; paymentDetails: DonationPaymentDetails; copy: DonationFormCopy; onLockChange?: (locked: boolean) => void }) {
+export function DonationMethods(props: { appealId?: string; fundSlug?: string; feeBps?: number; extraFields?: ReactNode; appealTitle: string; maxAmount: number; zakatEligible?: boolean; paymentDetails: DonationPaymentDetails; copy: DonationFormCopy; onLockChange?: (locked: boolean) => void }) {
   const [method,setMethod]=useState<Method>("RAZORPAY");
   const [transferLocked,setTransferLocked]=useState(false);
   const [onlineLocked,setOnlineLocked]=useState(false);
@@ -37,7 +37,7 @@ export function DonationMethods(props: { appealId: string; appealTitle: string; 
       <button type="button" aria-pressed={method==="BANK_TRANSFER"} disabled={methodLocked} onClick={()=>selectMethod("BANK_TRANSFER")}>Bank transfer</button>
     </div>
     <div>
-      {method==="RAZORPAY" ? <DonationForm appealId={props.appealId} appealTitle={props.appealTitle} maxAmount={props.maxAmount} zakatEligible={props.zakatEligible} copy={props.copy} onLockChange={onOnlineLockChange}/> : <DirectTransferForm key={method} appealId={props.appealId} maxAmount={props.maxAmount} method={method} paymentDetails={props.paymentDetails} onLockChange={onTransferLockChange} copy={props.copy.direct}/>} 
+      {method==="RAZORPAY" ? <DonationForm appealId={props.appealId} fundSlug={props.fundSlug} feeBps={props.feeBps} extraFields={props.extraFields} appealTitle={props.appealTitle} maxAmount={props.maxAmount} zakatEligible={props.zakatEligible} copy={props.copy} onLockChange={onOnlineLockChange}/> : <DirectTransferForm key={method} appealId={props.appealId} fundSlug={props.fundSlug} extraFields={props.extraFields} maxAmount={props.maxAmount} method={method} paymentDetails={props.paymentDetails} onLockChange={onTransferLockChange} copy={props.copy.direct}/>} 
     </div>
   </div>;
 }

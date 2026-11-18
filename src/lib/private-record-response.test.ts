@@ -103,3 +103,34 @@ describe("AF-N23 private acknowledgement shape provenance", () => {
     expect(isAcknowledgementResponse({ found: false, internalNote: "x" }, reference)).toBe(false);
   });
 });
+
+describe("acknowledgement destination: exactly one of an appeal or a fund", () => {
+  const withDestination = (appeal: unknown, fund?: unknown) => ({
+    ...valid, donation: { ...valid.donation, appeal, ...(fund === undefined ? {} : { fund }) },
+  });
+  it("accepts a fund donation that has no appeal", () => {
+    expect(isAcknowledgementResponse(withDestination(null, { name: "Orphan Fund", slug: "orphan" }), reference)).toBe(true);
+  });
+  it("still accepts an appeal donation, with or without an explicit null fund", () => {
+    expect(isAcknowledgementResponse(withDestination({ title: "Verified need", slug: "verified-need" }), reference)).toBe(true);
+    expect(isAcknowledgementResponse(withDestination({ title: "Verified need", slug: "verified-need" }, null), reference)).toBe(true);
+  });
+  it.each([
+    ["both an appeal and a fund", { title: "A", slug: "a" }, { name: "F", slug: "f" }],
+    ["neither", null, null],
+    ["no appeal and no fund key", null, undefined],
+    ["a fund with a malformed slug", null, { name: "F", slug: "Not A Slug" }],
+    ["a fund with a blank name", null, { name: " ", slug: "f" }],
+    ["a fund missing its slug", null, { name: "F" }],
+    ["a non-object fund", null, "orphan"],
+    ["an appeal with a malformed slug", { title: "A", slug: "../x" }, null],
+  ])("rejects %s", (_name, appeal, fund) => {
+    expect(isAcknowledgementResponse(withDestination(appeal, fund), reference)).toBe(false);
+  });
+  it("accepts a fully refunded fee-covered gift once the refund is reported as the donation's own share", () => {
+    expect(isAcknowledgementResponse({
+      ...valid, presentation: { ...valid.presentation, tone: "refunded" },
+      donation: { ...valid.donation, refundedAmount: 500, feeContributionAmount: 12.09, appeal: null, fund: { name: "Orphan Fund", slug: "orphan" } },
+    }, reference)).toBe(true);
+  });
+});

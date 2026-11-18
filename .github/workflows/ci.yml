@@ -323,7 +323,9 @@ jobs:
           # Aggregate static CSS grew with the audited documentary/editorial system,
           # route-scoped carousels, guided forms and accessibility refinements.
           # Keep a tight regression cap while route-level delivery/CLS tests protect user payload.
-          CSS_BUDGET=$((340 * 1024))
+          # Raised 340 -> 356 KiB for designated giving (fund selector and public funds ledger, about 7 KB and 5 KB
+          # of route CSS). Main was already within 2 KiB of the old cap. Still a hard regression cap; AF-R067 tracks pruning.
+          CSS_BUDGET=$((356 * 1024))
           echo "Built static JavaScript: ${JS_BYTES} bytes (budget ${JS_BUDGET})"
           echo "Built static CSS: ${CSS_BYTES} bytes (budget ${CSS_BUDGET})"
           test "$JS_BYTES" -le "$JS_BUDGET"

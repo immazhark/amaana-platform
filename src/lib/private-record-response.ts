@@ -27,7 +27,9 @@ export type AcknowledgementRecord = {
     refundedAmount: number;
     recordDate: string;
     providerPaymentId: string | null;
-    appeal: { title: string; slug: string };
+    // Exactly one destination: an appeal, or a designated fund.
+    appeal: { title: string; slug: string } | null;
+    fund?: { name: string; slug: string } | null;
   };
 };
 
@@ -59,6 +61,17 @@ function serverTimestamp(value: unknown): value is string {
   return Number.isFinite(parsed.getTime()) && parsed.toISOString() === value;
 }
 
+const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+// A donation belongs to exactly one destination: a well-formed appeal XOR a well-formed fund.
+function validDestination(appeal: unknown, fund: unknown): boolean {
+  const hasFund = fund !== undefined && fund !== null;
+  const appealOk = object(appeal) && ownsFields(appeal, ["title", "slug"]) && text(appeal.title) && typeof appeal.slug === "string" && SLUG.test(appeal.slug);
+  const fundOk = object(fund) && ownsFields(fund, ["name", "slug"]) && text(fund.name) && typeof fund.slug === "string" && SLUG.test(fund.slug);
+  if (hasFund) return fundOk && (appeal === null);
+  return appealOk;
+}
+
 /** Fail closed on malformed private financial reads. Never turn a failed read
  * into a new donation or an apparently invalid donor receipt. */
 export function isAcknowledgementResponse(value: unknown, expectedReference: string): value is AcknowledgementRecord | { found: false } {
@@ -74,7 +87,7 @@ export function isAcknowledgementResponse(value: unknown, expectedReference: str
         "referenceNumber", "receiptNumber", "donorName", "givingIntent", "amount",
         "refundedAmount", "recordDate", "providerPaymentId", "appeal",
       ]) ||
-      !object(d.appeal) || !ownsFields(d.appeal, ["title", "slug"])) return false;
+      !Object.hasOwn(d, "appeal")) return false;
   if (
     (typeof p.tone !== "string" || !["captured", "pending", "failed", "refunded"].includes(p.tone)) ||
     !text(p.heading) || !text(p.summary) || !text(p.statusLabel) ||
@@ -84,8 +97,7 @@ export function isAcknowledgementResponse(value: unknown, expectedReference: str
     !money(d.amount) || d.amount <= 0 ||
     !money(d.refundedAmount) || d.refundedAmount > d.amount ||
     !serverTimestamp(d.recordDate) || !nullableText(d.providerPaymentId) ||
-    !object(d.appeal) || !text(d.appeal.title) ||
-    typeof d.appeal.slug !== "string" || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(d.appeal.slug)
+    !validDestination(d.appeal, d.fund)
   ) return false;
 
   if (p.tone === "refunded") return d.refundedAmount === d.amount;

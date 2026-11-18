@@ -4,7 +4,7 @@ import { getUpiPaymentUri, updateDonationAmountValidity } from "@/lib/donation-a
 import { donationEvidenceUploadIssue, hasValidDonationEvidenceHeader } from "@/lib/donation-evidence-header";
 
 import Image from "next/image";
-import { type FormEvent, useRef, useState } from "react";
+import { type FormEvent, type ReactNode, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { privateDonationAcknowledgementPath } from "@/lib/private-donation-ack";
 import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
@@ -14,7 +14,7 @@ import styles from "./direct-transfer-form.module.css";
 
 type Method = "DIRECT_UPI" | "BANK_TRANSFER";
 
-export function DirectTransferForm({ appealId, maxAmount, method, paymentDetails, onLockChange, copy }: { appealId: string; maxAmount: number; method: Method; paymentDetails: DonationPaymentDetails; onLockChange: (locked: boolean) => void; copy: DonationFormCopy["direct"] }) {
+export function DirectTransferForm({ appealId, fundSlug, extraFields, maxAmount, method, paymentDetails, onLockChange, copy }: { appealId?: string; fundSlug?: string; extraFields?: ReactNode; maxAmount: number; method: Method; paymentDetails: DonationPaymentDetails; onLockChange: (locked: boolean) => void; copy: DonationFormCopy["direct"] }) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [copyFeedback, setCopyFeedback] = useState<{ method: Method; text: string } | null>(null);
@@ -63,7 +63,10 @@ export function DirectTransferForm({ appealId, maxAmount, method, paymentDetails
         if (Number.isNaN(transferredAt.getTime())) throw new Error("Please enter a valid transfer date and time.");
         values.set("transferredAt", transferredAt.toISOString());
       }
-      values.set("appealId", appealId); values.set("paymentMethod", method);
+      // A submission names exactly one destination.
+      if (fundSlug) values.set("fundSlug", fundSlug); else if (appealId) values.set("appealId", appealId);
+      if (!String(values.get("donorDirective") ?? "").trim()) values.delete("donorDirective");
+      values.set("paymentMethod", method);
       values.set("isAnonymous", values.get("isAnonymous") === "on" ? "true" : "false");
       values.set("domesticConfirmed", values.get("domesticConfirmed") === "on" ? "true" : "false");
       posted = true;
@@ -137,6 +140,7 @@ export function DirectTransferForm({ appealId, maxAmount, method, paymentDetails
       <fieldset className="field full" disabled={locked}><legend>Giving intention</legend>{copy.intentOptions}</fieldset>
       <div className="field full"><label className="checkbox"><input name="isAnonymous" type="checkbox" disabled={locked}/>{copy.privacy}</label></div>
       <div className="field full"><label className="checkbox"><input name="domesticConfirmed" type="checkbox" required disabled={locked}/>{copy.domestic}</label></div>
+      {extraFields}
       <div className="field full"><button className="v2-button" type="submit" disabled={locked}>{uncertain ? "Verification follow-up required" : busy ? "Submitting for verification…" : "Submit transfer for verification"}</button>{copy.next}</div>
     </form>
   </div>;
