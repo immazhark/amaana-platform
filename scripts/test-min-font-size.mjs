@@ -16,7 +16,6 @@ function files(dir) {
 }
 
 const toPx = (value, unit) => (unit === "px" ? value : value * 16);
-const LENGTH = /([\d.]+)(px|rem)\b/g;
 
 // Custom properties declared anywhere in the scanned sources, so var(--token) resolves to its value.
 function collectTokens(sources) {
