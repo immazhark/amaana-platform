@@ -260,6 +260,7 @@ it("reads only displayed private Donation detail fields and the existing bounded
       donorEmail: true,
       donorPhone: true,
       givingIntent: true,
+      stream: true,
       paymentMethod: true,
       transferReference: true,
       transferredAt: true,

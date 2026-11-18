@@ -101,6 +101,31 @@ describe("captureDonation", () => {
     expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
   });
 
+  it("captures a general-giving donation with no appeal without touching any appeal", async () => {
+    mocks.txDonationFindUnique.mockResolvedValueOnce({
+      id: "donation_general",
+      currency: "INR",
+      paymentMethod: "RAZORPAY",
+      provider: "RAZORPAY",
+      amount: decimal(500),
+      referenceNumber: "AFD-2026-GENERAL",
+      appealId: null,
+      donorEmail: "donor@example.test",
+      givingIntent: "ZAKAT",
+      receiptTokenHash: "hash",
+      status: "CREATED",
+      providerPaymentId: null,
+    });
+    mocks.txDonationUpdateMany.mockResolvedValueOnce({ count: 1 });
+
+    await expect(captureDonation("order_general", "pay_general", 50_000))
+      .resolves.toMatchObject({ donationId: "donation_general", status: "CAPTURED" });
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).toHaveBeenCalledTimes(1);
+    expect(mocks.txNotificationCreate.mock.calls[0]?.[0].data.subject).toBe("Thank you for your contribution to Amaana Foundation");
+  });
+
   it("fails closed before mutation when a captured amount is not a safe positive integer", async () => {
     mocks.txDonationFindUnique.mockResolvedValue({
       id: "donation_unsafe",

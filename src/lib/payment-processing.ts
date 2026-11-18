@@ -90,22 +90,25 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
     });
 
     if (changed.count === 1) {
-      const appeal = await tx.appeal.update({
-        where: { id: donation.appealId },
-        data: { amountRaised: { increment: donation.amount } },
-        select: {
-          id: true,
-          status: true,
-          goalAmount: true,
-          amountRaised: true,
-        },
-      });
-
-      if (shouldMarkAppealFunded(appeal.status, appeal.amountRaised, appeal.goalAmount)) {
-        await tx.appeal.updateMany({
-          where: { id: appeal.id, status: "PUBLISHED" },
-          data: { status: "FUNDED" },
+      // Only appeal donations move an appeal's raised total; other streams are accounted by stream.
+      if (donation.appealId) {
+        const appeal = await tx.appeal.update({
+          where: { id: donation.appealId },
+          data: { amountRaised: { increment: donation.amount } },
+          select: {
+            id: true,
+            status: true,
+            goalAmount: true,
+            amountRaised: true,
+          },
         });
+
+        if (shouldMarkAppealFunded(appeal.status, appeal.amountRaised, appeal.goalAmount)) {
+          await tx.appeal.updateMany({
+            where: { id: appeal.id, status: "PUBLISHED" },
+            data: { status: "FUNDED" },
+          });
+        }
       }
 
       await tx.notification.create({
@@ -113,7 +116,7 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
           channel: NotificationChannel.EMAIL,
           recipient: donation.donorEmail,
           templateKey: "donation-acknowledgement",
-          subject: "Thank you for supporting an Amaana Foundation appeal",
+          subject: donation.appealId ? "Thank you for supporting an Amaana Foundation appeal" : "Thank you for your contribution to Amaana Foundation",
           payload: { referenceNumber: donation.referenceNumber, givingIntent: donation.givingIntent },
           donationId: donation.id,
         },

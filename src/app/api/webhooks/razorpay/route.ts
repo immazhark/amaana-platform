@@ -256,18 +256,21 @@ export async function POST(request: Request) {
           return;
         }
 
-        const appeal = await tx.appeal.findUnique({
-          where: { id: donation.appealId },
-          select: { status: true, amountRaised: true, goalAmount: true, closesAt: true },
-        });
-        if (!appeal) {
+        const appeal = donation.appealId
+          ? await tx.appeal.findUnique({
+              where: { id: donation.appealId },
+              select: { status: true, amountRaised: true, goalAmount: true, closesAt: true },
+            })
+          : null;
+        if (donation.appealId && !appeal) {
           throw new Error("Refund donation is missing its appeal");
         }
 
         const accounting = calculateRefundAccounting({
           donationAmountPaise: decimalRupeesToPaise(donation.amount),
           refundedAmountPaise: decimalRupeesToPaise(donation.refundedAmount),
-          appealRaisedPaise: decimalRupeesToPaise(appeal.amountRaised),
+          // Non-appeal streams have no appeal total to reduce; the donation's own balance is the bound.
+          appealRaisedPaise: appeal ? decimalRupeesToPaise(appeal.amountRaised) : decimalRupeesToPaise(donation.amount),
           requestedRefundPaise: refund.amount,
         });
 
@@ -292,7 +295,7 @@ export async function POST(request: Request) {
           });
         }
 
-        if (accounting.appealRefundPaise > 0) {
+        if (appeal && donation.appealId && accounting.appealRefundPaise > 0) {
           const nextAmountRaised = accounting.nextAppealRaisedPaise / 100;
           const nextStatus = appealStatusAfterRefund(
             appeal.status,

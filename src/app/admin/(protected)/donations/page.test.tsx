@@ -129,6 +129,7 @@ describe("admin Donations minimum displayed-row projection", () => {
         donorName: true,
         donorEmail: true,
         givingIntent: true,
+        stream: true,
         paymentMethod: true,
         amount: true,
         refundedAmount: true,

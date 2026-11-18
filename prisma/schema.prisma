@@ -103,6 +103,17 @@ enum DonationPaymentMethod {
   BANK_TRANSFER
 }
 
+// Which giving flow a donation belongs to. One bank account; accounting is per stream.
+enum GivingStream {
+  GENERAL
+  APPEAL
+  EID_KITS
+  QURBANI
+  DATES
+  EDU_SPONSORSHIP
+  MADARSA_OPS
+}
+
 enum DonationIntent {
   GENERAL
   SADAQAH
@@ -419,7 +430,8 @@ model Appeal {
 model Donation {
   id                       String                @id @default(cuid())
   referenceNumber          String                @unique
-  appealId                 String
+  appealId                 String?
+  stream                   GivingStream          @default(APPEAL)
   donorName                String
   donorEmail               String
   donorPhone               String?
@@ -448,7 +460,7 @@ model Donation {
   capturedAt               DateTime?
   failedAt                 DateTime?
   refundedAt               DateTime?
-  appeal                   Appeal                @relation(fields: [appealId], references: [id])
+  appeal                   Appeal?               @relation(fields: [appealId], references: [id], onDelete: Restrict)
   reconciledBy             User?                 @relation("DonationReconciler", fields: [reconciledById], references: [id], onDelete: SetNull)
   events                   PaymentEvent[]
   refunds                  RefundLedger[]
@@ -456,6 +468,7 @@ model Donation {
   createdAt                DateTime              @default(now())
   updatedAt                DateTime              @updatedAt
   @@index([appealId, status, createdAt])
+  @@index([stream, givingIntent, status, createdAt])
   @@index([donorEmail, createdAt])
   @@index([status, createdAt])
   @@index([paymentMethod, status, createdAt])

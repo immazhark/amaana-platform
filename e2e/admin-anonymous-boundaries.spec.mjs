@@ -6,6 +6,7 @@ const protectedAdminSurfaces = [
   "/admin/appeals/not-a-real-id",
   "/admin/audit",
   "/admin/donations",
+  "/admin/funds",
   "/admin/donations/not-a-real-id",
   "/admin/home-carousel",
   "/admin/media",
