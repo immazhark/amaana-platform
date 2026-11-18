@@ -527,6 +527,8 @@ model FundDisbursement {
   publishedAt   DateTime?
   voidedAt      DateTime?
   voidReason    String?
+  zakatEligibilityConfirmedAt DateTime?
+  zakatEligibilityBasis       String?
   fund          Fund               @relation(fields: [fundId], references: [id], onDelete: Restrict)
   createdBy     User               @relation("DisbursementCreator", fields: [createdById], references: [id])
   createdAt     DateTime           @default(now())
