@@ -1,5 +1,7 @@
 ## 18 November 2026 IST — Claude Code sprint checkpoint
 
+**Addendum 2:** register now 51 Completed / 13 Implemented / 66 Partial / 17 Not started / 1 Superseded / 1 Not applicable: AF-R012, R047, R052, R056 and N14 reclassified Completed on named test evidence (R056 migration already applied in production). Kept Partial: AF-R005 (owner audit of past deployments) and AF-R024 (e2e route coverage unconfirmed). #1060 and #1064 still in CI.
+
 **Addendum (main after #1059 `c66e8bb5`):** merges #1053-#1059 listed in `docs/AI_ACTIVE_WORK.md`. Register now 46 Completed / 13 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 Not applicable: eleven rows (AF-N03-N07, N11, N12, N19, N21, N24, R050) reclassified Completed on named test evidence; AF-R046 deliberately kept Implemented (proxy operation count, not real SQL). Production serves `a56ef626` (blur-up render) with key routes 200; no payment, auth or CSP change. #1060 and #1061 open in CI.
 
 **Addendum (main `abe433a3`):** further merges #1047-#1052 with SHAs in `docs/AI_ACTIVE_WORK.md`; all exact-head checks green; task branches retired. No tracker reclassification (35/24/71/17/1/1); no runtime/Railway verification performed.
