@@ -11,6 +11,7 @@ import {
   canRenderPublicMedia,
   normalizeSafePublicMediaUrl,
 } from "@/lib/public-media";
+import { createImagePlaceholder } from "@/lib/image-placeholder";
 import { deletePublicMediaObject, uploadPublicMediaFile, validatePublicMediaFile } from "@/lib/storage";
 import { logServerError } from "@/lib/server-log";
 
@@ -137,6 +138,10 @@ export async function createMediaAsset(formData: FormData) {
   const displayOrder = identityImage ? IDENTITY_MEDIA_SORT_ORDER : sortOrder;
 
   const uploaded = file ? await uploadPublicMediaFile(file) : null;
+  // Best-effort blur-up preview; never blocks an upload. Shown only while the asset is public.
+  const placeholder = file && inferredKind === "IMAGE"
+    ? await createImagePlaceholder(new Uint8Array(await file.arrayBuffer())).catch(() => null)
+    : null;
 
   try {
     await withSerializableTransactionRetry(async tx => {
@@ -176,6 +181,7 @@ export async function createMediaAsset(formData: FormData) {
           sourceYear,
           width: uploaded?.width ?? null,
           height: uploaded?.height ?? null,
+          placeholder,
           sortOrder: displayOrder,
           isPublic: false,
           ...mediaTarget,
@@ -370,7 +376,7 @@ export async function setMediaPublication(formData: FormData) {
       if (!freshAsset.isPublic) throw new Error("This media is already unpublished. Refresh before changing publication state.");
       const claimed = await tx.mediaAsset.updateMany({
         where: { id, isPublic: true, updatedAt: freshAsset.updatedAt },
-        data: { isPublic: false, privacyApprovedAt: null },
+        data: { isPublic: false, privacyApprovedAt: null, placeholder: null },
       });
       if (claimed.count !== 1) throw new Error("This media changed while you were reviewing it. Refresh before unpublishing.");
       await tx.auditEvent.create({ data: { actorId: user.id, action: "media.unpublished", entityType: "MediaAsset", entityId: id } });

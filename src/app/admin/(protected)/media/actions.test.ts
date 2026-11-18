@@ -13,10 +13,12 @@ const mocks = vi.hoisted(() => ({
   serializableTransaction: vi.fn(),
   deletePublicMediaObject: vi.fn(),
   uploadPublicMediaFile: vi.fn(),
+  createImagePlaceholder: vi.fn<(bytes: Uint8Array) => Promise<string | null>>(async () => null),
   revalidatePath: vi.fn(),
   parseReview: vi.fn<(formData: FormData) => unknown>(() => ({})),
 }));
 
+vi.mock("@/lib/image-placeholder", () => ({ createImagePlaceholder: mocks.createImagePlaceholder }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 vi.mock("@/lib/auth", () => ({
   hasPermission: () => true,
@@ -301,6 +303,47 @@ describe("identity media creation concurrency", () => {
         isPublic: false,
         initiativeId: "initiative_1",
       }),
+    }));
+  });
+
+  it("stores the blur-up placeholder for an uploaded image and keeps it private until publication", async () => {
+    mocks.uploadPublicMediaFile.mockResolvedValueOnce({ objectKey: "2026/a.png", publicUrl: "/media/2026/a.png", originalName: "a.png", width: 1, height: 1 });
+    mocks.createImagePlaceholder.mockResolvedValueOnce("data:image/webp;base64,AAAA");
+    const form = new FormData();
+    form.set("target", "initiative:initiative_1");
+    form.set("file", new File(["synthetic"], "a.png", { type: "image/png" }));
+    form.set("altText", "Synthetic document image");
+    await createMediaAsset(form);
+
+    expect(mocks.createRecord).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ placeholder: "data:image/webp;base64,AAAA", isPublic: false }),
+    }));
+  });
+
+  it("never blocks an upload when placeholder generation fails", async () => {
+    mocks.uploadPublicMediaFile.mockResolvedValueOnce({ objectKey: "2026/b.png", publicUrl: "/media/2026/b.png", originalName: "b.png", width: 1, height: 1 });
+    mocks.createImagePlaceholder.mockRejectedValueOnce(new Error("sharp failed"));
+    const form = new FormData();
+    form.set("target", "initiative:initiative_1");
+    form.set("file", new File(["synthetic"], "b.png", { type: "image/png" }));
+    form.set("altText", "Synthetic document image");
+    await createMediaAsset(form);
+
+    expect(mocks.createRecord).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ placeholder: null, storageKey: "2026/b.png" }),
+    }));
+  });
+
+  it("does not generate a placeholder for an external reviewed URL", async () => {
+    const form = new FormData();
+    form.set("target", "story:story_1");
+    form.set("publicUrl", "https://cdn.example/record.jpg");
+    form.set("altText", "Reviewed documentary photograph");
+    await createMediaAsset(form);
+
+    expect(mocks.createImagePlaceholder).not.toHaveBeenCalled();
+    expect(mocks.createRecord).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ placeholder: null }),
     }));
   });
 
@@ -743,7 +786,7 @@ describe("media publication concurrency", () => {
 
     expect(mocks.updateMany).toHaveBeenCalledWith({
       where: { id: "media_123", isPublic: true, updatedAt },
-      data: { isPublic: false, privacyApprovedAt: null },
+      data: { isPublic: false, privacyApprovedAt: null, placeholder: null },
     });
     expect(mocks.createAudit).toHaveBeenCalledWith({ data: expect.objectContaining({ action: "media.unpublished", entityId: "media_123" }) });
   });
