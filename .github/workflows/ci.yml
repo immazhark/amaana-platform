@@ -297,7 +297,7 @@ jobs:
         run: node scripts/check-client-secret-boundary.mjs
 
       - name: Report App Router route-level JavaScript and CSS
-        run: npm run audit:route-bundles
+        run: npm run audit:route-bundles -- --compressed
 
       - name: Enforce production bundle budgets
         shell: bash
