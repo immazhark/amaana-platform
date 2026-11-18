@@ -99,7 +99,7 @@ export default async function ImpactPage({ searchParams }: { searchParams: Promi
           {filtered.results.length > 0 ? <div className="v2-impact-wall">{filtered.results.map((item, index) => {
             const thumbnail = selectIdentityPublicImage(item.mediaAssets) ?? null;
             const outcome = documentedImpactMetric(item.primaryMetric, item.primaryMetricLabel);
-            return <Link href={`/our-work/${item.slug}`} className={`v2-impact-tile ${thumbnail ? "has-media" : ""}`} key={item.id}>
+            return <Link href={`/our-work/${item.slug}`} className={`v2-impact-tile ${thumbnail ? "has-media" : ""}`} key={item.id} aria-label={`Explore impact: ${[item.cause.title, outcome?.value, outcome?.label, item.title].filter(Boolean).join(", ")}`}>
               {thumbnail ? <div className="v2-impact-tile-media" aria-hidden="true"><PublicMedia asset={thumbnail} /></div> : null}
               <div className="v2-impact-tile-shade" aria-hidden="true" />
               <span className="v2-impact-tile-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
