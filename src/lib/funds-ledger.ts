@@ -1,21 +1,24 @@
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { summariseFunds, type DisbursementLedgerRow, type DonationLedgerRow } from "@/lib/giving-funds";
 
 type DecimalLike = { mul: (n: number) => { toNumber: () => number } };
 const toPaise = (rupees: DecimalLike | null) => (rupees ? Math.round(rupees.mul(100).toNumber()) : 0);
 
+type Client = Prisma.TransactionClient;
+
 // Per-fund and total-Zakat account from verified, refunded, pending and disbursement records only.
-export async function getFundsLedger() {
-  const [funds, donationGroups, disbursementGroups] = await Promise.all([
-    prisma.fund.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }], select: { id: true, slug: true, name: true, status: true, zakatPolicy: true } }),
-    prisma.donation.groupBy({
+// Pass fundId to limit the totals to one fund (used inside the disbursement transaction).
+export async function loadFundsLedger(client: Client, fundId?: string) {
+  const [donationGroups, disbursementGroups] = await Promise.all([
+    client.donation.groupBy({
       by: ["fundId", "givingIntent", "status"],
-      where: { status: { in: ["CAPTURED", "REFUNDED", "PENDING_VERIFICATION"] } },
+      where: { status: { in: ["CAPTURED", "REFUNDED", "PENDING_VERIFICATION"] }, ...(fundId ? { fundId } : {}) },
       _sum: { amount: true, refundedAmount: true, feeContributionAmount: true },
     }),
-    prisma.fundDisbursement.groupBy({
+    client.fundDisbursement.groupBy({
       by: ["fundId", "pool", "status"],
-      where: { status: { in: ["DRAFT", "PUBLISHED"] } },
+      where: { status: { in: ["DRAFT", "PUBLISHED"] }, ...(fundId ? { fundId } : {}) },
       _sum: { amount: true },
     }),
   ]);
@@ -33,5 +36,13 @@ export async function getFundsLedger() {
     status: group.status,
     amountPaise: toPaise(group._sum.amount),
   }));
-  return { funds, ...summariseFunds(donations, disbursements) };
+  return summariseFunds(donations, disbursements);
+}
+
+export async function getFundsLedger() {
+  const [funds, ledger] = await Promise.all([
+    prisma.fund.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }], select: { id: true, slug: true, name: true, status: true, zakatPolicy: true } }),
+    loadFundsLedger(prisma),
+  ]);
+  return { funds, ...ledger };
 }
