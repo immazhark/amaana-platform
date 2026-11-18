@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { requirePermission } from "@/lib/auth";
 import { formatINR } from "@/lib/appeals";
 import { getFundsLedger } from "@/lib/funds-ledger";
@@ -18,6 +19,7 @@ export default async function FundsLedgerPage() {
       <div>
         <p className="eyebrow">Funds ledger</p>
         <h1>Where the money belongs</h1>
+        <p><Link href="/admin/funds/spending">Record and publish where money was spent</Link></p>
         <p className="muted">All giving reaches one bank account; this ledger separates it by fund. Received means verified and net of refunds. Transfers awaiting bank verification are shown separately and are never counted as received. Balance is received minus recorded spending.</p>
       </div>
     </div>
