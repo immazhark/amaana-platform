@@ -50,6 +50,7 @@ export default async function PortfolioFixture({
         width: null,
         height: null,
         sortOrder: -1000,
+        placeholder: null,
       }],
     }],
   }] : [];

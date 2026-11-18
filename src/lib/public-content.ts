@@ -38,6 +38,7 @@ export const PUBLIC_DETAIL_MEDIA_PROJECTION = {
     altText: true,
     caption: true,
     sourceYear: true,
+    placeholder: true,
     sortOrder: true,
     width: true,
     height: true,

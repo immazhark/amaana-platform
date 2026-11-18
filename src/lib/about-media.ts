@@ -38,6 +38,7 @@ export const getAboutOriginMedia = cache(async () => {
         altText: true,
         caption: true,
         sourceYear: true,
+        placeholder: true,
       },
     });
 

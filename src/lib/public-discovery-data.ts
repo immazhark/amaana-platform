@@ -14,6 +14,7 @@ const publicMediaSelect = {
   altText: true,
   caption: true,
   sourceYear: true,
+  placeholder: true,
   sortOrder: true,
 } as const;
 
