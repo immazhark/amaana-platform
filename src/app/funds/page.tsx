@@ -20,7 +20,6 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 async function FundsContent({ params }: { params: Promise<{ fy?: string | string[] }> }) {
-  if (!isFundGivingEnabled()) notFound();
   const now = new Date();
   const { fy } = await params;
   const range = resolveFinancialYear(fy, now);
@@ -42,6 +41,8 @@ async function FundsContent({ params }: { params: Promise<{ fy?: string | string
 }
 
 export default function Page({ searchParams }: { searchParams: Promise<{ fy?: string | string[] }> }) {
+  // Checked before streaming starts so a closed page is a real HTTP 404.
+  if (!isFundGivingEnabled()) notFound();
   return (
     <Suspense fallback={<PublicRouteLoading route="donate" />}>
       <FundsContent params={searchParams} />
