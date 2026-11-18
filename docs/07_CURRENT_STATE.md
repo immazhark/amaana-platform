@@ -9,8 +9,8 @@
 | Deployed state | Railway website `d35e7520-7575-4250-8dc4-9e0f386e0566` SUCCESS for `54405a609303d66ac12340c4cb54513107c25606`; public version and readiness matched. #1036 and #1035 were SKIPPED (docs, scripts and workflow only) |
 | Branches | Purge applied (run `44022594184`): remote heads are `main` plus the two held PR branches. 628 removed tips are preserved by PR refs, 43 unique tips by `refs/archive/<name>` |
 | Documentation | 53 markdown files remain (from 159); removed files are in Git history |
-| Open PRs | #684 finance/UPI and #845 privacy staging-marker, both held |
-| Original 149 accounting | 51 Completed / 13 Implemented / 66 Partial / 17 Not started / 1 Superseded / 1 Not applicable = **149**; no whole-item promotion from bounded subscopes |
+| Open PRs | #684 finance/UPI and #845 privacy staging-marker, both held (verify live before use) |
+| Original 149 accounting | 52 Completed / 13 Implemented / 65 Partial / 17 Not started / 1 Superseded / 1 Not applicable = **149**; no whole-item promotion from bounded subscopes |
 
 **Next:** measured, test-first defects. JavaScript per route is about 520–550 KB uncompressed, so a reduction needs compressed-size attribution first. Verify each merge's branch retirement and Railway outcome separately. No forced deployment and no unapproved live financial, schema, RBAC, checkout CSP or infrastructure operation.
 
