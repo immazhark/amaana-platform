@@ -53,7 +53,7 @@ export function PublicRouteLoading({ route }: { route: PublicLoadingRoute }) {
         <div className={[styles.shell, styles.heroGrid].join(" ")}>
           <div className={styles.heroCopy}>
             <p className={styles.eyebrow}>Amaana Foundation · {title}</p>
-            <h1 className={styles.heading} id="public-route-loading-title">{title}</h1>
+            <p className={styles.heading} id="public-route-loading-title">{title}</p>
             <p className={styles.status} role="status" aria-live="polite" aria-atomic="true">{message}</p>
             <div className={styles.lines} aria-hidden="true">
               <span className={styles.line} /><span className={styles.shortLine} />

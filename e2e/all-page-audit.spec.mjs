@@ -3,6 +3,7 @@ import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 import AxeBuilder from '@axe-core/playwright';
 import {test,expect} from '@playwright/test';
+import {waitForPublicOverview} from './helpers/public-overview-ready.mjs';
 
 const workspace = process.env.AMAANA_APP_WORKSPACE ?? process.cwd();
 const seed = JSON.parse(execFileSync(process.execPath,['scripts/seed-ui-route-audit.mjs'],{cwd:workspace,env:{...process.env,AMAANA_UI_AUDIT_TARGET:'isolated-ci'},encoding:'utf8'}));
@@ -75,6 +76,7 @@ for(const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]])fo
  if(route.startsWith('/admin')&&route!=='/admin/login'&&route!=='/admin/forbidden')await context.addCookies([{name:'amaana_admin_session',value:seed.token,url:'http://127.0.0.1:3000',httpOnly:true,sameSite:'Strict'}]);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const response=await page.goto(route,{waitUntil:'load'});
+ await waitForPublicOverview(page,route);
  await page.evaluate(async()=>{await document.fonts.ready;});
  if (route.startsWith('/admin/requests/') && route.split('/').length===4) {
   // The synthetic authenticated request must keep checkbox titles and helper

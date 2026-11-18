@@ -26,7 +26,8 @@ const routes = [
 
 it.each(routes)("renders a public-safe loading status for %s", (route, title, message) => {
   const html = renderToStaticMarkup(<PublicRouteLoading route={route} />);
-  expect(html).toContain(`<h1`);
+  // The streamed fallback must never add a second h1 beside the real page heading.
+  expect(html).not.toMatch(/<h1/);
   expect(html).toContain(title.replace("&", "&amp;"));
   expect(html).toContain(message);
   expect(html).toContain('role="status"');
