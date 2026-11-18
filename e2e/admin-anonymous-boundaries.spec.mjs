@@ -7,6 +7,7 @@ const protectedAdminSurfaces = [
   "/admin/audit",
   "/admin/donations",
   "/admin/funds",
+  "/admin/funds/manage",
   "/admin/funds/spending",
   "/admin/donations/not-a-real-id",
   "/admin/home-carousel",

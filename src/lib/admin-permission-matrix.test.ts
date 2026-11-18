@@ -18,6 +18,8 @@ const expectedMatrix: Record<string, string[]> = {
   "admin/(protected)/donations/actions.ts": ["donation.reconcile"],
   "admin/(protected)/donations/page.tsx": ["donation.view"],
   "admin/(protected)/funds/actions.ts": ["donation.reconcile"],
+  "admin/(protected)/funds/manage/actions.ts": ["donation.reconcile"],
+  "admin/(protected)/funds/manage/page.tsx": ["donation.reconcile", "donation.view"],
   "admin/(protected)/funds/page.tsx": ["donation.view"],
   "admin/(protected)/funds/spending/page.tsx": ["donation.reconcile", "donation.view"],
   "admin/(protected)/donations/[id]/page.tsx": ["donation.reconcile", "donation.view"],

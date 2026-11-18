@@ -20,6 +20,7 @@ export const proposedAdminRouteCoverage = Object.freeze([
   "/admin/donations",
   "/admin/donations/[id]",
   "/admin/funds",
+  "/admin/funds/manage",
   "/admin/funds/spending",
   "/admin/home-carousel",
   "/admin/media",
