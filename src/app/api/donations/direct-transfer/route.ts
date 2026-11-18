@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { getDonationCheckoutRemainingAmount } from "@/lib/donation-checkout-balance";
 import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
-import { createDonationReference, createReceiptToken, directTransferSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
+import { createDonationReference, createReceiptToken, directTransferSchema, fundDirectTransferSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
+import { resolveFundDestination } from "@/lib/fund-destination";
 import { prisma } from "@/lib/prisma";
 import { canExposePublicAppeal } from "@/lib/public-environment";
 import { enforceDonationRateLimit, isSameOrigin } from "@/lib/request-security";
@@ -56,7 +57,7 @@ export async function POST(request: Request) {
     // donation amount, payment identity, donor fields or evidence alter a
     // financial claim through HTTP multipart parameter pollution.
     const scalarFields = [
-      "appealId", "donorName", "donorEmail", "donorPhone", "amount",
+      "appealId", "fundSlug", "donorDirective", "donorName", "donorEmail", "donorPhone", "amount",
       "givingIntent", "paymentMethod", "transferReference", "transferredAt",
     ] as const;
     if (scalarFields.some(field => form.getAll(field).length > 1) || form.getAll("evidence").length > 1) {
@@ -111,25 +112,46 @@ export async function POST(request: Request) {
       );
     }
 
-    const parsed = directTransferSchema.safeParse({
-      appealId: form.get("appealId"), donorName: form.get("donorName"), donorEmail: form.get("donorEmail"), donorPhone: form.get("donorPhone") ?? "",
+    const common = {
+      donorName: form.get("donorName"), donorEmail: form.get("donorEmail"), donorPhone: form.get("donorPhone") ?? "",
       amount: form.get("amount"), givingIntent: form.get("givingIntent"), isAnonymous, domesticConfirmed: true,
       paymentMethod: form.get("paymentMethod"), transferReference: form.get("transferReference"), transferredAt: form.get("transferredAt"),
-    });
-    if (!parsed.success) return NextResponse.json({ error: "Please check the transfer information and reference." }, { status: 400, headers: privateHeaders });
+    };
+    // A submission names exactly one destination: an appeal or a designated fund.
+    const fundSlug = form.get("fundSlug");
+    if (fundSlug !== null && form.get("appealId") !== null) {
+      return NextResponse.json({ error: "Please choose either an appeal or a fund." }, { status: 400, headers: privateHeaders });
+    }
+    const fundParsed = fundSlug === null ? null : fundDirectTransferSchema.safeParse({ fundSlug, donorDirective: form.get("donorDirective") ?? undefined, ...common });
+    const appealParsed = fundSlug === null ? directTransferSchema.safeParse({ appealId: form.get("appealId"), ...common }) : null;
+    const checked = fundParsed ?? appealParsed;
+    if (!checked?.success) return NextResponse.json({ error: "Please check the transfer information and reference." }, { status: 400, headers: privateHeaders });
+    const data = checked.data;
 
-    const appeal = await prisma.appeal.findFirst({
-      where: { id: parsed.data.appealId, status: "PUBLISHED" },
-      select: { id: true, slug: true, title: true, status: true, goalAmount: true, amountRaised: true, closesAt: true, assistanceRequest: { select: { verification: { select: { zakatStatus: true } } } } },
-    });
-    if (!appeal || !canExposePublicAppeal(appeal)) return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
-    if (parsed.data.givingIntent === "ZAKAT" && appeal.assistanceRequest?.verification?.zakatStatus !== "ELIGIBLE") return NextResponse.json({ error: "This appeal is not currently marked as Zakat-eligible." }, { status: 409, headers: privateHeaders });
-    const remainingAmount = getDonationCheckoutRemainingAmount(appeal);
-    if (remainingAmount === null) return NextResponse.json(
-      { error: "This appeal is not accepting donations." },
-      { status: 409, headers: privateHeaders },
-    );
-    if (!isDonationAmountAllowedForRemaining(parsed.data.amount, remainingAmount)) return NextResponse.json({ error: parsed.data.amount > remainingAmount ? `This appeal currently needs up to ₹${remainingAmount.toLocaleString("en-IN")} more.` : `The minimum donation is ₹${MIN_DONATION_AMOUNT.toLocaleString("en-IN")}, unless a smaller exact amount is all that remains.`, remainingAmount }, { status: parsed.data.amount > remainingAmount ? 409 : 400, headers: privateHeaders });
+    let destination: { appealId: string } | { fundId: string; donorDirective: string | null };
+    if (fundParsed?.success) {
+      if (data.amount < MIN_DONATION_AMOUNT) return NextResponse.json({ error: `The minimum donation is ₹${MIN_DONATION_AMOUNT.toLocaleString("en-IN")}.` }, { status: 400, headers: privateHeaders });
+      const resolved = await resolveFundDestination(prisma, { fundSlug: fundParsed.data.fundSlug, givingIntent: data.givingIntent, donorDirective: fundParsed.data.donorDirective });
+      if (!resolved.ok) return NextResponse.json({ error: resolved.error }, { status: resolved.status, headers: privateHeaders });
+      destination = { fundId: resolved.value.fundId, donorDirective: resolved.value.donorDirective };
+    } else if (appealParsed?.success) {
+      const appeal = await prisma.appeal.findFirst({
+        where: { id: appealParsed.data.appealId, status: "PUBLISHED" },
+        select: { id: true, slug: true, title: true, status: true, goalAmount: true, amountRaised: true, closesAt: true, assistanceRequest: { select: { verification: { select: { zakatStatus: true } } } } },
+      });
+      if (!appeal || !canExposePublicAppeal(appeal)) return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
+      if (data.givingIntent === "ZAKAT" && appeal.assistanceRequest?.verification?.zakatStatus !== "ELIGIBLE") return NextResponse.json({ error: "This appeal is not currently marked as Zakat-eligible." }, { status: 409, headers: privateHeaders });
+      const remainingAmount = getDonationCheckoutRemainingAmount(appeal);
+      if (remainingAmount === null) return NextResponse.json(
+        { error: "This appeal is not accepting donations." },
+        { status: 409, headers: privateHeaders },
+      );
+      if (!isDonationAmountAllowedForRemaining(data.amount, remainingAmount)) return NextResponse.json({ error: data.amount > remainingAmount ? `This appeal currently needs up to ₹${remainingAmount.toLocaleString("en-IN")} more.` : `The minimum donation is ₹${MIN_DONATION_AMOUNT.toLocaleString("en-IN")}, unless a smaller exact amount is all that remains.`, remainingAmount }, { status: data.amount > remainingAmount ? 409 : 400, headers: privateHeaders });
+
+      destination = { appealId: appeal.id };
+    } else {
+      return NextResponse.json({ error: "Please check the transfer information and reference." }, { status: 400, headers: privateHeaders });
+    }
 
     const donationId = randomUUID();
     const referenceNumber = createDonationReference();
@@ -139,10 +161,10 @@ export async function POST(request: Request) {
       claimOutcomeUnknown = true;
       donation = await prisma.donation.create({
         data: {
-          id: donationId, referenceNumber, appealId: appeal.id, donorName: parsed.data.donorName, donorEmail: parsed.data.donorEmail.toLowerCase(), donorPhone: parsed.data.donorPhone || null,
-          isAnonymous: parsed.data.isAnonymous, givingIntent: parsed.data.givingIntent, domesticConfirmedAt: new Date(), amount: parsed.data.amount,
-          status: "PENDING_VERIFICATION", paymentMethod: parsed.data.paymentMethod, provider: null, providerOrderId: null,
-          transferReference: parsed.data.transferReference.toUpperCase(), transferredAt: parsed.data.transferredAt, receiptTokenHash: hashReceiptToken(receiptToken),
+          id: donationId, referenceNumber, ...destination, donorName: data.donorName, donorEmail: data.donorEmail.toLowerCase(), donorPhone: data.donorPhone || null,
+          isAnonymous: data.isAnonymous, givingIntent: data.givingIntent, domesticConfirmedAt: new Date(), amount: data.amount,
+          status: "PENDING_VERIFICATION", paymentMethod: data.paymentMethod, provider: null, providerOrderId: null,
+          transferReference: data.transferReference.toUpperCase(), transferredAt: data.transferredAt, receiptTokenHash: hashReceiptToken(receiptToken),
         }, select: { id: true, referenceNumber: true },
       });
     } catch (error) {
