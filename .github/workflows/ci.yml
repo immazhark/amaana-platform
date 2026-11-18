@@ -142,6 +142,8 @@ jobs:
           node scripts/check-public-editorial-consistency.mjs
       - name: Guard public/private data boundaries
         run: node --test scripts/test-public-data-boundaries.mjs
+      - name: Enforce minimum authored font size (AF-R024)
+        run: node --test scripts/test-min-font-size.mjs
       - name: Guard client-bundle secret scanner behavior
         run: node --test scripts/test-client-secret-boundary.mjs
       - name: Guard Cloudflare analytics CSP denial without relaxing Razorpay checkout
