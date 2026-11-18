@@ -146,6 +146,8 @@ jobs:
         run: node --test scripts/test-min-font-size.mjs
       - name: Enforce accessibility lint rule coverage (AF-R069)
         run: node --test scripts/test-a11y-lint-rules.mjs
+      - name: Ratchet CSS important declarations (AF-R062)
+        run: node --test scripts/test-important-budget.mjs
       - name: Guard client-bundle secret scanner behavior
         run: node --test scripts/test-client-secret-boundary.mjs
       - name: Guard Cloudflare analytics CSP denial without relaxing Razorpay checkout
