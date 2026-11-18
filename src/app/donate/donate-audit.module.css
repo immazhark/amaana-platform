@@ -5,6 +5,10 @@
   margin: 1.25rem 0;
 }
 
+.routeWide {
+  grid-column: 1 / -1;
+}
+
 .route {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
