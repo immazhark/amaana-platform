@@ -237,3 +237,67 @@ describe("fail-closed mutation origin configuration", () => {
     expect(isSameOrigin(originRequest("http://localhost:3000", "localhost:3000"))).toBe(true);
   });
 });
+
+describe("AF-N19 absent, malformed and forwarded origin signals", () => {
+  const request = (headers: Record<string, string>) =>
+    new Request("https://amaanafoundation.org/api/synthetic", { headers });
+
+  beforeEach(() => {
+    process.env = { ...process.env, NODE_ENV: "production", NEXT_PUBLIC_APP_URL: "https://amaanafoundation.org" };
+  });
+
+  it("rejects a request with no Origin header even when Host and Referer match", () => {
+    expect(isSameOrigin(request({ host: "amaanafoundation.org", referer: "https://amaanafoundation.org/donate" }))).toBe(false);
+    expect(isSameOrigin(request({ origin: "", host: "amaanafoundation.org" }))).toBe(false);
+  });
+
+  it.each([
+    "amaanafoundation.org",
+    "//amaanafoundation.org",
+    "https://amaanafoundation.org/",
+    "https://amaanafoundation.org/path",
+    "https://amaanafoundation.org:443",
+    "https://amaanafoundation.org:8443",
+    "https://amaanafoundation.org.untrusted.example",
+    "https://untrusted.example#https://amaanafoundation.org",
+    "https://amaanafoundation.org@untrusted.example",
+    "https://amaanafoundation.org, https://untrusted.example",
+    "javascript:alert(1)",
+    "not a url",
+  ])("rejects non-canonical or malformed Origin %j", origin => {
+    expect(isSameOrigin(request({ origin, host: "amaanafoundation.org" }))).toBe(false);
+  });
+
+  it.each<Record<string, string>>([
+    { "x-forwarded-host": "untrusted.example" },
+    { "x-forwarded-proto": "http" },
+    { forwarded: "host=untrusted.example;proto=https" },
+    { "x-original-host": "untrusted.example" },
+  ])("never trusts forwarded host/protocol headers when configuration is present: %j", forwarded => {
+    expect(isSameOrigin(request({ origin: "https://untrusted.example", host: "amaanafoundation.org", ...forwarded }))).toBe(false);
+    expect(isSameOrigin(request({ origin: "https://amaanafoundation.org", host: "untrusted.example", ...forwarded }))).toBe(true);
+  });
+
+  it("does not derive trust from forwarded headers when configuration is absent in production", () => {
+    delete process.env.NEXT_PUBLIC_APP_URL;
+    expect(isSameOrigin(request({
+      origin: "https://untrusted.example", host: "untrusted.example",
+      "x-forwarded-host": "untrusted.example", "x-forwarded-proto": "https",
+    }))).toBe(false);
+    expect(isSameOrigin(request({ origin: "https://amaanafoundation.org", "x-forwarded-host": "amaanafoundation.org" }))).toBe(false);
+  });
+
+  it("fails closed in development when both configuration and Host are absent", () => {
+    process.env = { ...process.env, NODE_ENV: "development" };
+    delete process.env.NEXT_PUBLIC_APP_URL;
+    expect(isSameOrigin(request({ origin: "http://localhost:3000" }))).toBe(false);
+    expect(isSameOrigin(request({ origin: "http://localhost:3000", "x-forwarded-host": "localhost:3000" }))).toBe(false);
+  });
+
+  it("does not let a development Host carry credentials or a path into the expected origin", () => {
+    process.env = { ...process.env, NODE_ENV: "development" };
+    delete process.env.NEXT_PUBLIC_APP_URL;
+    expect(isSameOrigin(request({ origin: "http://localhost:3000", host: "user:pw@localhost:3000" }))).toBe(false);
+    expect(isSameOrigin(request({ origin: "http://untrusted.example", host: "untrusted.example/@localhost:3000" }))).toBe(false);
+  });
+});
