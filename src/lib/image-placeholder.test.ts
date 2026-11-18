@@ -18,7 +18,7 @@ describe("AF-R056 image placeholder contract", () => {
 
   it("downsizes to the maximum edge and preserves aspect ratio", async () => {
     const url = await createImagePlaceholder(await synthetic(1600, 800, "png"));
-    const meta = await sharp(Buffer.from(url!.split(",")[1], "base64")).metadata();
+    const meta = await sharp(Buffer.from(url!.split(",")[1] as string, "base64")).metadata();
     expect(Math.max(meta.width!, meta.height!)).toBeLessThanOrEqual(PLACEHOLDER_MAX_EDGE);
     expect(meta.width! / meta.height!).toBeCloseTo(2, 0);
   });
@@ -30,7 +30,7 @@ describe("AF-R056 image placeholder contract", () => {
       .jpeg()
       .toBuffer();
     expect((await sharp(source).metadata()).exif).toBeDefined();
-    const meta = await sharp(Buffer.from((await createImagePlaceholder(source))!.split(",")[1], "base64")).metadata();
+    const meta = await sharp(Buffer.from((await createImagePlaceholder(source))!.split(",")[1] as string, "base64")).metadata();
     expect(meta.exif).toBeUndefined();
     expect(meta.icc).toBeUndefined();
   });
