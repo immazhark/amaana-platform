@@ -191,3 +191,70 @@ describe("absolute request body deadlines", () => {
     await expect(readTextBodyWithLimit(request, 1024, { timeoutMs })).rejects.toThrow(RangeError);
   });
 });
+
+describe("AF-N14 early-closed and broken source streams", () => {
+  const bytes = (text: string) => new TextEncoder().encode(text);
+  const post = (body: ReadableStream<Uint8Array>) => new Request("https://amaanafoundation.org/api/webhooks/razorpay", {
+    method: "POST",
+    body,
+    duplex: "half",
+  } as RequestInit & { duplex: "half" });
+
+  it("rejects with the source error when the connection breaks mid-body, never returning partial bytes", async () => {
+    const request = post(new ReadableStream<Uint8Array>({
+      pull(controller) {
+        if (!(controller as unknown as { sent?: boolean }).sent) {
+          (controller as unknown as { sent?: boolean }).sent = true;
+          controller.enqueue(bytes("partial"));
+          return;
+        }
+        controller.error(new Error("broken pipe"));
+      },
+    }));
+    await expect(readBodyBytesWithLimit(request, 1024)).rejects.toThrow("broken pipe");
+  });
+
+  it("rejects when the source fails before delivering any chunk", async () => {
+    const request = post(new ReadableStream<Uint8Array>({ start(controller) { controller.error(new Error("closed before body")); } }));
+    await expect(readTextBodyWithLimit(request, 1024)).rejects.toThrow("closed before body");
+  });
+
+  it("treats a stream that closes without data as an empty body", async () => {
+    const request = post(new ReadableStream<Uint8Array>({ start(controller) { controller.close(); } }));
+    expect(await readBodyBytesWithLimit(request, 8)).toEqual(new Uint8Array());
+  });
+
+  it("surfaces the source error, not a timeout, and clears its timer when the stream breaks first", async () => {
+    vi.useFakeTimers();
+    try {
+      const request = post(new ReadableStream<Uint8Array>({ start(controller) { controller.error(new Error("reset by peer")); } }));
+      await expect(readBodyBytesWithLimit(request, 1024, { timeoutMs: 5_000 })).rejects.toThrow("reset by peer");
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("raises no unhandled rejection when a stalled source later errors after the deadline", async () => {
+    const unhandled = vi.fn();
+    process.on("unhandledRejection", unhandled);
+    try {
+      let fail: (reason: Error) => void = () => undefined;
+      const request = post(new ReadableStream<Uint8Array>({
+        start(controller) { fail = (reason) => controller.error(reason); },
+      }));
+      await expect(readBodyBytesWithLimit(request, 1024, { timeoutMs: 5 })).rejects.toMatchObject({ name: "RequestBodyReadTimeoutError" });
+      fail(new Error("late reset"));
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      expect(unhandled).not.toHaveBeenCalled();
+    } finally {
+      process.off("unhandledRejection", unhandled);
+    }
+  });
+
+  it("releases the reader lock after a broken stream so the body is not left pinned", async () => {
+    const stream = new ReadableStream<Uint8Array>({ start(controller) { controller.error(new Error("aborted")); } });
+    await expect(readBodyBytesWithLimit({ headers: new Headers(), body: stream }, 16)).rejects.toThrow("aborted");
+    expect(stream.locked).toBe(false);
+  });
+});
