@@ -23,7 +23,7 @@ export const donationSchema = z.object({
   domesticConfirmed: z.literal(true),
 });
 
-export const directTransferSchema = donationSchema.extend({
+const transferFields = {
   paymentMethod: z.enum(["DIRECT_UPI", "BANK_TRANSFER"]),
   transferReference: z.string().trim().min(6).max(100).regex(/^[A-Za-z0-9._\/-]+$/),
   // Do not coerce null, empty values, booleans or timezone-less strings.
@@ -32,7 +32,26 @@ export const directTransferSchema = donationSchema.extend({
     z.date(),
     z.string().datetime({ offset: true }).pipe(z.coerce.date()),
   ]).refine(value => value.getTime() <= Date.now() + 5 * 60_000, "Transfer date cannot be in the future"),
-});
+};
+
+export const directTransferSchema = donationSchema.extend(transferFields);
+
+// Designated giving to a Fund (no appeal). Strict, so a request naming both an appeal and a fund is rejected.
+export const FUND_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const fundDonationFields = {
+  fundSlug: z.string().max(64).regex(FUND_SLUG_PATTERN),
+  donorName: donationSchema.shape.donorName,
+  donorEmail: donationSchema.shape.donorEmail,
+  donorPhone: donationSchema.shape.donorPhone,
+  amount: donationSchema.shape.amount,
+  givingIntent: donationSchema.shape.givingIntent,
+  isAnonymous: donationSchema.shape.isAnonymous,
+  domesticConfirmed: donationSchema.shape.domesticConfirmed,
+  // A non-binding request for staff to review; only the General Fund keeps it.
+  donorDirective: z.string().trim().max(500).optional(),
+};
+export const fundDonationSchema = z.strictObject({ ...fundDonationFields, coverProcessingFee: donationSchema.shape.coverProcessingFee });
+export const fundDirectTransferSchema = z.strictObject({ ...fundDonationFields, ...transferFields });
 
 export function isDonationAmountAllowedForRemaining(amount: number, remainingAmount: number) {
   if (!Number.isFinite(remainingAmount) || remainingAmount <= 0) return false;

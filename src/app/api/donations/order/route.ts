@@ -1,15 +1,14 @@
-import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { getDonationCheckoutRemainingAmount } from "@/lib/donation-checkout-balance";
 import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
-import { createDonationReference, createReceiptToken, donationSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
+import { donationSchema, fundDonationSchema, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
+import { placeRazorpayDonationOrder } from "@/lib/donation-order";
+import { resolveFundDestination } from "@/lib/fund-destination";
 import { prisma } from "@/lib/prisma";
-import { createRazorpayOrder } from "@/lib/razorpay";
 import { enforceDonationRateLimit, isSameOrigin } from "@/lib/request-security";
 import { validateProductionEnvironment } from "@/lib/env";
 import { canExposePublicAppeal } from "@/lib/public-environment";
 import { logServerError } from "@/lib/server-log";
-import { calculateFeeCover } from "@/lib/processing-fee";
 
 const privateHeaders = {
   "Cache-Control": "no-store, private",
@@ -51,6 +50,10 @@ export async function POST(request: Request) {
       body = JSON.parse(rawBody);
     } catch {
       return NextResponse.json({ error: "Please check the donation information." }, { status: 400, headers: privateHeaders });
+    }
+
+    if (typeof body === "object" && body !== null && !Array.isArray(body) && Object.hasOwn(body, "fundSlug")) {
+      return await handleFundOrder(body, () => { providerAttempted = true; });
     }
 
     const parsed = donationSchema.safeParse(body);
@@ -123,61 +126,17 @@ export async function POST(request: Request) {
       );
     }
 
-    const referenceNumber = createDonationReference(); const receiptToken = createReceiptToken(); const donationPaise = parsed.data.amount * 100;
-    if (!Number.isSafeInteger(donationPaise) || donationPaise <= 0) throw new Error("Donation amount cannot be represented safely in paise");
-    // The server alone decides the fee cover; the amount charged is the chosen donation plus that fee.
-    const feePaise = parsed.data.coverProcessingFee ? calculateFeeCover(donationPaise).feePaise : 0;
-    const amountPaise = donationPaise + feePaise;
-    // Once the provider request starts, transport errors or failed persistence
-    // cannot prove that no Razorpay order was created. Never invite a replay.
-    providerAttempted = true;
-    const order = await createRazorpayOrder({ amountPaise, receipt: referenceNumber, appealId: appeal.id, givingIntent: parsed.data.givingIntent });
-    // Never persist a fabricated or unusable provider identity or a non-created order.
-    if (
-      typeof order.id !== "string" ||
-      !/^order_[A-Za-z0-9]+$/.test(order.id) ||
-      order.amount !== amountPaise ||
-      order.currency !== "INR" ||
-      order.receipt !== referenceNumber ||
-      order.status !== "created"
-    ) {
-      throw new Error("Unexpected order response");
-    }
-    const donationId = randomUUID();
-    let donation;
-    try {
-      donation = await prisma.donation.create({
-        data: {
-          id: donationId,
-          referenceNumber,
-          appealId: appeal.id,
-          donorName: parsed.data.donorName,
-          donorEmail: parsed.data.donorEmail.toLowerCase(),
-          donorPhone: parsed.data.donorPhone || null,
-          isAnonymous: parsed.data.isAnonymous,
-          givingIntent: parsed.data.givingIntent,
-          domesticConfirmedAt: new Date(),
-          amount: parsed.data.amount,
-          feeContributionAmount: feePaise / 100,
-          paymentMethod: "RAZORPAY",
-          provider: "RAZORPAY",
-          providerOrderId: order.id,
-          receiptTokenHash: hashReceiptToken(receiptToken),
-        },
-        select: { id: true, donorName: true, donorEmail: true, donorPhone: true },
-      });
-    } catch (error) {
-      // The provider order has already been created. Recover this request's
-      // committed record without issuing another external order or exposing
-      // credentials for a different donation.
-      const recovered = await prisma.donation.findUnique({
-        where: { id: donationId },
-        select: { id: true, donorName: true, donorEmail: true, donorPhone: true, providerOrderId: true, receiptTokenHash: true },
-      });
-      if (!recovered || recovered.providerOrderId !== order.id || recovered.receiptTokenHash !== hashReceiptToken(receiptToken)) throw error;
-      donation = recovered;
-    }
-    return NextResponse.json({ donationId: donation.id, orderId: order.id, amount: amountPaise, currency: "INR", keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, appealTitle: appeal.title, donor: { name: donation.donorName, email: donation.donorEmail, contact: donation.donorPhone }, receiptToken }, { status: 201, headers: privateHeaders });
+    const payload = await placeRazorpayDonationOrder({
+      donorName: parsed.data.donorName,
+      donorEmail: parsed.data.donorEmail,
+      donorPhone: parsed.data.donorPhone,
+      amount: parsed.data.amount,
+      givingIntent: parsed.data.givingIntent,
+      isAnonymous: parsed.data.isAnonymous,
+      coverProcessingFee: parsed.data.coverProcessingFee,
+      destination: { appealId: appeal.id, title: appeal.title },
+    }, () => { providerAttempted = true; });
+    return NextResponse.json(payload, { status: 201, headers: privateHeaders });
   } catch {
     logServerError("donation.order_creation_failed");
     if (providerAttempted) {
@@ -191,4 +150,32 @@ export async function POST(request: Request) {
       { status: 500, headers: privateHeaders },
     );
   }
+}
+
+// Designated giving to a fund. Same checks and order placement as an appeal gift, minus the appeal balance.
+async function handleFundOrder(body: unknown, markProviderAttempt: () => void) {
+  const parsed = fundDonationSchema.safeParse(body);
+  if (!parsed.success) {
+    const fields = parsed.error.flatten().fieldErrors;
+    return NextResponse.json(
+      { error: "Please check the highlighted donation information.", fields: { donorName: fields.donorName, donorEmail: fields.donorEmail, donorPhone: fields.donorPhone, amount: fields.amount, givingIntent: fields.givingIntent, domesticConfirmed: fields.domesticConfirmed } },
+      { status: 400, headers: privateHeaders },
+    );
+  }
+  if (parsed.data.amount < MIN_DONATION_AMOUNT) {
+    return NextResponse.json({ error: `The minimum donation is ₹${MIN_DONATION_AMOUNT.toLocaleString("en-IN")}.` }, { status: 400, headers: privateHeaders });
+  }
+  const destination = await resolveFundDestination(prisma, parsed.data);
+  if (!destination.ok) return NextResponse.json({ error: destination.error }, { status: destination.status, headers: privateHeaders });
+  const payload = await placeRazorpayDonationOrder({
+    donorName: parsed.data.donorName,
+    donorEmail: parsed.data.donorEmail,
+    donorPhone: parsed.data.donorPhone,
+    amount: parsed.data.amount,
+    givingIntent: parsed.data.givingIntent,
+    isAnonymous: parsed.data.isAnonymous,
+    coverProcessingFee: parsed.data.coverProcessingFee,
+    destination: destination.value,
+  }, markProviderAttempt);
+  return NextResponse.json(payload, { status: 201, headers: privateHeaders });
 }
