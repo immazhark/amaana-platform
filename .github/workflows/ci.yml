@@ -150,6 +150,8 @@ jobs:
         run: node --test scripts/test-important-budget.mjs
       - name: Ratchet CSS colour literals (AF-R061)
         run: node --test scripts/test-color-literal-budget.mjs
+      - name: Guard security.txt contact and expiry
+        run: node --test scripts/test-security-txt.mjs
       - name: Guard client-bundle secret scanner behavior
         run: node --test scripts/test-client-secret-boundary.mjs
       - name: Guard Cloudflare analytics CSP denial without relaxing Razorpay checkout
