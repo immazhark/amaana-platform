@@ -22,6 +22,8 @@ type PageHeroProps = {
   visualNote?: string;
   id?: string;
   className?: string;
+  /** Use "p" only for a transient streamed fallback so the served HTML keeps one real h1. */
+  titleAs?: "h1" | "p";
 };
 
 /** Keep dynamic editorial actions within reviewed navigation schemes. */
@@ -89,6 +91,7 @@ export function PageHero({
   visualNote,
   id,
   className = "",
+  titleAs = "h1",
 }: PageHeroProps) {
   const classes = ["page-hero", "page-hero--level1", `page-hero--${variant}`, className].filter(Boolean).join(" ");
   const reviewedActions = Array.isArray(actions) ? actions.filter(isReviewedHeroAction) : [];
@@ -100,7 +103,9 @@ export function PageHero({
         <div className="page-hero__grid">
           <div className="page-hero__copy">
             <p className="page-hero__eyebrow">{eyebrow}</p>
-            <h1 className="page-hero__title" id={id}>{title}</h1>
+            {titleAs === "p"
+              ? <p className="page-hero__title" id={id}>{title}</p>
+              : <h1 className="page-hero__title" id={id}>{title}</h1>}
             <div className="page-hero__description">{description}</div>
             {reviewedActions.length > 0 && (
               <div className="page-hero__actions">

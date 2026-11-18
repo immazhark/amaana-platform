@@ -34,6 +34,7 @@ export function PublicRouteLoading({ route }: { route: PublicLoadingRoute }) {
           eyebrow="Donate · Amaana Foundation"
           intro="Checking current domestic giving availability."
           heroVariant="action"
+          heroTitleAs="p"
           heroVisualTitle={title}
           heroVisualNote={message}
           heroActions={[]}
