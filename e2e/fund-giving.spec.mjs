@@ -1,0 +1,148 @@
+import { expect, test } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
+
+// Synthetic fixtures only (/browser-acceptance/give and /browser-acceptance/funds-ledger). No payment or donation is created.
+const GIVE = '/browser-acceptance/give';
+const LEDGER = '/browser-acceptance/funds-ledger';
+
+async function prepare(page) {
+  await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+  // A harmless stand-in so the checkout form reaches its ready state without contacting Razorpay.
+  await page.route('https://checkout.razorpay.com/**', route => route.fulfill({ status: 200, contentType: 'application/javascript', body: 'window.Razorpay = function () { this.open = function () {}; };' }));
+}
+
+const radio = (page, slug) => page.locator(`input[name="fund"][value="${slug}"]`);
+const noHorizontalScroll = page => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1);
+
+for (const width of [320, 390, 768, 1280]) {
+  test(`fund selector fits without horizontal scroll and has one h1 at ${width}px`, async ({ page }) => {
+    await prepare(page);
+    await page.setViewportSize({ width, height: 900 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    expect((await page.goto(GIVE)).ok()).toBe(true);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+    await expect(page.getByRole('group', { name: /Choose where your gift goes/ })).toBeVisible();
+    await expect(page.locator('input[name="fund"]')).toHaveCount(10);
+    expect(await noHorizontalScroll(page)).toBe(true);
+    // Each card's visible name must not be clipped by the selection check at any width.
+    const clipped = await page.locator('label:has(input[name="fund"])').evaluateAll(cards => cards.filter(card => {
+      const name = card.querySelector('strong');
+      const check = card.querySelector('span[aria-hidden="true"]:last-child');
+      if (!name || !check) return false;
+      const a = name.getBoundingClientRect();
+      const b = check.getBoundingClientRect();
+      return a.right > b.left && a.left < b.right && a.bottom > b.top && a.top < b.bottom;
+    }).length);
+    expect(clipped).toBe(0);
+  });
+}
+
+test('General Fund is selected by default and announced', async ({ page }) => {
+  await prepare(page);
+  await page.goto(GIVE);
+  await expect(radio(page, 'general')).toBeChecked();
+  await expect(page.getByRole('status').filter({ hasText: 'Selected fund: General Fund.' })).toHaveCount(1);
+});
+
+test('keyboard arrows move the selection and update the announcement', async ({ page }) => {
+  await prepare(page);
+  await page.goto(GIVE);
+  await radio(page, 'general').focus();
+  await page.keyboard.press('ArrowDown');
+  await expect(radio(page, 'taleem')).toBeChecked();
+  await expect(radio(page, 'taleem')).toBeFocused();
+  await expect(page.getByRole('status').filter({ hasText: 'Selected fund: Taleem Fund.' })).toHaveCount(1);
+});
+
+test('a fund that refuses Zakat says so prominently and never offers a Zakat choice', async ({ page }) => {
+  await prepare(page);
+  await page.goto(GIVE);
+  await radio(page, 'eid-kits').check({ force: true });
+  await expect(page.getByText('Please note:')).toBeVisible();
+  await expect(page.getByText(/Zakat is not accepted for this fund/)).toBeVisible();
+  await page.getByRole('button', { name: 'Give to Eid Kits Fund' }).click();
+  await expect(page.getByRole('group', { name: 'Choose donation method' })).toBeVisible();
+  await expect(page.locator('input[name="givingIntent"][value="GENERAL"]')).toHaveCount(1);
+  await expect(page.locator('input[name="givingIntent"][value="SADAQAH"]')).toHaveCount(1);
+  await expect(page.locator('input[name="givingIntent"][value="ZAKAT"]')).toHaveCount(0);
+});
+
+test('a Zakat-accepting fund offers Zakat, and the General Fund takes a custom request', async ({ page }) => {
+  await prepare(page);
+  await page.goto(GIVE);
+  await radio(page, 'orphan').check({ force: true });
+  await page.getByRole('button', { name: 'Give to Orphan Fund' }).click();
+  await expect(page.locator('input[name="givingIntent"][value="ZAKAT"]')).toHaveCount(1);
+  await expect(page.locator('#donorDirective')).toHaveCount(0);
+  await radio(page, 'general').check({ force: true });
+  await page.getByRole('button', { name: 'Give to General Fund' }).click();
+  await expect(page.locator('#donorDirective')).toBeVisible();
+  await expect(page.locator('#donorDirective')).toHaveAttribute('maxlength', '500');
+});
+
+test('the optional fee cover previews the exact charge and leaves the donation unchanged', async ({ page }) => {
+  await prepare(page);
+  await page.goto(GIVE);
+  await page.getByRole('button', { name: 'Give to General Fund' }).click();
+  const fee = page.locator('input[name="coverProcessingFee"]');
+  await expect(fee).not.toBeChecked();
+  await page.locator('#amount').fill('5000');
+  await fee.check();
+  await expect(page.getByText('₹5,000 donation + ₹120.86 fee = ₹5,120.86 charged.')).toBeVisible();
+  await fee.uncheck();
+  await expect(page.getByText(/charged\./)).toHaveCount(0);
+});
+
+test('motion is removed for visitors who prefer reduced motion', async ({ page }) => {
+  await prepare(page);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto(GIVE);
+  const names = await page.locator('label:has(input[name="fund"])').evaluateAll(cards => cards.map(card => getComputedStyle(card).animationName));
+  expect(new Set(names)).toEqual(new Set(['none']));
+});
+
+for (const width of [390, 1280]) {
+  test(`fund giving page has no accessibility violations at ${width}px in every state`, async ({ page }) => {
+    await prepare(page);
+    await page.setViewportSize({ width, height: 900 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto(GIVE);
+    const scan = async label => {
+      const audit = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+      expect(audit.violations.map(v => ({ state: label, id: v.id, nodes: v.nodes.map(n => n.target) }))).toEqual([]);
+    };
+    await scan('initial');
+    await radio(page, 'eid-kits').check({ force: true });
+    await scan('non-Zakat fund selected');
+    await page.getByRole('button', { name: 'Give to Eid Kits Fund' }).click();
+    await expect(page.getByRole('group', { name: 'Choose donation method' })).toBeVisible();
+    await scan('payment form open');
+  });
+}
+
+for (const width of [390, 1280]) {
+  test(`public funds ledger is accessible and fits at ${width}px`, async ({ page }) => {
+    await prepare(page);
+    await page.setViewportSize({ width, height: 900 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    expect((await page.goto(LEDGER)).ok()).toBe(true);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+    await expect(page.getByRole('heading', { level: 2, name: 'Financial year 2026-27' })).toBeVisible();
+    await expect(page.getByText('₹1,85,000').first()).toBeVisible();
+    await expect(page.getByText('No gifts recorded in this financial year yet.')).toBeVisible();
+    await expect(page.getByText('Paid from Zakat funds')).toBeVisible();
+    expect(await noHorizontalScroll(page)).toBe(true);
+    const audit = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
+    expect(audit.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => n.target) }))).toEqual([]);
+  });
+}
+
+test('ledger year switch marks the current year and extra entries sit in a native disclosure', async ({ page }) => {
+  await prepare(page);
+  await page.goto(LEDGER);
+  await expect(page.getByRole('navigation', { name: 'Financial year' }).getByRole('link', { name: '2026-27' })).toHaveAttribute('aria-current', 'page');
+  const more = page.locator('details summary', { hasText: 'Show 2 more entries' });
+  await expect(more).toBeVisible();
+  await more.click();
+  await expect(page.getByText('Synthetic spending entry 5')).toBeVisible();
+});
