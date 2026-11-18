@@ -454,6 +454,13 @@ function run() {
   }
   if (compressed) {
     const rows = result.routesGzip ?? result.jsRoutesGzip ?? [];
+    const cssRows = result.cssRoutesGzip ?? [];
+    if (cssRows.length > 0) {
+      process.stdout.write(`Gzip (level 9) CSS attribution: ${cssRows.length} page entries (estimate; client-reference stylesheets).\n`);
+      for (const row of [...cssRows].sort((a, b) => b.cssBytes - a.cssBytes).slice(0, 20)) {
+        process.stdout.write(`${row.route.padEnd(46)} CSS gzip ${String(row.cssBytes).padStart(9)}\n`);
+      }
+    }
     process.stdout.write(`Gzip (level 9) JavaScript attribution: ${rows.length} page entries (estimate; includes shared runtime).\n`);
     for (const row of [...rows].sort((a, b) => b.jsBytes - a.jsBytes).slice(0, 20)) {
       process.stdout.write(`${row.route.padEnd(46)} JS gzip ${String(row.jsBytes).padStart(9)}\n`);
