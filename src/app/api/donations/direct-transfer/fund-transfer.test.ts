@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   enforceDonationRateLimit: vi.fn(), fundFindFirst: vi.fn(), appealFindFirst: vi.fn(),
@@ -18,6 +18,9 @@ vi.mock("@/lib/storage", () => ({ MAX_FILE_BYTES: 5 * 1024 * 1024, uploadDonatio
 vi.mock("@/lib/env", () => ({ validateProductionEnvironment: () => undefined }));
 
 import { POST } from "./route";
+
+beforeAll(() => { vi.stubEnv("FUND_GIVING_ENABLED", "true"); });
+afterAll(() => { vi.unstubAllEnvs(); });
 
 const general = { id: "fund_general", slug: "general", name: "General Fund", zakatPolicy: "ACCEPTED", isGeneral: true };
 const dates = { id: "fund_dates", slug: "dates", name: "Dates Fund", zakatPolicy: "NOT_ACCEPTED", isGeneral: false };
@@ -39,6 +42,16 @@ describe("fund bank/UPI transfer claims", () => {
     mocks.enforceDonationRateLimit.mockResolvedValue(true);
     mocks.fundFindFirst.mockResolvedValue(general);
     mocks.donationCreate.mockResolvedValue({ id: "donation-fund", referenceNumber: "AFD-2026-12345678" });
+  });
+
+  it("is closed unless the owner has switched fund giving on", async () => {
+    vi.stubEnv("FUND_GIVING_ENABLED", "false");
+    try {
+      const response = await POST(request());
+      expect(response.status).toBe(409);
+      expect(mocks.fundFindFirst).not.toHaveBeenCalled();
+      expect(mocks.donationCreate).not.toHaveBeenCalled();
+    } finally { vi.stubEnv("FUND_GIVING_ENABLED", "true"); }
   });
 
   it("records a pending-verification claim against the fund, never marking it received", async () => {

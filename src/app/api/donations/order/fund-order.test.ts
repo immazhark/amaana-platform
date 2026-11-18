@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   enforceDonationRateLimit: vi.fn(),
@@ -22,6 +22,9 @@ vi.mock("@/lib/env", () => ({ validateProductionEnvironment: () => undefined }))
 
 import { POST } from "./route";
 
+beforeAll(() => { vi.stubEnv("FUND_GIVING_ENABLED", "true"); });
+afterAll(() => { vi.unstubAllEnvs(); });
+
 const general = { id: "fund_general", slug: "general", name: "General Fund", zakatPolicy: "ACCEPTED", isGeneral: true };
 const eid = { id: "fund_eid_kits", slug: "eid-kits", name: "Eid Kits Fund", zakatPolicy: "NOT_ACCEPTED", isGeneral: false };
 const orphan = { id: "fund_orphan", slug: "orphan", name: "Orphan Fund", zakatPolicy: "ACCEPTED", isGeneral: false };
@@ -41,6 +44,16 @@ describe("fund donation orders", () => {
     mocks.fundFindFirst.mockResolvedValue(general);
     mocks.createRazorpayOrder.mockImplementation(async (input: { amountPaise: number; receipt: string }) => ({ id: "order_fund123", amount: input.amountPaise, currency: "INR", receipt: input.receipt, status: "created" }));
     mocks.create.mockResolvedValue({ id: "donation_fund", donorName: "Test Donor", donorEmail: "donor@example.com", donorPhone: null });
+  });
+
+  it("is closed unless the owner has switched fund giving on", async () => {
+    vi.stubEnv("FUND_GIVING_ENABLED", "false");
+    try {
+      const response = await post(body());
+      expect(response.status).toBe(409);
+      expect(mocks.fundFindFirst).not.toHaveBeenCalled();
+      expect(mocks.createRazorpayOrder).not.toHaveBeenCalled();
+    } finally { vi.stubEnv("FUND_GIVING_ENABLED", "true"); }
   });
 
   it("creates an order for an active fund and stores the fund, not an appeal", async () => {

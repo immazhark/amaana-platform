@@ -4,6 +4,7 @@ import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readTextBodyWith
 import { donationSchema, fundDonationSchema, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
 import { placeRazorpayDonationOrder } from "@/lib/donation-order";
 import { resolveFundDestination } from "@/lib/fund-destination";
+import { isFundGivingEnabled } from "@/lib/fund-giving-flag";
 import { prisma } from "@/lib/prisma";
 import { enforceDonationRateLimit, isSameOrigin } from "@/lib/request-security";
 import { validateProductionEnvironment } from "@/lib/env";
@@ -154,6 +155,7 @@ export async function POST(request: Request) {
 
 // Designated giving to a fund. Same checks and order placement as an appeal gift, minus the appeal balance.
 async function handleFundOrder(body: unknown, markProviderAttempt: () => void) {
+  if (!isFundGivingEnabled()) return NextResponse.json({ error: "This fund is not accepting donations." }, { status: 409, headers: privateHeaders });
   const parsed = fundDonationSchema.safeParse(body);
   if (!parsed.success) {
     const fields = parsed.error.flatten().fieldErrors;

@@ -5,6 +5,7 @@ import { getDonationCheckoutRemainingAmount } from "@/lib/donation-checkout-bala
 import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
 import { createDonationReference, createReceiptToken, directTransferSchema, fundDirectTransferSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
 import { resolveFundDestination } from "@/lib/fund-destination";
+import { isFundGivingEnabled } from "@/lib/fund-giving-flag";
 import { prisma } from "@/lib/prisma";
 import { canExposePublicAppeal } from "@/lib/public-environment";
 import { enforceDonationRateLimit, isSameOrigin } from "@/lib/request-security";
@@ -119,6 +120,9 @@ export async function POST(request: Request) {
     };
     // A submission names exactly one destination: an appeal or a designated fund.
     const fundSlug = form.get("fundSlug");
+    if (fundSlug !== null && !isFundGivingEnabled()) {
+      return NextResponse.json({ error: "This fund is not accepting donations." }, { status: 409, headers: privateHeaders });
+    }
     if (fundSlug !== null && form.get("appealId") !== null) {
       return NextResponse.json({ error: "Please choose either an appeal or a fund." }, { status: 400, headers: privateHeaders });
     }
