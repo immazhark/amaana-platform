@@ -88,6 +88,7 @@ export default async function DonationsPage({ searchParams }: Props) {
       status: true,
       createdAt: true,
       appeal: { select: { title: true } },
+      fund: { select: { name: true } },
     },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     skip: pagination.skip,
@@ -186,7 +187,7 @@ export default async function DonationsPage({ searchParams }: Props) {
         <tbody>{donations.map(donation => <tr key={donation.id}>
           <td><Link href={`/admin/donations/${donation.id}`}><strong>{donation.referenceNumber}</strong></Link></td>
           <td>{donation.donorName}<br/><small>{donation.donorEmail}</small></td>
-          <td>{donation.appeal.title}</td>
+          <td>{donation.appeal?.title ?? donation.fund?.name ?? "—"}</td>
           <td>{donationIntentLabel(donation.givingIntent)}</td>
           <td>{donation.paymentMethod === "DIRECT_UPI" ? "Direct UPI" : donation.paymentMethod === "BANK_TRANSFER" ? "Bank transfer" : "Razorpay"}</td>
           <td>{formatINR(donation.amount.toNumber())}</td>

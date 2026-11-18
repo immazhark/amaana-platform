@@ -8,6 +8,7 @@ import { fetchRazorpayPayment, verifyCheckoutSignature } from "@/lib/razorpay";
 import { isSameOrigin } from "@/lib/request-security";
 import { validateProductionEnvironment } from "@/lib/env";
 import { logServerError } from "@/lib/server-log";
+import { donationChargePaise } from "@/lib/donation-charge";
 
 const privateHeaders = {
   "Cache-Control": "no-store, private",
@@ -59,14 +60,14 @@ export async function POST(request: Request) {
 
     const donation = await prisma.donation.findUnique({
       where: { providerOrderId: input.razorpay_order_id },
-      select: { id: true, amount: true, receiptTokenHash: true, referenceNumber: true, status: true },
+      select: { id: true, amount: true, feeContributionAmount: true, receiptTokenHash: true, referenceNumber: true, status: true },
     });
     if (!donation || donation.receiptTokenHash !== hashReceiptToken(input.receiptToken)) {
       return NextResponse.json({ error: "Donation record not found." }, { status: 404, headers: privateHeaders });
     }
 
     const payment = await fetchRazorpayPayment(input.razorpay_payment_id);
-    const expectedAmountPaise = donation.amount.mul(100).toNumber();
+    const expectedAmountPaise = donationChargePaise(donation);
     if (
       payment.id !== input.razorpay_payment_id ||
       payment.order_id !== input.razorpay_order_id ||

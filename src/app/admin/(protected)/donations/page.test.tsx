@@ -135,6 +135,7 @@ describe("admin Donations minimum displayed-row projection", () => {
         status: true,
         createdAt: true,
         appeal: { select: { title: true } },
+        fund: { select: { name: true } },
       },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     }));

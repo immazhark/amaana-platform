@@ -17,6 +17,7 @@ const expectedMatrix: Record<string, string[]> = {
   "admin/(protected)/documents/[id]/route.ts": ["assistance.view"],
   "admin/(protected)/donations/actions.ts": ["donation.reconcile"],
   "admin/(protected)/donations/page.tsx": ["donation.view"],
+  "admin/(protected)/funds/page.tsx": ["donation.view"],
   "admin/(protected)/donations/[id]/page.tsx": ["donation.reconcile", "donation.view"],
   "admin/(protected)/home-carousel/actions.ts": ["content.approve", "content.update"],
   "admin/(protected)/home-carousel/page.tsx": ["content.approve", "content.update"],

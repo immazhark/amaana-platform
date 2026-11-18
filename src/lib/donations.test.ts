@@ -59,6 +59,17 @@ describe("donation validation", () => {
   it("creates donation and acknowledgement identifiers", () => { const reference = createDonationReference(); expect(reference).toMatch(/^AFD-\d{4}-\d{8}$/); expect(createReceiptNumber(reference)).toBe(`ACK-${reference}`); expect(createReceiptToken().length).toBeGreaterThan(20); });
 });
 
+describe("processing fee opt-in", () => {
+  it("defaults to no fee cover and accepts only a real boolean", () => {
+    expect(donationSchema.parse(valid).coverProcessingFee).toBe(false);
+    expect(donationSchema.parse({ ...valid, coverProcessingFee: true }).coverProcessingFee).toBe(true);
+    for (const bad of ["true", 1, null, "yes"]) expect(donationSchema.safeParse({ ...valid, coverProcessingFee: bad }).success).toBe(false);
+  });
+  it("never accepts a client-supplied fee amount", () => {
+    expect(donationSchema.parse({ ...valid, feeContributionAmount: 99_999 })).not.toHaveProperty("feeContributionAmount");
+  });
+});
+
 describe("donation acknowledgement presentation", () => {
   it("shows a completed captured payment as verified", () => {
     const view = getDonationAcknowledgementPresentation("CAPTURED", 1_000, 0);

@@ -571,6 +571,40 @@ describe("Razorpay webhook route", () => {
     expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
   });
 
+  describe("refunds of a donation whose donor covered the gateway fee", () => {
+    const feeDonation = (refunded = 0) => ({
+      id: "donation_1", appealId: "appeal_1", amount: decimal(100), feeContributionAmount: decimal(2.36),
+      refundedAmount: decimal(refunded), donorEmail: "donor@example.test", referenceNumber: "AFD-2026-000001",
+    });
+    it("returns the covered fee first without reducing the appeal", async () => {
+      mocks.txDonationFindUnique.mockResolvedValueOnce(feeDonation());
+      const response = await POST(webhookRequest(refundPayload(236)));
+      expect(response.status).toBe(200);
+      expect(mocks.txDonationUpdate).toHaveBeenCalledWith({ where: { id: "donation_1" }, data: { refundedAmount: { increment: 2.36 } } });
+      expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+    });
+    it("reduces the appeal only by the part of a refund beyond the fee", async () => {
+      mocks.txDonationFindUnique.mockResolvedValueOnce(feeDonation());
+      const response = await POST(webhookRequest(refundPayload(1236)));
+      expect(response.status).toBe(200);
+      expect(mocks.txAppealUpdate).toHaveBeenCalledWith({ where: { id: "appeal_1" }, data: { amountRaised: { decrement: 10 } } });
+    });
+    it("marks the donation refunded only when the full charge (donation plus fee) is returned", async () => {
+      mocks.txDonationFindUnique.mockResolvedValueOnce(feeDonation());
+      const response = await POST(webhookRequest(refundPayload(10_236)));
+      expect(response.status).toBe(200);
+      expect(mocks.txDonationUpdate).toHaveBeenCalledWith({ where: { id: "donation_1" }, data: expect.objectContaining({ status: "REFUNDED" }) });
+      expect(mocks.txAppealUpdate).toHaveBeenCalledWith({ where: { id: "appeal_1" }, data: { amountRaised: { decrement: 100 } } });
+    });
+    it("still rejects a refund larger than the total charge", async () => {
+      mocks.txDonationFindUnique.mockResolvedValueOnce(feeDonation());
+      const response = await POST(webhookRequest(refundPayload(10_237)));
+      expect(response.status).toBe(500);
+      expect(mocks.txDonationUpdate).not.toHaveBeenCalled();
+      expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+    });
+  });
+
   it("reconciles an INR refund into donation, appeal, event and notification records", async () => {
     const response = await POST(webhookRequest(refundPayload(2500)));
     const body = await response.json();
