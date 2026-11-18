@@ -1,5 +1,7 @@
 ## 18 November 2026 IST — Claude Code sprint checkpoint
 
+**Addendum (main after #1059 `c66e8bb5`):** merges #1053-#1059 listed in `docs/AI_ACTIVE_WORK.md`. Register now 46 Completed / 13 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 Not applicable: eleven rows (AF-N03-N07, N11, N12, N19, N21, N24, R050) reclassified Completed on named test evidence; AF-R046 deliberately kept Implemented (proxy operation count, not real SQL). Production serves `a56ef626` (blur-up render) with key routes 200; no payment, auth or CSP change. #1060 and #1061 open in CI.
+
 **Addendum (main `abe433a3`):** further merges #1047-#1052 with SHAs in `docs/AI_ACTIVE_WORK.md`; all exact-head checks green; task branches retired. No tracker reclassification (35/24/71/17/1/1); no runtime/Railway verification performed.
 
 Sole writer CLAUDE_CODE_ACTIVE on protected main `26f4931e`. Seven bounded PRs merged (#1040-#1046, SHAs in `docs/AI_ACTIVE_WORK.md`), all with passing fast, database, production, browser and ready-state checks and expected-head guards; task branches removed. #1047 and #1048 in CI. Railway/public runtime not re-checked for these merges. Register unchanged at 35/24/71/17/1/1: no row has live acceptance. Holds unchanged: #684, #845, notification worker, schema migrations, payment/webhook routes. Rollback: revert the individual squash commit.
