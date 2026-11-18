@@ -144,6 +144,8 @@ jobs:
         run: node --test scripts/test-public-data-boundaries.mjs
       - name: Enforce minimum authored font size (AF-R024)
         run: node --test scripts/test-min-font-size.mjs
+      - name: Enforce accessibility lint rule coverage (AF-R069)
+        run: node --test scripts/test-a11y-lint-rules.mjs
       - name: Guard client-bundle secret scanner behavior
         run: node --test scripts/test-client-secret-boundary.mjs
       - name: Guard Cloudflare analytics CSP denial without relaxing Razorpay checkout
