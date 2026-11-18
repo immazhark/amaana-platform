@@ -1,5 +1,7 @@
 ## 18 November 2026 IST — Claude Code sprint checkpoint
 
+**Addendum 4:** AF-N23 and AF-FUNDS reclassified Completed (evidence in the tracker); register now 54 Completed / 12 Implemented / 64 Partial / 17 Not started / 1 Superseded / 1 Not applicable. Designated giving merged: #1072, #1073, #1076; fund giving closed by FUND_GIVING_ENABLED until the owner activates it. AF-ALLOCATION, AF-RECEIPTS and AF-R085 (recurring) stay Partial.
+
 **Addendum 3:** AF-R024 reclassified Completed on PR #1067 evidence (31-route e2e plus extended font-floor guard, green in CI); register now 52 Completed / 13 Implemented / 65 Partial / 17 Not started / 1 Superseded / 1 Not applicable. Merged since: #1060, #1066 (single h1 on loading fallbacks, verified live), #1064, #1065, #1067, #1068 (copy guard), #1069 (AF-N22 guard; AF-N22 stays Partial). AF-R005 stays Partial.
 
 **Addendum 2:** register then 51 Completed / 13 Implemented / 66 Partial / 17 Not started / 1 Superseded / 1 Not applicable: AF-R012, R047, R052, R056 and N14 reclassified Completed on named test evidence (R056 migration already applied in production). Kept Partial: AF-R005 (owner audit of past deployments) and AF-R024 (e2e route coverage unconfirmed). #1060 and #1064 still in CI.
