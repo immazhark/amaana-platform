@@ -4,7 +4,11 @@ import { settleStyles } from './helpers/settle-styles.mjs';
 // AF-R024: rendered text on the public routes never computes below 12px, at
 // phone and desktop widths, and the layout survives a 200% root font size
 // without horizontal overflow.
-const ROUTES = ['/', '/about', '/our-work', '/impact', '/stories', '/appeals', '/donate', '/contact', '/transparency'];
+const ROUTES = [
+  '/', '/about', '/our-work', '/impact', '/stories', '/appeals', '/donate', '/contact', '/transparency',
+  // Remaining static public routes, several with their own typography (AF-R024).
+  '/recognition', '/partner', '/get-involved', '/get-involved/sponsor-education', '/get-involved/volunteer', '/get-involved/monthly-giving', '/programmes/medical-financial-relief', '/programmes/emergency-relief', '/programmes/ramadan-eid', '/programmes/seasonal-relief', '/impact/compare', '/faith-and-reflections', '/team', '/request-assistance', '/how-we-verify', '/governance', '/compliance', '/contact/feedback', '/privacy', '/terms', '/donation-policy', '/refund-policy',
+];
 
 async function smallText(page) {
   return page.evaluate(() => {
