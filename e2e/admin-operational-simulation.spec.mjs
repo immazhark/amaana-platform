@@ -51,7 +51,7 @@ test.describe('admin operational simulation without shared records', () => {
     const navigation = await openProfile(page, 'case');
     await expectLinks(navigation,
       ['Assistance queue', 'Retention review'],
-      ['Appeals', 'Media review', 'Donations', 'Notification delivery']);
+      ['Appeals', 'Media review', 'Donations', 'Funds ledger', 'Notification delivery']);
     await expect(adminBrand(page)).toHaveAttribute('href', '/admin');
     await expect(page.getByText('Fail-closed landing:')).toBeVisible();
     await expect(page.locator('code')).toHaveText('/admin');
@@ -61,7 +61,7 @@ test.describe('admin operational simulation without shared records', () => {
     const navigation = await openProfile(page, 'editorial');
     await expectLinks(navigation,
       ['Appeals', 'Media review'],
-      ['Assistance queue', 'Retention review', 'Donations', 'Notification delivery']);
+      ['Assistance queue', 'Retention review', 'Donations', 'Funds ledger', 'Notification delivery']);
     await expect(adminBrand(page)).toHaveAttribute('href', '/admin/appeals');
     await expect(page.locator('code')).toHaveText('/admin/appeals');
   });
@@ -69,7 +69,7 @@ test.describe('admin operational simulation without shared records', () => {
   test('finance reviewer is isolated to donation review', async ({ page }) => {
     const navigation = await openProfile(page, 'finance');
     await expectLinks(navigation,
-      ['Donations'],
+      ['Donations', 'Funds ledger'],
       ['Assistance queue', 'Appeals', 'Media review', 'Retention review', 'Notification delivery']);
     await expect(adminBrand(page)).toHaveAttribute('href', '/admin/donations');
     await expect(page.locator('code')).toHaveText('/admin/donations');
@@ -92,6 +92,7 @@ test.describe('admin operational simulation without shared records', () => {
       'Home carousel',
       'Retention review',
       'Donations',
+      'Funds ledger',
       'Notification delivery',
     ]);
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
