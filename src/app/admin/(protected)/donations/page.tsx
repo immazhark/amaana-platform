@@ -4,7 +4,6 @@ import { requirePermission } from "@/lib/auth";
 import { formatINR } from "@/lib/appeals";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { donationIntentLabel } from "@/lib/donation-intent";
-import { streamLabel } from "@/lib/giving-streams";
 import { prisma } from "@/lib/prisma";
 import { donationOperationalState } from "@/lib/operational-signals";
 
@@ -83,13 +82,13 @@ export default async function DonationsPage({ searchParams }: Props) {
       donorName: true,
       donorEmail: true,
       givingIntent: true,
-      stream: true,
       paymentMethod: true,
       amount: true,
       refundedAmount: true,
       status: true,
       createdAt: true,
       appeal: { select: { title: true } },
+      fund: { select: { name: true } },
     },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     skip: pagination.skip,
@@ -188,7 +187,7 @@ export default async function DonationsPage({ searchParams }: Props) {
         <tbody>{donations.map(donation => <tr key={donation.id}>
           <td><Link href={`/admin/donations/${donation.id}`}><strong>{donation.referenceNumber}</strong></Link></td>
           <td>{donation.donorName}<br/><small>{donation.donorEmail}</small></td>
-          <td>{donation.appeal?.title ?? streamLabel(donation.stream)}</td>
+          <td>{donation.appeal?.title ?? donation.fund?.name ?? "—"}</td>
           <td>{donationIntentLabel(donation.givingIntent)}</td>
           <td>{donation.paymentMethod === "DIRECT_UPI" ? "Direct UPI" : donation.paymentMethod === "BANK_TRANSFER" ? "Bank transfer" : "Razorpay"}</td>
           <td>{formatINR(donation.amount.toNumber())}</td>

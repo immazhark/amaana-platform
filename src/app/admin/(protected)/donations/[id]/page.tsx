@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { formatINR } from "@/lib/appeals";
 import { donationIntentLabel } from "@/lib/donation-intent";
-import { streamLabel } from "@/lib/giving-streams";
 import { prisma } from "@/lib/prisma";
 import { getDonationEvidenceUrl } from "@/lib/storage";
 import { reconcileDonationAction } from "../actions";
@@ -39,8 +38,8 @@ export default async function DonationDetailPage({ params }: Props) {
       capturedAt: true,
       failedAt: true,
       refundedAt: true,
-      stream: true,
       appeal: { select: { title: true } },
+      fund: { select: { name: true } },
       events: {
         select: { id: true, eventType: true, providerEventId: true, processedAt: true },
         orderBy: [{ processedAt: "desc" }, { id: "desc" }],
@@ -57,7 +56,7 @@ export default async function DonationDetailPage({ params }: Props) {
   const direct = donation.paymentMethod !== "RAZORPAY";
 
   return <>
-    <div className="admin-heading"><div><p className="eyebrow">{donation.referenceNumber}</p><h1>{formatINR(amount)}</h1><p className="muted">{donation.appeal?.title ?? streamLabel(donation.stream)}</p></div><span className="status-badge">{donation.status}</span></div>
+    <div className="admin-heading"><div><p className="eyebrow">{donation.referenceNumber}</p><h1>{formatINR(amount)}</h1><p className="muted">{donation.appeal?.title ?? donation.fund?.name ?? "—"}</p></div><span className="status-badge">{donation.status}</span></div>
     <div className="admin-detail-grid">
       <section className="card"><h2>Donation record</h2><dl className="details">
         <div><dt>Donor</dt><dd>{donation.donorName}</dd></div><div><dt>Public anonymity</dt><dd>{donation.isAnonymous ? "Anonymous" : "Name may be shown"}</dd></div>

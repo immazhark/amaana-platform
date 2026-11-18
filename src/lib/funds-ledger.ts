@@ -1,21 +1,36 @@
 import { prisma } from "@/lib/prisma";
-import { summariseLedger, type LedgerRow } from "@/lib/giving-streams";
+import { summariseFunds, type DisbursementLedgerRow, type DonationLedgerRow } from "@/lib/giving-funds";
 
-const toPaise = (rupees: { mul: (n: number) => { toNumber: () => number } }) => Math.round(rupees.mul(100).toNumber());
+type DecimalLike = { mul: (n: number) => { toNumber: () => number } };
+const toPaise = (rupees: DecimalLike | null) => (rupees ? Math.round(rupees.mul(100).toNumber()) : 0);
 
-// Per-stream and total-Zakat account built only from verified (captured/refunded) and pending-verification donations.
+// Per-fund and total-Zakat account from verified, refunded, pending and disbursement records only.
 export async function getFundsLedger() {
-  const groups = await prisma.donation.groupBy({
-    by: ["stream", "givingIntent", "status"],
-    where: { status: { in: ["CAPTURED", "REFUNDED", "PENDING_VERIFICATION"] } },
-    _sum: { amount: true, refundedAmount: true },
-  });
-  const rows: LedgerRow[] = groups.map(group => ({
-    stream: group.stream,
+  const [funds, donationGroups, disbursementGroups] = await Promise.all([
+    prisma.fund.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }], select: { id: true, slug: true, name: true, status: true, zakatPolicy: true } }),
+    prisma.donation.groupBy({
+      by: ["fundId", "givingIntent", "status"],
+      where: { status: { in: ["CAPTURED", "REFUNDED", "PENDING_VERIFICATION"] } },
+      _sum: { amount: true, refundedAmount: true },
+    }),
+    prisma.fundDisbursement.groupBy({
+      by: ["fundId", "pool", "status"],
+      where: { status: { in: ["DRAFT", "PUBLISHED"] } },
+      _sum: { amount: true },
+    }),
+  ]);
+  const donations: DonationLedgerRow[] = donationGroups.map(group => ({
+    fundId: group.fundId,
     givingIntent: group.givingIntent,
     status: group.status,
-    amountPaise: group._sum.amount ? toPaise(group._sum.amount) : 0,
-    refundedPaise: group._sum.refundedAmount ? toPaise(group._sum.refundedAmount) : 0,
+    amountPaise: toPaise(group._sum.amount),
+    refundedPaise: toPaise(group._sum.refundedAmount),
   }));
-  return summariseLedger(rows);
+  const disbursements: DisbursementLedgerRow[] = disbursementGroups.map(group => ({
+    fundId: group.fundId,
+    pool: group.pool,
+    status: group.status,
+    amountPaise: toPaise(group._sum.amount),
+  }));
+  return { funds, ...summariseFunds(donations, disbursements) };
 }
