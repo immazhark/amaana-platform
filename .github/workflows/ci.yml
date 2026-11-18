@@ -152,6 +152,8 @@ jobs:
         run: node --test scripts/test-color-literal-budget.mjs
       - name: Guard security.txt contact and expiry
         run: node --test scripts/test-security-txt.mjs
+      - name: Guard public media publication filters (AF-PROMOTION)
+        run: node --test scripts/test-public-media-query-guard.mjs
       - name: Guard client-bundle secret scanner behavior
         run: node --test scripts/test-client-secret-boundary.mjs
       - name: Guard Cloudflare analytics CSP denial without relaxing Razorpay checkout
