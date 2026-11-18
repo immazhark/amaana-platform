@@ -14,6 +14,7 @@ export const overviewPaths = new Set([
   '/our-work',
   '/impact',
   '/impact/compare',
+  '/donate',
   '/appeals',
   '/faith-and-reflections',
 ]);
