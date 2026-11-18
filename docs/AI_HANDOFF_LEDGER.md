@@ -1,6 +1,8 @@
 ## 18 November 2026 IST — Claude Code sprint checkpoint
 
-**Addendum 2:** register now 51 Completed / 13 Implemented / 66 Partial / 17 Not started / 1 Superseded / 1 Not applicable: AF-R012, R047, R052, R056 and N14 reclassified Completed on named test evidence (R056 migration already applied in production). Kept Partial: AF-R005 (owner audit of past deployments) and AF-R024 (e2e route coverage unconfirmed). #1060 and #1064 still in CI.
+**Addendum 3:** AF-R024 reclassified Completed on PR #1067 evidence (31-route e2e plus extended font-floor guard, green in CI); register now 52 Completed / 13 Implemented / 65 Partial / 17 Not started / 1 Superseded / 1 Not applicable. Merged since: #1060, #1066 (single h1 on loading fallbacks, verified live), #1064, #1065, #1067, #1068 (copy guard), #1069 (AF-N22 guard; AF-N22 stays Partial). AF-R005 stays Partial.
+
+**Addendum 2:** register then 51 Completed / 13 Implemented / 66 Partial / 17 Not started / 1 Superseded / 1 Not applicable: AF-R012, R047, R052, R056 and N14 reclassified Completed on named test evidence (R056 migration already applied in production). Kept Partial: AF-R005 (owner audit of past deployments) and AF-R024 (e2e route coverage unconfirmed). #1060 and #1064 still in CI.
 
 **Addendum (main after #1059 `c66e8bb5`):** merges #1053-#1059 listed in `docs/AI_ACTIVE_WORK.md`. Register now 46 Completed / 13 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 Not applicable: eleven rows (AF-N03-N07, N11, N12, N19, N21, N24, R050) reclassified Completed on named test evidence; AF-R046 deliberately kept Implemented (proxy operation count, not real SQL). Production serves `a56ef626` (blur-up render) with key routes 200; no payment, auth or CSP change. #1060 and #1061 open in CI.
 
