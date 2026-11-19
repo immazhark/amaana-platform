@@ -11,7 +11,7 @@ export async function recordDisbursement(input: DisbursementInput, actorId: stri
   return withSerializableTransactionRetry(async tx => {
     const fund = await tx.fund.findUnique({ where: { id: input.fundId }, select: { id: true } });
     if (!fund) throw new DisbursementError("That fund does not exist.");
-    const { byFund } = await loadFundsLedger(tx, input.fundId);
+    const { byFund } = await loadFundsLedger(tx, { fundId: input.fundId });
     const totals = byFund[input.fundId];
     if (!totals || !canDisburse(totals, input.pool, input.amountPaise)) {
       throw new DisbursementError(input.pool === "ZAKAT"

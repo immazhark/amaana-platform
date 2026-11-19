@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  fundFind: vi.fn(), donationGroupBy: vi.fn(), disbursementGroupBy: vi.fn(), create: vi.fn(), findUnique: vi.fn(), updateMany: vi.fn(), audit: vi.fn(),
+  fundFind: vi.fn(), donationGroupBy: vi.fn(), donationFindMany: vi.fn(), disbursementGroupBy: vi.fn(), create: vi.fn(), findUnique: vi.fn(), updateMany: vi.fn(), audit: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({ prisma: {} }));
 vi.mock("@/lib/prisma-transaction", () => ({
   withSerializableTransactionRetry: async (fn: (tx: unknown) => unknown) => fn({
     fund: { findUnique: mocks.fundFind },
-    donation: { groupBy: mocks.donationGroupBy },
+    donation: { groupBy: mocks.donationGroupBy, findMany: mocks.donationFindMany },
     fundDisbursement: { groupBy: mocks.disbursementGroupBy, create: mocks.create, findUnique: mocks.findUnique, updateMany: mocks.updateMany },
     auditEvent: { create: mocks.audit },
   }),
@@ -22,9 +22,10 @@ const input = { fundId: "fund_orphan", pool: "NON_ZAKAT" as const, amountPaise: 
 function funded(sadaqah: number, zakat = 0, spent = 0) {
   mocks.fundFind.mockResolvedValue({ id: "fund_orphan" });
   mocks.donationGroupBy.mockResolvedValue([
-    { fundId: "fund_orphan", givingIntent: "SADAQAH", status: "CAPTURED", _sum: { amount: dec(sadaqah), refundedAmount: dec(0), feeContributionAmount: dec(0) } },
-    ...(zakat ? [{ fundId: "fund_orphan", givingIntent: "ZAKAT", status: "CAPTURED", _sum: { amount: dec(zakat), refundedAmount: dec(0), feeContributionAmount: dec(0) } }] : []),
+    { fundId: "fund_orphan", givingIntent: "SADAQAH", status: "CAPTURED", _sum: { amount: dec(sadaqah) } },
+    ...(zakat ? [{ fundId: "fund_orphan", givingIntent: "ZAKAT", status: "CAPTURED", _sum: { amount: dec(zakat) } }] : []),
   ]);
+  mocks.donationFindMany.mockResolvedValue([]);
   mocks.disbursementGroupBy.mockResolvedValue(spent ? [{ fundId: "fund_orphan", pool: "NON_ZAKAT", status: "DRAFT", _sum: { amount: dec(spent) } }] : []);
   mocks.create.mockResolvedValue({ id: "disb_1" });
 }
