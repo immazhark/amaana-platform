@@ -27,8 +27,11 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("fund campaign Pos
     } catch (error) { if (!(error instanceof Rollback)) throw error; }
     return result as T;
   }
-  // A statement the database must refuse; a failed statement aborts its transaction, so each refusal gets its own.
-  const refused = (work: (tx: Prisma.TransactionClient) => Promise<unknown>) => expect(prisma.$transaction(async tx => { await work(tx); })).rejects.toBeTruthy();
+  // A statement the database must refuse, and refuse because of the named constraint: otherwise an unrelated rule (or a
+  // malformed fixture) could make the test pass without proving anything. A failed statement aborts its transaction, so
+  // each refusal gets its own.
+  const refused = (constraint: string, work: (tx: Prisma.TransactionClient) => Promise<unknown>) =>
+    expect(prisma.$transaction(async tx => { await work(tx); })).rejects.toThrow(constraint);
 
   const owner = (tx: Prisma.TransactionClient) => tx.user.create({ data: { name: "Synthetic operator", email: `${next()}@example.test` } });
   const fund = (tx: Prisma.TransactionClient) => tx.fund.create({ data: { slug: `t-${next()}`, name: "Synthetic fund", summary: "Synthetic fund for tests only.", status: "ACTIVE" } });
@@ -36,6 +39,8 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("fund campaign Pos
     tx.fundCampaign.create({ data: { fundId, createdById, slug: `c-${next()}`, title: "Synthetic campaign", unitLabel: "kit", unitLabelPlural: "kits", unitPrice: 1500, maxUnits: 100, opensAt: new Date("2027-02-18T03:30:00Z"), closesAt: new Date("2027-02-24T18:29:00Z"), status: "ACTIVE", ...over } });
   const gift = (fundId: string | null, over: Partial<Prisma.DonationUncheckedCreateInput> = {}) => ({
     referenceNumber: `AFD-${next()}`, fundId, donorName: "Synthetic donor", donorEmail: "donor@example.test",
+    // A Razorpay-shaped row, so the older payment-method CHECK is satisfied and only campaign rules are under test.
+    provider: "razorpay", providerOrderId: `order_${next()}`,
     domesticConfirmedAt: new Date(), amount: 4500, receiptTokenHash: "0".repeat(64), ...over,
   } satisfies Prisma.DonationUncheckedCreateInput);
   const setup = async (tx: Prisma.TransactionClient) => { const user = await owner(tx); const f = await fund(tx); const c = await campaign(tx, f.id, user.id); return { user, f, c }; };
@@ -50,14 +55,14 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("fund campaign Pos
 
   it("refuses campaign prices that are not positive whole rupees", async () => {
     for (const unitPrice of [0, -5, 1500.5]) {
-      await refused(async tx => { const u = await owner(tx); const f = await fund(tx); await campaign(tx, f.id, u.id, { unitPrice }); });
+      await refused("FundCampaign_unit_price_whole_rupees", async tx => { const u = await owner(tx); const f = await fund(tx); await campaign(tx, f.id, u.id, { unitPrice }); });
     }
   });
 
   it("refuses unit limits outside 1 to 1000 and a window that closes before it opens", async () => {
-    for (const maxUnits of [0, 1001]) await refused(async tx => { const u = await owner(tx); const f = await fund(tx); await campaign(tx, f.id, u.id, { maxUnits }); });
-    await refused(async tx => { const u = await owner(tx); const f = await fund(tx); await campaign(tx, f.id, u.id, { closesAt: new Date("2027-02-18T03:30:00Z") }); });
-    await refused(async tx => { const u = await owner(tx); const f = await fund(tx); await campaign(tx, f.id, u.id, { closesAt: new Date("2027-02-01T00:00:00Z") }); });
+    for (const maxUnits of [0, 1001]) await refused("FundCampaign_max_units_range", async tx => { const u = await owner(tx); const f = await fund(tx); await campaign(tx, f.id, u.id, { maxUnits }); });
+    await refused("FundCampaign_window_ordered", async tx => { const u = await owner(tx); const f = await fund(tx); await campaign(tx, f.id, u.id, { closesAt: new Date("2027-02-18T03:30:00Z") }); });
+    await refused("FundCampaign_window_ordered", async tx => { const u = await owner(tx); const f = await fund(tx); await campaign(tx, f.id, u.id, { closesAt: new Date("2027-02-01T00:00:00Z") }); });
   });
 
   it("keeps a campaign slug unique", async () => {
@@ -70,20 +75,20 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("fund campaign Pos
 
   it("refuses a gift whose amount is not exactly units x the recorded unit price", async () => {
     for (const amount of [4400, 4501, 1500]) {
-      await refused(async tx => { const { f, c } = await setup(tx); await tx.donation.create({ data: gift(f.id, { campaignId: c.id, units: 3, unitPrice: 1500, amount }) }); });
+      await refused("Donation_campaign_amount_exact", async tx => { const { f, c } = await setup(tx); await tx.donation.create({ data: gift(f.id, { campaignId: c.id, units: 3, unitPrice: 1500, amount }) }); });
     }
-    await refused(async tx => { const { f, c } = await setup(tx); await tx.donation.create({ data: gift(f.id, { campaignId: c.id, units: 0, unitPrice: 1500, amount: 0.01 }) }); });
+    await refused("Donation_campaign_amount_exact", async tx => { const { f, c } = await setup(tx); await tx.donation.create({ data: gift(f.id, { campaignId: c.id, units: 0, unitPrice: 1500, amount: 0.01 }) }); });
   });
 
   it("requires campaign, units and unit price together, or none of them", async () => {
-    await refused(async tx => { const { f, c } = await setup(tx); await tx.donation.create({ data: gift(f.id, { campaignId: c.id }) }); });
-    await refused(async tx => { const { f } = await setup(tx); await tx.donation.create({ data: gift(f.id, { units: 3, unitPrice: 1500 }) }); });
-    await refused(async tx => { const { f, c } = await setup(tx); await tx.donation.create({ data: gift(f.id, { campaignId: c.id, units: 3 }) }); });
+    await refused("Donation_campaign_fields_together", async tx => { const { f, c } = await setup(tx); await tx.donation.create({ data: gift(f.id, { campaignId: c.id }) }); });
+    await refused("Donation_campaign_fields_together", async tx => { const { f } = await setup(tx); await tx.donation.create({ data: gift(f.id, { units: 3, unitPrice: 1500 }) }); });
+    await refused("Donation_campaign_fields_together", async tx => { const { f, c } = await setup(tx); await tx.donation.create({ data: gift(f.id, { campaignId: c.id, units: 3 }) }); });
     await probe(async tx => { const { f } = await setup(tx); await tx.donation.create({ data: gift(f.id) }); }); // an ordinary fund gift is still fine
   });
 
   it("never lets a campaign gift attach to an appeal", async () => {
-    await refused(async tx => {
+    await refused("Donation_campaign_requires_fund", async tx => {
       const { user, c } = await setup(tx);
       const appeal = await tx.appeal.create({ data: { slug: `a-${next()}`, title: "Synthetic", summary: "CI only", story: "CI only", category: "MEDICAL", status: "PUBLISHED", beneficiaryName: "Synthetic", goalAmount: 10000, createdById: user.id } });
       await tx.donation.create({ data: gift(null, { appealId: appeal.id, campaignId: c.id, units: 3, unitPrice: 1500, amount: 4500 }) });
