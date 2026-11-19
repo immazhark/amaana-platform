@@ -24,7 +24,6 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 async function GiveContent({ fundParam }: { fundParam: Promise<{ fund?: string | string[] }> }) {
-  if (!isFundGivingEnabled()) notFound();
   const [{ fund: requested }, rows] = await Promise.all([
     fundParam,
     prisma.fund.findMany({
@@ -54,6 +53,8 @@ async function GiveContent({ fundParam }: { fundParam: Promise<{ fund?: string |
 }
 
 export default function Page({ searchParams }: { searchParams: Promise<{ fund?: string | string[] }> }) {
+  // Checked before streaming starts so a closed page is a real HTTP 404, not a 200 that renders a not-found body.
+  if (!isFundGivingEnabled()) notFound();
   return (
     <Suspense fallback={<PublicRouteLoading route="donate" />}>
       <GiveContent fundParam={searchParams} />
