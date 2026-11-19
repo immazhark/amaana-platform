@@ -6,8 +6,8 @@ import { createRazorpayOrder } from "@/lib/razorpay";
 
 // Exactly one destination: an appeal or a fund. Mirrors the database CHECK on Donation.
 export type OrderDestination =
-  | { appealId: string; fundId?: undefined; fundSlug?: undefined; title: string; donorDirective?: undefined }
-  | { fundId: string; fundSlug: string; appealId?: undefined; title: string; donorDirective: string | null };
+  | { appealId: string; fundId?: undefined; fundSlug?: undefined; title: string; donorDirective?: undefined; campaignId?: undefined; units?: undefined; unitPrice?: undefined }
+  | { fundId: string; fundSlug: string; appealId?: undefined; title: string; donorDirective: string | null; campaignId?: string; units?: number; unitPrice?: number };
 
 export type OrderInput = {
   donorName: string;
@@ -57,6 +57,7 @@ export async function placeRazorpayDonationOrder(input: OrderInput, onProviderAt
         id: donationId,
         referenceNumber,
         ...(destination.appealId ? { appealId: destination.appealId } : { fundId: destination.fundId, donorDirective: destination.donorDirective }),
+        ...(destination.campaignId ? { campaignId: destination.campaignId, units: destination.units, unitPrice: destination.unitPrice } : {}),
         donorName: input.donorName,
         donorEmail: input.donorEmail.toLowerCase(),
         donorPhone: input.donorPhone || null,

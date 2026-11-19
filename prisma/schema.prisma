@@ -118,6 +118,12 @@ enum FundZakatPolicy {
   UNDER_REVIEW
 }
 
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+}
+
 enum DisbursementPool {
   ZAKAT
   NON_ZAKAT
@@ -180,6 +186,7 @@ model User {
   appealUpdates           AppealUpdate[]
   reconciledDonations     Donation[]                 @relation("DonationReconciler")
   fundDisbursements       FundDisbursement[]         @relation("DisbursementCreator")
+  fundCampaigns           FundCampaign[]             @relation("CampaignCreator")
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
 }
@@ -450,6 +457,9 @@ model Donation {
   fundId                   String?
   donorDirective           String?               @db.VarChar(500)
   feeContributionAmount    Decimal               @default(0) @db.Decimal(12, 2)
+  campaignId               String?
+  units                    Int?
+  unitPrice                Decimal?              @db.Decimal(12, 2)
   donorName                String
   donorEmail               String
   donorPhone               String?
@@ -480,6 +490,7 @@ model Donation {
   refundedAt               DateTime?
   appeal                   Appeal?               @relation(fields: [appealId], references: [id], onDelete: Restrict)
   fund                     Fund?                 @relation(fields: [fundId], references: [id], onDelete: Restrict)
+  campaign                 FundCampaign?         @relation(fields: [campaignId], references: [id], onDelete: Restrict)
   reconciledBy             User?                 @relation("DonationReconciler", fields: [reconciledById], references: [id], onDelete: SetNull)
   events                   PaymentEvent[]
   refunds                  RefundLedger[]
@@ -488,6 +499,7 @@ model Donation {
   updatedAt                DateTime              @updatedAt
   @@index([appealId, status, createdAt])
   @@index([fundId, givingIntent, status, createdAt])
+  @@index([campaignId])
   @@index([donorEmail, createdAt])
   @@index([status, createdAt])
   @@index([paymentMethod, status, createdAt])
@@ -507,9 +519,34 @@ model Fund {
   sortOrder     Int                @default(0)
   donations     Donation[]
   disbursements FundDisbursement[]
+  campaigns     FundCampaign[]
   createdAt     DateTime           @default(now())
   updatedAt     DateTime           @updatedAt
   @@index([status, sortOrder])
+}
+
+// A seasonal, fixed-price way to give to a fund (for example Eid kits at a price decided that year). The price is
+// whole rupees and is snapshotted on every gift; the window is checked on the server at order time.
+model FundCampaign {
+  id              String         @id @default(cuid())
+  fundId          String
+  slug            String         @unique
+  title           String
+  unitLabel       String
+  unitLabelPlural String
+  unitPrice       Decimal        @db.Decimal(12, 2)
+  maxUnits        Int            @default(100)
+  opensAt         DateTime
+  closesAt        DateTime
+  status          CampaignStatus @default(DRAFT)
+  note            String?
+  createdById     String
+  fund            Fund           @relation(fields: [fundId], references: [id], onDelete: Restrict)
+  createdBy       User           @relation("CampaignCreator", fields: [createdById], references: [id])
+  donations       Donation[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  @@index([fundId, status, opensAt])
 }
 
 // Money leaving a fund. Never edited in place: a mistake is voided and re-entered, so history stays auditable.

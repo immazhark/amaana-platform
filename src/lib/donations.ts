@@ -49,9 +49,14 @@ const fundDonationFields = {
   domesticConfirmed: donationSchema.shape.domesticConfirmed,
   // A non-binding request for staff to review; only the General Fund keeps it.
   donorDirective: z.string().trim().max(500).optional(),
+  // Seasonal fixed-price gift: the server checks the window, the limit and that amount equals units x price.
+  campaignSlug: z.string().max(64).regex(FUND_SLUG_PATTERN).optional(),
+  units: z.union([z.number().int(), z.string().regex(/^[0-9]+$/).transform(Number)]).pipe(z.number().int().min(1).max(1000)).optional(),
 };
-export const fundDonationSchema = z.strictObject({ ...fundDonationFields, coverProcessingFee: donationSchema.shape.coverProcessingFee });
-export const fundDirectTransferSchema = z.strictObject({ ...fundDonationFields, ...transferFields });
+const campaignTogether = (value: { campaignSlug?: string | undefined; units?: number | undefined }) => (value.campaignSlug === undefined) === (value.units === undefined);
+const CAMPAIGN_TOGETHER = "Choose a campaign together with a number of units.";
+export const fundDonationSchema = z.strictObject({ ...fundDonationFields, coverProcessingFee: donationSchema.shape.coverProcessingFee }).refine(campaignTogether, CAMPAIGN_TOGETHER);
+export const fundDirectTransferSchema = z.strictObject({ ...fundDonationFields, ...transferFields }).refine(campaignTogether, CAMPAIGN_TOGETHER);
 
 export function isDonationAmountAllowedForRemaining(amount: number, remainingAmount: number) {
   if (!Number.isFinite(remainingAmount) || remainingAmount <= 0) return false;

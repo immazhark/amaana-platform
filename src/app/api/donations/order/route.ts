@@ -167,7 +167,7 @@ async function handleFundOrder(body: unknown, markProviderAttempt: () => void) {
   if (parsed.data.amount < MIN_DONATION_AMOUNT) {
     return NextResponse.json({ error: `The minimum donation is ₹${MIN_DONATION_AMOUNT.toLocaleString("en-IN")}.` }, { status: 400, headers: privateHeaders });
   }
-  const destination = await resolveFundDestination(prisma, parsed.data);
+  const destination = await resolveFundDestination(prisma, { fundSlug: parsed.data.fundSlug, givingIntent: parsed.data.givingIntent, donorDirective: parsed.data.donorDirective, campaignSlug: parsed.data.campaignSlug, units: parsed.data.units, amount: parsed.data.amount });
   if (!destination.ok) return NextResponse.json({ error: destination.error }, { status: destination.status, headers: privateHeaders });
   const payload = await placeRazorpayDonationOrder({
     donorName: parsed.data.donorName,

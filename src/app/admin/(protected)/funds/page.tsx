@@ -19,7 +19,7 @@ export default async function FundsLedgerPage() {
       <div>
         <p className="eyebrow">Funds ledger</p>
         <h1>Where the money belongs</h1>
-        <p><Link href="/admin/funds/spending">Record and publish where money was spent</Link> · <Link href="/admin/funds/manage">Manage funds</Link></p>
+        <p><Link href="/admin/funds/spending">Record and publish where money was spent</Link>  · <Link href="/admin/funds/manage">Manage funds</Link> · <Link href="/admin/funds/campaigns">Seasonal campaigns</Link></p>
         <p className="muted">All giving reaches one bank account; this ledger separates it by fund. Received means verified and net of refunds. Transfers awaiting bank verification are shown separately and are never counted as received. Balance is received minus recorded spending.</p>
       </div>
     </div>
