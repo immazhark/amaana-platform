@@ -83,3 +83,41 @@ describe("fund donation form copy", () => {
     expect(html).toContain("Orphan Fund");
   });
 });
+
+describe("seasonal campaign on the giving page", () => {
+  const campaign = { slug: "eid-kits-2027", fundSlug: "eid-kits", title: "Eid Kits 2027", unitLabel: "kit", unitLabelPlural: "kits", unitPrice: 1500, maxUnits: 100, note: "Packed before Eid.", closesLabel: "24 February 2027" };
+  const withCampaign = (initialSlug?: string) => renderToStaticMarkup(<FundGivingCheckout funds={funds} campaigns={[campaign]} initialSlug={initialSlug} paymentDetails={paymentDetails} feeBps={236} />);
+
+  it("offers fixed-price units on the campaign's fund, with the price, the close date and the exact total", () => {
+    const html = withCampaign("eid-kits");
+    expect(html).toContain("Eid Kits 2027");
+    expect(html).toContain("₹1,500 per kit");
+    expect(html).toContain("open until 24 February 2027");
+    expect(html).toContain("Packed before Eid.");
+    expect(html).toContain("Sponsor kits");
+    expect(html).toContain("Give another amount");
+    expect(html).toMatch(/1 kit × ₹1,500 = <strong>₹1,500<\/strong>/);
+    expect(html).toContain("Give ₹1,500 to Eid Kits Fund");
+  });
+  it("starts in sponsor mode with one unit and labelled stepper controls", () => {
+    const html = withCampaign("eid-kits");
+    const modes = (html.match(/<input[^>]*name="giftMode"[^>]*>/g) ?? []);
+    expect(modes).toHaveLength(2);
+    expect(modes.filter(tag => tag.includes('checked=""'))).toHaveLength(1);
+    expect(html).toContain('aria-label="Fewer kits"');
+    expect(html).toContain('aria-label="More kits"');
+    expect(html).toContain("Number of kits");
+  });
+  it("shows nothing for a fund that has no open campaign", () => {
+    const html = withCampaign("orphan");
+    expect(html).not.toContain("Sponsor kits");
+    expect(html).not.toContain("giftMode");
+    expect(html).toContain("Give to Orphan Fund");
+  });
+  it("is unchanged when no campaign is open at all", () => {
+    expect(render("eid-kits")).not.toContain("giftMode");
+  });
+  it("keeps the Zakat refusal visible alongside the campaign", () => {
+    expect(withCampaign("eid-kits")).toContain("Zakat is not accepted for this fund");
+  });
+});

@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     // donation amount, payment identity, donor fields or evidence alter a
     // financial claim through HTTP multipart parameter pollution.
     const scalarFields = [
-      "appealId", "fundSlug", "donorDirective", "donorName", "donorEmail", "donorPhone", "amount",
+      "appealId", "fundSlug", "donorDirective", "campaignSlug", "units", "donorName", "donorEmail", "donorPhone", "amount",
       "givingIntent", "paymentMethod", "transferReference", "transferredAt",
     ] as const;
     if (scalarFields.some(field => form.getAll(field).length > 1) || form.getAll("evidence").length > 1) {
@@ -120,24 +120,28 @@ export async function POST(request: Request) {
     };
     // A submission names exactly one destination: an appeal or a designated fund.
     const fundSlug = form.get("fundSlug");
+    // Campaigns belong to funds only.
+    if (fundSlug === null && (form.get("campaignSlug") !== null || form.get("units") !== null)) {
+      return NextResponse.json({ error: "Campaign gifts must be made to a fund." }, { status: 400, headers: privateHeaders });
+    }
     if (fundSlug !== null && !isFundGivingEnabled()) {
       return NextResponse.json({ error: "This fund is not accepting donations." }, { status: 409, headers: privateHeaders });
     }
     if (fundSlug !== null && form.get("appealId") !== null) {
       return NextResponse.json({ error: "Please choose either an appeal or a fund." }, { status: 400, headers: privateHeaders });
     }
-    const fundParsed = fundSlug === null ? null : fundDirectTransferSchema.safeParse({ fundSlug, donorDirective: form.get("donorDirective") ?? undefined, ...common });
+    const fundParsed = fundSlug === null ? null : fundDirectTransferSchema.safeParse({ fundSlug, donorDirective: form.get("donorDirective") ?? undefined, campaignSlug: form.get("campaignSlug") ?? undefined, units: form.get("units") ?? undefined, ...common });
     const appealParsed = fundSlug === null ? directTransferSchema.safeParse({ appealId: form.get("appealId"), ...common }) : null;
     const checked = fundParsed ?? appealParsed;
     if (!checked?.success) return NextResponse.json({ error: "Please check the transfer information and reference." }, { status: 400, headers: privateHeaders });
     const data = checked.data;
 
-    let destination: { appealId: string } | { fundId: string; donorDirective: string | null };
+    let destination: { appealId: string } | { fundId: string; donorDirective: string | null; campaignId?: string; units?: number; unitPrice?: number };
     if (fundParsed?.success) {
       if (data.amount < MIN_DONATION_AMOUNT) return NextResponse.json({ error: `The minimum donation is ₹${MIN_DONATION_AMOUNT.toLocaleString("en-IN")}.` }, { status: 400, headers: privateHeaders });
-      const resolved = await resolveFundDestination(prisma, { fundSlug: fundParsed.data.fundSlug, givingIntent: data.givingIntent, donorDirective: fundParsed.data.donorDirective });
+      const resolved = await resolveFundDestination(prisma, { fundSlug: fundParsed.data.fundSlug, givingIntent: data.givingIntent, donorDirective: fundParsed.data.donorDirective, campaignSlug: fundParsed.data.campaignSlug, units: fundParsed.data.units, amount: data.amount });
       if (!resolved.ok) return NextResponse.json({ error: resolved.error }, { status: resolved.status, headers: privateHeaders });
-      destination = { fundId: resolved.value.fundId, donorDirective: resolved.value.donorDirective };
+      destination = { fundId: resolved.value.fundId, donorDirective: resolved.value.donorDirective, ...(resolved.value.campaignId ? { campaignId: resolved.value.campaignId, units: resolved.value.units, unitPrice: resolved.value.unitPrice } : {}) };
     } else if (appealParsed?.success) {
       const appeal = await prisma.appeal.findFirst({
         where: { id: appealParsed.data.appealId, status: "PUBLISHED" },

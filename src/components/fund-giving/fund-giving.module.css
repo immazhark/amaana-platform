@@ -79,6 +79,21 @@
 .card[data-selected="true"] .check { background: var(--af-color-gold-500); border-color: var(--af-color-gold-ink); }
 .card[data-selected="true"] .check::after { transform: rotate(45deg) scale(1); }
 
+.campaign { display: grid; gap: .65rem; min-width: 0; margin: .25rem 0 0; padding: 1rem 1.1rem; border: 1px solid var(--af-color-gold-ink); border-radius: var(--af-radius-md); background: var(--af-color-surface); }
+.campaignTitle { padding: 0 .4rem; font-weight: 800; font-size: 1.02rem; }
+.campaignMeta { margin: 0; font-size: .9rem; color: var(--af-color-muted); }
+.modes { display: flex; flex-wrap: wrap; gap: .6rem; }
+.mode { display: inline-flex; align-items: center; gap: .55rem; min-height: 2.75rem; padding: .3rem .95rem; border: 1px solid var(--af-color-muted); border-radius: var(--af-radius-pill); cursor: pointer; font-weight: 700; font-size: .92rem; }
+.mode:has(input:checked) { background: var(--af-color-navy-700); border-color: var(--af-color-navy-700); color: var(--af-color-opaque-white); }
+.mode:has(input:focus-visible) { outline: 3px solid var(--af-color-focus); outline-offset: 3px; }
+.stepper { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }
+.step { width: 2.75rem; height: 2.75rem; border: 1px solid var(--af-color-navy-700); border-radius: 50%; background: var(--af-color-surface); color: var(--af-color-navy-700); font-size: 1.35rem; font-weight: 800; line-height: 1; cursor: pointer; }
+.step:disabled { opacity: .45; cursor: not-allowed; }
+.step:focus-visible, .units input:focus-visible { outline: 3px solid var(--af-color-focus); outline-offset: 2px; }
+.units input { width: 4.5rem; min-height: 2.75rem; padding: 0 .5rem; border: 1px solid var(--af-color-navy-700); border-radius: var(--af-radius-sm); background: var(--af-color-surface); color: inherit; font: inherit; font-size: 1.15rem; font-weight: 800; text-align: center; font-variant-numeric: tabular-nums; }
+.total { flex: 1 1 12rem; margin: 0; font-variant-numeric: tabular-nums; }
+.total strong { font-size: 1.15rem; }
+
 .running { margin-top: 1.4rem; padding-top: 1.2rem; border-top: 1px dashed var(--af-color-border); }
 .runningNote { max-width: 46rem; margin: 0 0 .85rem; font-size: .92rem; color: var(--af-color-muted); }
 

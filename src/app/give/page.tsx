@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { CanonicalArticle } from "@/components/canonical-article";
 import { FundGivingCheckout } from "@/components/fund-giving/fund-giving-checkout";
-import type { GiveFund } from "@/components/fund-giving/fund-copy";
+import type { GiveCampaign, GiveFund } from "@/components/fund-giving/fund-copy";
 import { PublicRouteLoading } from "@/components/public-route-loading";
 import { getDonationPaymentDetails } from "@/lib/donation-payment-details";
 import { isFundGivingEnabled } from "@/lib/fund-giving-flag";
@@ -33,6 +33,18 @@ async function GiveContent({ fundParam }: { fundParam: Promise<{ fund?: string |
     }),
   ]);
   if (rows.length === 0) notFound();
+  // Only campaigns that are ACTIVE and inside their window right now; the server re-checks at order time.
+  const now = new Date();
+  const campaignRows = await prisma.fundCampaign.findMany({
+    where: { status: "ACTIVE", opensAt: { lte: now }, closesAt: { gt: now }, fund: { status: "ACTIVE" } },
+    orderBy: { opensAt: "asc" },
+    select: { slug: true, title: true, unitLabel: true, unitLabelPlural: true, unitPrice: true, maxUnits: true, note: true, closesAt: true, fund: { select: { slug: true } } },
+  });
+  const campaigns: GiveCampaign[] = campaignRows.map(row => ({
+    slug: row.slug, fundSlug: row.fund.slug, title: row.title, unitLabel: row.unitLabel, unitLabelPlural: row.unitLabelPlural,
+    unitPrice: row.unitPrice.toNumber(), maxUnits: row.maxUnits, note: row.note,
+    closesLabel: row.closesAt.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata", day: "numeric", month: "long", year: "numeric" }),
+  }));
   const funds: GiveFund[] = rows;
   const initialSlug = typeof requested === "string" ? requested : undefined;
   return (
@@ -47,7 +59,7 @@ async function GiveContent({ fundParam }: { fundParam: Promise<{ fund?: string |
         { title: "Domestic donations only", paragraphs: [complianceCopy.domestic, complianceCopy.tax] },
       ]}
     >
-      <FundGivingCheckout funds={funds} initialSlug={initialSlug} paymentDetails={getDonationPaymentDetails()} feeBps={feeEstimateBasisPoints()} />
+      <FundGivingCheckout funds={funds} campaigns={campaigns} initialSlug={initialSlug} paymentDetails={getDonationPaymentDetails()} feeBps={feeEstimateBasisPoints()} />
     </CanonicalArticle>
   );
 }

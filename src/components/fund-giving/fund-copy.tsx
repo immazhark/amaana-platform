@@ -2,6 +2,9 @@ import { donationFormCopy, type DonationFormCopy } from "@/components/donation-f
 import formStyles from "@/components/donation-form.module.css";
 import { allowedIntentsForFund, zakatNoticeForFund, type FundZakatPolicyId, type GivingIntentId } from "@/lib/giving-funds";
 
+// An open seasonal campaign, prepared on the server for the giving page. Prices are whole rupees.
+export type GiveCampaign = { slug: string; fundSlug: string; title: string; unitLabel: string; unitLabelPlural: string; unitPrice: number; maxUnits: number; note: string | null; closesLabel: string };
+
 export type GiveFund = { slug: string; name: string; summary: string; zakatPolicy: FundZakatPolicyId; isGeneral: boolean };
 
 const INTENT_LABEL: Record<GivingIntentId, string> = { GENERAL: "General Charity", SADAQAH: "Sadaqah", ZAKAT: "Zakat" };
