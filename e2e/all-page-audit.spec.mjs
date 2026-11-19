@@ -13,7 +13,9 @@ const normalize = file=>'/'+path.relative(path.join(workspace,'src/app'),path.di
 const sourceRoutes = sourcePages.map(file=>({file:path.relative(workspace,file),route:normalize(file)}));
 const staticRoutes = sourceRoutes.filter(r=>!r.route.includes('[')).map(r=>r.route);
 const adminDetail = [`/admin/requests/${seed.requestId}`,`/admin/appeals/${seed.appealId}`,`/admin/appeals/${seed.draftId}`,`/admin/donations/${seed.donationId}`];
-const routes = [...new Set([...staticRoutes,...seed.publicRoutes,...adminDetail,'/programmes/medical-financial-relief','/programmes/emergency-relief','/programmes/ramadan-eid','/programmes/seasonal-relief','/donations/invalid/acknowledgement'])].sort();
+// Closed (a real 404) until the owner sets FUND_GIVING_ENABLED; covered meanwhile by e2e/fund-giving.spec.mjs via synthetic fixture routes.
+const gatedRoutes = new Set(process.env.FUND_GIVING_ENABLED === 'true' ? [] : ['/give','/funds']);
+const routes = [...new Set([...staticRoutes,...seed.publicRoutes,...adminDetail,'/programmes/medical-financial-relief','/programmes/emergency-relief','/programmes/ramadan-eid','/programmes/seasonal-relief','/donations/invalid/acknowledgement'])].filter(route=>!gatedRoutes.has(route)).sort();
 test.describe.configure({retries:0});
 function renderErrorSource(sourceFile) {
  return execFileSync(process.execPath,['--input-type=module','-'],{
