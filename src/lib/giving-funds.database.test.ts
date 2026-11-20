@@ -169,10 +169,26 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("designated giving
   });
 
   it("caps a recorded refund at the donation amount", async () => {
-    // Pins the recorded-refund ceiling for a donation with no covered fee. The Razorpay webhook accepts a refund up to
-    // the gift plus the covered fee, so whether this CHECK should also include the fee is the open AF-FUNDING-MATH
-    // decision; no fee-covered case is asserted here so that decision stays visible rather than frozen by a test.
+    // Pins the recorded-refund ceiling for a donation with no covered fee. The fee-covered case is the labelled known
+    // gap in the next test.
     await probe(async tx => { const f = await fund(tx); await tx.donation.create({ data: donation(f.id, { status: "CAPTURED", capturedAt: new Date("2026-11-10T06:00:00Z"), amount: 100, refundedAmount: 100 }) }); });
     await refused("Donation_refundedAmount_lte_amount_check", async tx => { const f = await fund(tx); await tx.donation.create({ data: donation(f.id, { status: "CAPTURED", capturedAt: new Date("2026-11-10T06:00:00Z"), amount: 100, refundedAmount: 100.01 }) }); });
+  });
+
+  // KNOWN GAP (AF-FUNDING-MATH), characterised against real PostgreSQL. This documents current behaviour; it does not
+  // endorse it. The Razorpay webhook caps a refund at the full charge (gift plus covered fee) and, on a full refund, sets
+  // refundedAmount to that total (src/app/api/webhooks/razorpay/route.ts), as its mocked unit tests expect. The CHECK from
+  // migration 20260917090000 still caps refundedAmount at the gift, so the real UPDATE is refused and the webhook
+  // transaction would fail instead of recording the refund. Not reachable in production today: fee cover is offered only
+  // on /give, which is closed by FUND_GIVING_ENABLED. When the owner-approved fix lands (relax the CHECK to include the
+  // covered fee), this test fails because the statement is accepted; flip it to assert the refund is recorded and the
+  // ledger shows received 0 for the donation.
+  it("KNOWN GAP: a full refund of a fee-covered donation cannot yet be recorded", async () => {
+    await refused("Donation_refundedAmount_lte_amount_check", async tx => {
+      const f = await fund(tx);
+      const gift = await tx.donation.create({ data: donation(f.id, { status: "CAPTURED", capturedAt: new Date("2026-11-10T06:00:00Z"), amount: 100, feeContributionAmount: 12 }) });
+      // Exactly the webhook's update for a refund of the whole charge, Rs 112.
+      await tx.donation.update({ where: { id: gift.id }, data: { refundedAmount: { increment: 112 }, status: "REFUNDED", refundedAt: new Date("2026-11-11T06:00:00Z") } });
+    });
   });
 });
