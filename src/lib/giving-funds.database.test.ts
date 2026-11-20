@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { loadFundsLedger } from "@/lib/funds-ledger";
 
 class Rollback extends Error {}
+class NotRefused extends Error {}
 
 // Opt-in and loopback-only: this suite never mutates a hosted, staging or live database. Every case runs inside a
 // transaction that is rolled back, so the isolated database is left exactly as the migrations made it.
@@ -29,11 +30,28 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("designated giving
     } catch (error) { if (!(error instanceof Rollback)) throw error; }
     return result as T;
   }
-  // A statement the database must refuse, and refuse because of the named constraint: otherwise an unrelated rule (or a
-  // malformed fixture) could make the test pass without proving anything. A failed statement aborts its transaction, so
-  // each refusal gets its own.
+  // Runs a statement the database must refuse, in a transaction that can never commit: if the database wrongly accepts
+  // it, NotRefused is thrown inside the transaction so the synthetic rows roll back instead of being left behind. A
+  // failed statement aborts its transaction, so each refusal gets its own. Resolves with the error that was raised.
+  async function attempt(work: (tx: Prisma.TransactionClient) => Promise<unknown>): Promise<unknown> {
+    try {
+      await prisma.$transaction(async tx => { await work(tx); throw new NotRefused("the database accepted a statement it must refuse"); });
+    } catch (error) { return error; }
+    throw new NotRefused("unreachable: the transaction neither committed nor failed");
+  }
+  // The refusal must come from the named constraint: otherwise an unrelated rule (or a malformed fixture) could make the
+  // test pass without proving anything.
   async function refused(constraint: string, work: (tx: Prisma.TransactionClient) => Promise<unknown>) {
-    await expect(prisma.$transaction(async tx => { await work(tx); })).rejects.toThrow(constraint);
+    const error = await attempt(work);
+    expect(error, "the database accepted a statement it must refuse").not.toBeInstanceOf(NotRefused);
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).message).toContain(constraint);
+  }
+  // Same guarantee for rules that surface as a Prisma error code (a unique index or a foreign key) rather than a CHECK.
+  async function refusedWithCode(code: string, work: (tx: Prisma.TransactionClient) => Promise<unknown>) {
+    const error = await attempt(work);
+    expect(error, "the database accepted a statement it must refuse").not.toBeInstanceOf(NotRefused);
+    expect(error).toMatchObject({ code });
   }
   const user = (tx: Prisma.TransactionClient) => tx.user.create({ data: { name: "Synthetic operator", email: `${next()}@example.test` } });
   const fund = (tx: Prisma.TransactionClient, over: Partial<Prisma.FundUncheckedCreateInput> = {}) =>
@@ -62,7 +80,7 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("designated giving
   });
 
   it("allows only one General fund", async () => {
-    await expect(prisma.$transaction(tx => fund(tx, { isGeneral: true }))).rejects.toMatchObject({ code: "P2002" });
+    await refusedWithCode("P2002", tx => fund(tx, { isGeneral: true }));
   });
 
   it("gives every donation exactly one destination: an appeal or a fund", async () => {
@@ -84,11 +102,16 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("designated giving
   });
 
   it("will not delete a fund that has gifts, spending, or both", async () => {
-    await expect(prisma.$transaction(async tx => {
-      const f = await fund(tx);
-      await tx.donation.create({ data: donation(f.id) });
-      await tx.fund.delete({ where: { id: f.id } });
-    })).rejects.toMatchObject({ code: "P2003" });
+    const withGift = async (tx: Prisma.TransactionClient, fundId: string) => { await tx.donation.create({ data: donation(fundId) }); };
+    const withSpend = async (tx: Prisma.TransactionClient, fundId: string) => {
+      const owner = await user(tx);
+      await tx.fundDisbursement.create({ data: { fundId, createdById: owner.id, pool: "NON_ZAKAT", amount: 10, spentOn: new Date("2026-11-01"), financialYear: "2026-27", title: "Synthetic spend" } });
+    };
+    // Control: a fund with nothing recorded against it deletes cleanly, so the refusals below are caused by the records.
+    await probe(async tx => { const f = await fund(tx); await tx.fund.delete({ where: { id: f.id } }); });
+    await refusedWithCode("P2003", async tx => { const f = await fund(tx); await withGift(tx, f.id); await tx.fund.delete({ where: { id: f.id } }); });
+    await refusedWithCode("P2003", async tx => { const f = await fund(tx); await withSpend(tx, f.id); await tx.fund.delete({ where: { id: f.id } }); });
+    await refusedWithCode("P2003", async tx => { const f = await fund(tx); await withGift(tx, f.id); await withSpend(tx, f.id); await tx.fund.delete({ where: { id: f.id } }); });
   });
 
   it("guards spending: positive amounts, Zakat only with recorded eligibility, void only with a reason", async () => {
@@ -132,5 +155,24 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("designated giving
     // The capture window excludes the pending claim (it has no capture date) and nothing else.
     expect(result.windowed?.total.receivedPaise).toBe(25_000);
     expect(result.windowed?.total.pendingPaise).toBe(0);
+  });
+
+  it("returns the covered gateway fee before the gift itself on a partial refund", async () => {
+    const result = await probe(async tx => {
+      const f = await fund(tx);
+      // Rs 100 gift plus Rs 12 covered fee; Rs 50 has gone back to the donor.
+      await tx.donation.create({ data: donation(f.id, { givingIntent: "SADAQAH", status: "CAPTURED", capturedAt: new Date("2026-11-10T06:00:00Z"), amount: 100, feeContributionAmount: 12, refundedAmount: 50 }) });
+      return (await loadFundsLedger(tx, { fundId: f.id })).byFund[f.id];
+    });
+    // The first Rs 12 returned the fee, so only Rs 38 of the gift is refunded and Rs 62 is still received.
+    expect(result?.total).toMatchObject({ receivedPaise: 6_200, refundedPaise: 3_800, spentPaise: 0, balancePaise: 6_200 });
+  });
+
+  it("caps a recorded refund at the donation amount", async () => {
+    // Pins the recorded-refund ceiling for a donation with no covered fee. The Razorpay webhook accepts a refund up to
+    // the gift plus the covered fee, so whether this CHECK should also include the fee is the open AF-FUNDING-MATH
+    // decision; no fee-covered case is asserted here so that decision stays visible rather than frozen by a test.
+    await probe(async tx => { const f = await fund(tx); await tx.donation.create({ data: donation(f.id, { status: "CAPTURED", capturedAt: new Date("2026-11-10T06:00:00Z"), amount: 100, refundedAmount: 100 }) }); });
+    await refused("Donation_refundedAmount_lte_amount_check", async tx => { const f = await fund(tx); await tx.donation.create({ data: donation(f.id, { status: "CAPTURED", capturedAt: new Date("2026-11-10T06:00:00Z"), amount: 100, refundedAmount: 100.01 }) }); });
   });
 });
