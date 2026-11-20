@@ -31,6 +31,8 @@ const routes = [
   "reviewed-donation",
   "reviewed-medical",
   "donation",
+  "give",
+  "funds-ledger",
   "gallery",
   "home-hero",
   "mobile-support",
