@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { expect, test } from '@playwright/test';
+import { waitForPublicOverview } from './helpers/public-overview-ready.mjs';
 
 const reviewRoutes = [
   { slug: 'home', path: '/' },
@@ -72,6 +73,10 @@ test.describe('launch review screenshot capture', () => {
         expect(response?.ok(), `Expected ${route.path} to render successfully`).toBeTruthy();
         await expect(page.locator('main#main')).toBeVisible();
         await expect(page.locator('body')).not.toHaveClass(/error/i);
+        // Streamed overview routes first return an h1-free loading fallback.
+        // Wait for the real page hero so the heading check below can only pass
+        // on the real page and never samples the transient fallback.
+        await waitForPublicOverview(page, route.path);
         const geometry = await page.evaluate(() => ({
           documentWidth: document.documentElement.scrollWidth,
           viewportWidth: document.documentElement.clientWidth,

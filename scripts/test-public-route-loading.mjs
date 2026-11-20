@@ -39,7 +39,12 @@ test('loading component is accessible, noninteractive, and never renders invente
   assert.match(source, /role="status"/);
   assert.match(source, /aria-live="polite"/);
   assert.match(source, /aria-hidden="true"/);
-  assert.match(source, /<h1\b/);
+  // The streamed fallback stays in the served HTML beside the real page, so it must not add a second h1
+  // (#1060, #1066). The title is a labelled paragraph; the real page owns the single h1.
+  assert.doesNotMatch(source, /<h1\b/);
+  // e2e/helpers/public-overview-ready.mjs waits for this exact id to disappear, so it is part of the contract.
+  assert.match(source, /aria-labelledby="public-route-loading-title"/);
+  assert.match(source, /<p\b[^>]*id="public-route-loading-title"/);
   assert.doesNotMatch(source, /<main\b|<button\b|<a\b|<img\b|<video\b|fetch\(|prisma\.|Math\.random|Date\(/);
   for (const route of paths) assert.ok(source.includes(`"${route}"`), `Missing copy for ${route}`);
 });
