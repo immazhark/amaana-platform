@@ -30,6 +30,10 @@ export type AcknowledgementRecord = {
     // Exactly one destination: an appeal, or a designated fund.
     appeal: { title: string; slug: string } | null;
     fund?: { name: string; slug: string } | null;
+    // Optional gateway fee the donor covered on top of the gift. Absent means none.
+    feeContributionAmount?: number;
+    // Seasonal fixed-price initiative the gift bought units of, with the unit label already singular or plural.
+    campaign?: { title: string; units: number; unitLabel: string; unitPrice: number } | null;
   };
 };
 
@@ -72,6 +76,15 @@ function validDestination(appeal: unknown, fund: unknown): boolean {
   return appealOk;
 }
 
+const MAX_CAMPAIGN_UNITS = 10_000;
+
+function validCampaign(value: unknown): boolean {
+  return object(value) && ownsFields(value, ["title", "units", "unitLabel", "unitPrice"]) &&
+    text(value.title) && text(value.unitLabel) &&
+    typeof value.units === "number" && Number.isSafeInteger(value.units) && value.units >= 1 && value.units <= MAX_CAMPAIGN_UNITS &&
+    money(value.unitPrice) && value.unitPrice > 0;
+}
+
 /** Fail closed on malformed private financial reads. Never turn a failed read
  * into a new donation or an apparently invalid donor receipt. */
 export function isAcknowledgementResponse(value: unknown, expectedReference: string): value is AcknowledgementRecord | { found: false } {
@@ -97,7 +110,9 @@ export function isAcknowledgementResponse(value: unknown, expectedReference: str
     !money(d.amount) || d.amount <= 0 ||
     !money(d.refundedAmount) || d.refundedAmount > d.amount ||
     !serverTimestamp(d.recordDate) || !nullableText(d.providerPaymentId) ||
-    !validDestination(d.appeal, d.fund)
+    !validDestination(d.appeal, d.fund) ||
+    (d.feeContributionAmount !== undefined && !money(d.feeContributionAmount)) ||
+    (d.campaign !== undefined && d.campaign !== null && !validCampaign(d.campaign))
   ) return false;
 
   if (p.tone === "refunded") return d.refundedAmount === d.amount;
