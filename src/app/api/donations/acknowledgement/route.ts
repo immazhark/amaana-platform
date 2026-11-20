@@ -79,6 +79,9 @@ export async function POST(request: Request) {
         providerPaymentId: true,
         appeal: { select: { title: true, slug: true } },
         fund: { select: { name: true, slug: true } },
+        units: true,
+        unitPrice: true,
+        campaign: { select: { title: true, unitLabel: true, unitLabelPlural: true } },
       },
     });
 
@@ -95,6 +98,16 @@ export async function POST(request: Request) {
     const donationRefunded = Math.max(0, Math.round((refundedAmount - feeContribution) * 100) / 100);
     const presentation = getDonationAcknowledgementPresentation(donation.status, amount, donationRefunded);
     const recordDate = donation.refundedAt ?? donation.capturedAt ?? donation.createdAt;
+    // The units and price recorded on the donation itself, never the campaign's current price, so a later price
+    // change cannot rewrite what this donor bought.
+    const campaign = donation.campaign && donation.units && donation.unitPrice
+      ? {
+        title: donation.campaign.title,
+        units: donation.units,
+        unitLabel: donation.units === 1 ? donation.campaign.unitLabel : donation.campaign.unitLabelPlural,
+        unitPrice: donation.unitPrice.toNumber(),
+      }
+      : null;
 
     return NextResponse.json(
       {
@@ -113,6 +126,7 @@ export async function POST(request: Request) {
           providerPaymentId: donation.providerPaymentId,
           appeal: donation.appeal,
           fund: donation.fund,
+          campaign,
         },
       },
       { headers: privateHeaders },
