@@ -72,7 +72,7 @@
 
 .tag { grid-area: tag; justify-self: start; margin-top: .35rem; padding: .22rem .65rem; border-radius: var(--af-radius-pill); font-size: .75rem; font-weight: 750; letter-spacing: .02em; border: 1px solid transparent; }
 .tag[data-policy="zakat"] { color: var(--af-color-navy-950); background: color-mix(in srgb, var(--af-color-gold-500) 30%, transparent); border-color: color-mix(in srgb, var(--af-color-gold-ink) 45%, transparent); }
-.tag[data-policy="non-zakat"] { color: var(--af-color-warning); background: color-mix(in srgb, var(--af-color-warning) 9%, transparent); border-color: color-mix(in srgb, var(--af-color-warning) 38%, transparent); }
+.tag[data-policy="non-zakat"] { color: var(--af-color-gold-ink); background: color-mix(in srgb, var(--af-color-warning) 9%, transparent); border-color: color-mix(in srgb, var(--af-color-warning) 38%, transparent); }
 
 .check { position: absolute; top: .75rem; right: .8rem; width: 1.5rem; height: 1.5rem; border-radius: 50%; border: 1.5px solid var(--af-color-muted); background: var(--af-color-surface); display: grid; place-items: center; transition: background-color .25s var(--af-ease-standard), border-color .25s var(--af-ease-standard); }
 .check::after { content: ""; width: .5rem; height: .85rem; margin-top: -.12rem; border: solid var(--af-color-navy-950); border-width: 0 2.5px 2.5px 0; transform: rotate(45deg) scale(0); transition: transform .3s var(--af-ease-standard); }
