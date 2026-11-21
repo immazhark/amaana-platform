@@ -81,7 +81,7 @@ export function FundGivingCheckout({ funds, initialSlug, paymentDetails, feeBps,
   ) : undefined;
 
   return (
-    <section className={styles.shell} aria-labelledby="give-fund-heading">
+    <section id="choose-fund" className={styles.shell} aria-labelledby="give-fund-heading">
       <fieldset className={styles.fieldset} disabled={locked}>
         <legend className={styles.legend}><span className={styles.eyebrow}>Step 1</span><span id="give-fund-heading" className={styles.heading}>Choose where your gift goes</span></legend>
         <div className={styles.grid}>
