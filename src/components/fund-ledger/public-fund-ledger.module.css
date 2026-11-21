@@ -52,6 +52,8 @@
 .more summary { min-height: 2.75rem; display: flex; align-items: center; cursor: pointer; font-weight: 700; color: var(--af-color-navy-700); }
 .more summary:focus-visible { outline: 3px solid var(--af-color-focus); outline-offset: 3px; }
 .empty { margin: 0; font-size: .9rem; color: var(--af-color-muted); }
+.cardQuiet article { gap: .6rem; }
+.quietNote { max-width: 52rem; margin: 0; padding: .85rem 1rem; border-left: 3px solid var(--af-color-gold-500); background: var(--af-color-surface); font-size: .95rem; line-height: 1.55; color: var(--af-color-text); }
 .give { justify-self: start; display: inline-flex; align-items: center; min-height: 2.75rem; font-weight: 800; color: var(--af-color-navy-700); text-decoration-thickness: .08em; text-underline-offset: .25em; }
 .give:focus-visible { outline: 3px solid var(--af-color-focus); outline-offset: 3px; }
 .method { max-width: 52rem; margin: 0; font-size: .88rem; line-height: 1.55; color: var(--af-color-muted); }

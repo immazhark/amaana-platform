@@ -17,7 +17,32 @@ describe("public fund ledger view", () => {
   });
   it("states the share spent in text so the meter is never the only signal", () => {
     expect(render([row()])).toContain("50% of what was received this year has been spent and published.");
-    expect(render([row({ receivedPaise: 0, spentPaise: 0, heldPaise: 0, spentShare: 0, entries: [] })])).toContain("No gifts recorded in this financial year yet.");
+    // A fund with gifts received but nothing spent yet still gets its full card and the plain sentence.
+    expect(render([row({ spentPaise: 0, spentShare: 0, entries: [] })])).toContain("0% of what was received this year has been spent and published.");
+  });
+  it("collapses a fund with no gifts, no spending and nothing held to one compact line with the give link", () => {
+    const quiet = row({ slug: "dates", name: "Dates Fund", zakatPolicy: "NOT_ACCEPTED", receivedPaise: 0, spentPaise: 0, heldPaise: 0, spentShare: 0, entries: [] });
+    const html = render([quiet]);
+    expect(html).toContain("No gifts or published spending in 2026-27 yet.");
+    expect(html).toContain('href="/give?fund=dates"');
+    expect(html).toContain("Non-Zakat only");
+    expect(html).not.toContain("Received in 2026-27");
+    expect(html).not.toContain("Nothing has been published as spent from this fund");
+    expect(html).not.toContain("No gifts recorded in this financial year yet.");
+  });
+  it("shows one calm notice, not ten repeated sentences, when every fund is quiet", () => {
+    const quiet = (slug: string) => row({ slug, name: slug, receivedPaise: 0, spentPaise: 0, heldPaise: 0, spentShare: 0, entries: [] });
+    const html = render(["a", "b", "c"].map(quiet));
+    expect(html.match(/The public ledger is open for 2026-27\./g)).toHaveLength(1);
+    expect(html.match(/No gifts or published spending in 2026-27 yet\./g)).toHaveLength(3);
+    expect(html).toContain("nothing is estimated");
+  });
+  it("keeps the full card, with its figures, as soon as a fund has any activity or anything held", () => {
+    const heldOnly = row({ receivedPaise: 0, spentPaise: 0, heldPaise: 250_000, spentShare: 0, entries: [] });
+    const html = render([heldOnly, row({ slug: "dates", name: "Dates Fund", receivedPaise: 0, spentPaise: 0, heldPaise: 0, spentShare: 0, entries: [] })]);
+    expect(html).toContain("Held for this fund");
+    expect(html).toContain("₹2,500");
+    expect(html).not.toContain("The public ledger is open for");
   });
   it("lists published spending with its date, summary and Zakat pool label", () => {
     const html = render([row({ entries: [entry(1), entry(2, "ZAKAT")] })]);

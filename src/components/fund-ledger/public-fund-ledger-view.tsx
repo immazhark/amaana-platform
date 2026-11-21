@@ -27,8 +27,29 @@ function Entry({ entry }: { entry: PublicFundRow["entries"][number] }) {
   );
 }
 
+// A fund with no gifts, no published spending and nothing held for the year. Ten of these would repeat the same two empty
+// sentences ten times, so they render as one compact line each; any activity at all restores the full card.
+const isQuiet = (row: PublicFundRow) => row.receivedPaise === 0 && row.spentPaise === 0 && row.heldPaise === 0 && row.entries.length === 0;
+
 function FundCard({ row, index, year }: { row: PublicFundRow; index: number; year: string }) {
   const headingId = `ledger-${row.slug}`;
+  if (isQuiet(row)) {
+    return (
+      <li className={`${styles.card} ${styles.cardQuiet}`} style={{ "--i": index } as CSSProperties}>
+        <article aria-labelledby={headingId}>
+          <header className={styles.cardHead}>
+            <span className={styles.glyph}><FundGlyph slug={row.slug} /></span>
+            <div>
+              <h3 id={headingId}>{row.name}</h3>
+              <span className={styles.tag} data-policy={row.zakatPolicy === "ACCEPTED" ? "zakat" : "non-zakat"}>{ZAKAT_TAG[row.zakatPolicy]}</span>
+            </div>
+          </header>
+          <p className={styles.empty}>No gifts or published spending in {year} yet.</p>
+          <Link className={styles.give} href={`/give?fund=${row.slug}`}>Give to this fund <span aria-hidden="true">→</span></Link>
+        </article>
+      </li>
+    );
+  }
   const shown = row.entries.slice(0, PREVIEW);
   const more = row.entries.slice(PREVIEW);
   const percent = Math.round(row.spentShare * 100);
@@ -82,6 +103,7 @@ export function PublicFundLedgerView({ rows, totals, year, years }: { rows: read
         <Stat label="Spent and published" value={rupees(totals.spentPaise)} />
         <Stat label="Held for purpose, to date" value={rupees(totals.heldPaise)} />
       </dl>
+      {rows.length > 0 && rows.every(isQuiet) ? <p className={styles.quietNote}>The public ledger is open for {year}. Each fund shows its verified gifts and published spending here as they are recorded, and nothing is estimated.</p> : null}
       <ul className={styles.cards}>{rows.map((row, index) => <FundCard key={row.slug} row={row} index={index} year={year} />)}</ul>
       <p className={styles.method}>Figures come from verified payments, net of any refunds, and from spending entries that Amaana&apos;s team has recorded and published. Payments still waiting for bank verification are never counted, and nothing is estimated.</p>
     </section>
