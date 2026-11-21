@@ -4,13 +4,13 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("@/components/donation-methods", () => ({ DonationMethods: () => <div>Existing payment methods</div> }));
 
 import { fundDonationFormCopy } from "@/components/fund-giving/fund-copy";
-import { taleemIntro, taleemPanelNote } from "./taleem-sponsorship-copy";
+import { taleemHead, taleemIntro, taleemPanelNote } from "./taleem-sponsorship-copy";
 import { sponsorshipOffer } from "@/lib/taleem-sponsorship";
 import { TaleemSponsorshipConfigurator } from "./taleem-sponsorship-configurator";
 
 const fund = { slug: "taleem", name: "Taleem Fund", summary: "Qur'an and Islamic education.", zakatPolicy: "ACCEPTED" as const, isGeneral: false };
 const details = { upi: { id: "synthetic@bank", qrImageUrl: null }, bank: null } as never;
-const html = () => renderToStaticMarkup(<TaleemSponsorshipConfigurator fund={fund} offer={sponsorshipOffer()} intro={taleemIntro} panelNote={taleemPanelNote} copy={fundDonationFormCopy(fund)} paymentDetails={details} feeBps={236} />);
+const html = () => renderToStaticMarkup(<TaleemSponsorshipConfigurator fund={fund} offer={sponsorshipOffer()} head={taleemHead} intro={taleemIntro} panelNote={taleemPanelNote} copy={fundDonationFormCopy(fund)} paymentDetails={details} feeBps={236} />);
 const text = () => html().replace(/<!-- -->/g, "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
 
 describe("Taleem sponsorship configurator", () => {

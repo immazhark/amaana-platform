@@ -5,7 +5,7 @@ import { feeEstimateBasisPoints } from "@/lib/processing-fee";
 import { isTaleemSponsorshipEnabled } from "@/lib/taleem-sponsorship-flag";
 import { sponsorshipOffer, TALEEM_FUND_SLUG } from "@/lib/taleem-sponsorship";
 import { logServerError } from "@/lib/server-log";
-import { taleemIntro, taleemPanelNote } from "./taleem-sponsorship-copy";
+import { taleemHead, taleemIntro, taleemPanelNote } from "./taleem-sponsorship-copy";
 import { TaleemSponsorshipConfigurator } from "./taleem-sponsorship-configurator";
 
 async function loadTaleemFund() {
@@ -31,6 +31,7 @@ export async function TaleemSponsorshipSection() {
   const offer = sponsorshipOffer();
   if (offer.programmes.length === 0) return null;
   return <TaleemSponsorshipConfigurator fund={loaded.fund} offer={offer}
+    head={taleemHead}
     intro={taleemIntro}
     panelNote={taleemPanelNote}
     copy={fundDonationFormCopy(loaded.fund)} paymentDetails={loaded.paymentDetails} feeBps={feeEstimateBasisPoints()} />;

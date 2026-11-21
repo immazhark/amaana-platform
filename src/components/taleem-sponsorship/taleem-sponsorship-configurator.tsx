@@ -19,7 +19,7 @@ const plural = (count: number, one: string, many: string) => `${count} ${count =
  * checkout forms every other gift uses. The price shown here comes from the same engine the server uses, but the server
  * recomputes it from the approved catalogue and refuses any other amount. The gift supports the programme: it does not
  * name or reserve a student, and the period is paid once, never as a recurring mandate. */
-export function TaleemSponsorshipConfigurator({ fund, offer, copy, paymentDetails, feeBps, intro, panelNote }: { fund: GiveFund; offer: SponsorshipOffer; copy: DonationFormCopy; paymentDetails: DonationPaymentDetails; feeBps: number; intro: ReactNode; panelNote: ReactNode }) {
+export function TaleemSponsorshipConfigurator({ fund, offer, copy, paymentDetails, feeBps, head, intro, panelNote }: { fund: GiveFund; offer: SponsorshipOffer; copy: DonationFormCopy; paymentDetails: DonationPaymentDetails; feeBps: number; head: ReactNode; intro: ReactNode; panelNote: ReactNode }) {
   const { programmes, monthOptions, maxUnits } = offer;
   const [programmeId, setProgrammeId] = useState(programmes[0]?.id);
   const [months, setMonths] = useState<number>(monthOptions[0] ?? 1);
@@ -45,16 +45,12 @@ export function TaleemSponsorshipConfigurator({ fund, offer, copy, paymentDetail
   const units = Math.min(Math.max(parsedUnits, 1), maxUnits);
   const unitRate = programme.monthlyRupees;
   const totalRupees = unitRate * units * months;
-  if (totalRupees > MAX_GIFT_RUPEES) return null;
   const selection: SponsorshipSelection = { programmeId: programme.id, units, months, totalRupees };
 
   return (
     <section id="programme-sponsorship" className={styles.shell} aria-labelledby="programme-sponsorship-heading">
       <fieldset className={styles.fieldset} disabled={locked}>
-        <legend className={styles.legend}>
-          <span className={styles.eyebrow}>Programme sponsorship</span>
-          <span id="programme-sponsorship-heading" className={styles.heading}>Sponsor a Taleem programme.</span>
-        </legend>
+        {head}
         {intro}
 
         <div className={styles.modes} role="radiogroup" aria-label="Programme">
