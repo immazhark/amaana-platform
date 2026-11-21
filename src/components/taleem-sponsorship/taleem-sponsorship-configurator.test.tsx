@@ -48,6 +48,13 @@ describe("Taleem sponsorship configurator", () => {
     expect(markup).not.toContain("Existing payment methods");
   });
 
+  it("says the donor can choose Zakat, Sadaqah or General charity, and that the acknowledgement is not a tax certificate", () => {
+    const copy = text();
+    expect(copy).toMatch(/give this as Zakat, Sadaqah or General charity; you choose at checkout/);
+    expect(copy).toMatch(/private transaction record and does not certify Section 80G deduction eligibility/);
+    for (const forbidden of [/tax[- ]deductible/i, /tax benefit/i, /80G (approved|registered|exempt)/i, /claim a deduction/i]) expect(copy).not.toMatch(forbidden);
+  });
+
   it("states the Zakat rule that applies to Taleem gifts", () => {
     expect(text()).toMatch(/Zakat is never moved to a different purpose without your permission/);
   });
