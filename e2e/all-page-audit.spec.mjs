@@ -224,7 +224,8 @@ for(const status of [429,503])test(`temporary acknowledgement failure ${status} 
   return r.fulfill({status:200,json:{found:true,presentation:acknowledgementStates[0],donation:{referenceNumber:credentials.reference,receiptNumber:'ACK-SYNTHETIC',donorName:'Synthetic donor',givingIntent:'GENERAL',amount:100,refundedAmount:0,recordDate:'2026-10-01T00:00:00.000Z',providerPaymentId:null,appeal:{title:'Synthetic UI audit appeal',slug:'synthetic-ui-audit'}}}});
  });
  await page.goto(`/donations/${credentials.reference}/acknowledgement#token=${credentials.token}`);
- await expect(page.getByRole('heading',{name:'Unable to open your acknowledgement.',exact:true})).toBeVisible();
+ // A rate limit gets its own wait-and-retry heading; any other temporary failure keeps the generic one.
+ await expect(page.getByRole('heading',{name:status===429?'Too many attempts.':'Unable to open your acknowledgement.',exact:true})).toBeVisible();
  expect(await page.evaluate(()=>location.search+location.hash)).toBe('');
  await page.getByRole('button',{name:'Try again',exact:true}).click();
  await expect(page.getByRole('heading',{name:'JazakAllahu Khairan.',exact:true})).toBeVisible();
