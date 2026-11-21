@@ -9,6 +9,7 @@ import { programmeBySlug } from "@/lib/master-copy";
 import { getSponsorEducationHeroMedia } from "@/lib/sponsorship-media";
 import { getInitiativePageData } from "@/lib/public-page-data";
 import { isTaleemSponsorshipEnabled } from "@/lib/taleem-sponsorship-flag";
+import { TALEEM_HERO_SENTENCE } from "@/content/taleem-facts";
 import "./sponsor-education.css";
 
 export const dynamic = "force-dynamic";
@@ -40,7 +41,7 @@ export default async function SponsorEducationPage({ searchParams = Promise.reso
   return (
     <div className="v2-home taleem-sponsor">
       <div className="v2-shell taleem-breadcrumb"><nav aria-label="Breadcrumb"><Link href="/">Home</Link><span aria-hidden="true"> / </span><Link href="/get-involved">Get involved</Link><span aria-hidden="true"> / </span><span>Sponsor education</span></nav></div>
-      <PageHero variant="level2" eyebrow="Amaana Taleem Initiative" title="Knowledge should open doors." description={<p>As of September 2026, 25 students across Qur’an Nazira and Hifdh were being sponsored through Amaana by multiple donors. School and college sponsorship is a developing pathway.</p>} actions={isTaleemSponsorshipEnabled() ? [{label:"Give to a Taleem programme",href:"#programme-sponsorship"},{label:"Choose a sponsorship path",href:"#sponsorship-paths",secondary:true}] : [{label:"Choose a sponsorship path",href:"#sponsorship-paths"},{label:taleemActionLabel,href:taleemHref,secondary:true}]} visual={heroMedia ? <PublicMedia asset={heroMedia} priority /> : undefined} visualKicker="Education Sponsorship" visualTitle="Learn. Grow. Continue." visualNote="Hifdh · Qur’an Nazira · school and college pathways, matched to verified educational need." />
+      <PageHero variant="level2" eyebrow="Amaana Taleem Initiative" title="Knowledge should open doors." description={<p>{TALEEM_HERO_SENTENCE} School and college sponsorship is a developing pathway.</p>} actions={isTaleemSponsorshipEnabled() ? [{label:"Give to a Taleem programme",href:"#programme-sponsorship"},{label:"Choose a sponsorship path",href:"#sponsorship-paths",secondary:true}] : [{label:"Choose a sponsorship path",href:"#sponsorship-paths"},{label:taleemActionLabel,href:taleemHref,secondary:true}]} visual={heroMedia ? <PublicMedia asset={heroMedia} priority /> : undefined} visualKicker="Education Sponsorship" visualTitle="Learn. Grow. Continue." visualNote="Hifdh · Qur’an Nazira · school and college pathways, matched to verified educational need." />
 
       <div id="sponsorship-paths" className="taleem-paths">
         <section className="v2-shell taleem-programme" aria-labelledby="islamic-education-title"><SectionHeading eyebrow="Islamic education" title="Sponsor Islamic Education" id="islamic-education-title" subtitle="Support sustained Qur’anic learning through one of two defined study paths." /><div className="taleem-islamic-grid">{islamicPaths.map(path => <article className="taleem-path" key={path.title}><span aria-hidden="true">{path.marker}</span><h3>{path.title}</h3><p>{path.copy}</p><a href={enquiryHref(path.path)}>Ask about this sponsorship <span aria-hidden="true">↗</span></a></article>)}</div></section>
