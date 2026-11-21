@@ -12,6 +12,23 @@ const MAX_GIFT_RUPEES = 1_000_000; // mirrors the server limit; the server enfor
 const rupees = (amount: number) => `₹${amount.toLocaleString("en-IN")}`;
 const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
 
+// One radio group and one stepper button, used twice each, so the markup is not repeated in the client chunk.
+function Choices<T extends string | number>({ label, name, items, value, onPick }: { label: string; name: string; items: readonly (readonly [T, string])[]; value: T | undefined; onPick: (id: T) => void }) {
+  return (
+    <div className={styles.modes} role="radiogroup" aria-label={label}>
+      {items.map(([id, text]) => (
+        <label className={styles.mode} key={id}>
+          <input type="radio" name={name} value={id} checked={id === value} onChange={() => onPick(id)} />
+          <span>{text}</span>
+        </label>
+      ))}
+    </div>
+  );
+}
+const Step = ({ label, disabled, onClick, children }: { label: string; disabled: boolean; onClick: () => void; children: string }) => (
+  <button type="button" className={styles.step} aria-label={label} disabled={disabled} onClick={onClick}>{children}</button>
+);
+
 /** The programme list, durations and fine print are built on the server from the approved catalogue and passed in, so
  * neither the catalogue, the pricing engine nor the copy modules ship in this client chunk (the JS budget is enforced).
  *
@@ -53,33 +70,19 @@ export function TaleemSponsorshipConfigurator({ fund, offer, copy, paymentDetail
         {head}
         {intro}
 
-        <div className={styles.modes} role="radiogroup" aria-label="Programme">
-          {programmes.map(item => (
-            <label className={styles.mode} key={item.id}>
-              <input type="radio" name="sponsorshipProgramme" value={item.id} checked={item.id === programme.id} onChange={() => change(() => setProgrammeId(item.id))} />
-              <span>{item.name}</span>
-            </label>
-          ))}
-        </div>
+        <Choices label="Programme" name="sponsorshipProgramme" items={programmes.map(item => [item.id, item.name] as const)} value={programme.id} onPick={id => change(() => setProgrammeId(id))} />
         <p>{programme.summary} <span className="muted">{rupees(unitRate)} a month for each unit.</span></p>
 
         <fieldset className={styles.campaign} disabled={locked}>
           <legend className={styles.campaignTitle}>How long, and how many units</legend>
-          <div className={styles.modes} role="radiogroup" aria-label="Duration, paid once">
-            {monthOptions.map(option => (
-              <label className={styles.mode} key={option}>
-                <input type="radio" name="sponsorshipMonths" value={option} checked={option === months} onChange={() => change(() => setMonths(option))} />
-                <span>{plural(option, "month", "months")}</span>
-              </label>
-            ))}
-          </div>
+          <Choices label="Duration, paid once" name="sponsorshipMonths" items={monthOptions.map(option => [option, plural(option, "month", "months")] as const)} value={months} onPick={option => change(() => setMonths(option))} />
           <div className={styles.stepper}>
-            <button type="button" className={styles.step} aria-label="Fewer units" disabled={units <= 1} onClick={() => change(() => setUnitsText(String(units - 1)))}>−</button>
+            <Step label="Fewer units" disabled={units <= 1} onClick={() => change(() => setUnitsText(String(units - 1)))}>−</Step>
             <label className={styles.units}>
               <span className="sr-only">Number of units</span>
               <input inputMode="numeric" pattern="[0-9]*" value={unitsText} aria-describedby="programme-total" onChange={event => change(() => setUnitsText(event.target.value.replace(/[^0-9]/g, "").slice(0, 2)))} onBlur={() => setUnitsText(String(units))} />
             </label>
-            <button type="button" className={styles.step} aria-label="More units" disabled={units >= maxUnits} onClick={() => change(() => setUnitsText(String(units + 1)))}>+</button>
+            <Step label="More units" disabled={units >= maxUnits} onClick={() => change(() => setUnitsText(String(units + 1)))}>+</Step>
             <p id="programme-total" className={styles.total} aria-live="polite">{plural(units, "unit", "units")} × {plural(months, "month", "months")} × {rupees(unitRate)} = <strong>{rupees(totalRupees)}</strong></p>
           </div>
         </fieldset>
