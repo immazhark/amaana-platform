@@ -20,10 +20,6 @@
   }
 }
 
-/* Preserve shared finishing-theme parity when the card stylesheet is route-owned. */
-.v2-appeal-card{border-radius:var(--af-card-radius);border:1px solid var(--af-card-border);background:rgb(255 253 248 / 88%);box-shadow:var(--af-card-shadow)}
-.v2-appeal-card h3{font-family:var(--af-font-display);font-weight:500;line-height:1.08;letter-spacing:-.02em}
-
 /* One open appeal is shown as a feature across the row. In a fixed 3-column (home)
    or 2-column (/appeals) grid it filled a third or half of the width and left the
    rest empty, which read as a missing row. */
@@ -36,3 +32,7 @@
   .appeal-feature .v2-appeal-card-body{grid-column:2;grid-row:2}
   .appeal-feature .v2-appeal-card-link{grid-column:2;grid-row:3}
 }
+
+/* Preserve shared finishing-theme parity when the card stylesheet is route-owned. */
+.v2-appeal-card{border-radius:var(--af-card-radius);border:1px solid var(--af-card-border);background:rgb(255 253 248 / 88%);box-shadow:var(--af-card-shadow)}
+.v2-appeal-card h3{font-family:var(--af-font-display);font-weight:500;line-height:1.08;letter-spacing:-.02em}
