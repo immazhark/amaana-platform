@@ -1,7 +1,9 @@
 import { expect, test } from "@playwright/test";
+import { waitForPublicOverview } from "./helpers/public-overview-ready.mjs";
 
 test("Impact metrics retain readable leading when text wraps", async ({ page }) => {
   const response = await page.goto("/impact", { waitUntil: "domcontentloaded" });
+  await waitForPublicOverview(page, "/impact");
   expect(response?.ok()).toBe(true);
 
   for (const width of [320, 390, 1440]) {
