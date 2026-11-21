@@ -95,6 +95,8 @@ it("lets a scoped reconciler reach only the synthetic reconciliation checkpoint"
   expect(mocks.revalidate).not.toHaveBeenCalled();
 });
 
+const idle = { kind: "idle" as const, message: "" };
+
 function reissueForm() {
   const form = new FormData();
   form.set("donationId", "synthetic-donation");
@@ -104,12 +106,12 @@ function reissueForm() {
 
 it("rejects anonymous link reissue before any lookup or change", async () => {
   mocks.cookie.mockReturnValue(undefined);
-  await expect(reissueReceiptLinkAction(null, reissueForm())).rejects.toThrow("Synthetic redirect: /admin/login");
+  await expect(reissueReceiptLinkAction(idle, reissueForm())).rejects.toThrow("Synthetic redirect: /admin/login");
   expect(mocks.reissue).not.toHaveBeenCalled();
 });
 
 it("denies an active editor lacking donation.reconcile before the link is touched", async () => {
-  await expect(reissueReceiptLinkAction(null, reissueForm())).rejects.toThrow("Synthetic redirect: /admin/forbidden");
+  await expect(reissueReceiptLinkAction(idle, reissueForm())).rejects.toThrow("Synthetic redirect: /admin/forbidden");
   expect(mocks.reissue).not.toHaveBeenCalled();
 });
 
@@ -119,10 +121,11 @@ it("lets a scoped reconciler reissue a link and returns it once", async () => {
     roles: [{ role: { permissions: [{ permission: { key: "donation.reconcile" } }] } }],
   });
   mocks.revalidate.mockImplementation(() => undefined);
-  const result = await reissueReceiptLinkAction(null, reissueForm());
+  const result = await reissueReceiptLinkAction(idle, reissueForm());
   expect(mocks.reissue).toHaveBeenCalledWith({ donationId: "synthetic-donation", actorId: "synthetic-reconciler", reason: "Donor lost the link and confirmed by phone" });
-  expect(result).toMatchObject({ ok: true, reference: "AFD-SYNTHETIC-0001" });
-  expect((result as { link: string }).link).toContain("/donations/AFD-SYNTHETIC-0001/acknowledgement#token=");
+  expect(result).toMatchObject({ kind: "success" });
+  expect(result.message).toContain("AFD-SYNTHETIC-0001");
+  expect(result.message).toContain("/donations/AFD-SYNTHETIC-0001/acknowledgement#token=");
 });
 
 it("reports an unexpected failure generically, without the cause", async () => {
@@ -131,8 +134,8 @@ it("reports an unexpected failure generically, without the cause", async () => {
     roles: [{ role: { permissions: [{ permission: { key: "donation.reconcile" } }] } }],
   });
   mocks.reissue.mockRejectedValue(new Error("connection string postgres://secret@host/db"));
-  const result = await reissueReceiptLinkAction(null, reissueForm());
-  expect(result).toEqual({ ok: false, error: "The link could not be reissued. Nothing was changed; try again." });
+  const result = await reissueReceiptLinkAction(idle, reissueForm());
+  expect(result).toEqual({ kind: "error", message: "The link could not be reissued. Nothing was changed; try again." });
 });
 
 it("refuses a repeated donationId field instead of trusting the first", async () => {
@@ -142,7 +145,7 @@ it("refuses a repeated donationId field instead of trusting the first", async ()
   });
   const form = reissueForm();
   form.append("donationId", "other-donation");
-  const result = await reissueReceiptLinkAction(null, form);
-  expect(result).toEqual({ ok: false, error: "The link could not be reissued. Nothing was changed; try again." });
+  const result = await reissueReceiptLinkAction(idle, form);
+  expect(result).toEqual({ kind: "error", message: "The link could not be reissued. Nothing was changed; try again." });
   expect(mocks.reissue).not.toHaveBeenCalled();
 });
