@@ -460,6 +460,11 @@ model Donation {
   campaignId               String?
   units                    Int?
   unitPrice                Decimal?              @db.Decimal(12, 2)
+  sponsorshipProgramme     String?
+  sponsorshipUnits         Int?
+  sponsorshipMonths        Int?
+  sponsorshipMonthlyRate   Decimal?              @db.Decimal(12, 2)
+  sponsorshipRateVersion   String?
   donorName                String
   donorEmail               String
   donorPhone               String?
@@ -500,6 +505,7 @@ model Donation {
   @@index([appealId, status, createdAt])
   @@index([fundId, givingIntent, status, createdAt])
   @@index([campaignId])
+  @@index([sponsorshipProgramme])
   @@index([donorEmail, createdAt])
   @@index([status, createdAt])
   @@index([paymentMethod, status, createdAt])
