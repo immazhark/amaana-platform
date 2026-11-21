@@ -83,6 +83,8 @@ jobs:
         run: node --test scripts/test-governed-stylelint-scope.mjs
       - name: Enforce public Compliance hold text contrast
         run: node --test scripts/test-compliance-hold-contrast.mjs
+      - name: Guard that CI runs every database test
+        run: node --test scripts/test-database-tests-wired.mjs
       - name: Validate App Router bundle reporting
         run: node --test scripts/test-route-bundle-report.mjs scripts/test-live-route-css.mjs
       - name: Guard responsive hero/artwork image weight
@@ -263,7 +265,8 @@ jobs:
           node scripts/test-home-carousel-migration.mjs
           node scripts/test-historical-pageview-migration.mjs
           node --test scripts/test-master-content-assets.mjs
-          npx vitest run src/app/api/webhooks/razorpay/route.database.test.ts src/lib/auth-rate-limit.database.test.ts src/lib/auth-session.database.test.ts src/lib/fund-campaign.database.test.ts src/lib/giving-funds.database.test.ts src/lib/taleem-sponsorship.database.test.ts
+          # Select every *.database.test.ts by suffix: a hand-kept list silently skipped new files (scripts/test-database-tests-wired.mjs guards this).
+          npx vitest run .database.test.ts
 
 
   production:
