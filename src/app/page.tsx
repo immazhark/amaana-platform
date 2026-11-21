@@ -151,7 +151,7 @@ export default async function HomePage() {
           <SectionHeading eyebrow={<>Current verified appeals</>} title={<>When there is a need, we share it responsibly.</>} subtitle={<>Active public appeals appear here after review. Completed work remains available even when there is no current fundraising appeal.</>} id="appeals-title" className="v3-section-head" titleClassName="v3-heading" />
 
           {appeals.length ? (
-            <div className="grid appeal-grid">
+            <div className={`grid appeal-grid${appeals.length === 1 ? " appeal-feature" : ""}`}>
               {appeals.map(appeal => <AppealCard key={appeal.slug} appeal={appeal} />)}
             </div>
           ) : (

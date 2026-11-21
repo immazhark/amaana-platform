@@ -23,3 +23,16 @@
 /* Preserve shared finishing-theme parity when the card stylesheet is route-owned. */
 .v2-appeal-card{border-radius:var(--af-card-radius);border:1px solid var(--af-card-border);background:rgb(255 253 248 / 88%);box-shadow:var(--af-card-shadow)}
 .v2-appeal-card h3{font-family:var(--af-font-display);font-weight:500;line-height:1.08;letter-spacing:-.02em}
+
+/* One open appeal is shown as a feature across the row. In a fixed 3-column (home)
+   or 2-column (/appeals) grid it filled a third or half of the width and left the
+   rest empty, which read as a missing row. */
+.appeal-grid.appeal-feature,.v2-appeals-grid.appeal-feature{grid-template-columns:minmax(0,1fr)}
+@media(min-width:900px){
+  .appeal-feature .v2-appeal-card{display:grid;grid-template-columns:minmax(17rem,5fr) 7fr;grid-template-rows:auto 1fr auto;min-height:0}
+  .appeal-feature .v2-appeal-card-visual{grid-column:1;grid-row:1 / -1;display:grid;min-height:100%;aspect-ratio:auto}
+  .appeal-feature .v2-appeal-card-visual>*{aspect-ratio:auto;min-height:100%;border-radius:0}
+  .appeal-feature .v2-appeal-card-head{grid-column:2;grid-row:1}
+  .appeal-feature .v2-appeal-card-body{grid-column:2;grid-row:2}
+  .appeal-feature .v2-appeal-card-link{grid-column:2;grid-row:3}
+}

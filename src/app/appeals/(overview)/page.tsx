@@ -4,6 +4,7 @@ import "@/app/canonical-content.css";
 import Link from "next/link";
 import { programmes } from "@/lib/master-copy";
 import { AppealCard } from "@/components/appeal-card";
+import { AppealSearchForm } from "@/components/appeal-search-form";
 import { VerifiedImpactStrip } from "@/components/verified-impact-strip";
 import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
@@ -77,15 +78,9 @@ export default async function AppealsPage({ searchParams }: { searchParams: Prom
         item.primaryMetric && item.primaryMetricLabel ? [{ slug: item.slug, title: item.title, value: item.primaryMetric, label: item.primaryMetricLabel }] : [],
       )} /></div>
       <section className="v2-section paper" id="current-appeals" aria-labelledby="current-appeals-title"><div className="v2-shell"><SectionHeading eyebrow={<>Current appeals</>} title={<>Give where a reviewed need is active.</>} subtitle={<>Donations are currently limited to India. Amaana does not accept foreign contributions because the Foundation is not FCRA-registered.</>} id="current-appeals-title" />
-        <form key={selection.q} className="form-grid" method="get" action="/appeals#current-appeals" aria-label="Search active appeals">
-          <label className="field" htmlFor="appeal-search">Search active appeals<input id="appeal-search" name="q" type="search" maxLength={80} defaultValue={selection.q} aria-invalid={selection.invalid || undefined} aria-describedby={selection.invalid ? "appeal-search-help appeal-search-error" : "appeal-search-help"} /></label>
-          <button className="v2-button" type="submit">Find appeals</button>
-          {selection.active && <Link className="v2-text-link" href="/appeals#current-appeals">Clear appeal search</Link>}
-        </form>
-        <p id="appeal-search-help">Search reviewed public titles and summaries. Do not enter personal or case details.</p>
-        {selection.invalid && <p id="appeal-search-error" role="status">This search could not be read. Clear the search or use up to 80 characters.</p>}
+        <AppealSearchForm query={selection.q} invalid={selection.invalid} active={selection.active} />
         {selection.active && <p>{selection.count} active {selection.count === 1 ? "appeal" : "appeals"} match this search.</p>}
-        {selection.results.length ? <div className="v2-appeals-grid">{selection.results.map(appeal => <div className={styles.appealItem} key={appeal.slug}>{isStaging && isSyntheticStagingAppeal(appeal) && <span className={styles.stagingBadge}>Staging test</span>}<AppealCard appeal={appeal} /></div>)}</div> : appeals.length > 0 && selection.active ? <div className="v2-appeals-empty"><h3>No active appeals match this search</h3><p>Change your search or clear it to see current reviewed appeals.</p><Link className="v2-text-link" href="/appeals#current-appeals">View all active appeals</Link></div> : <div className="v2-appeals-empty"><span className="v2-section-label">No active public appeal right now</span><h3>No Public Appeal Is Open Right Now</h3><p>That does not mean the work has stopped. You can explore completed cases or enquire about Amaana’s recurring initiatives. New urgent appeals will appear here after verification.</p><div className="v2-hero-actions"><Link className="v2-button" href="/our-work">Explore completed work</Link><Link className="v2-text-link" href="/stories">Read Stories of Amanah →</Link></div></div>}
+        {selection.results.length ? <div className={`v2-appeals-grid${selection.results.length === 1 ? " appeal-feature" : ""}`}>{selection.results.map(appeal => <div className={styles.appealItem} key={appeal.slug}>{isStaging && isSyntheticStagingAppeal(appeal) && <span className={styles.stagingBadge}>Staging test</span>}<AppealCard appeal={appeal} /></div>)}</div> : appeals.length > 0 && selection.active ? <div className="v2-appeals-empty"><h3>No active appeals match this search</h3><p>Change your search or clear it to see current reviewed appeals.</p><Link className="v2-text-link" href="/appeals#current-appeals">View all active appeals</Link></div> : <div className="v2-appeals-empty"><span className="v2-section-label">No active public appeal right now</span><h3>No Public Appeal Is Open Right Now</h3><p>That does not mean the work has stopped. You can explore completed cases or enquire about Amaana’s recurring initiatives. New urgent appeals will appear here after verification.</p><div className="v2-hero-actions"><Link className="v2-button" href="/our-work">Explore completed work</Link><Link className="v2-text-link" href="/stories">Read Stories of Amanah →</Link></div></div>}
         {selection.totalPages > 1 && <nav aria-label="Appeal pages">
           {selection.page > 1 && <Link className="v2-text-link" href={pageHref(selection.page - 1)}>Previous appeals</Link>}
           <p>Page {selection.page} of {selection.totalPages}</p>
