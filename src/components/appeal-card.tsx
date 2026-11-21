@@ -2,6 +2,7 @@ import Link from "next/link";
 import "@/app/appeal-card.css";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { amountToNumber, formatINR, type PublicAppeal } from "@/lib/appeals";
+import { plainPublicText } from "@/lib/plain-public-text";
 
 export function AppealCard({ appeal }: { appeal: PublicAppeal }) {
   const raised = amountToNumber(appeal.amountRaised);
@@ -19,7 +20,7 @@ export function AppealCard({ appeal }: { appeal: PublicAppeal }) {
       <div className="v2-appeal-card-body">
         <div>
           <h3>{appeal.title}</h3>
-          <p>{appeal.summary}</p>
+          <p>{plainPublicText(appeal.summary)}</p>
         </div>
         <div className="v2-appeal-card-progress">
           <div className="v2-appeal-progress-meta"><strong>{formatINR(raised)}</strong><span>of {formatINR(goal)}</span></div>

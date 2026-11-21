@@ -1,4 +1,5 @@
 import master from '@/content/master-copy.json';
+import { plainPublicText } from '@/lib/plain-public-text';
 import factualLocks from '../../prisma/canonical-factual-locks.json';
 
 function applyTextReplacements(value: string, replacements: readonly { from: string; to: string }[] = []) {
@@ -49,7 +50,7 @@ export const complianceCopy = {
  domestic: 'Domestic donations only. Amaana Foundation is not FCRA-registered.',
  tax: 'Amaana Foundation currently holds provisional approval under Section 80G via Form 10AC dated 26 January 2026 for AY 2026–27 through AY 2028–29. Tax treatment depends on applicable law, donor eligibility and valid receipt/compliance requirements.',
 };
-export function cleanCopy(text: string) { return text.replace(/\*\*/g, '').replace(/^#{1,6}\s+/gm, '').trim(); }
+export function cleanCopy(text: string) { return plainPublicText(text).replace(/^#{1,6}\s+/gm, '').trim(); }
 export function copyBetween(text: string, start: string, end?: string) {
  const offset=text.indexOf(start); if(offset<0)throw new Error(`Missing canonical marker: ${start}`);
  const rest=text.slice(offset+start.length); const last=end?rest.indexOf(end):-1;
