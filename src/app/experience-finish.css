@@ -468,7 +468,8 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
 @media(max-width:900px){
   .page-hero--level1>.amaana-backdrop-emblem,.site-footer>.amaana-backdrop-emblem{display:none}
   .page-hero--level1 .page-hero__shell{padding-right:0;padding-top:0}
-  .page-hero--level1 .page-hero__grid{grid-template-columns:1fr;padding-top:0}
+  /* The reminder strip now sits directly above the hero; 0 left the eyebrow touching it (8px on a phone). */
+  .page-hero--level1 .page-hero__grid{grid-template-columns:1fr;padding-top:1.25rem}
   .page-hero--level1 .page-hero__copy{background:transparent;border:0;border-radius:0;padding:0}
 }
 
