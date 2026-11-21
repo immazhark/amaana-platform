@@ -5,7 +5,8 @@ import { formatINR } from "@/lib/appeals";
 import { donationIntentLabel } from "@/lib/donation-intent";
 import { prisma } from "@/lib/prisma";
 import { getDonationEvidenceUrl } from "@/lib/storage";
-import { reconcileDonationAction } from "../actions";
+import { reconcileDonationAction, reissueReceiptLinkAction } from "../actions";
+import { AdminActionFeedbackForm } from "@/components/admin-action-feedback-form";
 
 type Props = { params: Promise<{ id: string }> };
 const formatDateTime = (value: Date | null) => value ? value.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) : "Not recorded";
@@ -74,6 +75,12 @@ export default async function DonationDetailPage({ params }: Props) {
       </dl></section>
       <aside className="card">
         {direct && donation.status === "PENDING_VERIFICATION" ? <><h2>Reconcile transfer</h2><p className="muted">Verify against Amaana&apos;s bank/UPI statement before approving. A donor-entered UTR or screenshot is evidence to review, not proof of receipt.</p>{canReconcile ? <form action={reconcileDonationAction} className="form-grid"><input type="hidden" name="donationId" value={donation.id}/><div className="field full"><label htmlFor="notes">Reconciliation notes</label><textarea id="notes" name="notes" minLength={3} maxLength={1000} required /></div><div className="field full"><button className="button" type="submit" name="decision" value="VERIFY">Verify received transfer</button> <button className="text-button" type="submit" name="decision" value="REJECT">Reject claim</button></div></form> : <p className="muted">Your account can view this record but cannot reconcile donations.</p>}</> : <><h2>Payment events</h2>{donation.events.length ? <ol className="history">{donation.events.map(event => <li key={event.id}><strong>{event.eventType}</strong><span>{formatDateTime(event.processedAt)}</span><small>{event.providerEventId}</small></li>)}</ol> : <p className="muted">{direct ? "Direct transfers do not generate Razorpay webhook events." : "No webhook events recorded yet."}</p>}</>}
+        {canReconcile ? <AdminActionFeedbackForm action={reissueReceiptLinkAction} className="form-grid">
+          <input type="hidden" name="donationId" value={donation.id} />
+          <div className="field full"><h2>Private acknowledgement link</h2><p className="muted">If a donor lost their link, reissue it. The old link stops working immediately. Send the new one only through a channel you have verified for this donor, such as the phone number or email on this record.</p></div>
+          <div className="field full"><label htmlFor="reissue-reason">Reason (kept in the audit trail)</label><textarea id="reissue-reason" name="reason" minLength={3} maxLength={300} required /></div>
+          <div className="field full"><button className="button" type="submit">Reissue private link</button></div>
+        </AdminActionFeedbackForm> : null}
       </aside>
     </div>
   </>;

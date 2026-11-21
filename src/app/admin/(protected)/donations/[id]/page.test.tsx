@@ -14,7 +14,7 @@ vi.mock("@/lib/auth", () => ({
 }));
 vi.mock("@/lib/prisma", () => ({ prisma: { donation: { findUnique: mocks.findDonation } } }));
 vi.mock("@/lib/storage", () => ({ getDonationEvidenceUrl: mocks.evidence }));
-vi.mock("../actions", () => ({ reconcileDonationAction: vi.fn() }));
+vi.mock("../actions", () => ({ reconcileDonationAction: vi.fn(), reissueReceiptLinkAction: vi.fn() }));
 vi.mock("next/navigation", () => ({ notFound: () => { throw new Error("Not found"); } }));
 
 import DonationDetailPage from "./page";
@@ -171,7 +171,25 @@ describe("AF-R012 private donation-detail server authorization and reconciliatio
     expect(html).toContain("Payment events");
     expect(html).not.toContain("Verify received transfer");
     expect(html).not.toContain("Reject claim");
-    expect(html).not.toContain('name="donationId"');
+    expect(html).not.toContain('name="decision"');
+  });
+
+  it("offers staff with reconcile permission the private-link reissue form on any record", async () => {
+    for (const [status, paymentMethod] of [["CAPTURED", "RAZORPAY"], ["PENDING_VERIFICATION", "DIRECT_UPI"], ["REFUNDED", "RAZORPAY"]] as const) {
+      mocks.canReconcile.mockReturnValueOnce(true);
+      mocks.findDonation.mockResolvedValueOnce(donation({ status, paymentMethod }));
+      const html = await renderDonation();
+      expect(html).toContain("Reissue private link");
+      expect(html).toContain("The old link stops working immediately");
+      expect(html).toContain('name="reason"');
+    }
+  });
+
+  it("does not show the private-link reissue form to a view-only operator", async () => {
+    mocks.findDonation.mockResolvedValueOnce(donation({ status: "CAPTURED", paymentMethod: "RAZORPAY" }));
+    const html = await renderDonation();
+    expect(html).not.toContain("Reissue private link");
+    expect(html).not.toContain('name="reason"');
   });
 
   it("never offers direct-transfer reconciliation controls to a Razorpay record", async () => {
