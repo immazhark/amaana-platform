@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { privateDonationAcknowledgementPath } from "@/lib/private-donation-ack";
 import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
 import type { CampaignSelection } from "@/lib/fund-campaign";
+import type { SponsorshipSelection } from "@/lib/taleem-sponsorship";
 import type { DonationFormCopy } from "@/components/donation-form-copy";
 import { CopyIcon } from "./donation-interface-icons";
 import styles from "./direct-transfer-form.module.css";
@@ -16,12 +17,12 @@ import choiceStyles from "./donation-form.module.css";
 
 type Method = "DIRECT_UPI" | "BANK_TRANSFER";
 
-export function DirectTransferForm({ appealId, fundSlug, extraFields, campaign, maxAmount, method, paymentDetails, onLockChange, copy }: { appealId?: string; fundSlug?: string; extraFields?: ReactNode; campaign?: CampaignSelection; maxAmount: number; method: Method; paymentDetails: DonationPaymentDetails; onLockChange: (locked: boolean) => void; copy: DonationFormCopy["direct"] }) {
+export function DirectTransferForm({ appealId, fundSlug, extraFields, campaign, sponsorship, maxAmount, method, paymentDetails, onLockChange, copy }: { appealId?: string; fundSlug?: string; extraFields?: ReactNode; campaign?: CampaignSelection; sponsorship?: SponsorshipSelection; maxAmount: number; method: Method; paymentDetails: DonationPaymentDetails; onLockChange: (locked: boolean) => void; copy: DonationFormCopy["direct"] }) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [copyFeedback, setCopyFeedback] = useState<{ method: Method; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
-  const [upiAmount, setUpiAmount] = useState(campaign ? String(campaign.units * campaign.unitPrice) : "");
+  const [upiAmount, setUpiAmount] = useState(campaign ? String(campaign.units * campaign.unitPrice) : sponsorship ? String(sponsorship.totalRupees) : "");
   const [uncertain, setUncertain] = useState(false);
   const submissionRef = useRef(false);
   const copyAttemptRef = useRef(0);
@@ -68,6 +69,7 @@ export function DirectTransferForm({ appealId, fundSlug, extraFields, campaign, 
       // A submission names exactly one destination.
       if (fundSlug) values.set("fundSlug", fundSlug); else if (appealId) values.set("appealId", appealId);
       if (campaign) { values.set("campaignSlug", campaign.slug); values.set("units", String(campaign.units)); }
+      if (sponsorship) { values.set("sponsorshipProgramme", sponsorship.programmeId); values.set("sponsorshipUnits", String(sponsorship.units)); values.set("sponsorshipMonths", String(sponsorship.months)); }
       if (!String(values.get("donorDirective") ?? "").trim()) values.delete("donorDirective");
       values.set("paymentMethod", method);
       values.set("isAnonymous", values.get("isAnonymous") === "on" ? "true" : "false");
@@ -136,7 +138,7 @@ export function DirectTransferForm({ appealId, fundSlug, extraFields, campaign, 
       <div className="field"><label htmlFor={`direct-name-${method}`}>Full name</label><input id={`direct-name-${method}`} name="donorName" autoComplete="name" minLength={2} required disabled={locked}/></div>
       <div className="field"><label htmlFor={`direct-email-${method}`}>Email</label><input id={`direct-email-${method}`} name="donorEmail" type="email" autoComplete="email" required disabled={locked}/></div>
       <div className="field"><label htmlFor={`direct-phone-${method}`}>Phone <span className="muted">optional</span></label><input id={`direct-phone-${method}`} name="donorPhone" type="tel" autoComplete="tel" disabled={locked}/></div>
-      <div className="field"><label htmlFor={`direct-amount-${method}`}>Amount (INR)</label><input id={`direct-amount-${method}`} name="amount" type="text" inputMode="numeric" pattern="[0-9]+" maxLength={12} onInput={event => { updateDonationAmountValidity(event.currentTarget, transactionMin, transactionMax); if (method === "DIRECT_UPI") setUpiAmount(event.currentTarget.value); }} required readOnly={Boolean(campaign)} defaultValue={campaign ? String(campaign.units * campaign.unitPrice) : undefined} aria-describedby={`direct-amount-hint-${method}`} disabled={locked}/><small id={`direct-amount-hint-${method}`}>Whole rupees only. {transactionMax < 10 ? `Enter exactly ₹${transactionMax.toLocaleString("en-IN")}.` : `₹${transactionMin.toLocaleString("en-IN")} to ₹${transactionMax.toLocaleString("en-IN")}.`}</small></div>
+      <div className="field"><label htmlFor={`direct-amount-${method}`}>Amount (INR)</label><input id={`direct-amount-${method}`} name="amount" type="text" inputMode="numeric" pattern="[0-9]+" maxLength={12} onInput={event => { updateDonationAmountValidity(event.currentTarget, transactionMin, transactionMax); if (method === "DIRECT_UPI") setUpiAmount(event.currentTarget.value); }} required readOnly={Boolean(campaign || sponsorship)} defaultValue={campaign ? String(campaign.units * campaign.unitPrice) : sponsorship ? String(sponsorship.totalRupees) : undefined} aria-describedby={`direct-amount-hint-${method}`} disabled={locked}/><small id={`direct-amount-hint-${method}`}>Whole rupees only. {transactionMax < 10 ? `Enter exactly ₹${transactionMax.toLocaleString("en-IN")}.` : `₹${transactionMin.toLocaleString("en-IN")} to ₹${transactionMax.toLocaleString("en-IN")}.`}</small></div>
       <div className="field"><label htmlFor={`direct-reference-${method}`}>UTR / transaction reference</label><input id={`direct-reference-${method}`} name="transferReference" minLength={6} maxLength={100} required disabled={locked}/></div>
       <div className="field"><label htmlFor={`direct-date-${method}`}>Transfer date and time</label><input id={`direct-date-${method}`} name="transferredAt" type="datetime-local" required disabled={locked}/></div>
       <div className="field full"><label htmlFor={`direct-evidence-${method}`}>Screenshot / receipt <span className="muted">optional, max 5 MB</span></label><input id={`direct-evidence-${method}`} name="evidence" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" disabled={locked}/><small>Supporting evidence only. It does not prove receipt until an Amaana administrator verifies the transfer.</small></div>

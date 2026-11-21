@@ -275,6 +275,11 @@ it("reads only displayed private Donation detail fields and the existing bounded
       failedAt: true,
       refundedAt: true,
       appeal: { select: { title: true } },
+      sponsorshipProgramme: true,
+      sponsorshipUnits: true,
+      sponsorshipMonths: true,
+      sponsorshipMonthlyRate: true,
+      sponsorshipRateVersion: true,
       fund: { select: { name: true } },
       events: {
         select: { id: true, eventType: true, providerEventId: true, processedAt: true },
@@ -286,4 +291,22 @@ it("reads only displayed private Donation detail fields and the existing bounded
   expect(html).toContain("SYNTHETIC-IST-001");
   expect(html).toContain("Synthetic approved appeal");
   expect(html).toContain("Public anonymity");
+});
+
+describe("private donation detail shows a Taleem programme sponsorship", () => {
+  const sponsorship = { sponsorshipProgramme: "nazira", sponsorshipUnits: 2, sponsorshipMonths: 6, sponsorshipMonthlyRate: amount(1200), sponsorshipRateVersion: "approved-2026-11" };
+
+  it("shows the programme, units, months, the recorded rate and its version for staff", async () => {
+    mocks.findDonation.mockResolvedValue(donation({ ...sponsorship, appeal: null, fund: { name: "Taleem Fund" } }));
+    const html = await renderDonation();
+    expect(html).toContain("<dt>Programme sponsorship</dt>");
+    expect(html).toMatch(/Qur(?:'|&#x27;)an Nazira: 2 units × 6 months × ₹1,200 a month/);
+    expect(html).toContain("rate version approved-2026-11");
+  });
+
+  it("shows nothing extra for an ordinary gift", async () => {
+    const html = await renderDonation();
+    expect(html).not.toContain("Programme sponsorship");
+    expect(html).not.toContain("rate version");
+  });
 });
