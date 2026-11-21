@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CopyIcon, MessageIcon, ShareIcon } from "./donation-interface-icons";
+import { CopyIcon } from "./donation-interface-icons";
+import { MessageIcon, ShareIcon } from "./appeal-share-icons";
 import styles from "./appeal-share.module.css";
 
 type AppealShareProps = { title: string; summary: string; path: string };

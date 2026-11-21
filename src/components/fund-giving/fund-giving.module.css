@@ -105,6 +105,8 @@
 .campaignMeta { margin: 0; font-size: .9rem; color: var(--af-color-muted); }
 .modes { display: flex; flex-wrap: wrap; gap: .6rem; }
 .mode { display: inline-flex; align-items: center; gap: .55rem; min-height: 2.75rem; padding: .3rem .95rem; border: 1px solid var(--af-color-muted); border-radius: var(--af-radius-pill); cursor: pointer; font-weight: 700; font-size: .92rem; }
+/* The global input rule sets width: 100% and padding; without this the radio stretches and squeezes the label to a narrow column. */
+.mode input { flex: none; width: 1.1rem; height: 1.1rem; margin: 0; padding: 0; }
 .mode:has(input:checked) { background: var(--af-color-navy-700); border-color: var(--af-color-navy-700); color: var(--af-color-opaque-white); }
 .mode:has(input:focus-visible) { outline: 3px solid var(--af-color-focus); outline-offset: 3px; }
 .stepper { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; }

@@ -37,6 +37,25 @@ export function isCheckoutEnabled(quote: SponsorshipQuote): boolean {
   return quote.approval === "APPROVED";
 }
 
+/** A donor's choice as the page quoted it. `fields` are the request field names the order and transfer routes read, so a
+ * form sends them as they are; `totalRupees` is the quoted price in whole rupees. The server recomputes the price and refuses a mismatch. */
+export type SponsorshipSelection = { fields: { sponsorshipProgramme: TaleemProgrammeId; sponsorshipUnits: number; sponsorshipMonths: number }; totalRupees: number };
+
+/** What the donor-facing configurator is offered, built on the server from the approved catalogue so the client carries no
+ * catalogue or pricing code. Rates are whole rupees per unit per month; the server still recomputes every charge. */
+export type SponsorshipOffer = {
+  programmes: { id: TaleemProgrammeId; name: string; summary: string; monthlyRupees: number }[];
+  monthOptions: readonly number[];
+  maxUnits: number;
+};
+
+export function sponsorshipOffer(catalogue: TaleemCatalogue = TALEEM_CATALOGUE): SponsorshipOffer {
+  const programmes = catalogue.programmes
+    .filter(item => item.available && item.approval === "APPROVED" && item.monthlyPaise % 100 === 0)
+    .map(item => ({ id: item.id, name: item.name, summary: item.summary, monthlyRupees: item.monthlyPaise / 100 }));
+  return { programmes, monthOptions: SPONSORSHIP_MONTH_OPTIONS, maxUnits: MAX_SPONSORSHIP_UNITS };
+}
+
 /** Programme sponsorship is a gift to this fund and to no other. */
 export const TALEEM_FUND_SLUG = "taleem";
 
