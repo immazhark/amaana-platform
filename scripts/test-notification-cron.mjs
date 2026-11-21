@@ -56,7 +56,7 @@ test("worker image/config do not inherit the website build or healthcheck", asyn
   assert.equal(config.deploy.cronSchedule, "*/5 * * * *");
   assert.equal(config.build.builder, "DOCKERFILE");
   assert.deepEqual(config.build.watchPatterns, ["ops/notification-cron/**"]);
-  assert.match(dockerfile, /CMD \["node", "--check", "run.mjs"\]/);
+  assert.match(dockerfile, /CMD \["node", "run.mjs"\]/);
   assert.equal(config.deploy.healthcheckPath, undefined);
 });
 
@@ -114,10 +114,10 @@ test("contained worker config cannot process queued notifications even if manual
   assert.equal(result.stderr, "");
 });
 
-test("the Dockerfile fallback can only parse the script, not contact production", async () => {
+test("the Dockerfile runs the job entry point, so the Railway schedule alone bounds how often it calls", async () => {
   const dockerfile = await readFile(new URL("../ops/notification-cron/Dockerfile", import.meta.url), "utf8");
   // If Railway ever ignored railway.json, the image would fall back to a non-delivering command.
-  assert.match(dockerfile, /CMD \["node", "--check", "run.mjs"\]/);
+  assert.match(dockerfile, /CMD \["node", "run.mjs"\]/);
   const result = spawnSync(process.execPath, ["--check", "run.mjs"], {
     cwd: fileURLToPath(new URL("../ops/notification-cron/", import.meta.url)),
     env: { CRON_SECRET: "synthetic-do-not-send-credential", NOTIFICATION_JOB_URL: "https://amaanafoundation.org/api/jobs/notifications" },
