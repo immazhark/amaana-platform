@@ -42,10 +42,10 @@ export function donationFormCopy(zakatEligible: boolean): DonationFormCopy {
     direct: {
       upiHeading: <div className="v2-form-heading"><span>Direct UPI</span><h2>Pay Amaana directly by UPI.</h2><p>Complete the transfer using the verified details below, then submit the UTR/reference so Amaana can reconcile it. Your appeal total changes only after verification.</p></div>,
       bankHeading: <div className="v2-form-heading"><span>Bank transfer</span><h2>Transfer directly to Amaana Foundation.</h2><p>Complete the transfer using the verified details below, then submit the UTR/reference so Amaana can reconcile it. Your appeal total changes only after verification.</p></div>,
-      qrMissing: <p className="form-error">Verified QR image is not configured yet. Use the UPI ID above; the site will not display an unverified QR.</p>,
+      qrMissing: <p className={styles.status}>A verified QR code is not published yet. Please pay using the UPI ID above.</p>,
       bankMissing: <div className="form-error" role="alert">Official bank-transfer details are not configured. Amaana will not display guessed or incomplete banking information.</div>,
       intentOptions: <div className={styles.intentGrid}>{intentions.map((intent, index) => <label className={styles.intentOption} key={intent}><input type="radio" name="givingIntent" value={intent} defaultChecked={index === 0}/><span><strong>{DONATION_INTENT_LABELS[intent]}</strong><small>{DONATION_INTENT_DESCRIPTIONS[intent]}</small></span></label>)}</div>,
-      privacy: <span><strong>Keep my public identity private</strong></span>,
+      privacy: <span><strong>Keep my public identity private</strong><small>Do not show my name in any public donor listing.</small></span>,
       domestic: <span><strong>Domestic contribution confirmation</strong><small>I confirm this contribution is from an Indian source using a domestic account/payment method.</small></span>,
       next: <small>This submission remains Pending Verification until Amaana matches it to the Foundation&apos;s received funds.</small>,
     },

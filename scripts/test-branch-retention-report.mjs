@@ -93,6 +93,19 @@ test('AF-R079 inventories local remote refs without fetching or deleting any ref
   } finally { rmSync(f.cwd, { recursive: true, force: true }); }
 });
 
+test('AF-R079 accepts a normal clone symbolic HEAD without changing refs', () => {
+  const f = fixtureRepo();
+  try {
+    git(f.cwd, ['symbolic-ref', 'refs/remotes/origin/HEAD', 'refs/remotes/origin/main']);
+    const before = git(f.cwd, ['for-each-ref', '--format=%(refname) %(objectname) %(symref)', 'refs/remotes/origin']);
+    const report = collectLocalBranchRetention(f.cwd);
+    assert.equal(report.rows.length, 3);
+    assert.equal(report.rows.some(row => row.branch === 'HEAD'), false);
+    assert.equal(report.mainSha, f.current);
+    assert.equal(git(f.cwd, ['for-each-ref', '--format=%(refname) %(objectname) %(symref)', 'refs/remotes/origin']), before);
+  } finally { rmSync(f.cwd, { recursive: true, force: true }); }
+});
+
 test('AF-R079 fails closed without origin/main or with shallow ancestry', () => {
   const f = fixtureRepo();
   try {

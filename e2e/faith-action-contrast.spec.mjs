@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { waitForPublicOverview } from "./helpers/public-overview-ready.mjs";
 
 function rgba(value) {
   const match = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d*\.?\d+))?\)$/.exec(value);
@@ -23,6 +24,7 @@ const overlay = (foreground, background, alpha) =>
 test("real Faith closing CTA paragraph keeps readable ink at mobile and desktop widths", async ({ page }) => {
   await page.route("**/api/analytics/page-view", route => route.fulfill({ status: 204, body: "" }));
   const response = await page.goto("/faith-and-reflections", { waitUntil: "domcontentloaded" });
+  await waitForPublicOverview(page, "/faith-and-reflections");
   expect(response?.ok()).toBe(true);
 
   for (const width of [390, 1440]) {

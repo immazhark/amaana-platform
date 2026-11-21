@@ -656,7 +656,7 @@ test("AF-R057 rejects duplicate routes rather than reporting a route twice", asy
     routes: ["/", "/"],
     fetchImpl: async url => {
       visited.push(url);
-      return { ok: true, status: 200, url, text: async () => "" };
+      return { ok: true, status: 200, url, headers: { get: () => "text/html" }, text: async () => "" };
     },
   }), /Invalid public route/);
   assert.deepEqual(visited, [], "Duplicate route input must fail before requesting a page");
@@ -668,7 +668,7 @@ test("AF-R057 keeps canonical root and nested public routes measurable", async (
     routes: ["/", "/impact", "/our-work/2026"],
     fetchImpl: async url => {
       visited.push(url);
-      return { ok: true, status: 200, url, text: async () => "" };
+      return { ok: true, status: 200, url, headers: { get: () => "text/html" }, text: async () => "" };
     },
   });
   assert.deepEqual(report.routes.map(row => row.route), ["/", "/impact", "/our-work/2026"]);
@@ -697,4 +697,118 @@ test("AF-R057 quoted openers inside inert content do not expose inert CSS", () =
     `<template><div data-example="<script>">${fake}</div></template>${real}`,
     `<!-- <div data-example="<script>">${fake} -->${real}`,
   ]) assert.deepEqual(stylesheetsInHtml(markup), ["https://amaanafoundation.org/_next/static/real.css"]);
+});
+
+
+test("AF-R057 rejects absent or non-HTML route MIME instead of reporting zero CSS", async () => {
+  for (const contentType of [null, "", "application/json", "text/plain", "text/htmlish", "application/xhtml+xml"]) {
+    let reads = 0;
+    let requests = 0;
+    await assert.rejects(auditPublicRouteCss({ routes: ["/"], fetchImpl: async url => {
+      requests += 1;
+      return { ok: true, status: 200, url,
+        headers: { get: () => contentType },
+        text: async () => { reads += 1; return "{}"; },
+      };
+    } }), /Route response is not HTML/, String(contentType));
+    assert.equal(requests, 1, "Do not fetch CSS from a rejected page");
+    assert.equal(reads, 0, "Do not parse a non-HTML body as a valid route sample");
+  }
+});
+
+test("AF-R057 retains text/html media types with case and charset parameters", async () => {
+  for (const contentType of ["text/html", "TEXT/HTML; charset=UTF-8", "text/html ;charset=utf-8"]) {
+    const result = await auditPublicRouteCss({ routes: ["/"], fetchImpl: async url => ({
+      ok: true, status: 200, url, headers: { get: () => contentType },
+      text: async () => "<html><head></head><body>Public page</body></html>",
+    }) });
+    assert.equal(result.routes[0].cssBytes, 0);
+    assert.equal(result.routes[0].stylesheetCount, 0);
+  }
+});
+
+
+test("AF-R057 separates stylesheet rel tokens only on HTML ASCII whitespace", () => {
+  const href = "/_next/static/chunks/rel-token.css";
+  const expected = ["https://amaanafoundation.org" + href];
+  for (const separator of ["\t", "\n", "\f", "\r", " "]) {
+    assert.deepEqual(stylesheetsInHtml(`<link rel="preload${separator}stylesheet" href="${href}">`),
+      expected, `HTML separator U+${separator.codePointAt(0).toString(16)}`);
+  }
+  for (const separator of ["\u000b", "\u00a0", "\u2003", "\ufeff"]) {
+    assert.deepEqual(stylesheetsInHtml(`<link rel="preload${separator}stylesheet" href="${href}">`),
+      [], `Non-HTML separator U+${separator.codePointAt(0).toString(16)} must not invent a stylesheet`);
+  }
+});
+
+test("public CSS audit rejects oversized declared HTML before consuming any body", async () => {
+  let read = false;
+  const fetchImpl = async url => ({
+    ok: true, status: 200, url,
+    headers: { get: name => name === "content-type" ? "text/html" : name === "content-length" ? "3000000" : null },
+    text: async () => { read = true; return "<main>unsafe large body</main>"; },
+  });
+  await assert.rejects(auditPublicRouteCss({ fetchImpl, routes: ["/"] }), /large|limit|size/i);
+  assert.equal(read, false, "Do not allocate a declared oversized HTML response");
+});
+
+test("public CSS audit cancels streamed oversized stylesheets before allocating an unbounded body", async () => {
+  let cancelled = false;
+  const html = '<link rel="stylesheet" href="/_next/static/site.css">';
+  const fetchImpl = async url => {
+    if (url.endsWith(".css")) return {
+      ok: true, status: 200, url,
+      headers: { get: name => name === "content-type" ? "text/css" : null },
+      body: new ReadableStream({
+        pull(controller) { controller.enqueue(new Uint8Array(1_200_000)); },
+        cancel() { cancelled = true; },
+      }),
+    };
+    return { ok: true, status: 200, url,
+      headers: { get: name => name === "content-type" ? "text/html" : null },
+      text: async () => html,
+    };
+  };
+  await assert.rejects(auditPublicRouteCss({ fetchImpl, routes: ["/"] }), /large|limit|size/i);
+  assert.equal(cancelled, true, "Cancel the oversized response stream");
+});
+
+test("AF-R068 does not reinterpret stylesheet dot segments into a different build asset", () => {
+  const html = [
+    '<link rel="stylesheet" href="/_next/static/chunks/../private.css">',
+    '<link rel="stylesheet" href="/_next/static/chunks/%2e%2e/private.css">',
+    '<link rel="stylesheet" href="/_next/static/chunks/%2e/private.css">',
+    '<link rel="stylesheet" href="/_next/static/chunks//site.css">',
+    '<link rel="stylesheet" href="/_next/static/chunks/site.css">',
+  ].join("");
+  assert.deepEqual(stylesheetsInHtml(html), [
+    "https://amaanafoundation.org/_next/static/chunks/site.css",
+  ]);
+});
+
+test("AF-R068 keeps oversized CSS rejection nonblocking when stream cancellation never settles", async () => {
+  let cancelled = false;
+  const html = '<link rel="stylesheet" href="/_next/static/large.css">';
+  const fakeFetch = async url => {
+    if (url.endsWith(".css")) return {
+      ok: true, status: 200, url,
+      headers: { get: key => key === "content-type" ? "text/css" : null },
+      body: new ReadableStream({
+        start(controller) { controller.enqueue(new Uint8Array(1_200_000)); },
+        cancel() { cancelled = true; return new Promise(() => {}); },
+      }),
+    };
+    return {
+      ok: true, status: 200, url,
+      headers: { get: key => key === "content-type" ? "text/html" : null },
+      text: async () => html,
+    };
+  };
+  const outcome = await Promise.race([
+    auditPublicRouteCss({ fetchImpl: fakeFetch, routes: ["/"] })
+      .then(() => "accepted", error => String(error)),
+    new Promise(resolve => setTimeout(() => resolve("audit stalled"), 150)),
+  ]);
+  assert.match(outcome, /CSS response exceeds the audit size limit/);
+  assert.equal(cancelled, true);
 });

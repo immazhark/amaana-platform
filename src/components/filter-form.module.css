@@ -1,0 +1,32 @@
+/* One layout for the GET filter forms on /stories, /faith-and-reflections and /impact.
+   The generic two-column .form-grid stretched the submit button to the width of a field
+   (about 584px on stories and faith), and the /impact flex row centred it against the
+   label block instead of the control. Fields share the row, the button is field-height
+   and bottom-aligned, and the optional clear link takes its own line. */
+form.form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: .75rem 1rem;
+}
+
+form.form > label {
+  flex: 1 1 16rem;
+  min-width: 0;
+}
+
+form.form > :global(.v2-button) {
+  flex: 0 0 auto;
+  min-height: 3.1rem;
+  white-space: nowrap;
+}
+
+form.form > :global(.v2-text-link) {
+  flex: 1 0 100%;
+}
+
+@media (max-width: 620px) {
+  form.form > :global(.v2-button) {
+    flex: 1 1 100%;
+  }
+}

@@ -6,6 +6,12 @@ describe("sitemap appeal privacy", () => {
     expect(canListAppealInSitemap("HIGHLY_SENSITIVE")).toBe(false);
   });
 
+  it("fails closed on unrecognised runtime confidentiality values", () => {
+    for (const unknown of ["RESTRICTED", "SEALED", "", "highly_sensitive"]) {
+      expect(canListAppealInSitemap(unknown as Parameters<typeof canListAppealInSitemap>[0])).toBe(false);
+    }
+  });
+
   it("keeps standard, confidential and unlinked appeals eligible", () => {
     expect(canListAppealInSitemap("STANDARD")).toBe(true);
     expect(canListAppealInSitemap("CONFIDENTIAL")).toBe(true);

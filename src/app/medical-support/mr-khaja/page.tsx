@@ -1,3 +1,4 @@
+import { metaDescription } from "@/lib/meta-description";
 import { cache } from "react";
 import { publicAppealShareCopy } from "@/lib/public-appeal-share";
 import { getAppealSearchPrivacy } from "@/lib/appeal-search-privacy";
@@ -13,7 +14,7 @@ import { mrKhajaPublicInformation as info } from "@/lib/mr-khaja-public-informat
 
 const informationMetadata: Metadata = {
   title: "Mr. Khaja — Family Medical Support Request",
-  description: info.summary,
+  description: metaDescription(info.summary),
   // The family has approved limited website disclosure, not indefinite search indexing.
   robots: { index: false, follow: true, nocache: true },
   alternates: { canonical: info.path },
@@ -21,10 +22,10 @@ const informationMetadata: Metadata = {
     type: "article",
     url: info.path,
     title: info.title + " | Amaana Foundation",
-    description: info.summary,
+    description: metaDescription(info.summary),
     images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }],
   },
-  twitter: { card: "summary_large_image", title: info.title, description: info.summary },
+  twitter: { card: "summary_large_image", title: info.title, description: metaDescription(info.summary) },
 };
 
 export const dynamic = "force-dynamic";
@@ -43,10 +44,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const privacy = await getAppealSearchPrivacy(appeal.slug);
   const copy = publicAppealShareCopy(appeal.title, appeal.summary, privacy === "HIGHLY_SENSITIVE");
   return {
-    ...informationMetadata, title: copy.title, description: copy.summary,
-    openGraph: { type: "article", url: info.path, title: copy.title, description: copy.summary,
+    ...informationMetadata, title: copy.title, description: metaDescription(copy.summary),
+    openGraph: { type: "article", url: info.path, title: copy.title, description: metaDescription(copy.summary),
       images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }] },
-    twitter: { card: "summary_large_image", title: copy.title, description: copy.summary },
+    twitter: { card: "summary_large_image", title: copy.title, description: metaDescription(copy.summary) },
   };
 }
 
@@ -66,7 +67,10 @@ export default async function MrKhajaPublicInformationPage() {
       className="page-hero--long-title"
       eyebrow="Family medical assistance request · Hyderabad"
       title={info.title}
-      description={<p>{info.summary}</p>}
+      description={<>
+        <p>{info.summary}</p>
+        <p><strong>Foundation-approved fundraising target: {formatINR(info.requestedINR)}.</strong> This is not an independently certified medical estimate. Dedicated checkout for this request is not yet active.</p>
+      </>}
       actions={[
         { label: "Enquire about support in India", href: "/contact" },
         { label: "Browse reviewed appeals", href: "/appeals", secondary: true },

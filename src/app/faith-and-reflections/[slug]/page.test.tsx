@@ -45,6 +45,20 @@ beforeEach(() => {
   mocks.faith.mockResolvedValue(faith);
 });
 
+it("keeps reviewed reflection visible without linking a missing parent-cause relation", async () => {
+  mocks.faith.mockResolvedValue({
+    ...faith,
+    initiative: { status: "PUBLISHED", title: "Synthetic unchecked parent", slug: "unchecked", cause: null },
+  });
+  const html = renderToStaticMarkup(await FaithDetailPage({
+    params: Promise.resolve({ slug: faith.slug }),
+  }));
+  expect(html).toContain("Test-only reviewed body");
+  expect(html).toContain("Explore our work");
+  expect(html).not.toContain("Synthetic unchecked parent");
+  expect(html).not.toContain("Related initiative");
+});
+
 describe("Faith detail IST date displays", () => {
   it("renders publication and religious review dates in Asia/Kolkata at the UTC midnight boundary", async () => {
     // Fix the simulated server default to UTC, regardless of the test host.

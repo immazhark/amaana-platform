@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync, statSync, lstatSync } from "node:fs";
 import { join } from "node:path";
+import { gzipSync } from "node:zlib";
 import { pathToFileURL } from "node:url";
 
 /** Report static assets assigned by Next.js' App Router build manifest.
@@ -23,6 +24,13 @@ function measuredBytes(value, label) {
   return value;
 }
 
+/** Route groups are filesystem-only segments, never public URL components. */
+function publicLabelForAppPage(page) {
+  const segments = page.slice(1, -"/page".length).split("/")
+    .filter(segment => segment && !/^\([A-Za-z0-9_.-]+\)$/.test(segment));
+  return segments.length ? "/" + segments.join("/") : "/";
+}
+
 export function summarizeAppRouteBundles(pages, byteSize) {
   if (!pages || typeof pages !== "object" || Array.isArray(pages)) {
     throw new Error("Next.js app build manifest has no valid pages map");
@@ -36,6 +44,15 @@ export function summarizeAppRouteBundles(pages, byteSize) {
   if (Object.entries(pages).some(([entry, assets]) =>
     entry.endsWith("/layout") && !Array.isArray(assets))) {
     throw new Error("Invalid App Router layout asset list");
+  }
+  // An invalid element type means the manifest is corrupt. Silently skipping
+  // it would report fewer bytes than the page or inherited layout requires.
+  if (routePages.some(page => pages[page].some(asset => typeof asset !== "string"))) {
+    throw new Error("Invalid App Router page asset entry");
+  }
+  if (Object.entries(pages).some(([entry, assets]) =>
+    entry.endsWith("/layout") && assets.some(asset => typeof asset !== "string"))) {
+    throw new Error("Invalid App Router layout asset entry");
   }
 
   return routePages.map(page => {
@@ -51,6 +68,12 @@ export function summarizeAppRouteBundles(pages, byteSize) {
       }
       for (const raw of pages[entry] ?? []) {
         const normalized = normalizedStaticAsset(raw);
+        // Legacy builds may list non-JS/CSS resources (for example fonts),
+        // which are intentionally excluded. A malformed JS/CSS reference,
+        // however, must fail closed instead of shrinking the reported bytes.
+        if (!normalized && /\.(?:js|css)(?:[?#]|$)/iu.test(raw)) {
+          throw new Error("Unsafe App Router bundle asset path");
+        }
         if (normalized) assets.add(normalized);
       }
     }
@@ -58,7 +81,7 @@ export function summarizeAppRouteBundles(pages, byteSize) {
     const jsBytes = measuredBytes(resources.filter(item => item.asset.endsWith(".js")).reduce((n, item) => n + item.bytes, 0), "JavaScript total");
     const cssBytes = measuredBytes(resources.filter(item => item.asset.endsWith(".css")).reduce((n, item) => n + item.bytes, 0), "CSS total");
     return {
-      route: page === "/page" ? "/" : page.slice(0, -"/page".length),
+      route: publicLabelForAppPage(page),
       entries: resources.length,
       jsBytes,
       cssBytes,
@@ -82,6 +105,14 @@ export function summarizeUnattributedAppAssets(appPaths, assets) {
       !Number.isSafeInteger(asset.bytes) || asset.bytes < 0)) {
     throw new Error("Invalid aggregate asset size or path");
   }
+  if (assets.some(({ path }) => !path || path.startsWith("/") ||
+      /[\\?#:\s\u0000-\u001F\u007F]/u.test(path) ||
+      path.split("/").some(segment => !segment || segment === "." || segment === ".."))) {
+    throw new Error("Invalid aggregate asset path");
+  }
+  if (new Set(assets.map(asset => asset.path)).size !== assets.length) {
+    throw new Error("Duplicate aggregate asset path");
+  }
   const jsBytes = measuredBytes(assets.filter(asset => asset.path.endsWith(".js")).reduce((sum, asset) => sum + asset.bytes, 0), "JavaScript total");
   const cssBytes = measuredBytes(assets.filter(asset => asset.path.endsWith(".css")).reduce((sum, asset) => sum + asset.bytes, 0), "CSS total");
   return {
@@ -98,9 +129,19 @@ const isRecord = value => value !== null && typeof value === "object" && !Array.
 // Public route labels from generated manifests are URL paths, not external
 // locations, query strings or aliases for other directory levels.
 function validPublicRoute(route) {
-  return typeof route === "string" && route.startsWith("/") &&
-    !route.includes("//") && !/[?#\\\s\u0000-\u001F\u007F]/u.test(route) &&
-    !route.split("/").some(segment => segment === "." || segment === "..");
+  if (typeof route !== "string" || !route.startsWith("/")) return false;
+  // A second decoding layer could conceal separators or dot segments.
+  if (/%25/i.test(route)) return false;
+  // Inspect both forms: encoded separators or dot segments must not disguise
+  // another directory level in an untrusted generated route manifest.
+  let decoded;
+  try { decoded = decodeURIComponent(route); }
+  catch { return false; }
+  // An encoded slash embedded within a segment must not invent a route level.
+  if (decoded.split("/").length !== route.split("/").length) return false;
+  return [route, decoded].every(value => value.startsWith("/") &&
+    !value.includes("//") && !/[?#\\\s\u0000-\u001F\u007F]/u.test(value) &&
+    !value.split("/").some(segment => segment === "." || segment === ".."));
 }
 
 function pageRouteEntries(appPaths) {
@@ -258,6 +299,25 @@ function legacyStaticAssetBytes(buildDir, asset) {
   return measuredBytes(stat.size, "bundle");
 }
 
+/** Gzip level-9 size of a generated static asset, with the same no-symlink rule as
+ *  legacyStaticAssetBytes. An estimate of compressed size, not CDN/brotli transfer bytes. */
+export function gzipStaticAssetBytes(buildDir, asset, cache = new Map()) {
+  if (cache.has(asset)) return cache.get(asset);
+  let current = buildDir;
+  let stat;
+  for (const segment of asset.split("/")) {
+    current = join(current, segment);
+    stat = lstatSync(current);
+    if (stat.isSymbolicLink()) {
+      throw new Error("Symbolic links are not supported in static build assets");
+    }
+  }
+  if (!stat?.isFile()) throw new Error("Next.js static asset path is not a file");
+  const bytes = measuredBytes(gzipSync(readFileSync(current), { level: 9 }).length, "compressed bundle");
+  cache.set(asset, bytes);
+  return bytes;
+}
+
 /** Inspect each generated client-reference segment without following symlinks.
  * A missing file preserves the normal unavailable-attribution fallback.
  * A broken link must not silently masquerade as a missing manifest.
@@ -284,14 +344,30 @@ function clientReferenceManifestExists(buildDir, page) {
   return true;
 }
 
+/** Missing optional metadata may fall back; linked or non-file metadata may not. */
+function buildMetadataExists(path) {
+  let entry;
+  try { entry = lstatSync(path); }
+  catch (error) {
+    if (error?.code === "ENOENT") return false;
+    throw error;
+  }
+  if (entry.isSymbolicLink()) throw new Error("Symbolic links are not supported in build metadata");
+  if (!entry.isFile()) throw new Error("Build metadata path is not a file");
+  return true;
+}
+
 function run() {
   const buildDir = join(process.cwd(), ".next");
   if (existsSync(buildDir) && lstatSync(buildDir).isSymbolicLink()) {
     throw new Error("Symbolic links are not supported in static build assets");
   }
   const manifestPath = join(buildDir, "app-build-manifest.json");
+  const compressed = process.argv.includes("--compressed");
+  const gzipCache = new Map();
+  const gzipBytes = asset => gzipStaticAssetBytes(buildDir, asset, gzipCache);
   let result;
-  if (existsSync(manifestPath)) {
+  if (buildMetadataExists(manifestPath)) {
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
     result = {
       metric: "manifest-assigned-uncompressed-bytes",
@@ -300,9 +376,13 @@ function run() {
         return legacyStaticAssetBytes(buildDir, asset);
       }),
     };
+    if (compressed) {
+      result.compressedMetric = "manifest-assigned-gzip-bytes";
+      result.routesGzip = summarizeAppRouteBundles(manifest.pages, gzipBytes);
+    }
   } else {
     const routesPath = join(buildDir, "app-path-routes-manifest.json");
-    if (!existsSync(routesPath)) throw new Error("App Router route path manifest missing after build");
+    if (!buildMetadataExists(routesPath)) throw new Error("App Router route path manifest missing after build");
     const appPaths = JSON.parse(readFileSync(routesPath, "utf8"));
     result = summarizeUnattributedAppAssets(appPaths, walkBuildAssets(join(buildDir, "static")));
     const pages = Object.keys(appPaths).filter(page => page.endsWith("/page"));
@@ -317,8 +397,13 @@ function run() {
       result.cssMetric = "client-reference-assigned-uncompressed-css-bytes";
       result.cssRoutes = summarizeClientReferenceCss(appPaths,
         page => readFileSync(clientPath(page), "utf8"), asset => statSync(join(buildDir, asset)).size);
+      if (compressed) {
+        result.cssGzipMetric = "client-reference-assigned-gzip-css-bytes";
+        result.cssRoutesGzip = summarizeClientReferenceCss(appPaths,
+          page => readFileSync(clientPath(page), "utf8"), gzipBytes);
+      }
       const buildManifestPath = join(buildDir, "build-manifest.json");
-      result.jsRouteAttributionAvailable = existsSync(buildManifestPath) && pages.every(page =>
+      result.jsRouteAttributionAvailable = buildMetadataExists(buildManifestPath) && pages.every(page =>
         Object.hasOwn(parseClientReferenceManifest(readFileSync(clientPath(page), "utf8"), page), "entryJSFiles"));
       if (result.jsRouteAttributionAvailable) {
         const buildManifest = JSON.parse(readFileSync(buildManifestPath, "utf8"));
@@ -326,6 +411,11 @@ function run() {
         result.jsRoutes = summarizeClientReferenceJs(appPaths,
           page => readFileSync(clientPath(page), "utf8"), buildManifest.rootMainFiles,
           asset => statSync(join(buildDir, asset)).size);
+        if (compressed) {
+          result.jsGzipMetric = "client-reference-assigned-gzip-js-bytes";
+          result.jsRoutesGzip = summarizeClientReferenceJs(appPaths,
+            page => readFileSync(clientPath(page), "utf8"), buildManifest.rootMainFiles, gzipBytes);
+        }
       }
     }
   }
@@ -360,6 +450,20 @@ function run() {
     }
     for (const asset of walkBuildAssets(join(buildDir, "static")).filter(item => item.path.endsWith(".js")).sort((a,b) => b.bytes-a.bytes).slice(0,12)) {
       process.stdout.write(`Static JS contributor ${asset.bytes} bytes: ${asset.path}\n`);
+    }
+  }
+  if (compressed) {
+    const rows = result.routesGzip ?? result.jsRoutesGzip ?? [];
+    const cssRows = result.cssRoutesGzip ?? [];
+    if (cssRows.length > 0) {
+      process.stdout.write(`Gzip (level 9) CSS attribution: ${cssRows.length} page entries (estimate; client-reference stylesheets).\n`);
+      for (const row of [...cssRows].sort((a, b) => b.cssBytes - a.cssBytes).slice(0, 20)) {
+        process.stdout.write(`${row.route.padEnd(46)} CSS gzip ${String(row.cssBytes).padStart(9)}\n`);
+      }
+    }
+    process.stdout.write(`Gzip (level 9) JavaScript attribution: ${rows.length} page entries (estimate; includes shared runtime).\n`);
+    for (const row of [...rows].sort((a, b) => b.jsBytes - a.jsBytes).slice(0, 20)) {
+      process.stdout.write(`${row.route.padEnd(46)} JS gzip ${String(row.jsBytes).padStart(9)}\n`);
     }
   }
   process.stdout.write("Not measured transfer size, LCP, INP, or Core Web Vitals.\n");

@@ -7,6 +7,19 @@ vi.mock("next/link", () => ({
 }));
 
 import { FeedbackEnquiryBuilder } from "./feedback-enquiry-builder";
+import { FEEDBACK_KINDS } from "@/lib/feedback-enquiry";
+
+describe("native feedback radio-card markup", () => {
+  it("keeps block-level containers out of label phrasing content", () => {
+    const markup = renderToStaticMarkup(<FeedbackEnquiryBuilder />);
+    const cards = [...markup.matchAll(/<label\b[^>]*data-feedback-kind="[^"]+"[^>]*>([\s\S]*?)<\/label>/g)];
+    expect(cards).toHaveLength(FEEDBACK_KINDS.length);
+    for (const [, content] of cards) {
+      expect(content).toContain('name="kind"');
+      expect(content).not.toMatch(/<(?:div|p|h[1-6])\b/i);
+    }
+  });
+});
 
 describe("feedback review query boundaries", () => {
   it("does not report an invalid submission for unrelated referral and tracking queries", () => {

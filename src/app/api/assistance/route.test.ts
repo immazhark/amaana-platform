@@ -479,6 +479,33 @@ describe("assistance submission request bounds", () => {
     expect(response.headers.get("x-robots-tag")).toMatch(/noindex/i);
   });
 
+  it("still returns the definite retryable error, without leaking the object key, when cleanup itself fails", async () => {
+    mocks.assistanceCreate.mockRejectedValueOnce(new Error("database unavailable"));
+    mocks.deletePrivateDocumentObject.mockRejectedValueOnce(new Error("storage unavailable for assistance/request-test/secret.pdf"));
+    const logged = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+    const data = new FormData();
+    data.set("applicantName", "Acceptance Applicant");
+    data.set("phone", "9000000000");
+    data.set("email", "applicant@example.test");
+    data.set("city", "Hyderabad");
+    data.set("category", "MEDICAL");
+    data.set("description", "Synthetic assistance request data used only for route acceptance coverage.");
+    data.set("consent", "on");
+    data.append("documents", new File(["synthetic evidence"], "synthetic-evidence.pdf", { type: "application/pdf" }));
+
+    const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: data }));
+    const output = logged.mock.calls.map(call => String(call[0])).join(" | ");
+    logged.mockRestore();
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: "We could not securely submit your request. Please try again later." });
+    expect(mocks.deletePrivateDocumentObject).toHaveBeenCalledTimes(1);
+    expect(output).toContain("assistance.private_document_cleanup_failed");
+    expect(output).not.toMatch(/secret[.]pdf|assistance[/]request-test|synthetic-evidence/);
+    expect(response.headers.get("cache-control")).toMatch(/no-store/i);
+  });
+
   it("rejects a non-multipart submission before reading its body", async () => {
     mocks.enforceAssistanceRateLimit.mockResolvedValue(true);
 

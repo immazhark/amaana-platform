@@ -42,6 +42,11 @@ async function filesUnder(directory) {
 
 let files;
 try {
+  // lstat of static alone follows a symlinked .next parent.
+  // Reject an aliased build root before accepting any client artifact.
+  if ((await lstat(path.dirname(root))).isSymbolicLink()) {
+    throw new Error("Symbolic link in public client bundle");
+  }
   files = await filesUnder(root);
   // Next serves public/ directly; these files never enter .next/static.
   const publicRoot = path.resolve("public");
@@ -64,7 +69,9 @@ try {
 const secretValues = [...new Set([
   ...forbiddenMarkers.map((name) => process.env[name]),
   process.env.AMAANA_CLIENT_SECRET_CANARY,
-].filter((value) => typeof value === "string" && value.length >= 16))];
+// Reject configured 12–15 character private credentials as well. Very short
+// environment values stay excluded to avoid incidental matches in all assets.
+].filter((value) => typeof value === "string" && value.length >= 12))];
 
 const offenders = [];
 for (const file of files) {

@@ -275,6 +275,7 @@ it("reads only displayed private Donation detail fields and the existing bounded
       failedAt: true,
       refundedAt: true,
       appeal: { select: { title: true } },
+      fund: { select: { name: true } },
       events: {
         select: { id: true, eventType: true, providerEventId: true, processedAt: true },
         orderBy: [{ processedAt: "desc" }, { id: "desc" }],

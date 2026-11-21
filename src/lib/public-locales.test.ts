@@ -64,6 +64,17 @@ describe("public locale publication", () => {
     });
   });
 
+  it("keeps the English canonical alternate when the runtime translation collection is malformed", () => {
+    const malformed = [null, undefined, { locale: "ur", reviewed: true }, 42];
+    for (const translations of malformed) {
+      expect(buildPublishedLanguageAlternates("/contact",
+        translations as unknown as TranslationPublication[]), String(translations))
+        .toEqual({ en: "/contact" });
+    }
+    expect(buildPublishedLanguageAlternates("/admin",
+      null as unknown as TranslationPublication[])).toEqual({});
+  });
+
   it("sets RTL only for Urdu", () => {
     expect(publicLocaleDirection("ur")).toBe("rtl");
     expect(publicLocaleDirection("en")).toBe("ltr");

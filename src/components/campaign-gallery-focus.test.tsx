@@ -20,7 +20,7 @@ async function openFixture() {
   const first = { focus: firstFocus };
   const last = { focus: lastFocus };
   const dialog = {
-    isConnected: true, contains: (node: unknown) => node === first || node === last,
+    isConnected: true, contains: (node: unknown): boolean => node === dialog || node === first || node === last,
     querySelectorAll: () => ({ length: 2, item: (index: number) => [first, last][index] }),
   };
   const dialogRef: { current: unknown } = { current: dialog };
@@ -45,7 +45,8 @@ async function openFixture() {
     useEffect: (callback: () => (() => void) | undefined) => { effects.push(callback); },
   }));
   vi.doMock("next/image", () => ({ default: () => null }));
-  vi.stubGlobal("document", { body, activeElement: null });
+  const documentStub = { body, activeElement: null as unknown };
+  vi.stubGlobal("document", documentStub);
   vi.stubGlobal("window", windowTarget);
   vi.stubGlobal("requestAnimationFrame", vi.fn((callback: FrameRequestCallback) => {
     frame = callback;
@@ -83,6 +84,7 @@ async function openFixture() {
 
   return {
     dialogRef, dialog, trigger, fallback, triggerFocus, fallbackFocus, body, firstFocus, lastFocus,
+    focusDialogRoot() { documentStub.activeElement = dialog; },
     navigate() {
       const event = new Event("keydown", { cancelable: true });
       Object.defineProperty(event, "key", { value: "ArrowRight" });
@@ -168,6 +170,22 @@ describe("gallery delayed focus restoration", () => {
 
 
 describe("gallery focus containment", () => {
+  it("wraps Shift+Tab from the focusable dialog root to its last control", async () => {
+    const fixture = await openFixture();
+    fixture.focusDialogRoot();
+    expect(fixture.tab(true).defaultPrevented).toBe(true);
+    expect(fixture.lastFocus).toHaveBeenCalledOnce();
+    expect(fixture.firstFocus).not.toHaveBeenCalled();
+  });
+
+  it("preserves native forward Tab from the dialog root into its controls", async () => {
+    const fixture = await openFixture();
+    fixture.focusDialogRoot();
+    expect(fixture.tab(false).defaultPrevented).toBe(false);
+    expect(fixture.firstFocus).not.toHaveBeenCalled();
+    expect(fixture.lastFocus).not.toHaveBeenCalled();
+  });
+
   it.each([
     ["ArrowLeft", { altKey: true }], ["ArrowRight", { ctrlKey: true }],
     ["ArrowRight", { metaKey: true }], ["ArrowLeft", { shiftKey: true }],

@@ -70,3 +70,92 @@ describe("private acknowledgement exact monetary display", () => {
     expect(formatAcknowledgementINR(399.71)).toMatch(/399[.]71/);
   });
 });
+
+describe("AF-N23 private acknowledgement shape provenance", () => {
+  it("rejects inherited found flags, donation properties and appeal labels", () => {
+    expect(isAcknowledgementResponse(Object.create({ found: false }), reference)).toBe(false);
+    expect(isAcknowledgementResponse(Object.create(valid), reference)).toBe(false);
+    expect(isAcknowledgementResponse({
+      ...valid, donation: Object.create(valid.donation),
+    }, reference)).toBe(false);
+    expect(isAcknowledgementResponse({
+      ...valid, donation: {
+        ...valid.donation, appeal: Object.create(valid.donation.appeal),
+      },
+    }, reference)).toBe(false);
+  });
+
+  it("rejects private data attached to a not-found response", () => {
+    expect(isAcknowledgementResponse({
+      found: false, donation: valid.donation,
+    }, reference)).toBe(false);
+    expect(isAcknowledgementResponse({ found: false, presentation: valid.presentation }, reference)).toBe(false);
+    expect(isAcknowledgementResponse({ found: false }, reference)).toBe(true);
+  });
+
+  // Policy: unknown own keys are tolerated but never read by the client, which renders
+  // only the validated fields. Required fields stay strictly checked alongside them.
+  it("tolerates unknown own keys without weakening required-field validation", () => {
+    const extra = { ...valid, internalNote: "never rendered", donation: { ...valid.donation, extra: 1 } };
+    expect(isAcknowledgementResponse(extra, reference)).toBe(true);
+    expect(isAcknowledgementResponse({ ...extra, donation: { ...extra.donation, amount: "500" } }, reference)).toBe(false);
+    expect(isAcknowledgementResponse({ ...extra, presentation: { ...valid.presentation, tone: "unknown" } }, reference)).toBe(false);
+    expect(isAcknowledgementResponse({ found: false, internalNote: "x" }, reference)).toBe(false);
+  });
+});
+
+describe("acknowledgement destination: exactly one of an appeal or a fund", () => {
+  const withDestination = (appeal: unknown, fund?: unknown) => ({
+    ...valid, donation: { ...valid.donation, appeal, ...(fund === undefined ? {} : { fund }) },
+  });
+  it("accepts a fund donation that has no appeal", () => {
+    expect(isAcknowledgementResponse(withDestination(null, { name: "Orphan Fund", slug: "orphan" }), reference)).toBe(true);
+  });
+  it("still accepts an appeal donation, with or without an explicit null fund", () => {
+    expect(isAcknowledgementResponse(withDestination({ title: "Verified need", slug: "verified-need" }), reference)).toBe(true);
+    expect(isAcknowledgementResponse(withDestination({ title: "Verified need", slug: "verified-need" }, null), reference)).toBe(true);
+  });
+  it.each([
+    ["both an appeal and a fund", { title: "A", slug: "a" }, { name: "F", slug: "f" }],
+    ["neither", null, null],
+    ["no appeal and no fund key", null, undefined],
+    ["a fund with a malformed slug", null, { name: "F", slug: "Not A Slug" }],
+    ["a fund with a blank name", null, { name: " ", slug: "f" }],
+    ["a fund missing its slug", null, { name: "F" }],
+    ["a non-object fund", null, "orphan"],
+    ["an appeal with a malformed slug", { title: "A", slug: "../x" }, null],
+  ])("rejects %s", (_name, appeal, fund) => {
+    expect(isAcknowledgementResponse(withDestination(appeal, fund), reference)).toBe(false);
+  });
+  it("accepts a fully refunded fee-covered gift once the refund is reported as the donation's own share", () => {
+    expect(isAcknowledgementResponse({
+      ...valid, presentation: { ...valid.presentation, tone: "refunded" },
+      donation: { ...valid.donation, refundedAmount: 500, feeContributionAmount: 12.09, appeal: null, fund: { name: "Orphan Fund", slug: "orphan" } },
+    }, reference)).toBe(true);
+  });
+});
+
+describe("acknowledgement covered fee and seasonal-initiative line", () => {
+  const withDonation = (extra: Record<string, unknown>) => ({ ...valid, donation: { ...valid.donation, appeal: null, fund: { name: "Orphan Fund", slug: "orphan" }, ...extra } });
+  const campaign = { title: "Eid kits", units: 3, unitLabel: "kits", unitPrice: 1500 };
+
+  it("accepts a covered fee and a well-formed campaign, and still accepts both being absent or null", () => {
+    expect(isAcknowledgementResponse(withDonation({ feeContributionAmount: 12.09, campaign }), reference)).toBe(true);
+    expect(isAcknowledgementResponse(withDonation({ feeContributionAmount: 0, campaign: null }), reference)).toBe(true);
+    expect(isAcknowledgementResponse(withDonation({}), reference)).toBe(true);
+  });
+  it.each([
+    ["a negative fee", { feeContributionAmount: -1 }],
+    ["a non-finite fee", { feeContributionAmount: Number.POSITIVE_INFINITY }],
+    ["a fee with fractional paise", { feeContributionAmount: 1.005 }],
+    ["a string fee", { feeContributionAmount: "12.09" }],
+    ["a campaign with zero units", { campaign: { ...campaign, units: 0 } }],
+    ["a campaign with fractional units", { campaign: { ...campaign, units: 1.5 } }],
+    ["a campaign with a blank title", { campaign: { ...campaign, title: " " } }],
+    ["a campaign missing its unit price", { campaign: { title: "Eid kits", units: 3, unitLabel: "kits" } }],
+    ["a campaign with a non-positive unit price", { campaign: { ...campaign, unitPrice: 0 } }],
+    ["a non-object campaign", { campaign: "eid-kits" }],
+  ])("rejects %s", (_name, extra) => {
+    expect(isAcknowledgementResponse(withDonation(extra), reference)).toBe(false);
+  });
+});

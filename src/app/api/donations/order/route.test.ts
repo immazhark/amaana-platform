@@ -155,6 +155,56 @@ describe("donation order request bounds", () => {
     expect(mocks.create).toHaveBeenCalledTimes(1);
   });
 
+  it("charges the donation plus a server-calculated fee cover and stores the fee separately", async () => {
+    mocks.safeParse.mockReturnValue({
+      success: true,
+      data: {
+        appealId: "clx1234567890abcdef123456",
+        donorName: "Test Donor", donorEmail: "donor@example.com",
+        donorPhone: "", amount: 500, givingIntent: "GENERAL",
+        isAnonymous: false, coverProcessingFee: true, domesticConfirmed: true,
+      },
+    });
+    mocks.findFirst.mockResolvedValue({
+      id: "appeal_1", slug: "appeal-1", title: "Appeal 1",
+      status: "PUBLISHED", amountRaised: 100, goalAmount: 1000, closesAt: null,
+      assistanceRequest: { verification: { zakatStatus: "UNREVIEWED" } },
+    });
+    mocks.createRazorpayOrder.mockResolvedValue({ id: "order_fee123", amount: 51_209, currency: "INR", receipt: "AMN-123", status: "created" });
+    mocks.create.mockResolvedValue({ id: "donation_fee", donorName: "Test Donor", donorEmail: "donor@example.com", donorPhone: null });
+    const response = await POST(new Request("https://amaana.example/api/donations/order", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ amountPaise: 1, feeContributionAmount: 0 }),
+    }));
+    expect(response.status).toBe(201);
+    expect(await response.json()).toMatchObject({ orderId: "order_fee123", amount: 51_209 });
+    expect(mocks.createRazorpayOrder).toHaveBeenCalledWith(expect.objectContaining({ amountPaise: 51_209 }));
+    expect(mocks.create.mock.calls[0]?.[0].data).toMatchObject({ amount: 500, feeContributionAmount: 12.09 });
+  });
+
+  it("adds no fee unless the donor opted in", async () => {
+    mocks.safeParse.mockReturnValue({
+      success: true,
+      data: {
+        appealId: "clx1234567890abcdef123456",
+        donorName: "Test Donor", donorEmail: "donor@example.com",
+        donorPhone: "", amount: 500, givingIntent: "GENERAL",
+        isAnonymous: false, coverProcessingFee: false, domesticConfirmed: true,
+      },
+    });
+    mocks.findFirst.mockResolvedValue({
+      id: "appeal_1", slug: "appeal-1", title: "Appeal 1",
+      status: "PUBLISHED", amountRaised: 100, goalAmount: 1000, closesAt: null,
+      assistanceRequest: { verification: { zakatStatus: "UNREVIEWED" } },
+    });
+    mocks.createRazorpayOrder.mockResolvedValue({ id: "order_nofee1", amount: 50_000, currency: "INR", receipt: "AMN-123", status: "created" });
+    mocks.create.mockResolvedValue({ id: "donation_nofee", donorName: "Test Donor", donorEmail: "donor@example.com", donorPhone: null });
+    const response = await POST(new Request("https://amaana.example/api/donations/order", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" }));
+    expect(response.status).toBe(201);
+    expect(mocks.createRazorpayOrder).toHaveBeenCalledWith(expect.objectContaining({ amountPaise: 50_000 }));
+    expect(mocks.create.mock.calls[0]?.[0].data).toMatchObject({ amount: 500, feeContributionAmount: 0 });
+  });
+
   it.each([
     ["sub-paise funds", 100.001, 1000],
     ["sub-paise goal", 100, 1000.001],

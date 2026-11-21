@@ -46,10 +46,10 @@ export function VolunteerInterestBuilder({ preferences = {} }: { preferences?: P
                     aria-labelledby={headingId} aria-describedby={descriptionId}
                     defaultChecked={selection?.skills.includes(skill) ?? false} />
                   <span className={styles.marker} aria-hidden="true"><ActionIcon kind="volunteer" /></span>
-                  <div className={styles.copy}>
-                    <h3 id={headingId}>{skill}</h3>
-                    <p id={descriptionId}>{skillDescriptions[skill]}</p>
-                  </div>
+                  <span className={styles.copy}>
+                    <span className={styles.radioTitle} id={headingId}>{skill}</span>
+                    <span className={styles.radioDescription} id={descriptionId}>{skillDescriptions[skill]}</span>
+                  </span>
                   <span className={styles.action}>Add to my enquiry</span>
                 </label>
               );

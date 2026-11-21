@@ -1,0 +1,54 @@
+name: Retire verified merged task branches
+
+on:
+  pull_request:
+    types: [closed]
+  push:
+    branches: [main]
+    paths:
+      - 'docs/mission-control/af-r079-approved-retirement-batch-20261115.json'
+
+# This job may delete only the exact merged task ref after live PR/ref checks.
+# It is never triggered for unmerged closures, old branches, or forks.
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: retire-task-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: false
+
+jobs:
+  retire:
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.base.ref == 'main' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout protected main, never untrusted PR head
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Verify merged head and retire eligible branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/retire-merged-branch.mjs
+
+  retire-approved-history:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout protected main without untrusted PR source
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Revalidate and retire only pinned reviewed historical heads
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node scripts/retire-approved-history.mjs

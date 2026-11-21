@@ -34,7 +34,9 @@ vi.mock("@/lib/public-copy", () => ({
   programmeStoryParagraphs: () => ["Documented work"],
   heroTeaser: () => "Documented work",
 }));
-vi.mock("@/lib/public-media", () => ({
+vi.mock("@/lib/public-media", async importOriginal => ({
+  // Keep the real shared deduplication safety contract under test.
+  ...await importOriginal<typeof import("@/lib/public-media")>(),
   canRenderPublicMedia: () => true,
   resolvePublicMediaUrl: (asset: { publicUrl: string }) => asset.publicUrl,
   getPublicImageOptimizationUrl: (url: string) => url,
@@ -77,6 +79,18 @@ beforeEach(() => {
 });
 
 describe("canonical programme reviewed-media archive", () => {
+  it.each([
+    ["non-array projection", null],
+    ["object-shaped projection", { length: 1 }],
+    ["malformed relation entries", [null, undefined, { slug: "unreviewed", mediaAssets: null }]],
+  ])("fails closed on %s without hiding published programme content", async (_scenario, malformed) => {
+    mocks.getChildren.mockResolvedValue(malformed);
+    mocks.getRecord.mockResolvedValue(recordWithMedia(0));
+    const html = renderToStaticMarkup(await ProgrammeDetail({ slug: "approved-programme" }));
+    expect(html).toContain("Documented work");
+    expect(html).not.toContain("unreviewed");
+  });
+
   it("links to the paginated archive when the initial 48 approved media are filled", async () => {
     mocks.getRecord.mockResolvedValue(recordWithMedia(48));
     const html = renderToStaticMarkup(await ProgrammeDetail({ slug: "approved-programme" }));

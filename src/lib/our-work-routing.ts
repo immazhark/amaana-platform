@@ -11,6 +11,8 @@ export type LegacyOurWorkRoute =
     };
 
 const PUBLIC_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+// Keep public redirect segments aligned with the canonical sitemap slug bound.
+const validPublicSlug = (slug: string) => slug.length <= 200 && PUBLIC_SLUG_PATTERN.test(slug);
 
 export const LEGACY_OUR_WORK_ROUTES: Readonly<Record<string, LegacyOurWorkRoute>> = {
   "medical-financial-assistance": {
@@ -67,7 +69,7 @@ export const LEGACY_OUR_WORK_ROUTES: Readonly<Record<string, LegacyOurWorkRoute>
 
 export function legacyOurWorkRoute(slug: string | null | undefined): LegacyOurWorkRoute | null {
   const normalized = typeof slug === "string" ? slug.trim() : "";
-  if (!PUBLIC_SLUG_PATTERN.test(normalized) || !Object.hasOwn(LEGACY_OUR_WORK_ROUTES, normalized)) return null;
+  if (!validPublicSlug(normalized) || !Object.hasOwn(LEGACY_OUR_WORK_ROUTES, normalized)) return null;
   return LEGACY_OUR_WORK_ROUTES[normalized] ?? null;
 }
 
@@ -77,6 +79,6 @@ export function isLegacyOurWorkSlug(slug: string | null | undefined) {
 
 export function canonicalOurWorkDestination(slug: string | null | undefined) {
   const normalized = typeof slug === "string" ? slug.trim() : "";
-  if (!PUBLIC_SLUG_PATTERN.test(normalized)) return "/our-work";
+  if (!validPublicSlug(normalized)) return "/our-work";
   return legacyOurWorkRoute(normalized)?.destination ?? `/our-work/${normalized}`;
 }

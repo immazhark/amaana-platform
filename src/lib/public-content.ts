@@ -38,6 +38,7 @@ export const PUBLIC_DETAIL_MEDIA_PROJECTION = {
     altText: true,
     caption: true,
     sourceYear: true,
+    placeholder: true,
     sortOrder: true,
     width: true,
     height: true,
@@ -240,7 +241,7 @@ const getHomepageAppealsCached = unstable_cache(async () => {
     },
   });
 
-  return appeals.filter(appeal => canExposePublicAppeal(appeal) && !isSyntheticStagingAppeal(appeal));
+  return (Array.isArray(appeals) ? appeals : []).filter(appeal => canExposePublicAppeal(appeal) && !isSyntheticStagingAppeal(appeal));
 }, ["homepage-appeals"], { revalidate: 300, tags: ["appeals"] });
 
 export async function getHomepageAppeals(limit = 3) {

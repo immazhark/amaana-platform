@@ -1,0 +1,62 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+// The same stylesheets the real home page and /appeals layout load.
+import "../../home-showcase.css";
+import "../../home-documentary.css";
+import "../../appeals.css";
+import "../../appeals-wow.css";
+import "../../get-involved/sponsor-education/sponsor-education.css";
+import { AppealCard } from "@/components/appeal-card";
+import { AppealSearchForm } from "@/components/appeal-search-form";
+import { HomeGrowth } from "@/components/home-evidence";
+import { SectionHeading } from "@/components/section-heading";
+import { SponsorshipEnquiry } from "@/components/sponsorship-enquiry";
+
+export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "First-look Browser Acceptance",
+  robots: { index: false, follow: false },
+};
+
+const appeal = (n: number) => ({
+  slug: `synthetic-${n}`,
+  title: `Synthetic reviewed appeal ${n}`,
+  summary: "Synthetic summary used only by the isolated browser-acceptance fixture. No real person is described.",
+  category: "MEDICAL",
+  beneficiaryLocation: "Synthetic city",
+  goalAmount: 500000,
+  amountRaised: 500,
+});
+
+/** `?appeals=1|2|3` selects how many synthetic open appeals are rendered in both grids. */
+export default async function FirstLookAcceptance({ searchParams }: { searchParams: Promise<{ appeals?: string }> }) {
+  if (process.env.AMAANA_BROWSER_ACCEPTANCE !== "true") notFound();
+  const { appeals } = await searchParams;
+  const count = Math.min(3, Math.max(1, Number.parseInt(appeals ?? "1", 10) || 1));
+  const items = Array.from({ length: count }, (_, index) => appeal(index + 1));
+  return (
+    <div className="v3-home">
+      <HomeGrowth eidProgrammePublished />
+      <section className="v3-section v3-appeals" aria-labelledby="appeals-title">
+        <div className="v3-shell">
+          <SectionHeading eyebrow={<>Current verified appeals</>} title={<>When there is a need, we share it responsibly.</>} subtitle={<>Synthetic subtitle.</>} id="appeals-title" className="v3-section-head" />
+          <div className={`grid appeal-grid${items.length === 1 ? " appeal-feature" : ""}`} data-fixture="home-grid">
+            {items.map(item => <AppealCard key={item.slug} appeal={item} />)}
+          </div>
+        </div>
+      </section>
+      <section className="v2-section paper" id="current-appeals" aria-labelledby="current-appeals-title">
+        <div className="v2-shell">
+          <SectionHeading eyebrow={<>Current appeals</>} title={<>Give where a reviewed need is active.</>} subtitle={<>Synthetic subtitle.</>} id="current-appeals-title" />
+          <AppealSearchForm query="" invalid={false} active={false} />
+          <div className={`v2-appeals-grid${items.length === 1 ? " appeal-feature" : ""}`} data-fixture="appeals-grid">
+            {items.map(item => <div key={item.slug}><AppealCard appeal={item} /></div>)}
+          </div>
+        </div>
+      </section>
+      <div className="taleem-sponsor" data-fixture="taleem-enquiry">
+        <SponsorshipEnquiry preferences={{}} />
+      </div>
+    </div>
+  );
+}

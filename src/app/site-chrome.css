@@ -1,7 +1,8 @@
 /* Canonical site chrome authority — 2026-09-30.
    Header, reminder/live rail and footer resolve here after legacy polish layers. */
 :root{
-  --af-chrome-height:5rem;
+  /* 4.65rem mark x 1.14 = 5.3rem; the desktop track must contain the scaled mark. */
+  --af-chrome-height:5.5rem;
   --af-chrome-logo:4.65rem;
   --af-footer-gold:#f1cf52;
   --af-footer-gold-bright:#ffd95a;
@@ -75,6 +76,24 @@
 }
 .amaana-reminder-content p{
   min-width:0;overflow:hidden;margin:0;color:#4e5e5c;font-size:.75rem;line-height:1.25;text-overflow:ellipsis;white-space:nowrap
+}
+/* Desktop rail: wrap to two lines inside the existing rail height instead of an
+   ellipsis that can cut a citation or hide the live headline. Narrower desktop
+   widths also drop the decorative eyebrow (the AMAANA LIVE badge already labels
+   the lane) and the secondary reminder line, as the phone layout does. */
+@media(min-width:901px){
+  .amaana-reminder-content strong,.amaana-live-content strong,.amaana-reminder-content p{
+    display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;
+    white-space:normal;text-overflow:clip;text-wrap:pretty
+  }
+}
+@media(min-width:901px) and (max-width:1599px){
+  .amaana-live-content{grid-template-columns:minmax(0,1fr) auto}
+  .amaana-live-content .amaana-reminder-eyebrow{display:none}
+}
+@media(min-width:901px) and (max-width:1279px){
+  .amaana-reminder-content{grid-template-columns:minmax(0,1fr) auto}
+  .amaana-reminder-content p{display:none}
 }
 .amaana-reminder-eyebrow{font-size:.75rem}
 .amaana-reminder-source{font-size:.75rem}

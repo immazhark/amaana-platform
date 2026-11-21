@@ -29,10 +29,31 @@ export async function runAppealShare(
   }
 }
 
+const publicShareOrigin = "https://amaanafoundation.org";
+
+function canonicalAppealShareUrl(path: unknown): string {
+  if (typeof path !== "string" || !path.startsWith("/") || path.startsWith("//") ||
+      path.includes("\\") || /[\u0000-\u001f\u007f]/.test(path)) return publicShareOrigin + "/";
+  // Validate the raw pathname before any URL resolution. URL normalizes
+  // "/appeals/first/../second" to a different valid appeal, which must never
+  // pair a first appeal's identifying copy with a second appeal's URL.
+  const pathname = path.split(/[?#]/, 1)[0] ?? "";
+  const slug = pathname.startsWith("/appeals/") ? pathname.slice("/appeals/".length) : "";
+  if (slug.length > 200 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) return publicShareOrigin + "/";
+  // Query strings and fragments may carry private references. Share the
+  // original, unambiguous approved slug only.
+  return publicShareOrigin + pathname;
+}
+
 export function AppealShare({ title, summary, path }: AppealShareProps) {
-  const canonicalUrl = `https://amaanafoundation.org${path[0] === "/" && path[1] !== "/" ? path : "/"}`;
-  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`${title}\n\n${summary}\n\n${canonicalUrl}`)}`;
-  const identity = JSON.stringify([title, summary, canonicalUrl]);
+  const canonicalUrl = canonicalAppealShareUrl(path);
+  // An invalid destination must not carry the original appeal copy into a
+  // social share payload, even when its link is replaced by the safe root.
+  const shareTitle = canonicalUrl === `${publicShareOrigin}/` ? "Amaana Foundation" : title;
+  const shareSummary = canonicalUrl === `${publicShareOrigin}/`
+    ? "Visit Amaana Foundation for reviewed public appeals." : summary;
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`${shareTitle}\n\n${shareSummary}\n\n${canonicalUrl}`)}`;
+  const identity = JSON.stringify([shareTitle, shareSummary, canonicalUrl]);
   const actionId = useRef(0);
   const [feedback, setFeedback] = useState(() => ({ identity, token: {}, message: "" }));
   let currentFeedback = feedback;
@@ -53,7 +74,7 @@ export function AppealShare({ title, summary, path }: AppealShareProps) {
   async function act(action: "share" | "copy") {
     const id = ++actionId.current;
     updateStatus("");
-    const result = await runAppealShare({ title, summary, url: canonicalUrl }, action);
+    const result = await runAppealShare({ title: shareTitle, summary: shareSummary, url: canonicalUrl }, action);
     if (id === actionId.current) updateStatus(result);
   }
 

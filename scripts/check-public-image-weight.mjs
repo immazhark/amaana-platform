@@ -16,6 +16,11 @@ export function evaluateImageWeights(files, limit = MAX_ARTWORK_BYTES) {
       throw new Error("Invalid image inventory entry");
     }
   }
+  const seenPaths = new Set();
+  for (const file of files) {
+    if (seenPaths.has(file.path)) throw new Error("Duplicate image inventory path");
+    seenPaths.add(file.path);
+  }
   const sorted = files.slice().sort((a, b) => b.bytes - a.bytes);
   const totalBytes = sorted.reduce((sum, file) => {
     const next = sum + file.bytes;
@@ -31,6 +36,10 @@ export function evaluateImageWeights(files, limit = MAX_ARTWORK_BYTES) {
 }
 
 export function readHeroImageInventory(root = process.cwd()) {
+  // Do not follow an alias for the repository scan boundary.
+  if (lstatSync(root).isSymbolicLink()) {
+    throw new Error("Symlinked artwork scan root is forbidden");
+  }
   if (lstatSync(join(root, "public")).isSymbolicLink()) {
     throw new Error("Symlinked artwork parent is forbidden: public");
   }

@@ -24,15 +24,22 @@ export type CampaignGalleryItem = {
 
 export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }) {
   const safeItems = useMemo(() => {
+    if (!Array.isArray(items)) return [];
     const seenUrls = new Set<string>();
     const seenIds = new Set<string>();
     return items.flatMap(item => {
+      if (!item || !["id", "url", "alt"].every(key => Object.hasOwn(item, key)) ||
+          ["caption", "graphicArtwork", "serverApprovedExternal", "width", "height"]
+            .some(key => key in item && !Object.hasOwn(item, key)) ||
+          typeof item.id !== "string" || !item.id.trim() ||
+          typeof item.alt !== "string" || !item.alt.trim() ||
+          (item.caption != null && typeof item.caption !== "string")) return [];
       const url = normalizeSafePublicMediaUrl(item.url);
       // Browser code cannot read server-only PUBLIC_MEDIA_BASE_URL. Retain reviewed
       // external images explicitly approved by the server projection, not raw props.
       const approvedOrigin = url && (isCspCompatiblePublicImageUrl(url) ||
         (item.serverApprovedExternal === true && url.startsWith("https://")));
-      if (!url || !approvedOrigin || isPrivateAppMediaUrl(url) || !item.alt?.trim() || seenUrls.has(url) || seenIds.has(item.id)) return [];
+      if (!url || !approvedOrigin || isPrivateAppMediaUrl(url) || seenUrls.has(url) || seenIds.has(item.id)) return [];
       seenUrls.add(url);
       seenIds.add(item.id);
       return [{ ...item, url }];
@@ -103,7 +110,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
       if (!dialogRef.current?.contains(document.activeElement)) {
         event.preventDefault();
         (event.shiftKey ? last : first).focus();
-      } else if (event.shiftKey && document.activeElement === first) {
+      } else if (event.shiftKey && (document.activeElement === first || document.activeElement === dialogRef.current)) {
         event.preventDefault();
         last.focus();
       } else if (!event.shiftKey && document.activeElement === last) {

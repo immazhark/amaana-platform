@@ -197,6 +197,23 @@ test("redirects and unexpected transport origins fail before schema acceptance",
   }
 });
 
+test("oversized HTML streaming audit rejects even when cancellation never settles", async () => {
+  const fakeFetch = async target => {
+    const stream = new ReadableStream({
+      start(controller) { controller.enqueue(new Uint8Array(2_100_000)); },
+      cancel() { return new Promise(() => {}); },
+    });
+    const response = new Response(stream, { status: 200, headers: { "Content-Type": "text/html" } });
+    Object.defineProperty(response, "url", { value: target });
+    return response;
+  };
+  const outcome = await Promise.race([
+    auditPublicSchema(fakeFetch).then(() => "accepted", error => String(error)),
+    new Promise(resolve => setTimeout(() => resolve("audit stalled"), 100)),
+  ]);
+  assert.match(outcome, /Public document exceeds size limit/);
+});
+
 test("non-HTML, absent-body and oversized transport responses fail closed", async () => {
   for (const fixture of [
     { body: page(), headers: { "Content-Type": "text/plain" } },
@@ -211,6 +228,29 @@ test("non-HTML, absent-body and oversized transport responses fail closed", asyn
     };
     await assert.rejects(auditPublicSchema(fakeFetch));
   }
+});
+
+test("HTML text in another media type or parameter cannot certify an HTML response", async () => {
+  for (const contentType of ["text/html-fake", "application/json; profile=text/html", "text/plain; note=text/html"]) {
+    const fakeFetch = async target => {
+      const response = new Response(page(graph, target), { status: 200,
+        headers: { "Content-Type": contentType } });
+      Object.defineProperty(response, "url", { value: target });
+      return response;
+    };
+    await assert.rejects(auditPublicSchema(fakeFetch), /content type/, contentType);
+  }
+});
+
+test("HTML media type accepts case and charset parameters", async () => {
+  const fakeFetch = async target => {
+    if (target.endsWith("/api/health/version")) throw new Error("synthetic version unavailable");
+    const response = new Response(page(graph, target), { status: 200,
+      headers: { "Content-Type": "Text/HTML; charset=UTF-8" } });
+    Object.defineProperty(response, "url", { value: target });
+    return response;
+  };
+  assert.equal((await auditPublicSchema(fakeFetch)).pages.length, 5);
 });
 
 test("AF-R080 accepts inert CSS and title text containing tag-like fragments", () => {
@@ -229,4 +269,192 @@ test("AF-R080 ignores harmless tag-like text inside ordinary JavaScript", () => 
   const result = analyzePublicSchemaHtml("/", html);
   assert.equal(result.status, "STRUCTURE_VALID_EXTERNAL_ACCEPTANCE_PENDING");
   assert.equal(result.canonical, `${origin}/`);
+});
+
+
+test("canonical-like custom elements do not establish a canonical URL", () => {
+  for (const name of ["link-card", "link:canonical"]) {
+    const onlyCustom = page().replace('<link rel="canonical"', `<${name} rel="canonical"`);
+    assert.throws(() => analyzePublicSchemaHtml("/", onlyCustom), /canonical URL/);
+    const withCustom = page(graph, `${origin}/`, `<${name} rel="canonical" href="https://other.invalid/">`);
+    assert.equal(analyzePublicSchemaHtml("/", withCustom).canonical, `${origin}/`);
+  }
+});
+
+test("meta-like custom elements do not create a noindex directive", () => {
+  for (const name of ["meta-note", "meta:robots"]) {
+    const html = page(graph, `${origin}/`, `<${name} name="robots" content="noindex">`);
+    assert.equal(analyzePublicSchemaHtml("/", html).indexingDirective, "NO_EXPLICIT_NOINDEX");
+  }
+});
+
+test("genuine canonical and robots tags retain HTML whitespace and self-closing forms", () => {
+  const html = page(graph, `${origin}/`, '<meta\nname="robots" content="noindex"/>')
+    .replace('<link rel="canonical"', '<link\nrel="canonical"')
+    .replace('href="https://amaanafoundation.org/">', 'href="https://amaanafoundation.org/"/>');
+  const result = analyzePublicSchemaHtml("/", html);
+  assert.equal(result.canonical, `${origin}/`);
+  assert.equal(result.indexingDirective, "NOINDEX");
+});
+
+
+test("script-like custom elements cannot supply a JSON-LD identity graph", () => {
+  for (const name of ["script-data", "script:json"]) {
+    const html = page().replace('<script type="application/ld+json">', `<${name} type="application/ld+json">`);
+    assert.throws(() => analyzePublicSchemaHtml("/", html), /identity nodes/);
+  }
+});
+
+test("head-like custom elements cannot supply the public document head", () => {
+  for (const name of ["head-note", "head:metadata"]) {
+    assert.throws(() => analyzePublicSchemaHtml("/", page().replace("<head>", `<${name}>`)), /head markup/);
+  }
+});
+
+test("custom elements with inert-tag prefixes retain active identity markup", () => {
+  for (const name of ["template-card", "noscript-note", "textarea-field", "iframe-card", "object-card", "svg-icon", "plaintext-card"]) {
+    const html = page().replace("<body>", `<body><${name}>`).replace("</body>", `</${name}></body>`);
+    assert.equal(analyzePublicSchemaHtml("/", html).status, "STRUCTURE_VALID_EXTERNAL_ACCEPTANCE_PENDING", name);
+  }
+});
+
+test("raw-text custom element prefixes do not conceal active private JSON-LD", () => {
+  const privateSchema = JSON.stringify({ "@context": "https://schema.org", "@type": "Article", url: `${origin}/admin/private` });
+  for (const name of ["style", "title", "xmp", "noembed", "noframes"]) {
+    const custom = `<${name}-panel><script type="application/ld+json">${privateSchema}</script><${name}>Child</${name}></${name}-panel>`;
+    assert.throws(() => analyzePublicSchemaHtml("/", page().replace("<body>", `<body>${custom}`)), /Private route/, name);
+  }
+});
+
+test("HTTP X-Robots-Tag observation distinguishes noindex directives from lookalike text", async () => {
+  const makeFetch = directive => async target => {
+    if (target.endsWith("/api/health/version")) throw new Error("synthetic version unavailable");
+    const response = new Response(page(graph, target), {
+      status: 200,
+      headers: { "Content-Type": "text/html", "X-Robots-Tag": directive },
+    });
+    Object.defineProperty(response, "url", { value: target });
+    return response;
+  };
+  for (const [directive, expected] of [
+    ["noindex", "NOINDEX"],
+    ["googlebot: noindex, nofollow", "NOINDEX"],
+    ["NOINDEX, FOLLOW", "NOINDEX"],
+    ["notnoindex", "UNSPECIFIED"],
+    ["noindexing", "UNSPECIFIED"],
+    ["custom-noindex-flag", "UNSPECIFIED"],
+    ["noindex=off", "UNSPECIFIED"],
+  ]) {
+    const report = await auditPublicSchema(makeFetch(directive));
+    assert.equal(report.pages[0].httpIndexingDirective, expected, directive);
+  }
+});
+
+test("AF-R080 limits optional runtime-version response without weakening five-page audit", async () => {
+  let versionBodyRead = false;
+  const fetchImpl = async target => {
+    if (target.endsWith("/api/health/version")) {
+      return {
+        status: 200,
+        url: target,
+        headers: new Headers({ "content-type": "application/json", "content-length": "2000000" }),
+        json: async () => {
+          versionBodyRead = true;
+          return { commitSha: "a".repeat(40) };
+        },
+      };
+    }
+    const response = new Response(page(graph, target), { status: 200, headers: { "Content-Type": "text/html" } });
+    Object.defineProperty(response, "url", { value: target });
+    return response;
+  };
+  const result = await auditPublicSchema(fetchImpl);
+  assert.equal(result.pages.length, 5);
+  assert.equal(result.runtimeSha, null, "Oversized runtime metadata cannot certify runtime identity");
+  assert.equal(versionBodyRead, false, "Reject declared oversized version responses before parsing");
+});
+
+
+test("AF-N14 rejects identity HTML streams when declared body size differs from delivered bytes", async () => {
+  for (const delta of [-9, 13]) {
+    const fetchImpl = async target => {
+      if (target.endsWith("/api/health/version")) throw new Error("synthetic version not needed");
+      const html = page(graph, target);
+      const response = new Response(html, {
+        status: 200,
+        headers: {
+          "Content-Type": "text/html",
+          "Content-Length": String(Buffer.byteLength(html, "utf8") + delta),
+        },
+      });
+      Object.defineProperty(response, "url", { value: target });
+      return response;
+    };
+    await assert.rejects(auditPublicSchema(fetchImpl), /declared|length|truncated/i,
+      "A complete-looking HTML document from a partial or oversized identity stream cannot certify a public route");
+  }
+});
+
+test("AF-N14 preserves legitimate exact-size identity responses", async () => {
+  const fetchImpl = async target => {
+    if (target.endsWith("/api/health/version")) throw new Error("synthetic version not needed");
+    const html = page(graph, target);
+    const response = new Response(html, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/html",
+        "Content-Length": String(Buffer.byteLength(html, "utf8")),
+      },
+    });
+    Object.defineProperty(response, "url", { value: target });
+    return response;
+  };
+  assert.equal((await auditPublicSchema(fetchImpl)).pages.length, PUBLIC_SCHEMA_ROUTES.length);
+});
+
+
+test("AF-N14 does not compare a decompressed body to its compressed wire length", async () => {
+  const fetchImpl = async target => {
+    if (target.endsWith("/api/health/version")) throw new Error("synthetic version not needed");
+    const html = page(graph, target);
+    const response = new Response(html, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/html",
+        "Content-Encoding": "gzip",
+        "Content-Length": "17",
+      },
+    });
+    Object.defineProperty(response, "url", { value: target });
+    return response;
+  };
+  assert.equal((await auditPublicSchema(fetchImpl)).pages.length, PUBLIC_SCHEMA_ROUTES.length);
+});
+
+test("AF-N14 accepts zero-padded decimal identity lengths but rejects malformed lengths", async () => {
+  const fetchImpl = async target => {
+    if (target.endsWith("/api/health/version")) throw new Error("synthetic version not needed");
+    const html = page(graph, target);
+    const response = new Response(html, {
+      status: 200,
+      headers: {
+        "Content-Type": "text/html",
+        "Content-Length": "00" + Buffer.byteLength(html, "utf8"),
+      },
+    });
+    Object.defineProperty(response, "url", { value: target });
+    return response;
+  };
+  assert.equal((await auditPublicSchema(fetchImpl)).pages.length, PUBLIC_SCHEMA_ROUTES.length);
+  for (const invalid of ["", "-1", "1e3", "NaN"]) {
+    const badFetch = async target => {
+      const response = new Response(page(graph, target), {
+        status: 200,
+        headers: { "Content-Type": "text/html", "Content-Length": invalid },
+      });
+      Object.defineProperty(response, "url", { value: target });
+      return response;
+    };
+    await assert.rejects(auditPublicSchema(badFetch), /length/i);
+  }
 });

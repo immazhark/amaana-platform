@@ -11,9 +11,12 @@ export function isPublicFaithReviewComplete(input: {
   verifiedAt: Date | null;
   sourceCitation: string | null;
 }) {
+  // Database records cross a runtime boundary; malformed rows must never
+  // become reviewed public religious content or interrupt the public index.
+  if (!input || typeof input !== "object" || Array.isArray(input)) return false;
   return input.status === "PUBLISHED" &&
     input.religiousReviewStatus === "VERIFIED" &&
     input.verifiedAt instanceof Date &&
     Number.isFinite(input.verifiedAt.getTime()) &&
-    Boolean(input.sourceCitation?.trim());
+    typeof input.sourceCitation === "string" && input.sourceCitation.trim().length > 0;
 }

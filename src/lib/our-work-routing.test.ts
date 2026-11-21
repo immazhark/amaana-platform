@@ -74,6 +74,14 @@ describe("Our Work canonical routing", () => {
     expect(canonicalOurWorkDestination(undefined)).toBe("/our-work");
   });
 
+  it("rejects oversized public slug segments rather than constructing oversized redirects", () => {
+    const slug = "a".repeat(201);
+    expect(legacyOurWorkRoute(slug)).toBeNull();
+    expect(isLegacyOurWorkSlug(slug)).toBe(false);
+    expect(canonicalOurWorkDestination(slug)).toBe("/our-work");
+    expect(canonicalOurWorkDestination("a".repeat(200))).toBe(`/our-work/${"a".repeat(200)}`);
+  });
+
   it("retains category-vs-initiative semantics for redirect metadata", () => {
     expect(legacyOurWorkRoute("medical-financial-assistance")).toEqual({
       kind: "category",

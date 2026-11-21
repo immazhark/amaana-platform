@@ -3,6 +3,18 @@ import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { VolunteerInterestBuilder } from "./volunteer-interest-builder";
 
+describe("volunteer native checkbox-card semantics", () => {
+  it("uses phrasing content within each clickable checkbox label", () => {
+    const html = renderToStaticMarkup(createElement(VolunteerInterestBuilder));
+    const cards = [...html.matchAll(/<label\b[^>]*data-volunteer-skill="[^"]+"[^>]*>([\s\S]*?)<\/label>/g)];
+    expect(cards).toHaveLength(6);
+    for (const [, content] of cards) {
+      expect(content).toContain('type="checkbox"');
+      expect(content).not.toMatch(/<(?:div|p|h[1-6])\b/i);
+    }
+  });
+});
+
 describe("volunteer interest experience", () => {
   it("renders useful native links without client-only application state or network submission", () => {
     const html = renderToStaticMarkup(createElement(VolunteerInterestBuilder));

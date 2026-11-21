@@ -1,3 +1,4 @@
+import { metaDescription } from "@/lib/meta-description";
 import Link from "next/link";
 import { CanonicalArticle } from "@/components/canonical-article";
 import { PublicMedia } from "@/components/public-media";
@@ -7,18 +8,18 @@ import { getPublishedTrustees } from "@/lib/team-data";
 
 export const metadata = {
   title: aboutCopy.title,
-  description: aboutCopy.intro,
+  description: metaDescription(aboutCopy.intro),
   alternates: { canonical: "/about" },
   openGraph: { images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }],
     type: "website",
     url: "/about",
     title: `${aboutCopy.title} | Amaana Foundation`,
-    description: aboutCopy.intro,
+    description: metaDescription(aboutCopy.intro),
   },
   twitter: { images: ["/twitter-image"],
     card: "summary_large_image",
     title: `${aboutCopy.title} | Amaana Foundation`,
-    description: aboutCopy.intro,
+    description: metaDescription(aboutCopy.intro),
   },
 };
 

@@ -110,6 +110,11 @@ describe('homepage editor scalar validation', () => {
     expect(() => parseHomeConfig({ ...defaultHomeConfig, appealPosition: value })).toThrow(HomeCarouselValidationError);
   });
 
+  it.each(['0x10', '0b10', '0o10', '1e2', '0b101'])(
+    'rejects non-decimal numeric editor text %s', value => {
+      expect(() => validateHomeSlide({ ...origin, order: value })).toThrow(HomeCarouselValidationError);
+      expect(() => parseHomeConfig({ ...defaultHomeConfig, appealPosition: value })).toThrow(HomeCarouselValidationError);
+    });
   it('accepts ordinary numeric form strings and preserves configured zeroes', () => {
     const slide = validateHomeSlide({ ...origin, order: '0', focalX: '0', focalY: '100' });
     expect([slide.order, slide.focalX, slide.focalY]).toEqual([0, 0, 100]);
@@ -124,5 +129,30 @@ describe('homepage editor scalar validation', () => {
     const slide = validateHomeSlide({ ...origin, secondaryLabel: '   ', secondaryHref: '' });
     expect(slide.secondaryLabel).toBe('');
     expect(slide.secondaryHref).toBe('');
+  });
+});
+
+describe('homepage CTA identity integrity', () => {
+  it.each([
+    '/our-work/eid/../taleem',
+    '/our-work/eid/%2e%2e/taleem',
+    '/our-work/eid/%2E%2e/taleem',
+    '/our-work/eid/./taleem',
+    '/our-work/eid/%2e/taleem',
+    '/our-work//taleem',
+  ])('rejects navigation that rewrites the reviewed programme identity: %s', href => {
+    expect(() => safeHomeHref(href)).toThrow(HomeCarouselValidationError);
+    expect(visibleHomeSlides({
+      slides: [{ ...eid, primaryHref: href }], appealPosition: 0,
+    }, new Set(), now)).toHaveLength(0);
+  });
+
+  it.each([
+    '/our-work/eid-gift-kits',
+    '/our-work/taleem',
+    '/donate/reviewed-appeal?source=home',
+    '/about#mission',
+  ])('keeps reviewed canonical public navigation %s', href => {
+    expect(safeHomeHref(href)).toBe(href);
   });
 });

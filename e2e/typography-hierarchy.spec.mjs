@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
 import { waitForPublicOverview } from './helpers/public-overview-ready.mjs';
+import { settleStyles } from './helpers/settle-styles.mjs';
 
 // AF-R025: verify every actual shared heading is horizontally contained and
 // readable, plus at least one real multiline heading per public overview route.
@@ -278,6 +279,7 @@ test('Our Work disclosure exposes a visible keyboard focus indicator', async ({ 
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
   await page.goto('/our-work', { waitUntil: 'domcontentloaded' });
+  await waitForPublicOverview(page, '/our-work');
   const summary = page.locator('.v2-cause-summary').first();
   await summary.focus();
   const focus = await summary.evaluate(node => {
@@ -403,6 +405,7 @@ for (const width of [390, 1280]) {
         expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(12);
       }
       await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+      await settleStyles(page);
       for (const label of await labels.all()) {
         expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(24);
         expect(await label.evaluate(node => node.scrollWidth <= node.clientWidth + 1)).toBe(true);
@@ -422,6 +425,7 @@ for (const width of [390, 1280]) {
     await expect(label).toHaveText('Private submission');
     expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(12);
     await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+    await settleStyles(page);
     expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(24);
     const contained = await label.evaluate(node => {
       const range = document.createRange();
@@ -465,7 +469,17 @@ for (const width of [390, 1280]) {
         await expect(label).toBeVisible();
         expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(12);
       }
+      const heading = page.locator(state === 'acknowledgement' ? '.v2-receipt-hero h1' : '.v2-state-hero h1');
+      await expect(heading).toHaveCount(1);
+      const headingRatio = () => heading.evaluate(node => {
+        const style = getComputedStyle(node);
+        return parseFloat(style.lineHeight) / parseFloat(style.fontSize);
+      });
+      expect(await headingRatio(), `${state} heading leading`).toBeGreaterThanOrEqual(1.14);
+
       await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+      await settleStyles(page);
+      expect(await headingRatio(), `${state} heading leading at 200% text`).toBeGreaterThanOrEqual(1.14);
       for (const selector of selectors) {
         const label = page.locator(selector);
         expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(24);
@@ -563,6 +577,7 @@ for (const width of [390, 1280]) {
       });
       expect((await page.reload({ waitUntil: 'load' }))?.ok()).toBeTruthy();
       await waitForPublicOverview(page, path);
+      await settleStyles(page);
       const scaled = await page.evaluate(selector => ({
         root: parseFloat(getComputedStyle(document.documentElement).fontSize),
         labels: [...document.querySelectorAll(selector)]
@@ -627,6 +642,7 @@ for (const width of [390, 1280]) {
         const label = page.locator(selector);
         await expect(label).toHaveCount(1);
         await expect(label).toBeVisible();
+        await settleStyles(page);
         const metrics = await label.evaluate(node => ({
           root: Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
           text: Number.parseFloat(getComputedStyle(node).fontSize),
@@ -640,6 +656,7 @@ for (const width of [390, 1280]) {
       const reading = page.locator('.amaana-daily-ayah blockquote');
       for (const [label, minimum] of [[kicker, 12], [note, 12], [reading, 20]]) {
         await expect(label).toBeVisible();
+        await settleStyles(page);
         const metrics = await label.evaluate(node => ({
           root: Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
           text: Number.parseFloat(getComputedStyle(node).fontSize),
@@ -652,6 +669,7 @@ for (const width of [390, 1280]) {
       const hijriNote = page.locator('.amaana-hijri small');
       for (const label of [location, hijriNote]) {
         await expect(label).toBeVisible();
+        await settleStyles(page);
         const metrics = await label.evaluate(node => ({
           root: Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
           text: Number.parseFloat(getComputedStyle(node).fontSize),
@@ -677,7 +695,7 @@ for (const width of [390, 1280]) {
   });
 }
 
-for (const width of [390, 1440]) {
+for (const width of [320, 390, 1440]) {
   for (const scale of [100, 200]) {
     test(`not-found heading keeps readable line spacing at ${width}px and ${scale}% text`, async ({ page }) => {
       await page.setViewportSize({ width, height: 1000 });
@@ -705,7 +723,7 @@ for (const width of [390, 1440]) {
         const style = getComputedStyle(node);
         return { font: Number.parseFloat(style.fontSize), line: Number.parseFloat(style.lineHeight) };
       });
-      expect(metrics.line).toBeGreaterThanOrEqual(metrics.font);
+      expect(metrics.line).toBeGreaterThanOrEqual(metrics.font * 1.14);
     });
   }
 }
@@ -725,6 +743,7 @@ for (const scale of [100, 200]) {
       else document.addEventListener('DOMContentLoaded', apply, { once: true });
     }, scale);
     const response = await page.goto('/donate', { waitUntil: 'domcontentloaded' });
+    await waitForPublicOverview(page, '/donate');
     expect(response?.ok()).toBeTruthy();
     const labels = page.getByRole('group', { name: 'Donation routes' }).locator('article > span');
     await expect(labels).toHaveCount(2);
@@ -871,5 +890,29 @@ for (const width of [320, 390]) {
       expect(box.left, selector).toBeGreaterThanOrEqual(-1);
       expect(box.right, selector).toBeLessThanOrEqual(width + 1);
     }
+  });
+}
+
+// AF-R025: the >1400px canonical override must not compress real public editorial headings.
+for (const width of [1440, 1920]) {
+  test(`canonical About headings retain readable desktop leading at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+    const response = await page.goto('/about', { waitUntil: 'domcontentloaded' });
+    expect(response?.ok()).toBe(true);
+    const heading = page.locator('.canonical-article .canonical-block h2').first();
+    await expect(heading).toBeVisible();
+    const metric = await heading.evaluate(node => {
+      const style = getComputedStyle(node);
+      const height = parseFloat(style.lineHeight);
+      const size = parseFloat(style.fontSize);
+      const rect = node.getBoundingClientRect();
+      return { ratio: height / size, left: rect.left, right: rect.right };
+    });
+    expect(metric.ratio).toBeGreaterThanOrEqual(1.12);
+    expect(metric.ratio).toBeLessThanOrEqual(1.24);
+    expect(metric.left).toBeGreaterThanOrEqual(-1);
+    expect(metric.right).toBeLessThanOrEqual(width + 1);
   });
 }

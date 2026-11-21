@@ -34,10 +34,12 @@ export function ScrollCarousel({
   mode = "cards",
   className = "",
   startAt = 0,
-  autoAdvanceMs = 0,
+  autoAdvanceMs: requestedAutoAdvanceMs = 0,
   heading,
   cinematic = false,
 }: ScrollCarouselProps) {
+  const autoAdvanceMs = Number.isFinite(requestedAutoAdvanceMs) && requestedAutoAdvanceMs > 0
+    ? requestedAutoAdvanceMs : 0;
   const slides = Children.toArray(children);
   const slideCount = slides.length;
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -46,7 +48,10 @@ export function ScrollCarousel({
   const navigation = useRef<number | null>(null);
   const drag = useRef<{pointerId:number; x:number; scroll:number; moved:boolean} | null>(null);
   const suppressClick = useRef(false);
-  const [activeIndex, setActiveIndex] = useState(() => Math.min(Math.max(startAt, 0), Math.max(slideCount - 1, 0)));
+  const [activeIndex, setActiveIndex] = useState(() => {
+    const initial = Number.isFinite(startAt) ? Math.trunc(startAt) : 0;
+    return Math.min(Math.max(initial, 0), Math.max(slideCount - 1, 0));
+  });
   const visibleIndex = Math.min(activeIndex, Math.max(0, slideCount - 1));
   const activeIndexRef = useRef(activeIndex);
   const activeSlideRef = useRef<HTMLDivElement | null>(null);
@@ -172,7 +177,7 @@ export function ScrollCarousel({
   useEffect(() => {
     if (!autoAdvanceMs || slideCount < 2 || paused || reducedMotion) return;
     const timer = window.setInterval(() => {
-      if (inView.current && !document.hidden && !drag.current && !viewportRef.current?.closest("section")?.matches(":hover, :focus-within")) goTo(activeIndexRef.current + 1);
+      if (inView.current && !document.hidden && !drag.current && !viewportRef.current?.closest("section")?.matches(":hover")) goTo(activeIndexRef.current + 1);
     }, autoAdvanceMs);
     return () => window.clearInterval(timer);
   }, [autoAdvanceMs, activeIndex, goTo, paused, reducedMotion, slideCount]);
@@ -262,6 +267,7 @@ export function ScrollCarousel({
         role="group"
         tabIndex={slideCount > 1 ? 0 : -1}
         onPointerDown={event => {
+          if (event.defaultPrevented) return;
           navigation.current = null;
           if (mode === "hero" || event.pointerType !== "mouse" || event.button !== 0 || (event.target instanceof Element && event.target.closest("button,video,input,textarea,select,[contenteditable]"))) return;
           if (drag.current) {

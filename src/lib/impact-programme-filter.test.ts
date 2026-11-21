@@ -13,6 +13,29 @@ const initiatives = [
 ];
 
 describe("impact programme discovery", () => {
+  it("drops malformed runtime classifications without exposing unreviewed programme labels", () => {
+    const reviewed = { slug: "approved-item", title: "Reviewed record", causeSlug: "ramadan-eid" };
+    const malformed = [
+      null, undefined, { slug: "invalid", causeSlug: ["ramadan-eid"] },
+    ] as unknown as typeof initiatives;
+    const mixed = [...malformed, reviewed];
+    const categories = [
+      null,
+      { slug: "ramadan-eid", title: { private: "PRIVATE_CATEGORY" } },
+      { slug: "ramadan-eid", title: "Ramadan & Eid" },
+      { slug: "", title: "Blank" },
+    ] as unknown as typeof areas;
+    const cause = (item: typeof reviewed) => item.causeSlug;
+    expect(filterImpactByProgramme(null as unknown as typeof initiatives, {}, areas, cause))
+      .toMatchObject({ results: [], options: [], count: 0 });
+    const result = filterImpactByProgramme(mixed, {}, categories, cause);
+    expect(result.results).toEqual([reviewed]);
+    expect(result.options).toEqual([{ slug: "ramadan-eid", title: "Ramadan & Eid", count: 1 }]);
+    expect(JSON.stringify(result)).not.toContain("PRIVATE_CATEGORY");
+    expect(filterImpactByProgramme(mixed, { programme: "ramadan-eid" }, categories, cause).results)
+      .toEqual([reviewed]);
+  });
+
   it("does not hide or reorder published records in the default view", () => {
     const result = filterImpactByProgramme(initiatives, {}, areas, item => item.causeSlug);
     expect(result.results.map(x => x.slug)).toEqual([

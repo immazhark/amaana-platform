@@ -1,0 +1,69 @@
+/* Public fund ledger. Tokens only; nothing below 12px; motion is transform/opacity and off for reduced-motion. */
+.shell { display: grid; gap: clamp(1.25rem, 3vw, 2rem); margin: clamp(1.5rem, 4vw, 3rem) 0; color: var(--af-color-navy-950); }
+
+.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: .75rem 1.5rem; }
+.top h2 { margin: 0; font-size: clamp(1.5rem, 3.4vw, 2.2rem); line-height: 1.1; letter-spacing: -.01em; }
+.years { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0; padding: 0; list-style: none; }
+.years a { display: inline-flex; align-items: center; min-height: 2.75rem; padding: .4rem 1rem; border: 1px solid var(--af-color-border); border-radius: var(--af-radius-pill); font-weight: 700; font-size: .9rem; color: var(--af-color-navy-700); background: var(--af-color-surface); text-decoration: none; transition: background-color .25s var(--af-ease-standard), color .25s var(--af-ease-standard); }
+.years a:hover { border-color: var(--af-color-blue-600); }
+.years a[aria-current="page"] { background: var(--af-color-navy-700); border-color: var(--af-color-navy-700); color: var(--af-color-opaque-white); }
+.years a:focus-visible { outline: 3px solid var(--af-color-focus); outline-offset: 3px; }
+
+.band { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: 1px; margin: 0; overflow: hidden; border: 1px solid var(--af-color-border); border-radius: var(--af-radius-md); background: var(--af-color-border); }
+.band .stat { padding: 1.2rem 1.3rem; background: var(--af-color-surface); }
+.band dd { font-size: clamp(1.5rem, 3.6vw, 2.25rem); }
+
+.stat { display: grid; gap: .2rem; margin: 0; }
+.stat dt { font-size: .8rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--af-color-muted); }
+.stat dd { margin: 0; font-size: 1.2rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+.cards { display: grid; grid-template-columns: 1fr; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+@media (min-width: 52rem) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.card { display: grid; }
+.card article { display: grid; align-content: start; gap: .85rem; padding: clamp(1.1rem, 2.5vw, 1.6rem); border: 1px solid var(--af-color-border); border-radius: var(--af-radius-md); background: var(--af-color-surface); box-shadow: var(--af-shadow-card); }
+
+.cardHead { display: flex; align-items: center; gap: .9rem; }
+.cardHead h3 { margin: 0 0 .3rem; font-size: 1.15rem; line-height: 1.2; }
+.glyph { display: grid; place-items: center; flex: none; width: 3rem; height: 3rem; border-radius: 50%; color: var(--af-color-navy-700); background: color-mix(in srgb, var(--af-color-blue-600) 11%, transparent); }
+.glyph svg { width: 1.9rem; height: 1.9rem; overflow: visible; }
+.glyph :global(.accent) { fill: var(--af-color-gold-500); stroke: none; }
+.glyph :global(.accent-stroke) { stroke: var(--af-color-gold-ink); }
+
+.tag { display: inline-block; padding: .2rem .6rem; border-radius: var(--af-radius-pill); font-size: .75rem; font-weight: 750; border: 1px solid transparent; }
+.tag[data-policy="zakat"] { color: var(--af-color-navy-950); background: color-mix(in srgb, var(--af-color-gold-500) 30%, transparent); border-color: color-mix(in srgb, var(--af-color-gold-ink) 45%, transparent); }
+.tag[data-policy="non-zakat"] { color: var(--af-color-gold-ink); background: color-mix(in srgb, var(--af-color-warning) 9%, transparent); border-color: color-mix(in srgb, var(--af-color-warning) 38%, transparent); }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 8.5rem), 1fr)); gap: .85rem; margin: 0; }
+
+.meter { height: .55rem; overflow: hidden; border-radius: var(--af-radius-pill); background: color-mix(in srgb, var(--af-color-blue-600) 14%, transparent); }
+.meter span { display: block; height: 100%; width: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--af-color-gold-ink), var(--af-color-gold-500)); transform-origin: left center; transform: scaleX(var(--share, 0)); }
+.meterText { margin: -.25rem 0 0; font-size: .85rem; color: var(--af-color-muted); }
+
+.entries { display: grid; gap: .1rem; margin: 0; padding: 0; list-style: none; }
+.entry { display: grid; grid-template-columns: 5.6rem 1fr auto; gap: .2rem .85rem; align-items: baseline; padding: .7rem 0; border-top: 1px solid var(--af-color-border); font-size: .92rem; }
+.entry time { font-size: .8rem; color: var(--af-color-muted); font-variant-numeric: tabular-nums; }
+.entryBody { display: grid; gap: .15rem; min-width: 0; overflow-wrap: anywhere; }
+.entryBody span { color: var(--af-color-muted); font-size: .86rem; }
+.entryBody .pool { color: var(--af-color-navy-700); font-weight: 700; font-size: .78rem; }
+.entryAmount { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+@media (max-width: 30rem) { .entry { grid-template-columns: 1fr auto; } .entry time { grid-column: 1 / -1; } }
+
+.more summary { min-height: 2.75rem; display: flex; align-items: center; cursor: pointer; font-weight: 700; color: var(--af-color-navy-700); }
+.more summary:focus-visible { outline: 3px solid var(--af-color-focus); outline-offset: 3px; }
+.empty { margin: 0; font-size: .9rem; color: var(--af-color-muted); }
+.give { justify-self: start; display: inline-flex; align-items: center; min-height: 2.75rem; font-weight: 800; color: var(--af-color-navy-700); text-decoration-thickness: .08em; text-underline-offset: .25em; }
+.give:focus-visible { outline: 3px solid var(--af-color-focus); outline-offset: 3px; }
+.method { max-width: 52rem; margin: 0; font-size: .88rem; line-height: 1.55; color: var(--af-color-muted); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .card { animation: ledgerRise .55s var(--af-ease-standard) both; animation-delay: min(calc(var(--i, 0) * 45ms), 270ms); }
+  .meter span { animation: ledgerFill 1s var(--af-ease-standard) .25s both; }
+}
+@keyframes ledgerRise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes ledgerFill { from { transform: scaleX(0); } to { transform: scaleX(var(--share, 0)); } }
+
+@media (forced-colors: active) {
+  .meter { border: 1px solid CanvasText; }
+  .meter span { background: Highlight; }
+}

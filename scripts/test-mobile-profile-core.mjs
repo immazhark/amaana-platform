@@ -49,8 +49,11 @@ test("local-only profiling refuses same-origin write methods before network use"
   for (const method of ["POST", "PUT", "PATCH", "DELETE", "OPTIONS", "TRACE", "get", "", "POST\n"]) {
     assert.equal(isAllowedProfileRequest(uri, method), false, method);
   }
-  assert.equal(isAllowedProfileRequest(uri, "GET"), true);
-  assert.equal(isAllowedProfileRequest(uri, "HEAD"), true);
+  assert.equal(isAllowedProfileRequest(uri, "GET"), false);
+  assert.equal(isAllowedProfileRequest(uri, "HEAD"), false);
+  const publicUri = "http://127.0.0.1:3000/api/health/ready";
+  assert.equal(isAllowedProfileRequest(publicUri, "GET"), true);
+  assert.equal(isAllowedProfileRequest(publicUri, "HEAD"), true);
   assert.equal(isAllowedProfileRequest("http://127.0.0.1:3000/api/analytics/page-view", "POST"), false);
   assert.equal(isAllowedProfileRequest("https://evil.invalid/path", "GET"), false);
 });
@@ -140,4 +143,54 @@ test("AF-R048 refuses overflowed CLS session totals instead of reporting Infinit
     { startTime: 0, value: Number.MAX_VALUE },
     { startTime: 1_100, value: Number.MAX_VALUE },
   ]), Number.MAX_VALUE, "Separate windows must not be summed into overflow");
+});
+
+test("local synthetic profiler refuses private same-origin reads before tracing", () => {
+  const local = "http://127.0.0.1:3000";
+  for (const pathname of [
+    "/admin", "/admin/team", "/api/admin/private", "/api/ops/worker",
+    "/api/cron/notifications", "/api/webhooks/razorpay", "/api/donations/order",
+    "/api/assistance/status", "/api/giving-reminder/subscribe", "/api/jobs/cleanup", "/documents/assistance",
+    "/donations/AFD-2026-12345678/acknowledgement",
+    "/request-assistance/status", "/request-assistance/received",
+    "/%61dmin/team", "/api/%61dmin/private",
+  ]) {
+    assert.equal(isAllowedProfileRequest(local + pathname, "GET"), false, pathname);
+    assert.equal(isAllowedProfileRequest(local + pathname, "HEAD"), false, pathname);
+  }
+  for (const pathname of ["/", "/donate", "/_next/static/chunks/site.js", "/api/health/ready"]) {
+    assert.equal(isAllowedProfileRequest(local + pathname, "GET"), true, pathname);
+  }
+});
+
+test("synthetic profile refuses unknown API reads and query-bearing identity endpoints", () => {
+  for (const url of [
+    "http://127.0.0.1:3000/api/private-records",
+    "http://127.0.0.1:3000/api/internal-export",
+    "http://127.0.0.1:3000/api/health/version?token=synthetic-private-value",
+    "http://127.0.0.1:3000/api/analytics/page-view?person=synthetic",
+  ]) {
+    assert.equal(isAllowedProfileRequest(url, "GET"), false, url);
+  }
+  for (const path of ["/api/health/ready", "/api/health/version", "/api/analytics/page-view", "/api/public/live-rail"]) {
+    assert.equal(isAllowedProfileRequest("http://127.0.0.1:3000" + path, "GET"), true, path);
+  }
+});
+
+test("synthetic profile prevents local image optimizer from fetching remote or private URLs", () => {
+  const image = value => "http://127.0.0.1:3000/_next/image?url=" + encodeURIComponent(value) + "&w=640&q=75";
+  for (const url of [
+    image("https://external.invalid/asset.jpg"),
+    image("http://127.0.0.1:3000/hero/approved.webp"),
+    image("//external.invalid/asset.jpg"),
+    image("/api/private-document.jpg"),
+    image("/admin/photo.png"),
+    image("/hero/../private.jpg"),
+    image("/hero/%252e%252e/secret.jpg"),
+    "http://127.0.0.1:3000/_next/image?w=640&q=75",
+  ]) {
+    assert.equal(isAllowedProfileRequest(url), false, url);
+  }
+  assert.equal(isAllowedProfileRequest(image("/hero/approved.webp")), true);
+  assert.equal(isAllowedProfileRequest(image("/media/drive/photo.jpg")), true);
 });

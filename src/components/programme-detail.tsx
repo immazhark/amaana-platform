@@ -15,7 +15,7 @@ import { getPublishedInitiativeBySlug, PUBLIC_DETAIL_MEDIA_LIMIT } from '@/lib/p
 import { getProgrammeChildMedia } from '@/lib/public-page-data';
 import { programmeBySlug, programmeChildren } from '@/lib/master-copy';
 import { PublicMedia } from '@/components/public-media';
-import { canRenderPublicMedia, resolvePublicMediaUrl, selectGalleryPublicImage, selectIdentityPublicImage } from '@/lib/public-media';
+import { canRenderPublicMedia, dedupeRenderablePublicMediaByUrl, resolvePublicMediaUrl, selectGalleryPublicImage, selectIdentityPublicImage } from '@/lib/public-media';
 import { buildPublicRecordFallback, programmeStoryParagraphs, heroTeaser } from '@/lib/public-copy';
 import { CampaignMediaGallery } from '@/components/campaign-media-gallery';
 import { toPublicGalleryItems } from '@/lib/public-gallery-projection';
@@ -30,7 +30,8 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
  const summary=canonical?.summary??record.summary;
  const children=programmeChildren(slug);
  const childMediaRecords=await getProgrammeChildMedia(children.map(child=>child.slug));
- const publishedChildSlugs=new Set(childMediaRecords.map(item=>item.slug));
+ const validChildMediaRecords=(Array.isArray(childMediaRecords)?childMediaRecords:[]).filter(item=>item!=null&&typeof item==="object"&&typeof item.slug==="string"&&Array.isArray(item.mediaAssets));
+ const publishedChildSlugs=new Set(validChildMediaRecords.map(item=>item.slug));
  const publishedChildren=children.filter(child=>publishedChildSlugs.has(child.slug));
 
  // The published-child projection already passed the server publication gate.
@@ -49,8 +50,8 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
   }];
  });
 
- const childMedia=new Map(childMediaRecords.map(item=>[item.slug,selectGalleryPublicImage(item.mediaAssets)]));
- const media=record.mediaAssets.filter(canRenderPublicMedia).filter((asset,index,list)=>list.findIndex(other=>resolvePublicMediaUrl(other)===resolvePublicMediaUrl(asset))===index);
+ const childMedia=new Map(validChildMediaRecords.map(item=>[item.slug,selectGalleryPublicImage(item.mediaAssets)]));
+ const media=dedupeRenderablePublicMediaByUrl(record.mediaAssets);
  const umbrella=children.length>0;
  const collage=umbrella&&hasProgrammeArtwork(slug);
  const lead=umbrella?selectIdentityPublicImage(media):selectInitiativeBannerImage(media);

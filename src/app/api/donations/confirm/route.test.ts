@@ -223,6 +223,28 @@ describe("donation confirmation persisted status", () => {
   );
 
   it.each([
+    { label: "a different order", payment: { id: "pay_123", order_id: "order_other", amount: 50000, currency: "INR", status: "captured", captured: true } },
+    { label: "a non-INR currency", payment: { id: "pay_123", order_id: "order_123", amount: 50000, currency: "USD", status: "captured", captured: true } },
+    { label: "a missing currency", payment: { id: "pay_123", order_id: "order_123", amount: 50000, status: "captured", captured: true } },
+    { label: "a string amount", payment: { id: "pay_123", order_id: "order_123", amount: "50000", currency: "INR", status: "captured", captured: true } },
+    { label: "an empty provider object", payment: {} },
+    { label: "a null provider result", payment: null },
+  ])("performs no state change for $label from the provider", async ({ payment }) => {
+    mocks.findUnique.mockResolvedValueOnce(storedDonation());
+    mocks.fetchRazorpayPayment.mockResolvedValueOnce(payment);
+
+    const response = await POST(confirmationRequest());
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({
+      error: "Payment is being verified. Please retain your payment confirmation.",
+    });
+    expect(mocks.captureDonation).not.toHaveBeenCalled();
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.findUnique).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
     { status: "authorized", captured: true },
     { status: "captured", captured: false },
   ])("rejects a contradictory provider capture state ($status, captured=$captured)", async paymentState => {

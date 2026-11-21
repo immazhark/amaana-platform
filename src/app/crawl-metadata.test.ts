@@ -52,6 +52,62 @@ describe("public crawl metadata URLs", () => {
     expect(db.story.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { status: "PUBLISHED", privacyApprovedAt: { not: null } } }));
   });
 
+  it("refuses malformed published database slugs without suppressing valid sitemap entries", async () => {
+    const now = new Date("2026-11-12T00:00:00.000Z");
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    db.initiative.findMany.mockResolvedValue([
+      { slug: "safe-initiative", updatedAt: now },
+      { slug: "bad?token=private", updatedAt: now },
+    ]);
+    db.story.findMany.mockResolvedValue([
+      { slug: "safe-story", updatedAt: now },
+      { slug: "../private", updatedAt: now },
+    ]);
+    db.faithContent.findMany.mockResolvedValue([
+      { slug: "safe-reminder", updatedAt: now, status: "PUBLISHED", religiousReviewStatus: "VERIFIED", verifiedAt: now, sourceCitation: "Synthetic source for test" },
+      { slug: "bad#fragment", updatedAt: now, status: "PUBLISHED", religiousReviewStatus: "VERIFIED", verifiedAt: now, sourceCitation: "Synthetic source for test" },
+    ]);
+    db.appeal.findMany.mockResolvedValue([
+      { slug: "safe-appeal", title: "Synthetic safe appeal", status: "PUBLISHED", updatedAt: now, assistanceRequest: null },
+      { slug: "%2Fprivate", title: "Synthetic invalid appeal", status: "PUBLISHED", updatedAt: now, assistanceRequest: null },
+    ]);
+
+    const { default: sitemap } = await import("./sitemap");
+    const urls = (await sitemap()).map(entry => entry.url);
+    const site = "https://amaanafoundation.org";
+    for (const path of [
+      "/our-work/safe-initiative", "/stories/safe-story",
+      "/faith-and-reflections/safe-reminder", "/appeals/safe-appeal",
+    ]) expect(urls).toContain(site + path);
+
+    for (const path of [
+      "/our-work/bad?token=private", "/stories/../private",
+      "/faith-and-reflections/bad#fragment", "/appeals/%2Fprivate",
+    ]) expect(urls, `Untrusted DB slug must not be published: ${path}`).not.toContain(site + path);
+    expect(urls.every(url => { const parsed = new URL(url); return !parsed.search && !parsed.hash; })).toBe(true);
+  });
+
+  it("never indexes assistance-linked appeals without reviewed confidentiality", async () => {
+    const updatedAt = new Date("2026-11-13T00:00:00.000Z");
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const appeal = (slug: string, assistanceRequest: unknown) => ({
+      slug, title: "Synthetic public appeal", status: "PUBLISHED", updatedAt, assistanceRequest,
+    });
+    db.appeal.findMany.mockResolvedValue([
+      appeal("public-unlinked", null),
+      appeal("reviewed-linked", { verification: { confidentialityLevel: "STANDARD" } }),
+      appeal("linked-verification-missing", { verification: null }),
+      appeal("linked-classification-missing", { verification: { confidentialityLevel: null } }),
+    ]);
+
+    const { default: sitemap } = await import("./sitemap");
+    const urls = (await sitemap()).map(entry => entry.url);
+    expect(urls).toContain("https://amaanafoundation.org/appeals/public-unlinked");
+    expect(urls).toContain("https://amaanafoundation.org/appeals/reviewed-linked");
+    expect(urls).not.toContain("https://amaanafoundation.org/appeals/linked-verification-missing");
+    expect(urls).not.toContain("https://amaanafoundation.org/appeals/linked-classification-missing");
+  });
+
   it.each([
     ["https://amaanafoundation.org", "staging", "true"],
     ["https://preview.example.org", "production", "true"],

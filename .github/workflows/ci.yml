@@ -79,6 +79,8 @@ jobs:
         run: |
           node --test scripts/test-global-appeal-css-scope.mjs
           node scripts/audit-global-css.mjs
+      - name: Guard governed component Stylelint coverage
+        run: node --test scripts/test-governed-stylelint-scope.mjs
       - name: Enforce public Compliance hold text contrast
         run: node --test scripts/test-compliance-hold-contrast.mjs
       - name: Validate App Router bundle reporting
@@ -89,7 +91,9 @@ jobs:
           node --test scripts/test-artwork-encoding.mjs
           node scripts/check-public-image-weight.mjs
       - name: Prevent anonymous admin route coverage drift
-        run: node --test scripts/test-admin-route-inventory.mjs
+        run: |
+          node --test scripts/test-admin-route-inventory.mjs
+          node --test scripts/audit-admin-edge-coverage.test.mjs
       - name: Verify branded application icons
         run: npm run icons:verify
       - name: Decode and validate public campaign media
@@ -111,6 +115,10 @@ jobs:
           '
       - name: Verify read-only branch containment inventory semantics
         run: node --test scripts/test-branch-retention-report.mjs
+      - name: Guard verified merged-branch retirement semantics
+        run: node --test scripts/test-retire-merged-branch.mjs scripts/test-retire-approved-history.mjs
+      - name: Guard read-only dated-audit-document retention semantics
+        run: node --test scripts/test-dated-doc-retention.mjs
       - name: Guard cross-browser acceptance concurrency and coverage
         run: node --test scripts/test-cross-browser-worker-budget.mjs
       - name: Validate launch readiness register
@@ -134,6 +142,20 @@ jobs:
           node scripts/check-public-editorial-consistency.mjs
       - name: Guard public/private data boundaries
         run: node --test scripts/test-public-data-boundaries.mjs
+      - name: Enforce minimum authored font size (AF-R024)
+        run: node --test scripts/test-min-font-size.mjs
+      - name: Enforce accessibility lint rule coverage (AF-R069)
+        run: node --test scripts/test-a11y-lint-rules.mjs
+      - name: Ratchet CSS important declarations (AF-R062)
+        run: node --test scripts/test-important-budget.mjs
+      - name: Ratchet CSS colour literals (AF-R061)
+        run: node --test scripts/test-color-literal-budget.mjs
+      - name: Guard security.txt contact and expiry
+        run: node --test scripts/test-security-txt.mjs
+      - name: Guard public media publication filters (AF-PROMOTION)
+        run: node --test scripts/test-public-media-query-guard.mjs
+      - name: Guard withdrawn-media cache revocation window (AF-N22)
+        run: node --test scripts/test-media-revocation-cache.mjs
       - name: Guard client-bundle secret scanner behavior
         run: node --test scripts/test-client-secret-boundary.mjs
       - name: Guard Cloudflare analytics CSP denial without relaxing Razorpay checkout
@@ -241,7 +263,7 @@ jobs:
           node scripts/test-home-carousel-migration.mjs
           node scripts/test-historical-pageview-migration.mjs
           node --test scripts/test-master-content-assets.mjs
-          npx vitest run src/app/api/webhooks/razorpay/route.database.test.ts src/lib/auth-rate-limit.database.test.ts src/lib/auth-session.database.test.ts
+          npx vitest run src/app/api/webhooks/razorpay/route.database.test.ts src/lib/auth-rate-limit.database.test.ts src/lib/auth-session.database.test.ts src/lib/fund-campaign.database.test.ts src/lib/giving-funds.database.test.ts src/lib/taleem-sponsorship.database.test.ts
 
 
   production:
@@ -289,7 +311,7 @@ jobs:
         run: node scripts/check-client-secret-boundary.mjs
 
       - name: Report App Router route-level JavaScript and CSS
-        run: npm run audit:route-bundles
+        run: npm run audit:route-bundles -- --compressed
 
       - name: Enforce production bundle budgets
         shell: bash
@@ -301,7 +323,9 @@ jobs:
           # Aggregate static CSS grew with the audited documentary/editorial system,
           # route-scoped carousels, guided forms and accessibility refinements.
           # Keep a tight regression cap while route-level delivery/CLS tests protect user payload.
-          CSS_BUDGET=$((340 * 1024))
+          # Raised 340 -> 356 KiB for designated giving (fund selector and public funds ledger, about 7 KB and 5 KB
+          # of route CSS). Main was already within 2 KiB of the old cap. Still a hard regression cap; AF-R067 tracks pruning.
+          CSS_BUDGET=$((356 * 1024))
           echo "Built static JavaScript: ${JS_BYTES} bytes (budget ${JS_BUDGET})"
           echo "Built static CSS: ${CSS_BYTES} bytes (budget ${CSS_BUDGET})"
           test "$JS_BYTES" -le "$JS_BUDGET"

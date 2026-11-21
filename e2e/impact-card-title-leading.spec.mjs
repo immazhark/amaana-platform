@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { waitForPublicOverview } from './helpers/public-overview-ready.mjs';
 
 // AF-R025: exercise the actual Impact stylesheet with synthetic wrapping text.
 // No live impact data, donor identity, or beneficiary information is needed.
@@ -8,6 +9,7 @@ for (const width of [320, 390]) {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
     const response = await page.goto('/impact', { waitUntil: 'domcontentloaded' });
+    await waitForPublicOverview(page, '/impact');
     expect(response?.ok()).toBeTruthy();
 
     const metrics = await page.evaluate(() => {

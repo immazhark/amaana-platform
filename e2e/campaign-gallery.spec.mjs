@@ -342,3 +342,20 @@ test('gallery returns to a non-first opener after browsing with the Next button'
   await expect(dialog).toHaveCount(0);
   await expect(opener).toBeFocused();
 });
+
+
+for (const backwards of [false, true]) {
+  test(`gallery contains ${backwards ? 'Shift+Tab' : 'Tab'} from its focusable dialog root`, async ({ page }) => {
+    await page.goto('/browser-acceptance/gallery');
+    const trigger = page.getByRole('button', { name: /^Enlarge image 1 of 13:/ });
+    await trigger.click();
+    const dialog = page.getByRole('dialog');
+    await dialog.focus();
+    await expect(dialog).toBeFocused();
+    await page.keyboard.press(backwards ? 'Shift+Tab' : 'Tab');
+    await expect(dialog.getByRole('button', { name: backwards ? 'Next' : 'Close', exact: true })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+  });
+}

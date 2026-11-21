@@ -1,0 +1,49 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { CanonicalArticle } from "@/components/canonical-article";
+import type { GiveFund } from "@/components/fund-giving/fund-copy";
+import { FundGivingCheckout } from "@/components/fund-giving/fund-giving-checkout";
+import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
+import { GIVE_HERO_ACTIONS } from "@/lib/giving-hero-actions";
+
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Browser Acceptance Fixture",
+  robots: { index: false, follow: false },
+  referrer: "no-referrer",
+};
+
+// Synthetic funds only. This route exists only while the isolated browser-acceptance server is running and never
+// creates a payment or donation record.
+const funds: GiveFund[] = [
+  { slug: "general", name: "General Fund", summary: "Used where the need is greatest across Amaana Foundation's work.", zakatPolicy: "ACCEPTED", isGeneral: true },
+  { slug: "taleem", name: "Taleem Fund", summary: "Qur'an and Islamic education sponsorship for children facing hardship.", zakatPolicy: "ACCEPTED", isGeneral: false },
+  { slug: "modern-education", name: "Modern Education Fund", summary: "School and college fees for children facing hardship.", zakatPolicy: "ACCEPTED", isGeneral: false },
+  { slug: "medical", name: "Medical Fund", summary: "Medical support for patients facing financial hardship.", zakatPolicy: "ACCEPTED", isGeneral: false },
+  { slug: "orphan", name: "Orphan Fund", summary: "Scholarships and essentials for orphaned children.", zakatPolicy: "ACCEPTED", isGeneral: false },
+  { slug: "eid-kits", name: "Eid Kits Fund", summary: "Eid gift kits for families in need.", zakatPolicy: "NOT_ACCEPTED", isGeneral: false },
+  { slug: "qurbani-meat", name: "Qurbani Meat Fund", summary: "Eid al-Adha meat distribution.", zakatPolicy: "NOT_ACCEPTED", isGeneral: false },
+  { slug: "dates", name: "Dates Fund", summary: "Dates distribution before Ramadan.", zakatPolicy: "NOT_ACCEPTED", isGeneral: false },
+  { slug: "madarsa-operations", name: "Madarsa Operations Fund", summary: "Teacher salaries and running costs of the partnered Madarsa.", zakatPolicy: "UNDER_REVIEW", isGeneral: false },
+  { slug: "foundation-operations", name: "Foundation Operations Fund", summary: "Administration and recurring running costs of Amaana Foundation.", zakatPolicy: "NOT_ACCEPTED", isGeneral: false },
+];
+const paymentDetails = { upi: { id: "synthetic@bank", qrImageUrl: null }, bank: null } as unknown as DonationPaymentDetails;
+
+export default function FundGivingAcceptanceFixture() {
+  if (process.env.AMAANA_BROWSER_ACCEPTANCE !== "true") notFound();
+  return (
+    <CanonicalArticle
+      eyebrow="Give · Amaana Foundation"
+      heroVariant="action"
+      heroActions={[...GIVE_HERO_ACTIONS]}
+      heroVisualTitle="Give With Intention"
+      heroVisualNote="Choose a fund, set your amount and give securely. Your gift is recorded against the cause you chose."
+      title="Choose Where Your Gift Goes."
+      intro="Every contribution is an amaana, a trust. Pick the fund that matches your intention."
+      blocks={[{ title: "Domestic donations only", paragraphs: ["Synthetic acceptance copy."] }]}
+    >
+      <FundGivingCheckout funds={funds} paymentDetails={paymentDetails} feeBps={236} />
+    </CanonicalArticle>
+  );
+}

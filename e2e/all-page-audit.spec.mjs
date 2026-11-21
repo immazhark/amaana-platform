@@ -3,6 +3,7 @@ import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 import AxeBuilder from '@axe-core/playwright';
 import {test,expect} from '@playwright/test';
+import {waitForPublicOverview} from './helpers/public-overview-ready.mjs';
 
 const workspace = process.env.AMAANA_APP_WORKSPACE ?? process.cwd();
 const seed = JSON.parse(execFileSync(process.execPath,['scripts/seed-ui-route-audit.mjs'],{cwd:workspace,env:{...process.env,AMAANA_UI_AUDIT_TARGET:'isolated-ci'},encoding:'utf8'}));
@@ -12,7 +13,9 @@ const normalize = file=>'/'+path.relative(path.join(workspace,'src/app'),path.di
 const sourceRoutes = sourcePages.map(file=>({file:path.relative(workspace,file),route:normalize(file)}));
 const staticRoutes = sourceRoutes.filter(r=>!r.route.includes('[')).map(r=>r.route);
 const adminDetail = [`/admin/requests/${seed.requestId}`,`/admin/appeals/${seed.appealId}`,`/admin/appeals/${seed.draftId}`,`/admin/donations/${seed.donationId}`];
-const routes = [...new Set([...staticRoutes,...seed.publicRoutes,...adminDetail,'/programmes/medical-financial-relief','/programmes/emergency-relief','/programmes/ramadan-eid','/programmes/seasonal-relief','/donations/invalid/acknowledgement'])].sort();
+// Closed (a real 404) until the owner sets FUND_GIVING_ENABLED; covered meanwhile by e2e/fund-giving.spec.mjs via synthetic fixture routes.
+const gatedRoutes = new Set(process.env.FUND_GIVING_ENABLED === 'true' ? [] : ['/give','/funds']);
+const routes = [...new Set([...staticRoutes,...seed.publicRoutes,...adminDetail,'/programmes/medical-financial-relief','/programmes/emergency-relief','/programmes/ramadan-eid','/programmes/seasonal-relief','/donations/invalid/acknowledgement'])].filter(route=>!gatedRoutes.has(route)).sort();
 test.describe.configure({retries:0});
 function renderErrorSource(sourceFile) {
  return execFileSync(process.execPath,['--input-type=module','-'],{
@@ -75,6 +78,7 @@ for(const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]])fo
  if(route.startsWith('/admin')&&route!=='/admin/login'&&route!=='/admin/forbidden')await context.addCookies([{name:'amaana_admin_session',value:seed.token,url:'http://127.0.0.1:3000',httpOnly:true,sameSite:'Strict'}]);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const response=await page.goto(route,{waitUntil:'load'});
+ await waitForPublicOverview(page,route);
  await page.evaluate(async()=>{await document.fonts.ready;});
  if (route.startsWith('/admin/requests/') && route.split('/').length===4) {
   // The synthetic authenticated request must keep checkbox titles and helper
@@ -163,7 +167,7 @@ for (const [device,width,height] of [['compact-mobile',320,844],['mobile',390,84
     expect(resized.overflow,'200% text resizing on isolated global error').toBe(false);
     expect(resized.bodyFont).toContain('Arial');
     expect(resized.headingFont).toContain('Georgia');
-    expect(resized.lineHeight).toBeGreaterThanOrEqual(resized.fontSize);
+    expect(resized.lineHeight).toBeGreaterThanOrEqual(resized.fontSize * 1.14);
     await page.getByRole('button',{name:'Try again →',exact:true}).scrollIntoViewIfNeeded();
     await expect(page.getByRole('button',{name:'Try again →',exact:true})).toBeInViewport();
   });
@@ -181,6 +185,11 @@ for (const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]]) 
     await page.screenshot({path:path.join(directory,'complete-route-error.jpg'),type:'jpeg',quality:65,fullPage:true});
     fs.writeFileSync(path.join(directory,'complete-route-error.json'),JSON.stringify({route:'error.tsx',evidence:'Source-rendered isolated layout; recovery callback is reviewed in source, not exercised by this static render.',width,height,geometry,violations:audit.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}))},null,2));
     expect(geometry.overflow).toBe(false);
+    const headingLeading = await page.locator('.v2-error-page h1').evaluate(node => {
+      const style = getComputedStyle(node);
+      return parseFloat(style.lineHeight) / parseFloat(style.fontSize);
+    });
+    expect(headingLeading,'AF-R025 route error heading wraps with readable leading').toBeGreaterThanOrEqual(1.14);
     await expect(page.getByRole('button',{name:'Try again',exact:true})).toBeVisible();
     expect(audit.violations.filter(v=>['serious','critical'].includes(v.impact))).toEqual([]);
   });

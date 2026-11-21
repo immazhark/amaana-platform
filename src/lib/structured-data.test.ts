@@ -62,6 +62,44 @@ describe("public structured data", () => {
     });
   });
 
+  it("refuses dot-segment route aliases rather than publishing a different canonical page", () => {
+    for (const path of [
+      "/stories/../about",
+      "/stories/%2e%2e/our-work",
+      "/stories/.%2e/impact",
+      "/stories/%252e%252e/about",
+    ]) {
+      expect(normalizeStructuredDataPath(path), path).toBeNull();
+      expect(buildPublicStructuredData({
+        type: "WebPage",
+        title: "Synthetic public story",
+        description: "Synthetic reviewed summary",
+        path,
+      }, "https://amaanafoundation.org"), path).toBeNull();
+    }
+    expect(normalizeStructuredDataPath("/stories/approved-story#context"))
+      .toBe("/stories/approved-story#context");
+  });
+
+  it("refuses query-bearing public schema routes without leaking preview or private token parameters", () => {
+    for (const path of [
+      "/stories/reviewed?preview=synthetic-private-token",
+      "/our-work/eid-gift-kits?utm_source=test",
+      "/transparency?reference=synthetic-record",
+    ]) {
+      expect(normalizeStructuredDataPath(path), path).toBeNull();
+      expect(buildPublicStructuredData({
+        type: "WebPage",
+        title: "Reviewed public content",
+        description: "Synthetic public description",
+        path,
+      }, "https://amaanafoundation.org"), path).toBeNull();
+    }
+    // Existing approved fragment semantics remain deliberately unchanged.
+    expect(normalizeStructuredDataPath("/stories/reviewed#details"))
+      .toBe("/stories/reviewed#details");
+  });
+
   it("normalizes allowed HTTPS origins and rejects unsafe configured origins", () => {
     expect(normalizeStructuredDataSiteUrl("https://preview.example.org/path?query=1#fragment"))
       .toBe("https://preview.example.org");
@@ -134,6 +172,28 @@ describe("public structured data", () => {
       .toBe("https://amaanafoundation.org/media/approved.webp");
     expect(normalizeStructuredDataImage("https://cdn.example.org/public-approved.webp", "https://amaanafoundation.org"))
       .toBe("https://cdn.example.org/public-approved.webp");
+  });
+
+  it("never publishes token-bearing or fragment image references into public JSON-LD", () => {
+    const site = "https://amaanafoundation.org";
+    const candidates = [
+      "/media/2026/reviewed.webp?token=synthetic-private-value",
+      "/media/2026/reviewed.webp#synthetic-fragment",
+      "https://cdn.example.org/reviewed.webp?X-Amz-Signature=synthetic-private-value",
+      "https://cdn.example.org/reviewed.webp#synthetic-fragment",
+    ];
+    for (const imageUrl of candidates) {
+      expect(normalizeStructuredDataImage(imageUrl, site), imageUrl).toBeNull();
+      const data = buildPublicStructuredData({
+        type: "Article", title: "Reviewed account", description: "Public-safe summary",
+        path: "/stories/reviewed", imageUrl,
+      }, site);
+      expect(data, imageUrl).not.toHaveProperty("image");
+    }
+    expect(normalizeStructuredDataImage("/media/2026/reviewed.webp", site))
+      .toBe("https://amaanafoundation.org/media/2026/reviewed.webp");
+    expect(normalizeStructuredDataImage("https://cdn.example.org/reviewed.webp", site))
+      .toBe("https://cdn.example.org/reviewed.webp");
   });
 
   it("fails closed when runtime JSON-LD input violates the schema", () => {

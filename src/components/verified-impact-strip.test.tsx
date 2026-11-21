@@ -3,6 +3,29 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { VerifiedImpactStrip } from "./verified-impact-strip";
 
 describe("published-only donation trust evidence", () => {
+  it("omits malformed runtime metric collections and entries without suppressing verified outcomes", () => {
+    for (const invalid of [null, undefined, { length: 1 }, "not-a-public-collection"]) {
+      const markup = renderToStaticMarkup(
+        <VerifiedImpactStrip items={invalid as unknown as Parameters<typeof VerifiedImpactStrip>[0]["items"]} />
+      );
+      expect(markup).toBe("");
+    }
+
+    const entries = [
+      null,
+      undefined,
+      { slug: "malformed-title", title: 10, value: "111", label: "not reviewed" },
+      { slug: "malformed-metric", title: "Forged metric", value: { trim: () => "999" }, label: "not reviewed" },
+      { slug: "malformed-label", title: "Forged label", value: "999", label: 7 },
+      { slug: "reviewed-outcome", title: "Approved programme evidence", value: "42", label: "recorded items" },
+    ] as unknown as Parameters<typeof VerifiedImpactStrip>[0]["items"];
+    const html = renderToStaticMarkup(<VerifiedImpactStrip items={entries} />);
+    expect(html).toContain("/our-work/reviewed-outcome");
+    expect(html).toContain("42");
+    expect(html).not.toContain("999");
+    expect(html).not.toContain("malformed");
+  });
+
   it("never fabricates totals when the published projection has no metrics", () => {
     const output = renderToStaticMarkup(<VerifiedImpactStrip items={[]} />);
     expect(output).toBe("");
@@ -20,6 +43,23 @@ describe("published-only donation trust evidence", () => {
     expect(markup).toContain("not live donation balances");
     expect(markup).not.toContain("of target");
     expect(markup).not.toContain("raised to date");
+  });
+
+  it("scans candidate outcome slugs linearly without repeated quadratic lookups", () => {
+    let slugReads = 0;
+    const items = Array.from({ length: 100 }, (_, index) => ({
+      get slug() {
+        slugReads += 1;
+        return `published-${index}`;
+      },
+      title: `Documented initiative ${index}`,
+      value: String(index + 1),
+      label: "reviewed outcome",
+    }));
+    const html = renderToStaticMarkup(<VerifiedImpactStrip items={items} />);
+    expect(html).toContain("/our-work/published-0");
+    expect(html).not.toContain("/our-work/published-3");
+    expect(slugReads).toBeLessThan(2_000);
   });
 
   it("limits the strip to three separate documented outcomes", () => {

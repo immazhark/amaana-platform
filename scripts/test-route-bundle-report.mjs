@@ -38,16 +38,40 @@ test("counts inherited layouts, unique assets and App Router pages", () => {
   assert.equal(byRoute["/about/team"].cssBytes, 20);
 });
 
-test("ignores unsafe paths and rejects malformed or empty manifests", () => {
+test("AF-R047 legacy App Router bundle labels omit non-URL route groups", () => {
+  const pages = {
+    "/layout": ["static/chunks/shared.js"],
+    "/(public)/page": ["static/chunks/home.js"],
+    "/(public)/about/(stories)/page": ["static/chunks/about.js"],
+  };
+  const rows = summarizeAppRouteBundles(pages, () => 10);
+  assert.deepEqual(rows.map(({ route }) => route).sort(), ["/", "/about"]);
+  assert.ok(rows.every(row => row.totalBytes === 20));
+});
+
+test("rejects unsafe JS/CSS manifest assets without silently lowering legacy route byte totals", () => {
   assert.throws(() => summarizeAppRouteBundles(null, () => 0), /valid pages map/);
   assert.throws(() => summarizeAppRouteBundles({}, () => 0), /No App Router/);
+  for (const unsafe of [
+    "../outside.js", "static/../outside.js", "static/./alias.css",
+    "static//chunks/duplicate.js", "https://outside.invalid/app.js",
+    "/absolute/outside.css", "static/chunks/script.js?variant=2",
+  ]) {
+    assert.throws(() => summarizeAppRouteBundles({
+      "/page": ["_next/static/chunks/ok.js", unsafe],
+    }, () => 42), /Unsafe App Router bundle asset path/, unsafe);
+    assert.throws(() => summarizeAppRouteBundles({
+      "/page": ["_next/static/chunks/ok.js"],
+      "/layout": [unsafe],
+    }, () => 42), /Unsafe App Router bundle asset path/, `inherited layout: ${unsafe}`);
+  }
   const data = summarizeAppRouteBundles({
-    "/page": ["../outside.js", "static/../outside.js", "_next/static/chunks/ok.js", "static/media/font.woff2"],
+    "/page": ["_next/static/chunks/ok.js", "static/media/font.woff2"],
   }, asset => {
     assert.equal(asset, "static/chunks/ok.js");
     return 42;
   });
-  assert.equal(data[0].totalBytes, 42);
+  assert.equal(data[0].totalBytes, 42, "Non-JS/CSS font assets remain outside this metric");
 });
 
 test("AF-R047 rejects malformed inherited layout asset lists instead of undercounting bytes", () => {
@@ -106,6 +130,37 @@ test("unattributed aggregate rejects unmeasured asset sizes instead of producing
   assert.throws(() => summarizeUnattributedAppAssets(routes, [
     { path: 'chunks/huge.js', bytes: Number.MAX_SAFE_INTEGER }, { path: 'css/small.css', bytes: 1 },
   ]), /Invalid aggregate total size/);
+});
+
+test("AF-R047 rejects unsafe aggregate asset paths rather than reporting untrusted bytes", () => {
+  const routes = { "/page": "/" };
+  for (const path of [
+    "", "/chunks/absolute.js", "chunks/../private.js", "../outside.css",
+    "chunks//duplicate.js", "chunks/./alias.js", "https://example.invalid/a.js",
+    "C:\\private.js", "chunks/file.js?download=1", "chunks/unsafe#fragment.css",
+  ]) {
+    assert.throws(() => summarizeUnattributedAppAssets(routes, [{ path, bytes: 11 }]),
+      /Invalid aggregate asset path/, path);
+  }
+  assert.deepEqual(summarizeUnattributedAppAssets(routes, [
+    { path: "chunks/app/page.js", bytes: 9 },
+    { path: "media/approved-font.woff2", bytes: 20 },
+  ]).aggregate, { jsBytes: 9, cssBytes: 0, totalBytes: 9, assetCount: 2 });
+});
+
+test("unattributed build aggregate rejects duplicated paths rather than inflating byte totals", () => {
+  const pages = { "/page": "/" };
+  for (const records of [
+    [{ path: "chunks/shared.js", bytes: 11 }, { path: "chunks/shared.js", bytes: 11 }],
+    [{ path: "css/site.css", bytes: 9 }, { path: "css/site.css", bytes: 13 }],
+  ]) {
+    assert.throws(() => summarizeUnattributedAppAssets(pages, records), /Duplicate aggregate asset path/);
+  }
+  const valid = summarizeUnattributedAppAssets(pages, [
+    { path: "chunks/shared.js", bytes: 11 },
+    { path: "css/site.css", bytes: 13 },
+  ]);
+  assert.deepEqual(valid.aggregate, { jsBytes: 11, cssBytes: 13, totalBytes: 24, assetCount: 2 });
 });
 
 test("parses the Next 16 JSON assignment without executing JavaScript", () => {
@@ -463,6 +518,24 @@ test("CLI tolerates a closed output reader while malformed builds still fail", a
 });
 
 
+test("AF-R047 fails closed on non-string page and inherited-layout asset entries", () => {
+  // Invalid manifest types must never turn a partially measured build into a
+  // successful smaller total. Malformed JS/CSS paths also fail closed.
+  for (const invalid of [null, undefined, 24, { path: "static/chunks/private.js" }, ["static/chunks/nested.js"]]) {
+    assert.throws(() => summarizeAppRouteBundles({
+      "/page": ["static/chunks/valid.js", invalid],
+    }, () => 12), /Invalid App Router page asset entry/);
+
+    assert.throws(() => summarizeAppRouteBundles({
+      "/page": ["static/chunks/valid.js"],
+      "/layout": [invalid],
+    }, () => 12), /Invalid App Router layout asset entry/);
+  }
+  assert.throws(() => summarizeAppRouteBundles({
+    "/page": ["static/chunks/valid.js", "../unsafe.js"],
+  }, () => 12), /Unsafe App Router bundle asset path/);
+});
+
 test("AF-R047 rejects malformed page asset lists instead of silently omitting routes", () => {
   const valid = { "/page": [], "/about/page": [] };
   assert.equal(summarizeAppRouteBundles(valid, () => 0).length, 2);
@@ -511,19 +584,21 @@ test("AF-R047 rejects malformed unmatched legacy layout manifest entries", () =>
   }
 });
 
-test("AF-R047 does not double-count aliased on-disk bundle paths", () => {
+test("AF-R047 rejects aliased legacy paths instead of silently undercounting assets", () => {
   const legacy = summarizeAppRouteBundles({
-    "/page": [
-      "static/chunks/shared.js",
-      "static/chunks/./shared.js",
-      "static/chunks//shared.js",
-    ],
+    "/page": ["static/chunks/shared.js", "static/chunks/shared.js"],
   }, asset => {
     assert.equal(asset, "static/chunks/shared.js", "Only canonical asset paths may be measured");
     return 13;
   });
   assert.equal(legacy[0].jsBytes, 13,
-    "One on-disk file must not be counted as three different manifest assets");
+    "An exact repeated canonical path is counted once");
+  for (const path of ["static/chunks/./shared.js", "static/chunks//shared.js"]) {
+    assert.throws(() => summarizeAppRouteBundles({
+      "/page": ["static/chunks/shared.js", path],
+    }, () => 13), /Unsafe App Router bundle asset path/,
+    "A malformed alias must never produce a deceptively smaller successful total");
+  }
 
   for (const path of [
     "static/css/./site.css",
@@ -606,6 +681,12 @@ test("AF-R047 rejects malformed public route labels before reading client-refere
     "/stories#private",
     "/stories\\private",
     "/stories\nprivate",
+    "/stories/%2e%2e/private",
+    "/stories/%2Fprivate",
+    "/stories/a%2Fb",
+    "/stories/a%252Fb",
+    "/stories/%252e%252e/private",
+    "/stories/%5cprivate",
   ];
   for (const route of invalidRoutes) {
     const paths = { "/page": route };
@@ -804,3 +885,97 @@ for (const kind of ["file", "broken-file", "app-directory", "server-directory"])
     }
   });
 }
+
+for (const filename of ['app-build-manifest.json', 'app-path-routes-manifest.json', 'build-manifest.json']) {
+  for (const broken of [false, true]) {
+    test(`AF-R047 rejects ${broken ? 'broken ' : ''}symlinked build metadata: ${filename}`, () => {
+      const directory = mkdtempSync(join(tmpdir(), 'amaana-metadata-link-'));
+      const build = join(directory, '.next');
+      const cli = fileURLToPath(new URL('./report-route-bundles.mjs', import.meta.url));
+      try {
+        mkdirSync(join(build, 'static'), { recursive: true });
+        mkdirSync(join(build, 'server/app'), { recursive: true });
+        const metadata = {
+          'app-build-manifest.json': { pages: { '/page': [] } },
+          'app-path-routes-manifest.json': { '/page': '/' },
+          'build-manifest.json': { rootMainFiles: [] },
+        };
+        writeFileSync(join(build, 'app-path-routes-manifest.json'), JSON.stringify(metadata['app-path-routes-manifest.json']));
+        writeFileSync(join(build, 'server/app/page_client-reference-manifest.js'),
+          jsReferenceSource('/page', {}).replace('"entryCSSFiles":{}', '"entryCSSFiles":{"[project]/src/app/layout":[]}'));
+        const outside = join(directory, 'external-metadata.json');
+        if (!broken) writeFileSync(outside, JSON.stringify(metadata[filename]));
+        rmSync(join(build, filename), { force: true });
+        symlinkSync(outside, join(build, filename));
+        const result = spawnSync(process.execPath, [cli, '--json'], { cwd: directory, encoding: 'utf8', timeout: 5000 });
+        assert.equal(result.status, 1, 'Linked metadata must not produce successful attribution or an unavailable fallback');
+        assert.equal(result.stdout, '');
+        assert.match(result.stderr, /Symbolic links are not supported in build metadata/);
+      } finally {
+        rmSync(directory, { recursive: true, force: true });
+      }
+    });
+  }
+}
+
+// AF-R047: opt-in compressed attribution reuses the same fail-closed summarizers.
+test("gzip attribution measures compressed bytes once per asset and rejects non-files", async () => {
+  const { gzipSync } = await import("node:zlib");
+  const directory = mkdtempSync(join(tmpdir(), "amaana-gzip-asset-"));
+  try {
+    mkdirSync(join(directory, "static/chunks"), { recursive: true });
+    const body = "export const synthetic = 'repeat';\n".repeat(400);
+    writeFileSync(join(directory, "static/chunks/a.js"), body);
+    const cache = new Map();
+    const bytes = reporter.gzipStaticAssetBytes(directory, "static/chunks/a.js", cache);
+    assert.equal(bytes, gzipSync(body, { level: 9 }).length);
+    assert.ok(bytes < body.length / 10, "repetitive source must compress well");
+    assert.equal(cache.get("static/chunks/a.js"), bytes);
+    // The cache is authoritative: a changed file is not re-read within one report.
+    writeFileSync(join(directory, "static/chunks/a.js"), "x");
+    assert.equal(reporter.gzipStaticAssetBytes(directory, "static/chunks/a.js", cache), bytes);
+    assert.throws(() => reporter.gzipStaticAssetBytes(directory, "static/chunks", new Map()), /not a file/);
+    assert.throws(() => reporter.gzipStaticAssetBytes(directory, "static/chunks/missing.js", new Map()), /ENOENT/);
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
+test("CLI --compressed adds gzip route attribution beside the unchanged uncompressed report", () => {
+  const directory = mkdtempSync(join(tmpdir(), "amaana-gzip-report-"));
+  const build = join(directory, ".next");
+  const cli = fileURLToPath(new URL("./report-route-bundles.mjs", import.meta.url));
+  try {
+    for (const path of ["static/chunks", "static/css", "server/app"]) mkdirSync(join(build, path), { recursive: true });
+    const shared = "console.log('shared runtime');\n".repeat(300);
+    writeFileSync(join(build, "static/chunks/shared.js"), shared);
+    writeFileSync(join(build, "static/css/root.css"), "body{margin:0}\n".repeat(200));
+    writeFileSync(join(build, "app-path-routes-manifest.json"), JSON.stringify({ "/page": "/" }));
+    writeFileSync(join(build, "build-manifest.json"), JSON.stringify({ rootMainFiles: ["static/chunks/shared.js"] }));
+    writeFileSync(join(build, "server/app/page_client-reference-manifest.js"),
+      'globalThis.__RSC_MANIFEST = globalThis.__RSC_MANIFEST || {};globalThis.__RSC_MANIFEST["/page"] = ' + JSON.stringify({
+        entryCSSFiles: { "[project]/src/app/layout": [{ path: "static/css/root.css", inlined: false }] },
+        entryJSFiles: { "[project]/src/app/layout": ["static/chunks/shared.js"] },
+      }));
+    const plain = spawnSync(process.execPath, [cli, "--json"], { cwd: directory, encoding: "utf8", timeout: 10000 });
+    assert.equal(plain.status, 0, plain.stderr);
+    assert.equal(JSON.parse(plain.stdout).jsRoutesGzip, undefined, "gzip is opt-in");
+    const packed = spawnSync(process.execPath, [cli, "--json", "--compressed"], { cwd: directory, encoding: "utf8", timeout: 10000 });
+    assert.equal(packed.status, 0, packed.stderr);
+    const report = JSON.parse(packed.stdout);
+    // Uncompressed attribution is unchanged by the flag.
+    assert.deepEqual(report.jsRoutes, JSON.parse(plain.stdout).jsRoutes);
+    assert.equal(report.jsGzipMetric, "client-reference-assigned-gzip-js-bytes");
+    assert.equal(report.jsRoutesGzip.length, 1);
+    assert.equal(report.jsRoutesGzip[0].route, "/");
+    assert.ok(report.jsRoutesGzip[0].jsBytes > 0 && report.jsRoutesGzip[0].jsBytes < report.jsRoutes[0].jsBytes / 10);
+    assert.equal(report.cssGzipMetric, "client-reference-assigned-gzip-css-bytes");
+    assert.ok(report.cssRoutesGzip[0].cssBytes < report.cssRoutes[0].cssBytes);
+    const text = spawnSync(process.execPath, [cli, "--compressed"], { cwd: directory, encoding: "utf8", timeout: 10000 });
+    assert.equal(text.status, 0, text.stderr);
+    assert.match(text.stdout, /Gzip \(level 9\) JavaScript attribution: 1 page entries/);
+    // Fail closed: a manifest naming a missing asset must not shrink the compressed total.
+    rmSync(join(build, "static/chunks/shared.js"));
+    const missing = spawnSync(process.execPath, [cli, "--json", "--compressed"], { cwd: directory, encoding: "utf8", timeout: 10000 });
+    assert.equal(missing.status, 1);
+    assert.equal(missing.stdout, "");
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+});

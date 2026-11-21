@@ -43,9 +43,29 @@ export function normalizeStructuredDataPath(path: string) {
   const value = path.trim();
   if (!value.startsWith("/") || value.startsWith("//") || /[\\\u0000-\u001F\u007F\s]/.test(value)) return null;
 
+  // WHATWG URL resolution collapses dot segments before the privacy checks.
+  // Inspect supplied path segments first, including nested percent encoding,
+  // so a story cannot claim a different page's canonical URL.
+  const rawPath = value.split(/[?#]/, 1)[0] ?? "";
+  for (const rawSegment of rawPath.split("/")) {
+    let segment = rawSegment;
+    for (let depth = 0; depth < 8; depth++) {
+      if (segment === "." || segment === "..") return null;
+      if (!/%[0-9a-f]{2}/i.test(segment)) break;
+      try {
+        const decoded = decodeURIComponent(segment);
+        if (decoded === segment) break;
+        segment = decoded;
+      } catch {
+        return null;
+      }
+      if (depth === 7) return null;
+    }
+  }
+
   try {
     const url = new URL(value, DEFAULT_SITE_URL);
-    if (url.origin !== DEFAULT_SITE_URL || isPrivateAppMediaUrl(url.pathname)) return null;
+    if (url.origin !== DEFAULT_SITE_URL || url.search || isPrivateAppMediaUrl(url.pathname)) return null;
     return `${url.pathname}${url.search}${url.hash}`;
   } catch {
     return null;
@@ -60,12 +80,12 @@ export function normalizeStructuredDataImage(imageUrl: string | null | undefined
     if (value.startsWith("/")) {
       if (value.startsWith("//")) return null;
       const url = new URL(value, siteUrl);
-      if (url.origin !== siteUrl || isPrivateAppMediaUrl(url.pathname)) return null;
+      if (url.origin !== siteUrl || url.search || url.hash || isPrivateAppMediaUrl(url.pathname)) return null;
       return url.toString();
     }
 
     const url = new URL(value);
-    if (url.protocol !== "https:" || url.username || url.password) return null;
+    if (url.protocol !== "https:" || url.username || url.password || url.search || url.hash) return null;
     // The configured origin and the apex/www production aliases are app
     // routes; none may advertise a protected destination as a public image.
     if (isPrivateAppMediaUrl(url.toString()) ||

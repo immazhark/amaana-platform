@@ -34,10 +34,10 @@ export function FeedbackEnquiryBuilder({ preferences = {} }: { preferences?: Pre
                 aria-describedby={`feedback-description-${kind.id}`}
                 defaultChecked={selection?.kind === kind.id} />
               <span className={styles.marker} aria-hidden="true"><ActionIcon kind="message" /></span>
-              <div className={styles.copy}>
-                <h3 id={`feedback-kind-${kind.id}`}>{kind.label}</h3>
-                <p id={`feedback-description-${kind.id}`}>{kind.guidance}</p>
-              </div>
+              <span className={styles.copy}>
+                <span className={styles.radioTitle} id={`feedback-kind-${kind.id}`}>{kind.label}</span>
+                <span className={styles.radioDescription} id={`feedback-description-${kind.id}`}>{kind.guidance}</span>
+              </span>
               <span className={styles.action}>Select this conversation</span>
             </label>)}
         </div>

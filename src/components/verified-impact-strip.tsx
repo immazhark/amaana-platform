@@ -50,12 +50,23 @@ export function VerifiedImpactStrip({ items, headingId = "published-outcomes-hea
   items: readonly VerifiedImpactItem[];
   headingId?: string;
 }) {
-  const visible = items.filter(item =>
-    /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item.slug) &&
-    item.title.trim().length > 0 &&
-    item.value.trim().length > 0 &&
-    item.label.trim().length > 0,
-  ).filter((item, index, list) => list.findIndex(candidate => candidate.slug === item.slug) === index).slice(0, 3);
+  // A public strip shows at most three distinct reviewed outcomes. Walk once,
+  // preserving first-match order and avoiding quadratic duplicate slug scans.
+  const visible: VerifiedImpactItem[] = [];
+  const seenSlugs = new Set<string>();
+  for (const item of Array.isArray(items) ? items : []) {
+    if (item == null || typeof item !== "object" || Array.isArray(item) ||
+        typeof item.slug !== "string" ||
+        typeof item.title !== "string" ||
+        typeof item.value !== "string" ||
+        typeof item.label !== "string" ||
+        !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item.slug) ||
+        !item.title.trim() || !item.value.trim() || !item.label.trim() ||
+        seenSlugs.has(item.slug)) continue;
+    seenSlugs.add(item.slug);
+    visible.push(item);
+    if (visible.length === 3) break;
+  }
   if (visible.length === 0) return null;
 
   return <aside style={surface} aria-labelledby={headingId}>

@@ -40,6 +40,7 @@ export const getSponsorEducationHeroMedia = cache(async () => {
         altText: true,
         caption: true,
         sourceYear: true,
+        placeholder: true,
       },
     });
 

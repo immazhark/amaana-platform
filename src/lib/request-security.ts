@@ -19,6 +19,9 @@ export function isSameOrigin(request: Request) {
     if (!["http:", "https:"].includes(expected.protocol) ||
         expected.username || expected.password ||
         (production && expected.protocol !== "https:")) return false;
+    // A Host header is only host[:port]. If it parses with a path, query or
+    // fragment, part of it was discarded and must not define the trusted origin.
+    if (!configured && (expected.pathname !== "/" || expected.search || expected.hash)) return false;
     return origin === expected.origin;
   } catch {
     return false;

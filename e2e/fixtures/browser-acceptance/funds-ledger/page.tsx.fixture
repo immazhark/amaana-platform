@@ -1,0 +1,40 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { CanonicalArticle } from "@/components/canonical-article";
+import { PublicFundLedgerView } from "@/components/fund-ledger/public-fund-ledger-view";
+import type { PublicFundRow } from "@/lib/public-fund-ledger";
+
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Browser Acceptance Fixture",
+  robots: { index: false, follow: false },
+  referrer: "no-referrer",
+};
+
+// Synthetic figures only; never read from the database.
+const entry = (n: number, pool: "ZAKAT" | "NON_ZAKAT" = "NON_ZAKAT") => ({
+  id: `synthetic-${n}`, fundId: "synthetic", title: `Synthetic spending entry ${n}`, publicSummary: n % 2 ? "Synthetic public summary." : null,
+  amountPaise: 1_000_000 * n, spentOn: `2026-11-0${n}`, pool,
+});
+const rows: PublicFundRow[] = [
+  { slug: "orphan", name: "Orphan Fund", summary: "s", zakatPolicy: "ACCEPTED", receivedPaise: 18_500_000, spentPaise: 9_000_000, heldPaise: 9_500_000, spentShare: 0.49, entries: [entry(1), entry(2, "ZAKAT"), entry(3), entry(4), entry(5)] },
+  { slug: "eid-kits", name: "Eid Kits Fund", summary: "s", zakatPolicy: "NOT_ACCEPTED", receivedPaise: 0, spentPaise: 0, heldPaise: 0, spentShare: 0, entries: [] },
+];
+
+export default function FundsLedgerAcceptanceFixture() {
+  if (process.env.AMAANA_BROWSER_ACCEPTANCE !== "true") notFound();
+  return (
+    <CanonicalArticle
+      eyebrow="Our funds · Amaana Foundation"
+      heroVariant="action"
+      heroVisualTitle="Where Your Gift Went"
+      heroVisualNote="Synthetic acceptance data."
+      title="Every Fund, Accounted For."
+      intro="All gifts reach one bank account. Here they are separated by the fund each donor chose."
+      blocks={[]}
+    >
+      <PublicFundLedgerView rows={rows} totals={{ receivedPaise: 18_500_000, spentPaise: 9_000_000, heldPaise: 9_500_000 }} year="2026-27" years={["2027-28", "2026-27"]} />
+    </CanonicalArticle>
+  );
+}

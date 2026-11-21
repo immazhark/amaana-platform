@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { AppealShare, runAppealShare } from "./appeal-share";
 
 const appeal = {
@@ -11,6 +13,17 @@ const appeal = {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("appeal sharing recovery", () => {
+  it("AF-R061 reuses the exact approved Amaana blue token for share hover and focus", () => {
+    const globals = readFileSync(join(process.cwd(), "src/app/globals.css"), "utf8");
+    const css = readFileSync(join(process.cwd(), "src/components/appeal-share.module.css"), "utf8");
+    expect(globals).toMatch(/--af-color-blue-600:\s*#466faa\s*;/i);
+    const hover = css.match(/\.action:hover\{([^}]+)\}/)?.[1] ?? "";
+    const focus = css.match(/\.action:focus-visible\{([^}]+)\}/)?.[1] ?? "";
+    expect(hover).toContain("border-color:var(--af-color-blue-600)");
+    expect(focus).toContain("outline:3px solid var(--af-color-blue-600)!important");
+    expect(css).not.toMatch(/#466faa/i);
+  });
+
   it("sends a complete canonical appeal to native sharing", async () => {
     const share = vi.fn().mockResolvedValue(undefined);
     const writeText = vi.fn();
@@ -76,6 +89,28 @@ describe("appeal sharing recovery", () => {
     await expect(runAppealShare(appeal, "copy")).resolves.toBe("Copy unavailable. Select the URL below.");
   });
 
+  it("does not include query strings or fragments from a public appeal share path", () => {
+    const html = renderToStaticMarkup(<AppealShare
+      title={appeal.title}
+      summary={appeal.summary}
+      path="/appeals/verified-education?reference=synthetic-private#notes"
+    />);
+    expect(html).toContain("https%3A%2F%2Famaanafoundation.org%2Fappeals%2Fverified-education");
+    expect(html).not.toContain("synthetic-private");
+    expect(html).not.toContain("%3Freference");
+    expect(html).not.toContain("%23notes");
+  });
+
+  it("does not share backslash-based protocol-relative paths as external destinations", () => {
+    const html = renderToStaticMarkup(<AppealShare
+      title={appeal.title}
+      summary={appeal.summary}
+      path={"/\\malicious.example/appeals/fake"}
+    />);
+    expect(html).not.toContain("malicious.example");
+    expect(html).toContain("https%3A%2F%2Famaanafoundation.org%2F");
+  });
+
   it("never shares an external origin when a malformed route path begins with two slashes", () => {
     const html = renderToStaticMarkup(<AppealShare
       title={appeal.title}
@@ -84,6 +119,71 @@ describe("appeal sharing recovery", () => {
     />);
     expect(html).not.toContain("malicious.example");
     expect(html).toContain("https%3A%2F%2Famaanafoundation.org%2F");
+  });
+
+  it("never shares private or malformed paths as if they were approved appeal destinations", () => {
+    for (const path of [
+      "/admin/appeals",
+      "/api/private/report",
+      "/donate/synthetic-case",
+      "/appeals/../admin/appeals",
+      "/appeals/%2e%2e/api/private",
+      "/appeals/%252e%252e/api/private",
+      "/appeals/valid-slug/unreviewed",
+    ]) {
+      const html = renderToStaticMarkup(<AppealShare
+        title={appeal.title}
+        summary={appeal.summary}
+        path={path}
+      />);
+      const whatsapp = html.match(/href="https:\/\/wa\.me\/\?text=([^"]+)"/)?.[1];
+      expect(whatsapp, path).toBeDefined();
+      expect(decodeURIComponent(whatsapp ?? ""), path)
+        .toMatch(/\n\nhttps:\/\/amaanafoundation\.org\/$/);
+    }
+  });
+
+  it("never silently rewrites a different appeal identity through dot segments", () => {
+    for (const path of [
+      "/appeals/first-appeal/../second-appeal",
+      "/appeals/first-appeal/%2e%2e/second-appeal",
+      "/appeals/first-appeal/%252e%252e/second-appeal",
+      "/appeals/first-appeal/./second-appeal",
+    ]) {
+      const html = renderToStaticMarkup(<AppealShare
+        title="Synthetic first-person identity"
+        summary="Synthetic confidential appeal narrative"
+        path={path}
+      />);
+      const whatsapp = html.match(/href="https:\/\/wa\.me\/\?text=([^"]+)"/)?.[1];
+      expect(whatsapp, path).toBeDefined();
+      const shared = decodeURIComponent(whatsapp ?? "");
+      expect(shared, path).toContain("https://amaanafoundation.org/");
+      expect(shared, path).not.toContain("/appeals/second-appeal");
+      expect(shared, path).not.toContain("Synthetic first-person identity");
+      expect(shared, path).not.toContain("Synthetic confidential appeal narrative");
+    }
+    const legitimate = renderToStaticMarkup(<AppealShare
+      title={appeal.title}
+      summary={appeal.summary}
+      path="/appeals/verified-education?draft=private#notes"
+    />);
+    expect(legitimate).toContain("https%3A%2F%2Famaanafoundation.org%2Fappeals%2Fverified-education");
+    expect(legitimate).not.toContain("draft%3Dprivate");
+  });
+
+  it("does not carry identifying copy into a fallback homepage share", () => {
+    const html = renderToStaticMarkup(<AppealShare
+      title="Synthetic private beneficiary identity"
+      summary="Synthetic confidential case narrative"
+      path="/admin/appeals"
+    />);
+    const whatsapp = html.match(/href="https:\/\/wa\.me\/\?text=([^"]+)"/)?.[1];
+    expect(whatsapp).toBeDefined();
+    const sharedText = decodeURIComponent(whatsapp ?? "");
+    expect(sharedText).not.toContain("Synthetic private beneficiary identity");
+    expect(sharedText).not.toContain("Synthetic confidential case narrative");
+    expect(sharedText).toContain("https://amaanafoundation.org/");
   });
 
   it("renders a safe native WhatsApp link with the fully qualified canonical URL", () => {

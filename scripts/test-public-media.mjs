@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { checkPublicMedia, validateImage, validatePublicMediaBoundaryPath } from './check-public-media.mjs';
 
@@ -65,4 +67,74 @@ test('public media boundary allows reviewed derivative naming and ordinary field
 test('missing public media directory is accepted as an empty library', async () => {
   const root = path.join(tmpdir(), `amaana-media-missing-${Date.now()}-${Math.random().toString(16).slice(2)}`);
   await assert.doesNotReject(checkPublicMedia(root));
+});
+
+test('public media decoder refuses symlinked root directories', async () => {
+  const workspace = await mkdtemp(path.join(tmpdir(), 'amaana-media-root-link-'));
+  try {
+    const real = path.join(workspace, 'real-media');
+    await mkdir(real);
+    const linked = path.join(workspace, 'media');
+    await symlink(real, linked);
+    await assert.rejects(checkPublicMedia(linked), /symbolic link/i);
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
+});
+
+test('public media decoder refuses symlinked files and nested folders', async () => {
+  const workspace = await mkdtemp(path.join(tmpdir(), 'amaana-media-child-link-'));
+  try {
+    const root = path.join(workspace, 'public-media');
+    const external = path.join(workspace, 'unreviewed');
+    await mkdir(root);
+    await mkdir(external);
+    await writeFile(path.join(external, 'private.webp'), Buffer.from('SYNTHETIC_ONLY'));
+    await symlink(path.join(external, 'private.webp'), path.join(root, 'linked.webp'));
+    await assert.rejects(checkPublicMedia(root), /symbolic link/i);
+    await rm(path.join(root, 'linked.webp'));
+    await symlink(external, path.join(root, 'linked-directory'));
+    await assert.rejects(checkPublicMedia(root), /symbolic link/i);
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
+});
+
+test('public media decoder refuses a symlinked immediate parent directory', async () => {
+  const workspace = await mkdtemp(path.join(tmpdir(), 'amaana-media-parent-link-'));
+  try {
+    const real = path.join(workspace, 'real-public');
+    await mkdir(path.join(real, 'media'), { recursive: true });
+    const linked = path.join(workspace, 'public');
+    await symlink(real, linked);
+    await assert.rejects(checkPublicMedia(path.join(linked, 'media')), /symbolic link/i);
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
+});
+
+test('public asset inventory rejects symbolic links instead of concealing unreviewed assets', async () => {
+  const workspace = await mkdtemp(path.join(tmpdir(), 'amaana-asset-inventory-link-'));
+  const cli = fileURLToPath(new URL('./audit-public-assets.mjs', import.meta.url));
+  try {
+    const project = path.join(workspace, 'project');
+    const outside = path.join(workspace, 'outside');
+    const publicRoot = path.join(project, 'public');
+    await mkdir(publicRoot, { recursive: true });
+    await mkdir(outside);
+    await writeFile(path.join(outside, 'unreviewed.webp'), 'SYNTHETIC_ONLY');
+    const scan = () => spawnSync(process.execPath, [cli, '--json'], { cwd: project, encoding: 'utf8' });
+    await symlink(outside, path.join(publicRoot, 'linked'), 'dir');
+    const nested = scan();
+    assert.notEqual(nested.status, 0, 'A linked public directory must not be treated as fully inventoried');
+    assert.match(nested.stderr, /symbolic link/i);
+    await rm(path.join(publicRoot, 'linked'));
+    await rm(publicRoot, { recursive: true });
+    await symlink(outside, publicRoot, 'dir');
+    const linkedRoot = scan();
+    assert.notEqual(linkedRoot.status, 0, 'A linked public root must not hide unreviewed assets');
+    assert.match(linkedRoot.stderr, /symbolic link/i);
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
 });

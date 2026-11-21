@@ -49,3 +49,37 @@ describe("CanonicalArticle internal pathway navigation", () => {
     expect(html.match(/href="\/our-work"/g)).toHaveLength(1);
   });
 });
+
+  it("does not advertise protected, encoded or dot-normalized pathways", () => {
+    const blocked = [
+      "/admin", "/admin/login", "/api/private", "/donations/receipt",
+      "/request-assistance/received", "/%61dmin", "/other/../admin", "/%2F%2Fevil.invalid",
+    ];
+    const html = renderWith([
+      { label: "Safe transparency", href: "/transparency", description: "Public trust information" },
+      ...blocked.map((href, index) => ({
+        label: `Untrusted private ${index}`, href, description: "Must not render",
+      })),
+    ]);
+    expect(html).toContain('href="/transparency"');
+    for (let index = 0; index < blocked.length; index++) {
+      expect(html, blocked[index]).not.toContain(`Untrusted private ${index}`);
+    }
+  });
+
+  it("ignores malformed runtime pathway records without crashing the public article", () => {
+    const invalid = [
+      null, undefined, { href: "/contact" },
+      { label: { text: "Object" }, href: "/contact", description: "Invalid" },
+      { label: "Wrong href", href: 5, description: "Invalid" },
+      { label: "Wrong description", href: "/contact", description: null },
+    ];
+    const html = renderWith([
+      ...invalid,
+      { label: "Reviewed contact", href: "/contact", description: "Useful public contact" },
+    ] as unknown as Parameters<typeof renderWith>[0]);
+    expect(html).toContain("Reviewed contact");
+    expect(html).not.toContain("Wrong href");
+    expect(html).not.toContain("Wrong description");
+  });
+

@@ -1,4 +1,61 @@
+## Updated original 149-row classification — 15 November 2026 IST
+
+**35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 Not applicable = 149 (112 actionable).** Supersedes older historical counts below. [Complete tracker](mission-control/149-item-status-2026-11-15.csv), [current active queue](mission-control/active-backlog-2026-11-15.csv), [source evidence](mission-control/2026-11-15-itemwise-reconciliation.md). AF-R078 now Partial due shipped read-only inventory but original archive/deletion remains unresolved.
+
+## Latest verified 149-item classification proposal — 15 November 2026 IST
+
+**PR #944 latest:** 35 Completed / 24 Implemented / 70 Partial / 18 Not started / 1 Superseded / 1 Not applicable = 149, **112 actionable**. Supersedes earlier dated counts below without removing their evidence. AF-R072's home meta-description length moved Partial → Completed after PR #945 merged `33cb6ff5906832047858b2570ff9c2c361bb19ef`, Railway SUCCESS, public version/readiness exact and fresh original home HTML `meta name=description` measured 155 characters. See [149-item updated ledger](mission-control/149-item-status-2026-11-15.csv), [112-item active queue](mission-control/active-backlog-2026-11-15.csv), [24 Implemented acceptance gaps](mission-control/2026-11-15-implemented-acceptance.md), [70 Partial blockers](mission-control/2026-11-15-partial-blockers.md), [18 Not started first actions](mission-control/2026-11-15-not-started-action-plan.md). No general W3C/field CWV/payment/statutory/beneficiary-photo approval is implied.
+
+## Latest evidence-backed 149-item state — 15 November 2026 IST
+
+**Third reconciliation pass proposed in PR #944:** 34 Completed / 24 Implemented / 71 Partial / 18 Not started / 1 Superseded / 1 Not applicable = 149; **113 actionable**. Two extra Not started entries (AF-R018 HSTS header in source and AF-ATTESTATION private synthetic digest module) were found partly built but remain incomplete. 149-row [current register](mission-control/149-item-status-2026-11-15.csv), [active 113-row queue](mission-control/active-backlog-2026-11-15.csv), [71 Partial exact blockers](mission-control/2026-11-15-partial-blockers.md), [18 Not started tasks](mission-control/2026-11-15-not-started-action-plan.md), [24 Implemented completion checks](mission-control/2026-11-15-implemented-acceptance.md). Historical counts below preserved but superseded. No tax/legal/financial/provider, identity-media, live-core-vitals or DNS/preload certification implied.
+
+## Latest operational 149-item status — 15 November 2026 IST, evidence pass two
+
+**Latest proposed #944 classification:** 34 Completed, 24 Implemented, 69 Partial, 20 Not started, 1 Superseded, 1 Not applicable = **149**; 113 actionable. This supersedes older dated count summaries below, which are retained as historical evidence. Evidence-backed [149-row register](mission-control/149-item-status-2026-11-15.csv), [active queue](mission-control/active-backlog-2026-11-15.csv), [first and second pass proof](mission-control/2026-11-15-itemwise-reconciliation.md), [24 Implemented acceptance gaps](mission-control/2026-11-15-implemented-acceptance.md), [69 Partial blockers](mission-control/2026-11-15-partial-blockers.md) and [20 Not started next actions](mission-control/2026-11-15-not-started-action-plan.md). All current classifications remain pending protected PR merge. No full tax, finance/provider, assistive-tech, field CWV or personal-media certification is implied.
+
+## Latest 149-item classification — 15 November 2026 IST
+
+**Supersedes dated classification snapshots below, preserves earlier evidence.** The [current complete 149-item register](mission-control/149-item-status-2026-11-15.csv), [current active 120-item queue](mission-control/active-backlog-2026-11-15.csv) and [individual evidence/limits](mission-control/2026-11-15-itemwise-reconciliation.md) establish **27 Completed / 31 Implemented / 65 Partial / 24 Not started / 1 Superseded / 1 Not applicable = 149**. This reconciles 15 narrowly scoped defects to completion and downgrades two source-contradicted end states. Other items were not silently promoted; full provider, payments, physical accessibility, field CWV and 80G legal acceptance remain separate.
+
 # Amaana Master Reconciled Execution Plan — War-Footing Revision
+
+## Current verified 149-item status overlay — 12 November 2026 IST
+
+This section supersedes the **classification snapshot only** in the dated historical sections below. All 149 original item IDs and historical classifications remain preserved. It is an evidence-limited audit, not a declaration that every item was comprehensively re-tested.
+
+| Classification | Historical | Verified current | Change |
+|---|---:|---:|---:|
+| Completed | 1 | **12** | +11 |
+| Implemented (source/release acceptance pending) | 59 | **48** | −11 |
+| Partial | 61 | **62** | +1 |
+| Not started | 26 | **25** | −1 |
+| Superseded | 1 | **1** | 0 |
+| Not applicable | 1 | **1** | 0 |
+| **Total distinct original IDs** | **149** | **149** | **0** |
+
+Verified item transitions:
+- **AF-R004 → Completed:** `src/lib/storage.ts` begins with a real `import "server-only";` statement. The shipped `scripts/test-public-data-boundaries.mjs` guard rejects removal, comments, and late imports in controlled mutation assertions. #784 exact-head CI `43128164786`, separate ready-state `43132279837`, and protected merge `3c227d267dfc5ba65a2afa242a7bda0fd667d282` succeeded. The exact source and test blobs remain unchanged through inspected main `ab8e5e3d9229bd1abd6747f9cde7c4e77930a393`; no live credentials tested or changed. Closure is limited to the missing explicit server-only import, not AF-R005/R006 or all client-bundle exposure risks.
+- **AF-N17 → Completed:** public media publication database lookup now caught in the response boundary; synthetic rejection yields private no-store HTTP503, no storage read or diagnostic leak. Full #794 exact-head CI `43148647335` plus matched public `7bab5d566e772a50eb21c62b1ba36a75a4a18769` verified. This does not approve new media or close privacy issue #785.
+- **AF-R009 → Completed:** original JSON-LD serializer unsafe-script character defect fixed by `serializeStructuredData()` escaping <, >, &, U+2028/U+2029; full CI `43137396702` plus independent live read-only eight-route JSON-LD parser checks passed. Scope excludes future unsupported schema publishers.
+- **AF-N08 → Completed:** cron Bearer credential compares byte lengths before `timingSafeEqual`; synthetic multibyte mismatches return 401 without side effects; full CI `43137396702` passed. Worker remains parked, no live notifications.
+- **AF-R010 → Completed:** no current raw `innerHTML` writes in identified e2e fixtures; current exact-head browser CI `43128164786` succeeded; separate `setContent` synthetic fixture permitted.
+- **AF-N09 → Completed:** gallery route constant generic private HTTP500 plus bounded errorName-only logs, synthetic negative tests of injected faults, full exact-head CI `43128164786` passed; not a public-media privacy closure (#785).
+- **AF-R002 → Completed:** GitHub-reviewed GHSA-wq5f-xc86-pv6w patched by pinned `sharp@0.35.5`; released lock and Alpine variant, hosted CI `43109665136` and `43117533290` successful, independent runtime `b18e1518e938049f12876a069ebfa8e8cfee39cb` ready. Covers vulnerable release, not all SVG-input assurances.
+- **AF-R003 → Completed:** GitHub-reviewed GHSA-68fv-2mgg-jv7q patched by sole locked `source-map-js@1.2.2`; same hosted CI and runtime source evidence; retain ongoing dependency monitoring.
+- **AF-R001 → Completed:** security-patched Next.js 16.4.6 in #777, exact-head CI `43079743688`, ready `43084587114`, Railway deployment `72705246-69cc-4956-b9ef-73e1c319ade2` SUCCESS and matching public SHA `f25df78b900dccd3c131a5ed0ad48447572b1dc2`.
+- **AF-R007 → Completed:** server-secret client-bundle scanner negative tests in #777 fast job `130728942837` (names, values, canaries and bypass fixtures), production job `130730418097` scanned 111 built/public files, and matching released/public main above. This does **not** close historic exposure/provider rotation risks (AF-R005 remains Partial).
+- **AF-R011 → Completed:** #778 hosted RED `43086783254` found four `new Function` test-harness sites. Exact-head full CI `43100919160`, separate ready-state `43105246650`, guarded merge `47152209927ae5df8be185af5c0af13ef0658a9b`, Railway deployment `a41c9146-4ec8-40c7-a4c9-b8f3c57d3e3a` SUCCESS and independent public `/api/health/version`+readiness match. Test-only fix; no live payments.
+- **AF-R076 → Partial:** a read-only rendered-browser inspection of `/contact` on 12 November found native readable `mailto:` URLs for four main Contact links and the footer, while a raw page extractor saw Cloudflare-protected URLs before rendering. The original affected URL, no-JavaScript fallback and sitewide coverage remain unverified; no speculative config changes made.
+
+**Source main inspected for this status transition:** `ab8e5e3d9229bd1abd6747f9cde7c4e77930a393` (merge of public analytics #797). **Last independently checked live identity prior to #793/#797 rollout:** `d435cdf6bb027808eaf4f937b5ed74f26e919efc`, branch `main`, environment `production`, readiness `ready`. Later Railway SHA and fresh public acceptance are separate. **Financial boundary:** draft #684 remains unmerged despite successful code CI; independent payee ownership, credited UTR/payment reconciliation and a separately reviewed production activation are required. No FCRA or statutory 80G certificates; maintain domestic INR and private-data locks.
+
+**Clean active queue:** [135 actionable rows](mission-control/active-backlog-2026-11-12.csv); [all 149 IDs in original order](mission-control/149-item-status-2026-11-12.csv). [Current bounded source/finance/branch audit and acceptance limits](mission-control/2026-11-12-reconciliation.md). No further full-item reclassification from #780 test coverage alone.
+
+**Next unblocked work:** verify AF-R006 storage configuration acceptance (existing partial-credential tests already exist) and AF-R008/R009 structured-data rendering before further reclassification. Source implementation, tests, merging, deployment and live acceptance remain separate fields. Historical sections below are dated evidence.
+
+---
+
 
 ## Verified engineering checkpoint — 25 October 2026 (#433 runtime, #434 tooling)
 

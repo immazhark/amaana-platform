@@ -50,16 +50,84 @@ function exportedRouteHandlers(source) {
       if (!initializer || !(ts.isArrowFunction(initializer) || ts.isFunctionExpression(initializer))) {
         throw new Error("Cannot statically audit exported admin API handler");
       }
-      handlers.push({ name: declaration.name, body: initializer.body });
+      handlers.push({ name: declaration.name, body: initializer.body, parameters: initializer.parameters });
     }
   }
   return handlers;
 }
 
+/** Resolve direct lexical binding names, including destructuring aliases.
+ * A locally shadowed auth helper must never satisfy this static guard audit.
+ * This is conservative: an ambiguous binding fails closed, not as an auth proof. */
+function bindingDeclaresName(binding, name) {
+  if (!binding) return false;
+  if (ts.isIdentifier(binding)) return binding.text === name;
+  if (ts.isObjectBindingPattern(binding) || ts.isArrayBindingPattern(binding)) {
+    return binding.elements.some(element =>
+      ts.isBindingElement(element) && bindingDeclaresName(element.name, name));
+  }
+  return false;
+}
+
+function bodyShadowsGuardName(body, name) {
+  let shadowed = false;
+  function visit(node) {
+    if (shadowed) return;
+    if ((ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node))
+        && node.name?.text === name) {
+      shadowed = true;
+      return;
+    }
+    if (ts.isFunctionLike(node)) return; // A nested helper has its own scope.
+    if (ts.isVariableDeclaration(node) && bindingDeclaresName(node.name, name)) {
+      shadowed = true;
+      return;
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(body);
+  return shadowed;
+}
+
+// getCurrentUser and requirePermission are async. A floating Promise cannot
+// secure an admin API/action before its protected work; only awaited calls count.
+// Keep transparent TypeScript/parenthesis wrappers, not void or arbitrary calls.
+function isDirectlyAwaitedAsyncGuardCall(call) {
+  let expression = call;
+  while (expression.parent && expression.parent.expression === expression &&
+    (ts.isParenthesizedExpression(expression.parent) ||
+      ts.isAsExpression(expression.parent) ||
+      ts.isSatisfiesExpression(expression.parent) ||
+      ts.isNonNullExpression(expression.parent))) {
+    expression = expression.parent;
+  }
+  return Boolean(expression.parent &&
+    ts.isAwaitExpression(expression.parent) &&
+    expression.parent.expression === expression);
+}
+
+// This is a conservative static inventory rule, not a full dataflow proof.
+// Direct Prisma or db operations must not precede an awaited auth guard.
+function isDirectDatabaseOperation(node) {
+  if (!ts.isCallExpression(node)) return false;
+  let expression = node.expression;
+  while (ts.isPropertyAccessExpression(expression) ||
+    ts.isElementAccessExpression(expression) ||
+    ts.isParenthesizedExpression(expression) ||
+    ts.isAsExpression(expression) ||
+    ts.isSatisfiesExpression(expression) ||
+    ts.isNonNullExpression(expression)) {
+    expression = expression.expression;
+  }
+  return ts.isIdentifier(expression) && (expression.text === "prisma" || expression.text === "db");
+}
+
 // Only statements before a direct unconditional return/throw can satisfy
 // a guard. Nested function bodies do not execute as part of the route/action.
 function bodyHasReachableDirectCall(body, name) {
+  if (bodyShadowsGuardName(body, name)) return false;
   let found = false;
+  let accessedDatabaseBeforeGuard = false;
   function visit(node) {
     if (found || ts.isFunctionLike(node)) return;
     // Nested try bodies must obey the same direct return/throw boundary as the
@@ -108,8 +176,15 @@ function bodyHasReachableDirectCall(body, name) {
       visit(node.left);
       return;
     }
+    if (isDirectDatabaseOperation(node)) {
+      accessedDatabaseBeforeGuard = true;
+      return;
+    }
     if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === name) {
-      found = true;
+      if (!accessedDatabaseBeforeGuard &&
+        ((name !== "requirePermission" && name !== "getCurrentUser") || isDirectlyAwaitedAsyncGuardCall(node))) {
+        found = true;
+      }
       return;
     }
     ts.forEachChild(node, visit);
@@ -121,13 +196,15 @@ function bodyHasReachableDirectCall(body, name) {
 function sourceHasGuardCall(source, name, method) {
   for (const handler of exportedRouteHandlers(source)) {
     if (method && handler.name.text !== method) continue;
+    if (handler.parameters?.some(parameter => bindingDeclaresName(parameter.name, name))) continue;
     if (bodyHasReachableDirectCall(handler.body, name)) return true;
   }
   return false;
 }
 
 // Shared synthetic and inventory check; preserve its current behavior for RED.
-function actionHasPermissionGuard(body) {
+function actionHasPermissionGuard(body, parameters = []) {
+  if (parameters.some(parameter => bindingDeclaresName(parameter.name, "requirePermission"))) return false;
   return bodyHasReachableDirectCall(body, "requirePermission");
 }
 
@@ -163,7 +240,7 @@ function exportedAsyncProtectedActions(sourceFile) {
     if (!hasModifier(statement, ts.SyntaxKind.ExportKeyword)) continue;
     if (ts.isFunctionDeclaration(statement)) {
       if (statement.name && statement.body && hasModifier(statement, ts.SyntaxKind.AsyncKeyword)) {
-        actions.push({ name: statement.name.text, body: statement.body });
+        actions.push({ name: statement.name.text, body: statement.body, parameters: statement.parameters });
       }
     } else if (ts.isVariableStatement(statement)) {
       for (const declaration of statement.declarationList.declarations) {
@@ -178,7 +255,7 @@ function exportedAsyncProtectedActions(sourceFile) {
         if (ts.isIdentifier(declaration.name) && initializer &&
             (ts.isArrowFunction(initializer) || ts.isFunctionExpression(initializer)) &&
             hasModifier(initializer, ts.SyntaxKind.AsyncKeyword)) {
-          actions.push({ name: declaration.name.text, body: initializer.body });
+          actions.push({ name: declaration.name.text, body: initializer.body, parameters: initializer.parameters });
         }
       }
     }
@@ -204,6 +281,53 @@ test("AF-R012 detects exported async arrow and function-expression server action
   assert.deepEqual(actions.map(action => actionHasPermissionGuard(action.body)), [
     true, false, true, true,
   ], "An unguarded async arrow must fail its own permission check, not vanish from inventory");
+});
+
+test("AF-R012 rejects shadowed security-check names in admin API routes", () => {
+  const unsafe = [
+    "export async function POST(getCurrentUser) { await getCurrentUser(); }",
+    "export const POST = async (hasPermission) => { hasPermission({}, 'team.manage'); };",
+    "export async function POST() { const getCurrentUser = async () => null; await getCurrentUser(); }",
+    "export async function POST() { const { hasPermission } = helper; hasPermission({}, 'team.manage'); }",
+    "export async function POST() { function isSameOrigin() { return true; } isSameOrigin({}); }",
+  ];
+  for (const source of unsafe) {
+    for (const guard of ["getCurrentUser", "hasPermission", "isSameOrigin"]) {
+      assert.equal(sourceHasGuardCall(source, guard, "POST"), false,
+        `Shadowed or absent ${guard} must not satisfy the admin API guard inventory`);
+    }
+  }
+  const legitimate =
+    "export async function POST(request) { const user = await getCurrentUser(); if (!hasPermission(user, 'team.manage')) return; if (!isSameOrigin(request)) return; }";
+  for (const guard of ["getCurrentUser", "hasPermission", "isSameOrigin"]) {
+    assert.equal(sourceHasGuardCall(legitimate, guard, "POST"), true,
+      `A direct imported ${guard} call remains detectable`);
+  }
+  const nestedBinding =
+    "export async function POST() { const unused = () => { const getCurrentUser = () => null; }; await getCurrentUser(); }";
+  assert.equal(sourceHasGuardCall(nestedBinding, "getCurrentUser", "POST"), true,
+    "An unused nested helper binding cannot shadow an outer imported guard");
+});
+
+test("AF-R012 rejects shadowed permission calls in protected server actions", () => {
+  for (const source of [
+    "export async function update(requirePermission) { await requirePermission('team.manage'); }",
+    "export const update = async (requirePermission) => { await requirePermission('team.manage'); };",
+    "export async function update() { const requirePermission = () => true; requirePermission('team.manage'); }",
+    "export async function update() { const { requirePermission } = helpers; requirePermission('team.manage'); }",
+  ]) {
+    const ast = ts.createSourceFile("synthetic-shadowed-action.ts", source,
+      ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    const [action] = exportedAsyncProtectedActions(ast);
+    assert.ok(action);
+    assert.equal(actionHasPermissionGuard(action.body, action.parameters), false);
+  }
+  const valid = ts.createSourceFile("synthetic-approved-action.ts",
+    "export async function update() { await requirePermission('team.manage'); }",
+    ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const [action] = exportedAsyncProtectedActions(valid);
+  assert.ok(action);
+  assert.equal(actionHasPermissionGuard(action.body, action.parameters), true);
 });
 
 test("AF-R012 inventories variable-exported admin API handlers, even if unguarded", () => {
@@ -479,7 +603,7 @@ test("every protected admin server action independently requires permission", ()
     for (const action of exportedAsyncProtectedActions(sourceFile)) {
       exportedActionCount += 1;
       assert.ok(
-        actionHasPermissionGuard(action.body),
+        actionHasPermissionGuard(action.body, action.parameters),
         `${path}:${action.name} must independently call requirePermission()`,
       );
     }
@@ -544,7 +668,7 @@ test("AF-R012 does not accept permission guards confined to a switch server-acti
 test("AF-R012 still counts mandatory loop and switch expressions", () => {
   const required = [
     ["export async function POST() { while (!isSameOrigin({})) { break; } return Response.json({}); }", "isSameOrigin"],
-    ["export async function POST() { for (let user = getCurrentUser(); false;) { break; } return Response.json({}); }", "getCurrentUser"],
+    ["export async function POST() { for (let user = await getCurrentUser(); false;) { break; } return Response.json({}); }", "getCurrentUser"],
     ["export async function POST() { switch (hasPermission({}, 'content.update')) { default: break; } return Response.json({}); }", "hasPermission"],
   ];
   for (const [source, name] of required) {
@@ -588,4 +712,138 @@ test("AF-R012 rejects unguarded TypeScript-wrapped async server actions", () => 
     assert.equal(actionHasPermissionGuard(action.body), false,
       action.name + " must not acquire a synthetic permission guard");
   }
+});
+
+
+test("AF-R012 ignores unawaited permission promises in async server actions", () => {
+  const unguarded = [
+    "requirePermission('appeal.update');",
+    "void requirePermission('appeal.update');",
+    "const pendingPermission = requirePermission('appeal.update');",
+    "const pending = Promise.resolve(requirePermission('appeal.update'));",
+  ];
+  for (const statement of unguarded) {
+    const code = "'use server'; export async function save() { " + statement + " return 'unguarded'; }";
+    const ast = ts.createSourceFile("unawaited-action.ts", code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    const [action] = exportedAsyncProtectedActions(ast);
+    assert.ok(action?.body);
+    assert.equal(actionHasPermissionGuard(action.body), false,
+      "An unawaited Promise must not satisfy server-action authorization: " + statement);
+  }
+
+  const guarded = [
+    "await requirePermission('appeal.update');",
+    "const user = await requirePermission('appeal.update');",
+    "return await requirePermission('appeal.update');",
+  ];
+  for (const statement of guarded) {
+    const code = "'use server'; export async function save() { " + statement + " }";
+    const ast = ts.createSourceFile("awaited-action.ts", code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+    const [action] = exportedAsyncProtectedActions(ast);
+    assert.ok(action?.body);
+    assert.equal(actionHasPermissionGuard(action.body), true,
+      "Awaited permission guards must remain detectable: " + statement);
+  }
+});
+
+
+test("AF-R012 ignores unawaited authentication promises in admin APIs", () => {
+  for (const body of [
+    "getCurrentUser();",
+    "void getCurrentUser();",
+    "const pendingUser = getCurrentUser();",
+    "const pending = Promise.resolve(getCurrentUser());",
+  ]) {
+    const source = "export async function POST() { " + body + " return Response.json({ public: true }); }";
+    assert.equal(sourceHasGuardCall(source, "getCurrentUser", "POST"), false,
+      "Floating authentication Promise must not satisfy protected API inventory: " + body);
+  }
+  assert.equal(sourceHasGuardCall(
+    "export async function POST() { const user = await getCurrentUser(); return Response.json({ ok: Boolean(user) }); }",
+    "getCurrentUser", "POST"), true,
+    "Awaited session lookup remains visible to static API audit");
+});
+
+
+test("AF-R012 recognizes transparent async-guard await wrappers, not voided calls", () => {
+  const cases = [
+    ["getCurrentUser", "await (getCurrentUser());", true],
+    ["getCurrentUser", "const user = await (getCurrentUser() as Promise<unknown>);", true],
+    ["requirePermission", "await (requirePermission('appeal.update'));", true],
+    ["requirePermission", "await (void requirePermission('appeal.update'));", false],
+    ["getCurrentUser", "await (void getCurrentUser());", false],
+  ];
+  for (const [guard, statement, allowed] of cases) {
+    if (guard === "getCurrentUser") {
+      const source = "export async function POST() { " + statement + " return Response.json({}); }";
+      assert.equal(sourceHasGuardCall(source, guard, "POST"), allowed, statement);
+    } else {
+      const source = "'use server'; export async function save() { " + statement + " }";
+      const ast = ts.createSourceFile("wrapped-await-action.ts", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+      const [action] = exportedAsyncProtectedActions(ast);
+      assert.ok(action?.body);
+      assert.equal(actionHasPermissionGuard(action.body), allowed, statement);
+    }
+  }
+});
+
+test("AF-R012 rejects late async guards after direct private database access", () => {
+  const lateAction = [
+    "export async function save() {",
+    "  await prisma.donation.update({ where: { id: 'synthetic' }, data: {} });",
+    "  await requirePermission('donations.manage');",
+    "}",
+  ].join("\n");
+  const actionSource = ts.createSourceFile("synthetic-late-action.ts", lateAction,
+    ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const [action] = exportedAsyncProtectedActions(actionSource);
+  assert.ok(action);
+  assert.equal(actionHasPermissionGuard(action.body, action.parameters), false,
+    "A database mutation before authorization cannot be certified by a later guard");
+
+  const lateRoute = [
+    "export async function GET() {",
+    "  const records = await prisma.donation.findMany();",
+    "  await getCurrentUser();",
+    "  return Response.json(records);",
+    "}",
+  ].join("\n");
+  assert.equal(sourceHasGuardCall(lateRoute, "getCurrentUser", "GET"), false,
+    "Private read before authentication cannot be certified by a later guard");
+
+  const orderedAction = [
+    "export async function save() {",
+    "  await requirePermission('donations.manage');",
+    "  return await prisma.donation.update({ where: { id: 'synthetic' }, data: {} });",
+    "}",
+  ].join("\n");
+  const orderedSource = ts.createSourceFile("synthetic-ordered-action.ts", orderedAction,
+    ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+  const [ordered] = exportedAsyncProtectedActions(orderedSource);
+  assert.ok(ordered);
+  assert.equal(actionHasPermissionGuard(ordered.body, ordered.parameters), true,
+    "A direct awaited guard before a database operation remains detectable");
+
+  assert.equal(sourceHasGuardCall(
+    "export async function GET() { await getCurrentUser(); return prisma.donation.findMany(); }",
+    "getCurrentUser", "GET"), true);
+
+  assert.equal(sourceHasGuardCall(
+    "export async function GET() { await db.records.findMany(); await getCurrentUser(); }",
+    "getCurrentUser", "GET"), false,
+    "An aliased db read before authentication must also fail the static inventory");
+
+  assert.equal(sourceHasGuardCall(
+    "export async function GET() { await getCurrentUser(); return db.records.findMany(); }",
+    "getCurrentUser", "GET"), true,
+    "The same db alias remains acceptable when authentication precedes the read");
+
+  assert.equal(sourceHasGuardCall(
+    "export async function GET() { await prisma['donation']['findMany'](); await getCurrentUser(); }",
+    "getCurrentUser", "GET"), false,
+    "Computed property access must not conceal private work before the guard");
+  assert.equal(sourceHasGuardCall(
+    "export async function GET() { await (db.records.findMany)(); await getCurrentUser(); }",
+    "getCurrentUser", "GET"), false,
+    "Parenthesized database operations must not bypass the order check");
 });

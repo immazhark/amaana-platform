@@ -1,3 +1,4 @@
+import { metaDescription } from "@/lib/meta-description";
 import type { Metadata } from "next";
 import { programmeBySlug } from "@/lib/master-copy";
 import { getPublishedInitiativeBySlug } from "@/lib/public-content";
@@ -9,7 +10,7 @@ export async function programmePageMetadata(slug: string, canonical: string): Pr
 
   const programme = programmeBySlug(slug);
   const title = programme?.title ?? record.title;
-  const description = programme?.summary ?? record.summary;
+  const description = metaDescription(programme?.summary ?? record.summary);
 
   return {
     title,

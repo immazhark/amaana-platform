@@ -8,6 +8,29 @@ const editions: PublishedEdition[] = [
     primaryMetric: "772", primaryMetricLabel: "kits delivered" },
 ];
 describe("published yearly programme index", () => {
+  it("rejects malformed runtime annual-edition collections and records without hiding reviewed editions", () => {
+    for (const malformed of [null, undefined, "not-an-array", { length: 1 }]) {
+      const collection = malformed as unknown as readonly PublishedEdition[];
+      expect(approvedEditionTimeline(collection)).toEqual([]);
+      expect(renderToStaticMarkup(<PublishedEditionIndex editions={collection} />)).toBe("");
+    }
+
+    const unsafeEntries = [
+      null, undefined, false,
+      { ...editions[0]!, slug: "bad-2026", title: null },
+      { ...editions[0]!, slug: "bad-metric", primaryMetric: { trim: () => "forged" } },
+      { ...editions[0]!, slug: "bad-label", primaryMetricLabel: 70 },
+      ...editions,
+    ] as unknown as readonly PublishedEdition[];
+    const ordered = approvedEditionTimeline(unsafeEntries);
+    expect(ordered.map(item => item.slug)).toEqual(["drive-2025", "drive-2026"]);
+    const html = renderToStaticMarkup(<PublishedEditionIndex editions={unsafeEntries} />);
+    expect(html).toContain("/our-work/drive-2025");
+    expect(html).toContain("/our-work/drive-2026");
+    expect(html).not.toContain("bad-metric");
+    expect(html).not.toContain("bad-2026");
+  });
+
   it("sorts documented editions chronologically without adding outcomes", () => {
     const ordered = approvedEditionTimeline(editions);
     expect(ordered.map(x=>x.period)).toEqual(["2025","2026"]);

@@ -18,10 +18,12 @@ export const donationSchema = z.object({
   ]).pipe(z.number().int().min(1).max(MAX_DONATION_AMOUNT)),
   givingIntent: z.enum(DONATION_INTENTS),
   isAnonymous: z.boolean().optional().default(false),
+  // Gateway payments only: the donor opts to add the estimated processing fee on top of their chosen amount.
+  coverProcessingFee: z.boolean().optional().default(false),
   domesticConfirmed: z.literal(true),
 });
 
-export const directTransferSchema = donationSchema.extend({
+const transferFields = {
   paymentMethod: z.enum(["DIRECT_UPI", "BANK_TRANSFER"]),
   transferReference: z.string().trim().min(6).max(100).regex(/^[A-Za-z0-9._\/-]+$/),
   // Do not coerce null, empty values, booleans or timezone-less strings.
@@ -30,7 +32,43 @@ export const directTransferSchema = donationSchema.extend({
     z.date(),
     z.string().datetime({ offset: true }).pipe(z.coerce.date()),
   ]).refine(value => value.getTime() <= Date.now() + 5 * 60_000, "Transfer date cannot be in the future"),
-});
+};
+
+export const directTransferSchema = donationSchema.extend(transferFields);
+
+// Designated giving to a Fund (no appeal). Strict, so a request naming both an appeal and a fund is rejected.
+export const FUND_SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const fundDonationFields = {
+  fundSlug: z.string().max(64).regex(FUND_SLUG_PATTERN),
+  donorName: donationSchema.shape.donorName,
+  donorEmail: donationSchema.shape.donorEmail,
+  donorPhone: donationSchema.shape.donorPhone,
+  amount: donationSchema.shape.amount,
+  givingIntent: donationSchema.shape.givingIntent,
+  isAnonymous: donationSchema.shape.isAnonymous,
+  domesticConfirmed: donationSchema.shape.domesticConfirmed,
+  // A non-binding request for staff to review; only the General Fund keeps it.
+  donorDirective: z.string().trim().max(500).optional(),
+  // Seasonal fixed-price gift: the server checks the window, the limit and that amount equals units x price.
+  campaignSlug: z.string().max(64).regex(FUND_SLUG_PATTERN).optional(),
+  units: z.union([z.number().int(), z.string().regex(/^[0-9]+$/).transform(Number)]).pipe(z.number().int().min(1).max(1000)).optional(),
+  // Taleem programme sponsorship: the server recomputes the price from the approved catalogue and amount must equal it.
+  sponsorshipProgramme: z.string().max(40).regex(FUND_SLUG_PATTERN).optional(),
+  sponsorshipUnits: z.union([z.number().int(), z.string().regex(/^[0-9]+$/).transform(Number)]).pipe(z.number().int().min(1).max(50)).optional(),
+  sponsorshipMonths: z.union([z.number().int(), z.string().regex(/^[0-9]+$/).transform(Number)]).pipe(z.number().int().min(1).max(12)).optional(),
+};
+const campaignTogether = (value: { campaignSlug?: string | undefined; units?: number | undefined }) => (value.campaignSlug === undefined) === (value.units === undefined);
+const CAMPAIGN_TOGETHER = "Choose a campaign together with a number of units.";
+type SponsorshipFields = { sponsorshipProgramme?: string | undefined; sponsorshipUnits?: number | undefined; sponsorshipMonths?: number | undefined; campaignSlug?: string | undefined; donorDirective?: string | undefined };
+const sponsorshipTogether = (value: SponsorshipFields) =>
+  (value.sponsorshipProgramme === undefined) === (value.sponsorshipUnits === undefined) && (value.sponsorshipUnits === undefined) === (value.sponsorshipMonths === undefined);
+const SPONSORSHIP_TOGETHER = "Choose a programme together with a number of units and months.";
+const sponsorshipAlone = (value: SponsorshipFields) => value.sponsorshipProgramme === undefined || (value.campaignSlug === undefined && !value.donorDirective);
+const SPONSORSHIP_ALONE = "A sponsorship cannot be combined with a campaign or a custom request.";
+export const fundDonationSchema = z.strictObject({ ...fundDonationFields, coverProcessingFee: donationSchema.shape.coverProcessingFee })
+  .refine(campaignTogether, CAMPAIGN_TOGETHER).refine(sponsorshipTogether, SPONSORSHIP_TOGETHER).refine(sponsorshipAlone, SPONSORSHIP_ALONE);
+export const fundDirectTransferSchema = z.strictObject({ ...fundDonationFields, ...transferFields })
+  .refine(campaignTogether, CAMPAIGN_TOGETHER).refine(sponsorshipTogether, SPONSORSHIP_TOGETHER).refine(sponsorshipAlone, SPONSORSHIP_ALONE);
 
 export function isDonationAmountAllowedForRemaining(amount: number, remainingAmount: number) {
   if (!Number.isFinite(remainingAmount) || remainingAmount <= 0) return false;

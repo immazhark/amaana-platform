@@ -53,6 +53,7 @@ const endpoints = [
       receiptTokenHash: hashReceiptToken(token),
       status: "CAPTURED", amount: { toNumber: () => 100 },
       refundedAmount: { toNumber: () => 0 },
+      feeContributionAmount: { toNumber: () => 0 },
       receiptNumber: "ACK-PRIVATE-TEST", referenceNumber: reference,
       donorName: "Synthetic Donor", givingIntent: "GENERAL", capturedAt: date,
       refundedAt: null, createdAt: date, providerPaymentId: "pay_synthetic",
@@ -95,7 +96,7 @@ for (const endpoint of endpoints) {
       } else {
         expect(Object.keys(body).sort()).toEqual(["donation", "found", "presentation"]);
         expect(Object.keys(body.donation).sort()).toEqual([
-          "amount", "appeal", "donorName", "givingIntent", "providerPaymentId",
+          "amount", "appeal", "campaign", "donorName", "feeContributionAmount", "givingIntent", "providerPaymentId",
           "receiptNumber", "recordDate", "referenceNumber", "refundedAmount",
         ]);
         expect(body.donation.referenceNumber).toBe(reference);

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PageHero } from "@/components/page-hero";
 import { SectionHeading } from "@/components/section-heading";
 import { programmeBySlug } from "@/lib/master-copy";
-import { selectImpactComparison, type ImpactComparisonSearch } from "@/lib/impact-comparison";
+import { retainComparableImpactRecords, selectImpactComparison, type ImpactComparisonSearch } from "@/lib/impact-comparison";
 import { getImpactComparisonPageData } from "@/lib/public-page-data";
 import { documentedImpactMetric } from "@/lib/documented-impact-metric";
 
@@ -39,7 +39,7 @@ export default async function ImpactComparisonPage({
 }) {
   const [records, search] = await Promise.all([getImpactComparisonPageData(), searchParams]);
   // Keep the same canonical, non-child, published portfolio as /impact.
-  const published = records.filter(item => {
+  const published = retainComparableImpactRecords(records).filter(item => {
     const canonical = programmeBySlug(item.slug);
     return Boolean(canonical) && !(canonical && "parentSlug" in canonical && canonical.parentSlug);
   });

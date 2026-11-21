@@ -34,6 +34,24 @@ describe("staff passwords", () => {
     expect(await verifyPassword("password", "scrypt:not-hex:not-hex")).toBe(false);
   }, 30_000);
 
+  it("AF-N11 verifies a real valid lower-work-factor scrypt digest and requires rehash", async () => {
+    const password = "synthetic legacy-work-factor credential";
+    const salt = Buffer.alloc(16, 0x41);
+    const low = await new Promise<Buffer>((resolve, reject) => {
+      nodeScrypt(password, salt, 64, { N: 1024, r: 8, p: 1, maxmem: 256 * 1024 * 1024 }, (error, key) => {
+        if (error) reject(error);
+        else resolve(key);
+      });
+    });
+    const stored = ["scrypt", 1024, 8, 1, salt.toString("hex"), low.toString("hex")].join("$");
+
+    // Unlike malformed-field fixtures, this is an authentically derived,
+    // valid legacy-cost credential that must be upgraded after verification.
+    expect(passwordNeedsRehash(stored)).toBe(true);
+    await expect(verifyPassword(password, stored)).resolves.toBe(true);
+    await expect(verifyPassword("incorrect synthetic credential", stored)).resolves.toBe(false);
+  }, 30_000);
+
   it("rejects attacker-controlled scrypt work factors above the application ceiling", async () => {
     const salt = "00".repeat(16);
     const hash = "00".repeat(64);

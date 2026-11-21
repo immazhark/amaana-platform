@@ -20,7 +20,7 @@ function attribute(raw, name) {
 
 function rootNodes(html) {
   const nodes = [];
-  for (const tag of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\s*>/gi)) {
+  for (const tag of html.matchAll(/<script(?=[\t\n\f\r />])([^>]*)>([\s\S]*?)<\/script\s*>/gi)) {
     if (attribute(tag[1], "type")?.toLowerCase() !== "application/ld+json") continue;
     let parsed;
     try { parsed = JSON.parse(tag[2]); }
@@ -90,14 +90,14 @@ function neutralizeQuotedMarkup(html) {
 function stripInertMarkup(html) {
   const withoutComments = neutralizeQuotedMarkup(html.replace(/<!--[\s\S]*?-->/g, ""));
   if (withoutComments.includes("<!--")) throw new Error("Unclosed HTML comment in structured-data document");
-  if (/<plaintext\b/i.test(withoutComments)) {
+  if (/<plaintext(?=[\t\n\f\r />])/i.test(withoutComments)) {
     throw new Error("Unparseable plaintext HTML mode in public document");
   }
   const withoutRawText = withoutComments
-    .replace(/<(style|title|xmp|noembed|noframes)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, "")
-    .replace(/<script\b([^>]*)>[\s\S]*?<\/script\s*>/gi, (full, attrs) =>
+    .replace(/<(style|title|xmp|noembed|noframes)(?=[\t\n\f\r />])[^>]*>[\s\S]*?<\/\1\s*>/gi, "")
+    .replace(/<script(?=[\t\n\f\r />])([^>]*)>[\s\S]*?<\/script\s*>/gi, (full, attrs) =>
       attribute(attrs, "type")?.toLowerCase() === "application/ld+json" ? full : "");
-  const inertTags = /<\/?(template|noscript|textarea|iframe|object|svg)\b[^>]*>/gi;
+  const inertTags = /<\/?(template|noscript|textarea|iframe|object|svg)(?=[\t\n\f\r />])[^>]*>/gi;
   const stack = [];
   let cleaned = "";
   let cursor = 0;
@@ -155,10 +155,10 @@ export function analyzePublicSchemaHtml(path, html) {
     throw new Error("Invalid or oversized public HTML");
   }
   const visibleHtml = stripInertMarkup(html);
-  const head = /<head\b[^>]*>([\s\S]*?)<\/head\s*>/i.exec(visibleHtml);
+  const head = /<head(?=[\t\n\f\r />])[^>]*>([\s\S]*?)<\/head\s*>/i.exec(visibleHtml);
   if (!head) throw new Error("Public head markup is missing");
-  const headWithoutJsonScripts = head[1].replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, "");
-  const canonicals = [...headWithoutJsonScripts.matchAll(/<link\b([^>]*)>/gi)]
+  const headWithoutJsonScripts = head[1].replace(/<script(?=[\t\n\f\r />])[^>]*>[\s\S]*?<\/script\s*>/gi, "");
+  const canonicals = [...headWithoutJsonScripts.matchAll(/<link(?=[\t\n\f\r />])([^>]*)>/gi)]
     .filter(tag => attribute(tag[1], "rel")?.toLowerCase() === "canonical")
     .map(tag => attribute(tag[1], "href"));
   const expectedCanonical = `${origin}${path}`;
@@ -183,7 +183,7 @@ export function analyzePublicSchemaHtml(path, html) {
       website.url !== origin || website.publisher?.["@id"] !== expectedIds[0]) {
     throw new Error("Public structured-data organization identity mismatch");
   }
-  const noindex = [...visibleHtml.matchAll(/<meta\b([^>]*)>/gi)]
+  const noindex = [...visibleHtml.matchAll(/<meta(?=[\t\n\f\r />])([^>]*)>/gi)]
     .some(tag => ["robots", "googlebot", "bingbot"].includes(attribute(tag[1], "name")?.toLowerCase()) &&
       /(?:^|[,\s])noindex(?:$|[,\s])/i.test(attribute(tag[1], "content") ?? ""));
   return {
@@ -195,7 +195,7 @@ export function analyzePublicSchemaHtml(path, html) {
   };
 }
 
-async function readHtmlLimited(response) {
+async function readHtmlLimited(response, expectedIdentityBytes = null) {
   if (!response.body) throw new Error("Public document body missing");
   const reader = response.body.getReader();
   const chunks = [];
@@ -209,10 +209,15 @@ async function readHtmlLimited(response) {
       chunks.push(value);
     }
   } catch (error) {
-    await reader.cancel().catch(() => {});
+    // A broken producer may never settle cancellation. Preserve the original
+    // size or transport error without allowing best-effort cleanup to stall.
+    try { void reader.cancel().catch(() => {}); } catch { /* Best effort. */ }
     throw error;
   } finally {
     reader.releaseLock();
+  }
+  if (expectedIdentityBytes !== null && bytes !== expectedIdentityBytes) {
+    throw new Error("Declared identity response length differs from streamed bytes");
   }
   return new TextDecoder("utf-8", { fatal: true }).decode(Buffer.concat(chunks));
 }
@@ -224,22 +229,68 @@ export async function auditPublicSchema(fetchImpl = fetch) {
     const response = await fetchImpl(target, { redirect: "manual", signal: AbortSignal.timeout(12_000),
       headers: { accept: "text/html" } });
     if (response.status !== 200 || response.url !== target ||
-        !response.headers.get("content-type")?.toLowerCase().includes("text/html")) {
+        response.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase() !== "text/html") {
       throw new Error("Unexpected HTTP response/redirect/content type on public route: " + path);
     }
-    if (Number(response.headers.get("content-length")) > maxHtmlBytes) {
-      throw new Error("Unexpectedly large public document on route: " + path);
+    const declared = response.headers.get("content-length");
+    let expectedIdentityBytes = null;
+    if (declared !== null) {
+      if (!/^\d+$/.test(declared.trim())) {
+        throw new Error("Invalid declared public document length on route: " + path);
+      }
+      const declaredBytes = Number(declared.trim());
+      if (!Number.isSafeInteger(declaredBytes) || declaredBytes > maxHtmlBytes) {
+        throw new Error("Unexpectedly large public document on route: " + path);
+      }
+      // Fetch may decompress gzip/br content while retaining the wire length header.
+      const encoding = response.headers.get("content-encoding")?.trim().toLowerCase();
+      if (!encoding || encoding === "identity") expectedIdentityBytes = declaredBytes;
     }
-    const result = analyzePublicSchemaHtml(path, await readHtmlLimited(response));
+    const result = analyzePublicSchemaHtml(path, await readHtmlLimited(response, expectedIdentityBytes));
     pages.push({ ...result,
-      httpIndexingDirective: /noindex/i.test(response.headers.get("x-robots-tag") ?? "") ? "NOINDEX" : "UNSPECIFIED" });
+      httpIndexingDirective: /(?:^|[,;:\s])noindex(?=$|[,;\s])/i.test(response.headers.get("x-robots-tag") ?? "") ? "NOINDEX" : "UNSPECIFIED" });
   }
   let runtimeSha = null;
   try {
     const version = await fetchImpl(`${origin}/api/health/version`, { redirect: "manual", signal: AbortSignal.timeout(5_000) });
     if (version.status === 200 && version.url === `${origin}/api/health/version`) {
-      const data = await version.json();
-      if (typeof data.commitSha === "string" && /^[a-f0-9]{40}$/.test(data.commitSha)) runtimeSha = data.commitSha;
+      // Runtime identity is optional evidence; a hostile or broken endpoint
+      // must not allocate an unbounded JSON body during this read-only audit.
+      const maxVersionBytes = 16_384;
+      const declared = version.headers?.get("content-length");
+      if (declared !== null && declared !== undefined &&
+          (!/^\d+$/.test(declared.trim()) || Number(declared) > maxVersionBytes)) {
+        throw new Error("Invalid runtime-version response size");
+      }
+      let data;
+      if (typeof version.body?.getReader === "function") {
+        const reader = version.body.getReader();
+        const chunks = [];
+        let size = 0;
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            if (!(value instanceof Uint8Array)) throw new Error("Invalid runtime-version chunk");
+            size += value.byteLength;
+            if (size > maxVersionBytes) throw new Error("Runtime-version response exceeds limit");
+            chunks.push(value);
+          }
+        } catch (error) {
+          try { void reader.cancel().catch(() => {}); } catch { /* Best effort. */ }
+          throw error;
+        } finally {
+          reader.releaseLock();
+        }
+        data = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(Buffer.concat(chunks)));
+      } else {
+        // Test doubles may expose a JSON method without a streaming body.
+        data = await version.json();
+        if (Buffer.byteLength(JSON.stringify(data), "utf8") > maxVersionBytes) {
+          throw new Error("Runtime-version response exceeds limit");
+        }
+      }
+      if (typeof data?.commitSha === "string" && /^[a-f0-9]{40}$/.test(data.commitSha)) runtimeSha = data.commitSha;
     }
   } catch { /* Runtime identity remains unknown, never inferred. */ }
   return {

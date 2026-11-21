@@ -51,3 +51,23 @@ it("rejects invalid review Date instances without rejecting a valid zero epoch",
  expect(isPublicFaithReviewComplete({...record,verifiedAt:new Date(NaN)})).toBe(false);
  expect(isPublicFaithReviewComplete({...record,verifiedAt:new Date(0)})).toBe(true);
 });
+
+it("fails closed for malformed runtime Faith records and citations", () => {
+  const approved = {
+    status: "PUBLISHED", religiousReviewStatus: "VERIFIED",
+    verifiedAt: new Date("2026-11-14T00:00:00Z"),
+    sourceCitation: "Reviewed source",
+  };
+  const malformed = [
+    null, undefined, [],
+    { ...approved, sourceCitation: { private: "PRIVATE_CITATION" } },
+    { ...approved, sourceCitation: ["PRIVATE_CITATION"] },
+    { ...approved, sourceCitation: 42 },
+  ] as unknown as Array<Parameters<typeof isPublicFaithReviewComplete>[0]>;
+  for (const candidate of malformed) {
+    expect(isPublicFaithReviewComplete(candidate)).toBe(false);
+  }
+  expect(isPublicFaithReviewComplete(approved)).toBe(true);
+  expect(isPublicFaithReviewComplete({ ...approved, sourceCitation: "  " })).toBe(false);
+  expect(isPublicFaithReviewComplete({ ...approved, religiousReviewStatus: "PENDING" })).toBe(false);
+});
