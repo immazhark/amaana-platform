@@ -146,3 +146,15 @@ test('ledger year switch marks the current year and extra entries sit in a nativ
   await more.click();
   await expect(page.getByText('Synthetic spending entry 5')).toBeVisible();
 });
+
+test('the give hero leads to the fund choice instead of generic navigation', async ({ page }) => {
+  await prepare(page);
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect((await page.goto(GIVE)).ok()).toBe(true);
+  const hero = page.locator('.page-hero__actions');
+  await expect(hero.getByRole('link', { name: 'Explore Our Work' })).toHaveCount(0);
+  const choose = hero.getByRole('link', { name: 'Choose a fund' });
+  await expect(choose).toHaveAttribute('href', '#choose-fund');
+  await choose.click();
+  await expect(page.locator('#choose-fund')).toBeInViewport();
+});

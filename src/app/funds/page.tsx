@@ -5,6 +5,7 @@ import { CanonicalArticle } from "@/components/canonical-article";
 import { PublicFundLedgerView } from "@/components/fund-ledger/public-fund-ledger-view";
 import { PublicRouteLoading } from "@/components/public-route-loading";
 import { isFundGivingEnabled } from "@/lib/fund-giving-flag";
+import { FUNDS_HERO_ACTIONS } from "@/lib/giving-hero-actions";
 import { getPublicFundLedger, resolveFinancialYear, selectableFinancialYears } from "@/lib/public-fund-ledger";
 
 const description = "Where each fund stands: verified gifts received, spending published, and money held for purpose, by financial year.";
@@ -29,6 +30,7 @@ async function FundsContent({ params }: { params: Promise<{ fy?: string | string
     <CanonicalArticle
       eyebrow="Our funds · Amaana Foundation"
       heroVariant="action"
+      heroActions={[...FUNDS_HERO_ACTIONS]}
       heroVisualTitle="Where Your Gift Went"
       heroVisualNote="Each fund shows what was received, what was spent and published, and what is held for its purpose."
       title="Every Fund, Accounted For."

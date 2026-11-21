@@ -4,6 +4,7 @@ import { CanonicalArticle } from "@/components/canonical-article";
 import type { GiveFund } from "@/components/fund-giving/fund-copy";
 import { FundGivingCheckout } from "@/components/fund-giving/fund-giving-checkout";
 import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
+import { GIVE_HERO_ACTIONS } from "@/lib/giving-hero-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,7 @@ export default function FundGivingAcceptanceFixture() {
     <CanonicalArticle
       eyebrow="Give · Amaana Foundation"
       heroVariant="action"
+      heroActions={[...GIVE_HERO_ACTIONS]}
       heroVisualTitle="Give With Intention"
       heroVisualNote="Choose a fund, set your amount and give securely. Your gift is recorded against the cause you chose."
       title="Choose Where Your Gift Goes."
