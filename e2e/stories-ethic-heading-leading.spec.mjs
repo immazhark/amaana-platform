@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { waitForPublicOverview } from './helpers/public-overview-ready.mjs';
 
 // AF-R025: verify real Stories ethics content without adding fabricated media.
 for (const width of [320, 390]) {
@@ -7,6 +8,7 @@ for (const width of [320, 390]) {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
     const response = await page.goto('/stories', { waitUntil: 'domcontentloaded' });
+    await waitForPublicOverview(page, '/stories');
     expect(response?.ok()).toBeTruthy();
 
     const section = page.locator('.v2-stories-ethic-list');

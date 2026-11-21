@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { waitForPublicOverview } from './helpers/public-overview-ready.mjs';
 
 function linear(channel) {
   const value = channel / 255;
@@ -60,6 +61,7 @@ function testedSurfaces({ background, backgroundImage, canvas, palette }) {
 test('real appeal-card CSS retains readable metadata at mobile and desktop widths', async ({ page }) => {
   await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
   const response = await page.goto('/appeals', { waitUntil: 'domcontentloaded' });
+  await waitForPublicOverview(page, '/appeals');
   expect(response?.ok()).toBe(true);
 
   for (const width of [390, 1440]) {
