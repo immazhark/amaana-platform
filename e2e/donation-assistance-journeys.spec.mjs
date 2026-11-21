@@ -550,7 +550,7 @@ test.describe('direct donation browser journey without real transfer', () => {
 
     await page.getByRole('button', { name: 'Direct UPI / QR' }).click();
     await expect(page.getByText('mab.037347029220157@axisbank')).toBeVisible();
-    await expect(page.getByText(/Verified QR image is not configured yet/)).toBeVisible();
+    await expect(page.getByText('A verified QR code is not published yet.')).toBeVisible();
 
     await page.getByLabel('Full name').fill('Acceptance Donor');
     await page.getByLabel('Email').fill('acceptance@example.test');

@@ -141,5 +141,6 @@
 .v3-eid-year-expand{position:absolute;right:1rem;top:.7rem;color:#f1cf52}
 .v3-eid-year-detail{padding:.75rem;font-size:.84rem}
 .v3-eid-total{display:flex;justify-content:space-between;gap:1rem;align-items:center;margin-top:1rem;border-top:1px solid #fff3;padding-top:1rem}
+.v3-eid-total>div{display:grid;gap:.4rem}
 .v3-eid-total strong{font:500 3rem/1 var(--af-font-display);color:#f1cf52}
 @media(max-width:720px){.v3-timeline--explorer{grid-auto-columns:65vw}.v3-eid-total{flex-direction:column;align-items:start}}

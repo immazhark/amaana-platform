@@ -39,3 +39,89 @@
     width: 100%;
   }
 }
+
+/* Reviewed-appeal landing checkout. These rules replace inline style objects so
+   spacing, selected state and the mobile gutter live in one reviewable place. */
+.landing {
+  margin: clamp(1.5rem, 4vw, 3rem) 0;
+  padding: clamp(1rem, 2.5vw, 2rem);
+  border: 1px solid var(--af-color-border);
+  border-radius: 1rem;
+  background: var(--af-color-white);
+  color: var(--af-color-navy-950);
+}
+
+.landingLead {
+  max-width: 62ch;
+  margin: .75rem 0 0;
+  color: var(--af-color-muted);
+  line-height: 1.6;
+}
+
+.appealGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: .75rem;
+  margin: 1.25rem 0;
+}
+
+.appealItem {
+  display: grid;
+  gap: .5rem;
+  align-content: start;
+  min-width: 0;
+}
+
+.appealCard {
+  display: grid;
+  gap: .5rem;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 1rem;
+  border: 1px solid var(--af-color-blue-600);
+  border-radius: .8rem;
+  background: var(--af-color-surface);
+  color: var(--af-color-navy-950);
+  font: inherit;
+  text-align: left;
+}
+
+button.appealCard {
+  cursor: pointer;
+  outline-offset: 3px;
+}
+
+button.appealCard:disabled {
+  opacity: .7;
+  cursor: not-allowed;
+}
+
+.appealCardSelected {
+  border-color: var(--af-color-gold-ink);
+  background: var(--af-color-blue-note);
+  box-shadow: inset 0 0 0 1px var(--af-color-gold-ink);
+}
+
+.landingStatus {
+  margin: 0 0 1rem;
+  color: var(--af-color-muted);
+}
+
+.landingStatus strong {
+  color: var(--af-color-navy-950);
+}
+
+.landingMethods {
+  margin-top: 1.5rem;
+}
+
+@media (max-width: 620px) {
+  /* Nested cards otherwise leave a 390px phone with ~250px inputs. */
+  .landing {
+    padding: 1rem .75rem;
+  }
+
+  .landingMethods :global(.v2-premium-form) {
+    padding-inline: .9rem;
+  }
+}

@@ -29,6 +29,8 @@ const routes = [
   "navigation-destination",
   "direct-donation",
   "reviewed-donation",
+  "first-look",
+  "donate-landing",
   "reviewed-medical",
   "donation",
   "give",

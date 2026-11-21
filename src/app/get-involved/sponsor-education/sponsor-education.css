@@ -28,3 +28,16 @@
 .taleem-closing .v2-section-label{margin:0 0 1rem}
 .taleem-closing .v2-hero-actions{margin:0;align-items:center;align-self:center;flex-wrap:wrap;gap:1rem}
 @media(max-width:760px){.taleem-islamic-grid,.taleem-process ol,.taleem-school-grid,.taleem-closing .v2-shell{grid-template-columns:1fr}.taleem-path{padding:1.5rem}}
+
+/* Enquiry form: the h2 was unstyled (only h3 had the display face), the checkbox
+   stacked above its text, and nothing separated fields from the button. */
+.taleem-path--form{gap:1.25rem;align-items:stretch}
+.taleem-path--form h2{margin:0;font:500 clamp(1.7rem,2.8vw,2.4rem)/1.16 var(--af-font-display);letter-spacing:-.025em;text-wrap:balance}
+.taleem-path--form>p{margin:0;max-width:62ch}
+.taleem-field{display:grid;gap:.5rem;font-weight:600}
+.taleem-field select{width:100%;min-height:3rem}
+.taleem-choice{display:flex;gap:.9rem;align-items:flex-start;padding:1rem 1.1rem;border:1px solid var(--taleem-rule);border-radius:.75rem;background:var(--af-color-surface);font-weight:500;line-height:1.5}
+.taleem-choice input{flex:none;width:1.15rem;height:1.15rem;margin-top:.2rem}
+.taleem-choice span{min-width:0}
+.taleem-path--form .v2-button{align-self:start}
+.taleem-process>p{margin-top:1.25rem;max-width:62ch}

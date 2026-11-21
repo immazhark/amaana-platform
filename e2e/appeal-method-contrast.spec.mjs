@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { waitForPublicOverview } from "./helpers/public-overview-ready.mjs";
 
 function rgba(value) {
   const match = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*(\d*\.?\d+))?\)$/.exec(value);
@@ -22,6 +23,7 @@ function contrast(ink, surface) {
 test("all three real Appeals review cards meet AA contrast on mobile and desktop", async ({ page }) => {
   await page.route("**/api/analytics/page-view", route => route.fulfill({ status: 204, body: "" }));
   const response = await page.goto("/appeals", { waitUntil: "domcontentloaded" });
+  await waitForPublicOverview(page, "/appeals");
   expect(response?.ok()).toBe(true);
 
   for (const width of [390, 1440]) {

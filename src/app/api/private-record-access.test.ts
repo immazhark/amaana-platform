@@ -96,7 +96,7 @@ for (const endpoint of endpoints) {
       } else {
         expect(Object.keys(body).sort()).toEqual(["donation", "found", "presentation"]);
         expect(Object.keys(body.donation).sort()).toEqual([
-          "amount", "appeal", "donorName", "feeContributionAmount", "givingIntent", "providerPaymentId",
+          "amount", "appeal", "campaign", "donorName", "feeContributionAmount", "givingIntent", "providerPaymentId",
           "receiptNumber", "recordDate", "referenceNumber", "refundedAmount",
         ]);
         expect(body.donation.referenceNumber).toBe(reference);

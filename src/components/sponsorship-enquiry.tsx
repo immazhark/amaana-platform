@@ -15,27 +15,27 @@ export function SponsorshipEnquiry({ preferences }: { preferences: Preferences }
   const prepared = selection ? buildSponsorshipEnquiry(selection) : null;
 
   return <section className="v2-shell taleem-process" id="sponsorship-enquiry" aria-labelledby="sponsorship-enquiry-title">
-    <form className="taleem-path" method="get" action="/get-involved/sponsor-education#sponsorship-enquiry">
+    <form className="taleem-path taleem-path--form" method="get" action="/get-involved/sponsor-education#sponsorship-enquiry">
       <h2 id="sponsorship-enquiry-title">Prepare your sponsorship enquiry</h2>
       <p>Choose an education interest and how you may wish to contribute. Amaana must confirm the current need and cost before any decision.</p>
       {requested && !selection ? <p role="alert">These preferences could not be read. Choose from the options below and review again.</p> : null}
-      <label style={{ display: "grid", gap: ".5rem", width: "100%" }}>
+      <label className="taleem-field">
         Education pathway
-        <select style={{ width: "100%", minHeight: "3rem" }} name="path" defaultValue={selection?.path ?? "discuss"}>
+        <select name="path" defaultValue={selection?.path ?? "discuss"}>
           {Object.entries(SPONSORSHIP_PATHS).map(([value, label]) =>
             <option value={value} key={value}>{label}</option>)}
         </select>
       </label>
-      <label style={{ display: "grid", gap: ".5rem", width: "100%" }}>
+      <label className="taleem-field">
         Support preference
-        <select style={{ width: "100%", minHeight: "3rem" }} name="support" defaultValue={selection?.support ?? "discuss"}>
+        <select name="support" defaultValue={selection?.support ?? "discuss"}>
           {Object.entries(SPONSORSHIP_SUPPORT).map(([value, label]) =>
             <option value={value} key={value}>{label}</option>)}
         </select>
       </label>
-      <label><input name="privateName" type="checkbox" value="yes"
+      <label className="taleem-choice"><input name="privateName" type="checkbox" value="yes"
         defaultChecked={selection?.privateName ?? false} />
-        {" "}Ask to keep my name out of public recognition. Financial and receipt records may still need my details.
+        <span>Ask to keep my name out of public recognition. Financial and receipt records may still need my details.</span>
       </label>
       <button type="submit" className="v2-button">Review enquiry</button>
       <p>Only these fixed categories are included in the page request. Do not enter student names, documents or personal records.</p>

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { join, relative, resolve, sep } from 'node:path';
 import test from 'node:test';
 
 const root = resolve(import.meta.dirname, '..');
@@ -57,4 +57,43 @@ test('branded placeholders are responsive and do not animate when reduced motion
   assert.match(css, /@media\s*\(max-width:\s*600px\)/);
   assert.match(css, /@media\s*\(prefers-reduced-motion:\s*reduce\)/);
   assert.match(css, /animation:\s*none/);
+});
+
+// A root page.tsx next to a (group)/page.tsx resolves to the same URL. Next.js does not fail the build; one file
+// silently wins and the other is dead code that unit tests still exercise. This had left four public overview
+// routes serving a stale root copy (no streaming boundary, and for /stories without the #886 fail-closed fix).
+function pageFiles(dir) {
+  return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) return pageFiles(path);
+    return /^page\.(?:tsx|ts|jsx|js)$/.test(entry.name) ? [path] : [];
+  });
+}
+
+/** Directory segments of a page file -> the URL path it serves, or null for slots and intercepting routes. */
+export function resolvePageUrl(segments) {
+  if (segments.some(segment => segment.startsWith('@') || /^\(\.+\)/.test(segment))) return null;
+  return '/' + segments.filter(segment => !/^\(.*\)$/.test(segment)).join('/');
+}
+
+test('page URL resolution ignores route groups and skips parallel or intercepting routes', () => {
+  assert.equal(resolvePageUrl(['appeals', '(overview)']), '/appeals');
+  assert.equal(resolvePageUrl(['appeals']), '/appeals');
+  assert.equal(resolvePageUrl(['admin', '(protected)', 'funds']), '/admin/funds');
+  assert.equal(resolvePageUrl(['appeals', '[slug]']), '/appeals/[slug]');
+  assert.equal(resolvePageUrl([]), '/');
+  assert.equal(resolvePageUrl(['feed', '@modal']), null);
+  assert.equal(resolvePageUrl(['feed', '(.)photo']), null);
+});
+
+test('no two page files resolve to the same URL', () => {
+  const appRoot = join(root, 'src/app');
+  const byUrl = new Map();
+  for (const file of pageFiles(appRoot)) {
+    const url = resolvePageUrl(relative(appRoot, file).split(sep).slice(0, -1));
+    if (url === null) continue;
+    byUrl.set(url, [...(byUrl.get(url) ?? []), relative(root, file).split(sep).join('/')]);
+  }
+  const duplicates = [...byUrl].filter(([, files]) => files.length > 1).map(([url, files]) => url + ': ' + files.join(' and '));
+  assert.deepEqual(duplicates, []);
 });
