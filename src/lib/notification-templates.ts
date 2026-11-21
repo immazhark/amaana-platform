@@ -48,7 +48,7 @@ export function renderNotificationEmail(templateKey: string, payload: TemplatePa
     const intentText = intentLabel ? ` Giving intention: ${intentLabel}.` : "";
     const intentHtml = intentLabel ? `<p><strong>Giving intention:</strong> ${escapeHtml(intentLabel)}</p>` : "";
     const subject = configuredSubject || "Thank you for supporting an Amaana Foundation appeal";
-    return { subject, text: `Assalamu alaikum,\n\nThank you for your donation. Reference: ${reference}.${intentText} This is a normal donation acknowledgement and not an 80G tax certificate.\n\nJazakAllah khair,\nAmaana Foundation`, html: wrap(`<p>Thank you for supporting an Amaana Foundation appeal.</p><p><strong>Donation reference:</strong> ${safeReference}</p>${intentHtml}<p>This is a normal donation acknowledgement and is not an 80G tax certificate.</p>`) };
+    return { subject, text: `Assalamu alaikum,\n\nThank you for your donation. Reference: ${reference}.${intentText} This is a normal donation acknowledgement and not an 80G tax certificate.\n\nJazakAllah khair,\nAmaana Foundation`, html: wrap(`<p>Thank you for your donation to Amaana Foundation.</p><p><strong>Donation reference:</strong> ${safeReference}</p>${intentHtml}<p>This is a normal donation acknowledgement and is not an 80G tax certificate.</p>`) };
   }
 
   if (templateKey === "operational-email-acceptance") {
