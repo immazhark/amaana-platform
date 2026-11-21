@@ -36,7 +36,7 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("refund entity Pos
     await prisma.$disconnect();
   });
 
-  async function fixture(captured = true) {
+  async function fixture(captured = true, coveredFee = 0) {
     const key = prefix + fixtures.length;
     const user = await prisma.user.create({ data: { name: "Synthetic operator", email: key + "@example.test" } });
     const appeal = await prisma.appeal.create({ data: {
@@ -49,7 +49,7 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("refund entity Pos
     const donation = await prisma.donation.create({ data: {
       referenceNumber: key, appealId: appeal.id, donorName: "Synthetic donor",
       donorEmail: key + "@example.test", domesticConfirmedAt: new Date(),
-      amount: 100, status: captured ? "CAPTURED" : "CREATED",
+      amount: 100, feeContributionAmount: coveredFee, status: captured ? "CAPTURED" : "CREATED",
       providerOrderId: orderId, providerPaymentId: captured ? paymentId : null,
       receiptTokenHash: "synthetic-not-a-real-token",
     } });
@@ -156,6 +156,20 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("refund entity Pos
     expect(await prisma.paymentEvent.count({ where: { donationId: donation.id } })).toBe(1);
     expect((await prisma.appeal.findUniqueOrThrow({ where: { id: f.appeal.id } })).amountRaised.toNumber()).toBe(0);
     expect(await prisma.notification.count({ where: { donationId: donation.id } })).toBe(0);
+  });
+
+  // AF-FUNDING-MATH: the donor covered a Rs 12 gateway fee on a Rs 100 gift, so the whole charge is Rs 112. A provider
+  // refund of all Rs 112 returns the fee first and then the whole gift. The real handler must record it against real
+  // PostgreSQL (refundedAmount 112 within the gift-plus-fee ceiling) and reduce the appeal only by the Rs 100 gift.
+  it("records a full refund of a fee-covered donation and reduces the appeal only by the gift", async () => {
+    const f = await fixture(true, 12);
+    const response = await POST(request(f, "feeCoveredFull", 11_200));
+    expect(response.status).toBe(200);
+    const donation = await prisma.donation.findUniqueOrThrow({ where: { id: f.donation.id } });
+    expect(donation.refundedAmount.toNumber()).toBe(112);
+    expect(donation.status).toBe("REFUNDED");
+    expect((await prisma.appeal.findUniqueOrThrow({ where: { id: f.appeal.id } })).amountRaised.toNumber()).toBe(0);
+    expect(await prisma.refundLedger.count({ where: { donationId: donation.id } })).toBe(1);
   });
 
   it.each(["CREATED", "AUTHORIZED"] as const)("still fails a matching %s attempt without changing accounting", async status => {
