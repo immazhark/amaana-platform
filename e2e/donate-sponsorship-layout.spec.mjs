@@ -11,8 +11,10 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
       const copy = block.lastElementChild;
       return { left: title.getBoundingClientRect().left, top: title.getBoundingClientRect().top, bottom: title.getBoundingClientRect().bottom, copyLeft: copy.getBoundingClientRect().left, copyTop: copy.getBoundingClientRect().top, font: getComputedStyle(title).fontSize, shellLeft: block.getBoundingClientRect().left };
     }));
-    expect(donation).toHaveLength(2);
-    expect(donation[0].font).toBe(donation[1].font);
+    // One explanatory block remains (the compliance statement). The former "Choose where your support
+    // should go" block repeated the route cards below it and was removed rather than restyled.
+    expect(donation).toHaveLength(1);
+    expect(Number.parseFloat(donation[0].font)).toBeGreaterThanOrEqual(24);
     for (const block of donation) {
       expect(Math.abs(block.left - block.shellLeft)).toBeLessThan(2);
       if (width > 700) expect(block.copyLeft).toBeGreaterThan(block.left + 100);

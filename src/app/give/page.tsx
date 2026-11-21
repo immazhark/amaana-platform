@@ -7,6 +7,7 @@ import type { GiveCampaign, GiveFund } from "@/components/fund-giving/fund-copy"
 import { PublicRouteLoading } from "@/components/public-route-loading";
 import { getDonationPaymentDetails } from "@/lib/donation-payment-details";
 import { isFundGivingEnabled } from "@/lib/fund-giving-flag";
+import { GIVE_HERO_ACTIONS } from "@/lib/giving-hero-actions";
 import { complianceCopy } from "@/lib/master-copy";
 import { prisma } from "@/lib/prisma";
 import { feeEstimateBasisPoints } from "@/lib/processing-fee";
@@ -51,6 +52,7 @@ async function GiveContent({ fundParam }: { fundParam: Promise<{ fund?: string |
     <CanonicalArticle
       eyebrow="Give · Amaana Foundation"
       heroVariant="action"
+      heroActions={[...GIVE_HERO_ACTIONS]}
       heroVisualTitle="Give With Intention"
       heroVisualNote="Choose a fund, set your amount and give securely. Your gift is recorded against the cause you chose."
       title="Choose Where Your Gift Goes."

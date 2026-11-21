@@ -279,6 +279,7 @@ test('Our Work disclosure exposes a visible keyboard focus indicator', async ({ 
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
   await page.goto('/our-work', { waitUntil: 'domcontentloaded' });
+  await waitForPublicOverview(page, '/our-work');
   const summary = page.locator('.v2-cause-summary').first();
   await summary.focus();
   const focus = await summary.evaluate(node => {
@@ -742,6 +743,7 @@ for (const scale of [100, 200]) {
       else document.addEventListener('DOMContentLoaded', apply, { once: true });
     }, scale);
     const response = await page.goto('/donate', { waitUntil: 'domcontentloaded' });
+    await waitForPublicOverview(page, '/donate');
     expect(response?.ok()).toBeTruthy();
     const labels = page.getByRole('group', { name: 'Donation routes' }).locator('article > span');
     await expect(labels).toHaveCount(2);

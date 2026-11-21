@@ -51,8 +51,9 @@
 .copyButton:focus-visible{outline:3px solid var(--af-color-blue-600)!important;outline-offset:2px!important}
 .upiRow{display:flex;align-items:center;justify-content:space-between;gap:.75rem;min-width:0;padding-bottom:1rem;border-bottom:1px solid var(--af-color-transfer-divider)}
 .upiRow > div{display:grid;gap:.45rem;min-width:0}
-.upiRow code{font-size:clamp(.94rem,1.8vw,1.08rem);color:var(--af-color-transfer-ink);overflow-wrap:anywhere;user-select:all}
+.upiRow code{font-size:clamp(.8rem,3.4vw,1.08rem);color:var(--af-color-transfer-ink);overflow-wrap:anywhere;user-select:all}
 .upiLink{margin:1rem 0;font-size:.9rem;line-height:1.6}
 .paymentCard img{display:block;max-width:100%;height:auto;margin:1rem auto}
 @media(max-width:620px){.bankDetails{grid-template-columns:1fr}.paymentCard{padding:1rem}.form{gap:.8rem}}
+@media(max-width:480px){.upiRow{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:.75rem;row-gap:.35rem}.upiRow > div{display:contents}.upiRow strong{grid-column:1;grid-row:1}.upiRow .copyButton{grid-column:2;grid-row:1}.upiRow code{grid-column:1 / -1;grid-row:2}}
 @media(prefers-reduced-motion:reduce){.copyButton{transition:none}}

@@ -134,3 +134,28 @@ describe("acknowledgement destination: exactly one of an appeal or a fund", () =
     }, reference)).toBe(true);
   });
 });
+
+describe("acknowledgement covered fee and seasonal-initiative line", () => {
+  const withDonation = (extra: Record<string, unknown>) => ({ ...valid, donation: { ...valid.donation, appeal: null, fund: { name: "Orphan Fund", slug: "orphan" }, ...extra } });
+  const campaign = { title: "Eid kits", units: 3, unitLabel: "kits", unitPrice: 1500 };
+
+  it("accepts a covered fee and a well-formed campaign, and still accepts both being absent or null", () => {
+    expect(isAcknowledgementResponse(withDonation({ feeContributionAmount: 12.09, campaign }), reference)).toBe(true);
+    expect(isAcknowledgementResponse(withDonation({ feeContributionAmount: 0, campaign: null }), reference)).toBe(true);
+    expect(isAcknowledgementResponse(withDonation({}), reference)).toBe(true);
+  });
+  it.each([
+    ["a negative fee", { feeContributionAmount: -1 }],
+    ["a non-finite fee", { feeContributionAmount: Number.POSITIVE_INFINITY }],
+    ["a fee with fractional paise", { feeContributionAmount: 1.005 }],
+    ["a string fee", { feeContributionAmount: "12.09" }],
+    ["a campaign with zero units", { campaign: { ...campaign, units: 0 } }],
+    ["a campaign with fractional units", { campaign: { ...campaign, units: 1.5 } }],
+    ["a campaign with a blank title", { campaign: { ...campaign, title: " " } }],
+    ["a campaign missing its unit price", { campaign: { title: "Eid kits", units: 3, unitLabel: "kits" } }],
+    ["a campaign with a non-positive unit price", { campaign: { ...campaign, unitPrice: 0 } }],
+    ["a non-object campaign", { campaign: "eid-kits" }],
+  ])("rejects %s", (_name, extra) => {
+    expect(isAcknowledgementResponse(withDonation(extra), reference)).toBe(false);
+  });
+});

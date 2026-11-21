@@ -48,3 +48,29 @@ describe("receipts for designated-fund donations", () => {
     expect(await response.json()).toEqual({ found: false });
   });
 });
+
+describe("receipts for seasonal-campaign donations", () => {
+  beforeEach(() => vi.clearAllMocks());
+  const campaignRow = (over: Record<string, unknown> = {}) => row({
+    units: 3, unitPrice: dec(1500), amount: dec(4500),
+    campaign: { title: "Eid gift kits", unitLabel: "kit", unitLabelPlural: "kits" }, ...over,
+  });
+  it("returns the units and unit price recorded on the donation, with the plural label, and the client accepts it", async () => {
+    mocks.findUnique.mockResolvedValue(campaignRow());
+    const body = await (await ask()).json();
+    expect(body.donation.campaign).toEqual({ title: "Eid gift kits", units: 3, unitLabel: "kits", unitPrice: 1500 });
+    expect(isAcknowledgementResponse(body, "AFD-2026-FUND0001")).toBe(true);
+  });
+  it("uses the singular label for one unit", async () => {
+    mocks.findUnique.mockResolvedValue(campaignRow({ units: 1, unitPrice: dec(1500), amount: dec(1500) }));
+    expect((await (await ask()).json()).donation.campaign.unitLabel).toBe("kit");
+  });
+  it("reports no campaign for an ordinary fund gift", async () => {
+    mocks.findUnique.mockResolvedValue(row());
+    expect((await (await ask()).json()).donation.campaign).toBeNull();
+  });
+  it("reports no campaign line when the donation recorded no units, rather than inventing one", async () => {
+    mocks.findUnique.mockResolvedValue(campaignRow({ units: null, unitPrice: null }));
+    expect((await (await ask()).json()).donation.campaign).toBeNull();
+  });
+});
