@@ -5,6 +5,8 @@ import { donationSchema, fundDonationSchema, isDonationAmountAllowedForRemaining
 import { placeRazorpayDonationOrder } from "@/lib/donation-order";
 import { resolveFundDestination } from "@/lib/fund-destination";
 import { isFundGivingEnabled } from "@/lib/fund-giving-flag";
+import { isTaleemSponsorshipEnabled } from "@/lib/taleem-sponsorship-flag";
+import { sponsorshipInputFrom } from "@/lib/taleem-sponsorship";
 import { prisma } from "@/lib/prisma";
 import { enforceDonationRateLimit, isSameOrigin } from "@/lib/request-security";
 import { validateProductionEnvironment } from "@/lib/env";
@@ -167,7 +169,7 @@ async function handleFundOrder(body: unknown, markProviderAttempt: () => void) {
   if (parsed.data.amount < MIN_DONATION_AMOUNT) {
     return NextResponse.json({ error: `The minimum donation is ₹${MIN_DONATION_AMOUNT.toLocaleString("en-IN")}.` }, { status: 400, headers: privateHeaders });
   }
-  const destination = await resolveFundDestination(prisma, { fundSlug: parsed.data.fundSlug, givingIntent: parsed.data.givingIntent, donorDirective: parsed.data.donorDirective, campaignSlug: parsed.data.campaignSlug, units: parsed.data.units, amount: parsed.data.amount });
+  const destination = await resolveFundDestination(prisma, { fundSlug: parsed.data.fundSlug, givingIntent: parsed.data.givingIntent, donorDirective: parsed.data.donorDirective, campaignSlug: parsed.data.campaignSlug, units: parsed.data.units, amount: parsed.data.amount, sponsorship: sponsorshipInputFrom(parsed.data), sponsorshipEnabled: isTaleemSponsorshipEnabled() });
   if (!destination.ok) return NextResponse.json({ error: destination.error }, { status: destination.status, headers: privateHeaders });
   const payload = await placeRazorpayDonationOrder({
     donorName: parsed.data.donorName,
