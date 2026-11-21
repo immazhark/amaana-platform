@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { plainPublicText } from "@/lib/plain-public-text";
 import { publicAppealShareCopy } from "@/lib/public-appeal-share";
 import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
@@ -26,14 +27,14 @@ export function ReviewedMedicalAppeal({ appeal, donation, coverMedia, paymentDet
   const remaining = appeal.status === "PUBLISHED" && donation?.slug === appeal.slug
     ? getDonationCheckoutRemainingAmount(donation) : null;
   const payable = remaining !== null && donation !== null;
-  const shareCopy = publicAppealShareCopy(appeal.title, appeal.summary, highlySensitive);
+  const shareCopy = publicAppealShareCopy(appeal.title, plainPublicText(appeal.summary), highlySensitive);
   const raised = amountToNumber(appeal.amountRaised);
   const goal = amountToNumber(appeal.goalAmount);
   const progress = goal > 0 ? Math.max(0, Math.min(100, Math.round(raised / goal * 100))) : 0;
   return <div className="v2-home v2-appeal-detail-page">
     <PageHero variant="level2" className="page-hero--long-title"
       eyebrow={`Medical assistance · ${appeal.beneficiaryLocation || "Location withheld"}`}
-      title={appeal.title} description={<p>{appeal.summary}</p>}
+      title={appeal.title} description={<p>{plainPublicText(appeal.summary)}</p>}
       actions={[
         ...(payable ? [{ label: "Support this appeal", href: "#support-this-appeal" }] : []),
         { label: "Read the full appeal", href: "#medical-appeal-story", secondary: true },
@@ -46,7 +47,7 @@ export function ReviewedMedicalAppeal({ appeal, donation, coverMedia, paymentDet
           <section id="medical-appeal-story" aria-labelledby="medical-appeal-heading">
             <p className="v2-section-label">About this appeal</p>
             <h2 id="medical-appeal-heading">{appeal.beneficiaryDisplayName || "A request for medical support"}</h2>
-            <div className={styles.storyText}>{appeal.story}</div>
+            <div className={styles.storyText}>{plainPublicText(appeal.story)}</div>
             <p className={styles.note}>Only information cleared for public sharing appears here. Supporting medical documents remain private.</p>
           </section>
           {appeal.updates.length > 0 && <section aria-labelledby="medical-updates-heading">
