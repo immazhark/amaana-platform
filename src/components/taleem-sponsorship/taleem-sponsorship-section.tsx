@@ -5,7 +5,7 @@ import { feeEstimateBasisPoints } from "@/lib/processing-fee";
 import { isTaleemSponsorshipEnabled } from "@/lib/taleem-sponsorship-flag";
 import { sponsorshipOffer, TALEEM_FUND_SLUG } from "@/lib/taleem-sponsorship";
 import { logServerError } from "@/lib/server-log";
-import styles from "@/components/fund-giving/fund-giving.module.css";
+import { taleemIntro, taleemPanelNote } from "./taleem-sponsorship-copy";
 import { TaleemSponsorshipConfigurator } from "./taleem-sponsorship-configurator";
 
 async function loadTaleemFund() {
@@ -31,7 +31,7 @@ export async function TaleemSponsorshipSection() {
   const offer = sponsorshipOffer();
   if (offer.programmes.length === 0) return null;
   return <TaleemSponsorshipConfigurator fund={loaded.fund} offer={offer}
-    intro={<p className={styles.fine}>Your gift supports the Taleem programme and its teaching. It does not name or reserve a student. The period you choose is paid once; it is not a monthly subscription.</p>}
-    panelNote={<p className={styles.fine}>Months are a prepaid period, not a recurring mandate. If the programme cannot go ahead as planned, your gift goes to the nearest similar Taleem purpose and is recorded in our ledger. Zakat is never moved to a different purpose without your permission.</p>}
+    intro={taleemIntro}
+    panelNote={taleemPanelNote}
     copy={fundDonationFormCopy(loaded.fund)} paymentDetails={loaded.paymentDetails} feeBps={feeEstimateBasisPoints()} />;
 }
