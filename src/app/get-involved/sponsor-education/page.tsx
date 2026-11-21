@@ -1,4 +1,5 @@
 import { SponsorshipEnquiry } from "@/components/sponsorship-enquiry";
+import { TaleemSponsorshipSection } from "@/components/taleem-sponsorship/taleem-sponsorship-section";
 import { SectionHeading } from "@/components/section-heading";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -44,6 +45,8 @@ export default async function SponsorEducationPage({ searchParams = Promise.reso
         <section className="v2-shell taleem-programme" aria-labelledby="islamic-education-title"><SectionHeading eyebrow="Islamic education" title="Sponsor Islamic Education" id="islamic-education-title" subtitle="Support sustained Qur’anic learning through one of two defined study paths." /><div className="taleem-islamic-grid">{islamicPaths.map(path => <article className="taleem-path" key={path.title}><span aria-hidden="true">{path.marker}</span><h3>{path.title}</h3><p>{path.copy}</p><a href={enquiryHref(path.path)}>Ask about this sponsorship <span aria-hidden="true">↗</span></a></article>)}</div></section>
 
         <section className="taleem-school" aria-labelledby="child-education-title"><div className="v2-shell taleem-school-grid"><div><p className="v2-section-label">School and college</p><h2 id="child-education-title">Sponsor a Student’s School or College Education</h2></div><div><p className="taleem-school-lead">Developing pathway — verified school and college education support.</p><p>Amaana Taleem Initiative is designed to extend educational assistance to verified students from financially vulnerable households whose schooling or college education may be at risk because of fees or other essential academic costs. Support under this pathway will be matched to a clearly identified educational need, with verification and responsible follow-through before assistance is provided.</p><a className="v2-button" href={enquiryHref("school")}>Ask about school or college sponsorship</a></div></div></section>
+
+        <TaleemSponsorshipSection />
 
         <SponsorshipEnquiry preferences={preferences} />
 

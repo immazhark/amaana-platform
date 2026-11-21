@@ -37,6 +37,9 @@ export function isCheckoutEnabled(quote: SponsorshipQuote): boolean {
   return quote.approval === "APPROVED";
 }
 
+/** A donor's choice as the page quoted it, in whole rupees. The server recomputes the price and refuses a mismatch. */
+export type SponsorshipSelection = { programmeId: TaleemProgrammeId; units: number; months: number; totalRupees: number };
+
 /** Programme sponsorship is a gift to this fund and to no other. */
 export const TALEEM_FUND_SLUG = "taleem";
 
