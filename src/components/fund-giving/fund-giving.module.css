@@ -79,6 +79,27 @@
 .card[data-selected="true"] .check { background: var(--af-color-gold-500); border-color: var(--af-color-gold-ink); }
 .card[data-selected="true"] .check::after { transform: rotate(45deg) scale(1); }
 
+/* Phones: ten full-height cards stack to about 1,700px. Compact rows keep the name and the Zakat label on every card
+   and clamp the purpose to one line on cards that are not selected; the selected card shows its full purpose, and the
+   panel below always carries the full purpose and the Zakat notice. Nothing is removed from the DOM. */
+@media (max-width: 35.99rem) {
+  .grid { gap: .6rem; }
+  .card {
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas: "glyph body" "glyph tag";
+    gap: .2rem .8rem;
+    min-height: 0;
+    padding: .7rem .8rem;
+  }
+  .glyph { align-self: start; width: 2.25rem; height: 2.25rem; }
+  .glyph svg { width: 1.45rem; height: 1.45rem; }
+  .cardBody { gap: .15rem; }
+  .cardName { font-size: 1rem; }
+  .cardSummary { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 1; line-clamp: 1; }
+  .card[data-selected="true"] .cardSummary { display: block; overflow: visible; -webkit-line-clamp: unset; line-clamp: unset; }
+  .tag { margin-top: .15rem; }
+}
+
 .campaign { display: grid; gap: .65rem; min-width: 0; margin: .25rem 0 0; padding: 1rem 1.1rem; border: 1px solid var(--af-color-gold-ink); border-radius: var(--af-radius-md); background: var(--af-color-surface); }
 .campaignTitle { padding: 0 .4rem; font-weight: 800; font-size: 1.02rem; }
 .campaignMeta { margin: 0; font-size: .9rem; color: var(--af-color-muted); }

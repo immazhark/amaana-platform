@@ -158,3 +158,51 @@ test('the give hero leads to the fund choice instead of generic navigation', asy
   await choose.click();
   await expect(page.locator('#choose-fund')).toBeInViewport();
 });
+
+// Phones: ten full cards used to stack to about 1,700px. Compact rows must stay scannable without hiding what a fund is for
+// or whether it accepts Zakat.
+for (const width of [360, 390]) {
+  test('the phone fund list is compact, keeps every Zakat label, and only clamps funds that are not selected at ' + width + 'px', async ({ page }) => {
+    await prepare(page);
+    await page.setViewportSize({ width, height: 900 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    expect((await page.goto(GIVE)).ok()).toBe(true);
+    await expect(page.locator('input[name="fund"]')).toHaveCount(10);
+    const measure = () => page.locator('label:has(input[name="fund"])').evaluateAll(cards => cards.map(card => {
+      const box = card.getBoundingClientRect();
+      const tag = card.querySelector('[id^="fund-tag-"]');
+      const summary = card.querySelector('strong + span');
+      const tagBox = tag?.getBoundingClientRect();
+      return {
+        selected: card.getAttribute('data-selected') === 'true',
+        top: box.top + window.scrollY, bottom: box.bottom + window.scrollY, height: box.height,
+        tagText: tag?.textContent?.trim() ?? '',
+        tagInside: Boolean(tagBox && tagBox.width > 0 && tagBox.left >= box.left - 1 && tagBox.right <= box.right + 1 && tagBox.bottom <= box.bottom + 1),
+        summaryClamped: Boolean(summary) && summary.scrollHeight > summary.clientHeight + 1,
+        summaryLines: summary ? Math.round(summary.clientHeight / parseFloat(getComputedStyle(summary).lineHeight)) : 0,
+      };
+    }));
+    const before = await measure();
+    expect(before).toHaveLength(10);
+    const listHeight = Math.max(...before.map(card => card.bottom)) - Math.min(...before.map(card => card.top));
+    expect(listHeight, 'ten funds should not need more than about 1,400px on a phone').toBeLessThan(1400);
+    for (const card of before) {
+      expect(card.height, 'each card stays a comfortable tap target').toBeGreaterThanOrEqual(44);
+      expect(card.tagText.length, 'every card keeps its Zakat label').toBeGreaterThan(0);
+      expect(card.tagInside, 'the Zakat label is fully inside its card: ' + card.tagText).toBe(true);
+      if (card.selected) expect(card.summaryClamped, 'the selected fund shows its full purpose').toBe(false);
+      else expect(card.summaryLines, 'other funds show one line of purpose').toBeLessThanOrEqual(1);
+    }
+    expect(await noHorizontalScroll(page)).toBe(true);
+
+    // Selecting another fund moves the full purpose to it, and the panel carries the full purpose and Zakat state.
+    const target = page.locator('label:has(input[name="fund"]:not(:checked))').nth(2);
+    const targetName = (await target.locator('strong').textContent())?.trim() ?? '';
+    await target.click();
+    const after = await measure();
+    expect(after.filter(card => card.selected)).toHaveLength(1);
+    expect(after.find(card => card.selected).summaryClamped).toBe(false);
+    await expect(page.getByRole('status').filter({ hasText: 'Selected fund: ' + targetName })).toHaveCount(1);
+    await expect(page.locator('p', { hasText: targetName }).first()).toBeVisible();
+  });
+}
