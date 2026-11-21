@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { TALEEM_CATALOGUE, type TaleemProgrammeId } from "@/content/taleem-catalogue";
 import { DonationMethods } from "@/components/donation-methods";
-import { fundDonationFormCopy, type GiveFund } from "@/components/fund-giving/fund-copy";
+import type { DonationFormCopy } from "@/components/donation-form-copy";
+import type { GiveFund } from "@/components/fund-giving/fund-copy";
 import styles from "@/components/fund-giving/fund-giving.module.css";
 import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
 import { MAX_SPONSORSHIP_UNITS, quoteSponsorship, SPONSORSHIP_MONTH_OPTIONS, type SponsorshipSelection } from "@/lib/taleem-sponsorship";
@@ -13,11 +14,14 @@ const rupees = (amount: number) => `₹${amount.toLocaleString("en-IN")}`;
 const plural = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
 const MONTH_LABEL: Record<number, string> = { 1: "1 month", 3: "3 months", 6: "6 months", 12: "12 months" };
 
-/** A donor chooses a Taleem programme, how many units and for how many months, then pays through the same hardened
+/** The form copy is built on the server and passed in, so the copy modules are not duplicated into this client chunk
+ * (the JS budget is enforced and the fund checkout already ships them).
+ *
+ * A donor chooses a Taleem programme, how many units and for how many months, then pays through the same hardened
  * checkout forms every other gift uses. The price shown here comes from the same engine the server uses, but the server
  * recomputes it from the approved catalogue and refuses any other amount. The gift supports the programme: it does not
  * name or reserve a student, and the period is paid once, never as a recurring mandate. */
-export function TaleemSponsorshipConfigurator({ fund, paymentDetails, feeBps }: { fund: GiveFund; paymentDetails: DonationPaymentDetails; feeBps: number }) {
+export function TaleemSponsorshipConfigurator({ fund, copy, paymentDetails, feeBps }: { fund: GiveFund; copy: DonationFormCopy; paymentDetails: DonationPaymentDetails; feeBps: number }) {
   const programmes = TALEEM_CATALOGUE.programmes.filter(item => item.available && item.approval === "APPROVED");
   const [programmeId, setProgrammeId] = useState<TaleemProgrammeId | undefined>(programmes[0]?.id);
   const [months, setMonths] = useState<number>(SPONSORSHIP_MONTH_OPTIONS[0]);
@@ -97,7 +101,7 @@ export function TaleemSponsorshipConfigurator({ fund, paymentDetails, feeBps }: 
       </div>
 
       <div id="programme-payment" ref={paymentRef} tabIndex={-1} className={styles.payment}>
-        {requested && <DonationMethods key={`${selection.programmeId}-${selection.units}-${selection.months}`} fundSlug={fund.slug} sponsorship={selection} feeBps={feeBps} appealTitle={`${fund.name}: ${programme.name} sponsorship`} maxAmount={MAX_GIFT_RUPEES} zakatEligible={fund.zakatPolicy === "ACCEPTED"} paymentDetails={paymentDetails} copy={fundDonationFormCopy(fund)} onLockChange={onLockChange} />}
+        {requested && <DonationMethods key={`${selection.programmeId}-${selection.units}-${selection.months}`} fundSlug={fund.slug} sponsorship={selection} feeBps={feeBps} appealTitle={`${fund.name}: ${programme.name} sponsorship`} maxAmount={MAX_GIFT_RUPEES} zakatEligible={fund.zakatPolicy === "ACCEPTED"} paymentDetails={paymentDetails} copy={copy} onLockChange={onLockChange} />}
       </div>
     </section>
   );

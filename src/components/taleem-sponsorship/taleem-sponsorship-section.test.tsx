@@ -37,6 +37,9 @@ describe("Taleem sponsorship section on the sponsor-education page", () => {
     expect(element).not.toBeNull();
     expect(element?.type).toBe(TaleemSponsorshipConfigurator);
     expect(element?.props).toMatchObject({ fund: taleem, paymentDetails: details });
+    // The form copy is built on the server and handed down, not imported by the client chunk.
+    expect(element?.props.copy).toBeDefined();
+    expect(element?.props.copy.heading).toBeDefined();
     expect(mocks.findFirst).toHaveBeenCalledWith(expect.objectContaining({ where: { slug: "taleem", status: "ACTIVE" } }));
   });
 

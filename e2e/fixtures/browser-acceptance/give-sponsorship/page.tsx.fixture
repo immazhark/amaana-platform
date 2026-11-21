@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import type { GiveFund } from "@/components/fund-giving/fund-copy";
+import { fundDonationFormCopy, type GiveFund } from "@/components/fund-giving/fund-copy";
 import { TaleemSponsorshipConfigurator } from "@/components/taleem-sponsorship/taleem-sponsorship-configurator";
 import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
 import "../../get-involved/sponsor-education/sponsor-education.css";
@@ -24,7 +24,7 @@ export default function TaleemSponsorshipAcceptanceFixture() {
     <div className="v2-home taleem-sponsor">
       <h1 className="sr-only">Taleem programme sponsorship fixture</h1>
       <div className="taleem-paths">
-        <TaleemSponsorshipConfigurator fund={fund} paymentDetails={paymentDetails} feeBps={236} />
+        <TaleemSponsorshipConfigurator fund={fund} copy={fundDonationFormCopy(fund)} paymentDetails={paymentDetails} feeBps={236} />
       </div>
     </div>
   );

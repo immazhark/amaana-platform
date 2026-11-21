@@ -1,3 +1,4 @@
+import { fundDonationFormCopy } from "@/components/fund-giving/fund-copy";
 import { prisma } from "@/lib/prisma";
 import { getDonationPaymentDetails } from "@/lib/donation-payment-details";
 import { feeEstimateBasisPoints } from "@/lib/processing-fee";
@@ -26,5 +27,5 @@ export async function TaleemSponsorshipSection() {
   if (!isTaleemSponsorshipEnabled()) return null;
   const loaded = await loadTaleemFund();
   if (!loaded) return null;
-  return <TaleemSponsorshipConfigurator fund={loaded.fund} paymentDetails={loaded.paymentDetails} feeBps={feeEstimateBasisPoints()} />;
+  return <TaleemSponsorshipConfigurator fund={loaded.fund} copy={fundDonationFormCopy(loaded.fund)} paymentDetails={loaded.paymentDetails} feeBps={feeEstimateBasisPoints()} />;
 }
