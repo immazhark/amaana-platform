@@ -78,3 +78,11 @@
   border: 0 !important;
   box-shadow: none !important;
 }
+
+/* Consent choices share one readable spec in the online and direct-transfer
+   forms. The generic field-label rule (.78rem, bold) plus the browser's
+   default <small> shrink left consent text at about 12px / 10px and bold. */
+:global(.v2-premium-form) :global(.field):global(.v2-form-choice) > label{display:flex;flex-wrap:nowrap;align-items:flex-start;gap:.9rem;font-size:.95rem;font-weight:400;letter-spacing:0;line-height:1.4}
+:global(.v2-premium-form) :global(.field):global(.v2-form-choice) > label > span{min-width:0}
+:global(.v2-premium-form) :global(.field):global(.v2-form-choice) strong{font-size:.95rem;font-weight:700}
+:global(.v2-premium-form) :global(.field):global(.v2-form-choice) small{font-size:.84rem;font-weight:400;line-height:1.5}
