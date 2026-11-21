@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { CopyPrivateLinkButton } from "@/components/copy-private-link";
 import { PrintButton } from "@/components/print-button";
 import { donationIntentLabel } from "@/lib/donation-intent";
-import { parsePrivateDonationAcknowledgementLocation } from "@/lib/private-donation-ack";
+import { parsePrivateDonationAcknowledgementLocation } from "@/lib/private-donation-ack-location";
 import { formatAcknowledgementINR, isAcknowledgementResponse, type AcknowledgementRecord } from "@/lib/private-record-response";
 
 
