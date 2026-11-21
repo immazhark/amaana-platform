@@ -34,6 +34,8 @@ export type AcknowledgementRecord = {
     feeContributionAmount?: number;
     // Seasonal fixed-price initiative the gift bought units of, with the unit label already singular or plural.
     campaign?: { title: string; units: number; unitLabel: string; unitPrice: number } | null;
+    // Taleem programme sponsorship as recorded on the donation: the programme name, units, months and per-unit monthly rate.
+    sponsorship?: { programme: string; units: number; months: number; monthlyRate: number } | null;
   };
 };
 
@@ -85,6 +87,17 @@ function validCampaign(value: unknown): boolean {
     money(value.unitPrice) && value.unitPrice > 0;
 }
 
+const SPONSORSHIP_MONTHS = [1, 3, 6, 12];
+const MAX_SPONSORSHIP_UNITS = 50;
+
+function validSponsorship(value: unknown): boolean {
+  return object(value) && ownsFields(value, ["programme", "units", "months", "monthlyRate"]) &&
+    text(value.programme) &&
+    typeof value.units === "number" && Number.isSafeInteger(value.units) && value.units >= 1 && value.units <= MAX_SPONSORSHIP_UNITS &&
+    typeof value.months === "number" && SPONSORSHIP_MONTHS.includes(value.months) &&
+    money(value.monthlyRate) && value.monthlyRate > 0;
+}
+
 /** Fail closed on malformed private financial reads. Never turn a failed read
  * into a new donation or an apparently invalid donor receipt. */
 export function isAcknowledgementResponse(value: unknown, expectedReference: string): value is AcknowledgementRecord | { found: false } {
@@ -112,7 +125,8 @@ export function isAcknowledgementResponse(value: unknown, expectedReference: str
     !serverTimestamp(d.recordDate) || !nullableText(d.providerPaymentId) ||
     !validDestination(d.appeal, d.fund) ||
     (d.feeContributionAmount !== undefined && !money(d.feeContributionAmount)) ||
-    (d.campaign !== undefined && d.campaign !== null && !validCampaign(d.campaign))
+    (d.campaign !== undefined && d.campaign !== null && !validCampaign(d.campaign)) ||
+    (d.sponsorship !== undefined && d.sponsorship !== null && !validSponsorship(d.sponsorship))
   ) return false;
 
   if (p.tone === "refunded") return d.refundedAmount === d.amount;
