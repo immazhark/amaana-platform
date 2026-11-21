@@ -70,7 +70,7 @@ export function DirectTransferForm({ appealId, fundSlug, extraFields, campaign, 
       // A submission names exactly one destination.
       if (fundSlug) values.set("fundSlug", fundSlug); else if (appealId) values.set("appealId", appealId);
       if (campaign) { values.set("campaignSlug", campaign.slug); values.set("units", String(campaign.units)); }
-      if (sponsorship) { values.set("sponsorshipProgramme", sponsorship.programmeId); values.set("sponsorshipUnits", String(sponsorship.units)); values.set("sponsorshipMonths", String(sponsorship.months)); }
+      if (sponsorship) for (const [name, value] of Object.entries(sponsorship.fields)) values.set(name, String(value));
       if (!String(values.get("donorDirective") ?? "").trim()) values.delete("donorDirective");
       values.set("paymentMethod", method);
       values.set("isAnonymous", values.get("isAnonymous") === "on" ? "true" : "false");

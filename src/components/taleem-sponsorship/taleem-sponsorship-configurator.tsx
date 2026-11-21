@@ -45,7 +45,7 @@ export function TaleemSponsorshipConfigurator({ fund, offer, copy, paymentDetail
   const units = Math.min(Math.max(parsedUnits, 1), maxUnits);
   const unitRate = programme.monthlyRupees;
   const totalRupees = unitRate * units * months;
-  const selection: SponsorshipSelection = { programmeId: programme.id, units, months, totalRupees };
+  const selection: SponsorshipSelection = { fields: { sponsorshipProgramme: programme.id, sponsorshipUnits: units, sponsorshipMonths: months }, totalRupees };
 
   return (
     <section id="programme-sponsorship" className={styles.shell} aria-labelledby="programme-sponsorship-heading">
@@ -94,7 +94,7 @@ export function TaleemSponsorshipConfigurator({ fund, offer, copy, paymentDetail
       </div>
 
       <div id="programme-payment" ref={paymentRef} tabIndex={-1} className={styles.payment}>
-        {requested && <DonationMethods key={`${selection.programmeId}-${selection.units}-${selection.months}`} fundSlug={fund.slug} sponsorship={selection} feeBps={feeBps} appealTitle={`${fund.name}: ${programme.name} sponsorship`} maxAmount={MAX_GIFT_RUPEES} zakatEligible={fund.zakatPolicy === "ACCEPTED"} paymentDetails={paymentDetails} copy={copy} onLockChange={onLockChange} />}
+        {requested && <DonationMethods key={`${programme.id}-${units}-${months}`} fundSlug={fund.slug} sponsorship={selection} feeBps={feeBps} appealTitle={`${fund.name}: ${programme.name} sponsorship`} maxAmount={MAX_GIFT_RUPEES} zakatEligible={fund.zakatPolicy === "ACCEPTED"} paymentDetails={paymentDetails} copy={copy} onLockChange={onLockChange} />}
       </div>
     </section>
   );

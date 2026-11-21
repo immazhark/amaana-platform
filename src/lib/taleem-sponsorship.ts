@@ -37,8 +37,9 @@ export function isCheckoutEnabled(quote: SponsorshipQuote): boolean {
   return quote.approval === "APPROVED";
 }
 
-/** A donor's choice as the page quoted it, in whole rupees. The server recomputes the price and refuses a mismatch. */
-export type SponsorshipSelection = { programmeId: TaleemProgrammeId; units: number; months: number; totalRupees: number };
+/** A donor's choice as the page quoted it. `fields` are the request field names the order and transfer routes read, so a
+ * form sends them as they are; `totalRupees` is the quoted price in whole rupees. The server recomputes the price and refuses a mismatch. */
+export type SponsorshipSelection = { fields: { sponsorshipProgramme: TaleemProgrammeId; sponsorshipUnits: number; sponsorshipMonths: number }; totalRupees: number };
 
 /** What the donor-facing configurator is offered, built on the server from the approved catalogue so the client carries no
  * catalogue or pricing code. Rates are whole rupees per unit per month; the server still recomputes every charge. */

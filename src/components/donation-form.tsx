@@ -173,7 +173,7 @@ export function DonationForm({ appealId, fundSlug, feeBps, extraFields, campaign
         body: JSON.stringify({
           ...(fundSlug ? { fundSlug } : { appealId }),
           ...(campaign ? { campaignSlug: campaign.slug, units: campaign.units } : {}),
-          ...(sponsorship ? { sponsorshipProgramme: sponsorship.programmeId, sponsorshipUnits: sponsorship.units, sponsorshipMonths: sponsorship.months } : {}),
+          ...sponsorship?.fields,
           ...(String(values.get("donorDirective") ?? "").trim() ? { donorDirective: values.get("donorDirective") } : {}),
           coverProcessingFee: feeBps !== undefined && values.get("coverProcessingFee") === "on",
           donorName: values.get("donorName"),
