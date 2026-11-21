@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { waitForPublicOverview } from "./helpers/public-overview-ready.mjs";
 
 function focusContrast(color, background) {
   const components = color.match(/^rgba?\(([^)]+)\)$/)?.[1].split(/[\s,/]+/).map(Number);
@@ -19,6 +20,7 @@ function focusContrast(color, background) {
 
 test("Our Work search and selectors expose a contrast-safe keyboard focus ring", async ({ page }) => {
   await page.goto("/our-work", { waitUntil: "domcontentloaded" });
+  await waitForPublicOverview(page, "/our-work");
   const search = page.locator("#work-search");
   await search.focus();
   await page.keyboard.press("Shift+Tab");

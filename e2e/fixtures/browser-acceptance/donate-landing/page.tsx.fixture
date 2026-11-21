@@ -1,0 +1,34 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+// Same stylesheets the real /donate layout loads, so the fixture renders faithfully.
+import "../../forms-experience.css";
+import "../../donate-wow.css";
+import { DonatePageView } from "@/app/donate/donate-page-view";
+import { donationFormCopy } from "@/components/donation-form-copy";
+
+export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Donate Landing Browser Acceptance",
+  robots: { index: false, follow: false },
+};
+
+const impactItems = [
+  { slug: "synthetic-winter", title: "Synthetic documented initiative", value: "234 Synthetic Kits", label: "synthetic distribution record" },
+];
+
+/** `?appeals=0|1|2` selects how many synthetic reviewed appeals are open. */
+export default async function DonateLandingAcceptance({ searchParams }: { searchParams: Promise<{ appeals?: string }> }) {
+  if (process.env.AMAANA_BROWSER_ACCEPTANCE !== "true") notFound();
+  const { appeals } = await searchParams;
+  const count = Math.min(2, Math.max(0, Number.parseInt(appeals ?? "1", 10) || 0));
+  const choices = [
+    { id: "synthetic-first", slug: "synthetic-first", title: "Synthetic first appeal", maxAmount: 499_500, zakatEligible: true, copy: donationFormCopy(true) },
+    { id: "synthetic-second", slug: "synthetic-second", title: "Synthetic second appeal", maxAmount: 2_500, zakatEligible: false, copy: donationFormCopy(false) },
+  ].slice(0, count);
+  return <DonatePageView
+    choices={choices}
+    impactItems={impactItems}
+    paymentDetails={{ upi: { id: "mab.037347029220157@axisbank", qrImageUrl: null }, bank: null }}
+    fundGivingEnabled={false}
+  />;
+}

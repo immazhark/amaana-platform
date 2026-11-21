@@ -14,6 +14,7 @@ import { getImpactPageData } from "@/lib/public-page-data";
 import { retainRenderableImpactRecords } from "@/lib/impact-public-records";
 import { selectIdentityPublicImage } from "@/lib/public-media";
 import { selectImpactWitnessMedia } from "@/lib/impact-witness-media";
+import filterStyles from "@/components/filter-form.module.css";
 import "../impact-refinement.module.css";
 
 export const dynamic = "force-dynamic";
@@ -81,7 +82,7 @@ export default async function ImpactPage({ searchParams }: { searchParams: Promi
         <div className="v2-shell">
           <TrustEvidenceBoundary context="impact" className={evidenceStyles.boundary} />
           <SectionHeading eyebrow={<>Wall of impact</>} title={<>See what each initiative achieved.</>} subtitle={<>Explore an outcome, then open the initiative to understand the work behind it.</>} id="impact-wall-title" />
-          <form key={filtered.programme} action="/impact#evidence" method="get" aria-label="Filter documented impact by programme" className="v2-hero-actions">
+          <form key={filtered.programme} action="/impact#evidence" method="get" aria-label="Filter documented impact by programme" className={`v2-hero-actions ${filterStyles.form}`}>
             <label htmlFor="impact-programme">Programme
               <select id="impact-programme" name="programme" defaultValue={filtered.programme} aria-invalid={filtered.invalid || undefined} aria-describedby={filtered.invalid ? "impact-filter-error" : undefined}>
                 <option value="">All programmes</option>

@@ -10,6 +10,7 @@ import { selectIdentityPublicImage } from "@/lib/public-media";
 import styles from "../stories-audit.module.css";
 import { publishedStoryProgrammeContext, selectStoryDiscovery, type StorySearch } from "@/lib/story-discovery";
 import { retainRoutableStoryRecords } from "@/lib/story-index-records";
+import filterStyles from "@/components/filter-form.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -49,7 +50,7 @@ export default async function StoriesPage({ searchParams }: { searchParams: Prom
       />
 
       <section className="v2-section paper" id="story-results" aria-label="Find published stories"><div className="v2-shell">
-        <form key={`${selection.q}:${selection.programme}`} className="form-grid" method="get" action="/stories#story-results" aria-label="Filter published stories">
+        <form key={`${selection.q}:${selection.programme}`} className={`form-grid ${filterStyles.form}`} method="get" action="/stories#story-results" aria-label="Filter published stories">
           <label className="field" htmlFor="story-search">Search public stories<input id="story-search" name="q" type="search" maxLength={80} defaultValue={selection.q} aria-invalid={selection.invalid || undefined} aria-describedby={selection.invalid ? "story-search-help story-search-error" : "story-search-help"} /></label>
           <label className="field" htmlFor="story-programme">Programme<select id="story-programme" name="programme" aria-label="Programme" defaultValue={selection.programme} aria-invalid={selection.invalid || undefined} aria-describedby={selection.invalid ? "story-search-help story-search-error" : "story-search-help"}><option value="">All programmes</option>{selection.programmes.map(programme => <option key={programme} value={programme}>{programme}</option>)}</select></label>
           <button className="v2-button" type="submit">Find stories</button>
