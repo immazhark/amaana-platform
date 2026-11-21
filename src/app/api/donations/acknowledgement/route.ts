@@ -1,3 +1,4 @@
+import { TALEEM_CATALOGUE } from "@/content/taleem-catalogue";
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -82,6 +83,10 @@ export async function POST(request: Request) {
         units: true,
         unitPrice: true,
         campaign: { select: { title: true, unitLabel: true, unitLabelPlural: true } },
+        sponsorshipProgramme: true,
+        sponsorshipUnits: true,
+        sponsorshipMonths: true,
+        sponsorshipMonthlyRate: true,
       },
     });
 
@@ -108,6 +113,16 @@ export async function POST(request: Request) {
         unitPrice: donation.unitPrice.toNumber(),
       }
       : null;
+    // The programme, units, months and rate recorded on the donation itself, never the live catalogue rate. Only the
+    // display name comes from the catalogue; the rate version stays internal.
+    const sponsorship = donation.sponsorshipProgramme && donation.sponsorshipUnits && donation.sponsorshipMonths && donation.sponsorshipMonthlyRate
+      ? {
+        programme: TALEEM_CATALOGUE.programmes.find(item => item.id === donation.sponsorshipProgramme)?.name ?? donation.sponsorshipProgramme,
+        units: donation.sponsorshipUnits,
+        months: donation.sponsorshipMonths,
+        monthlyRate: donation.sponsorshipMonthlyRate.toNumber(),
+      }
+      : null;
 
     return NextResponse.json(
       {
@@ -127,6 +142,7 @@ export async function POST(request: Request) {
           appeal: donation.appeal,
           fund: donation.fund,
           campaign,
+          sponsorship,
         },
       },
       { headers: privateHeaders },
