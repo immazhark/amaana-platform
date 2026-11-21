@@ -8,6 +8,7 @@ import { getFaithDiscoveryData, getVisibleFaithMedia } from "@/lib/public-discov
 import { selectIdentityPublicImage } from "@/lib/public-media";
 import styles from "../faith-audit.module.css";
 import { selectFaithDiscovery, type FaithSearch } from "@/lib/faith-discovery";
+import filterStyles from "@/components/filter-form.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -69,7 +70,7 @@ export default async function FaithAndReflectionsPage({ searchParams }: { search
       <section className="v2-section paper" id="library" aria-labelledby="faith-library-title">
         <div className="v2-shell">
           <SectionHeading eyebrow={<>The library</>} title={<>Read. Reflect. Watch.</>} subtitle={<>{content.length > 0 ? `${content.length} verified item${content.length === 1 ? "" : "s"} are currently published.` : "No religious content is currently published. Drafts and unverified material remain private until review is complete."}</>} id="faith-library-title" />
-          <form key={`${selection.q}:${selection.format}`} className="form-grid" method="get" action="/faith-and-reflections#library" aria-label="Filter reviewed reflections">
+          <form key={`${selection.q}:${selection.format}`} className={`form-grid ${filterStyles.form}`} method="get" action="/faith-and-reflections#library" aria-label="Filter reviewed reflections">
             <label className="field" htmlFor="faith-search">Search reviewed reflections<input id="faith-search" name="q" type="search" maxLength={80} defaultValue={selection.q} aria-invalid={selection.invalid || undefined} aria-describedby={selection.invalid ? "faith-search-help faith-search-error" : "faith-search-help"} /></label>
             <label className="field" htmlFor="faith-format">Format<select id="faith-format" name="format" defaultValue={selection.format} aria-invalid={selection.invalid || undefined} aria-describedby={selection.invalid ? "faith-search-error" : undefined}><option value="">All formats</option><option value="ARTICLE">Articles</option><option value="REMINDER">Reminders</option><option value="VIDEO">Videos</option></select></label>
             <button className="v2-button" type="submit">Find reflections</button>
