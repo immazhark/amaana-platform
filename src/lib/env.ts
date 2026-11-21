@@ -75,9 +75,22 @@ export function validateProductionEnvironment() {
   productionSchema.parse(process.env);
 }
 
-export function isEmailDeliveryEnabled() {
+/**
+ * The instant live email delivery starts. Messages created before it are never sent: months of queued acknowledgements
+ * must not reach donors as stale mail on the day delivery is switched on. Strict ISO 8601 with an explicit offset, for
+ * example 2026-11-22T06:00:00Z. Missing or malformed means no go-live has been declared.
+ */
+export function emailSendNotBefore(env: Record<string, string | undefined> = process.env): Date | null {
+  const raw = env.NOTIFICATION_SEND_NOT_BEFORE?.trim();
+  if (!raw || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:\d{2})$/.test(raw)) return null;
+  const date = new Date(raw);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+export function isEmailDeliveryEnabled(env: Record<string, string | undefined> = process.env) {
   // The notification cron does not invoke the full deployment schema.
   // Refuse live delivery from staging even when its mode is misconfigured.
-  const environment = process.env.APP_ENVIRONMENT ?? "production";
-  return environment === "production" && process.env.EMAIL_DELIVERY_MODE === "live";
+  // Live also needs a declared go-live instant, so a switch flipped alone can never drain the old queue.
+  const environment = env.APP_ENVIRONMENT ?? "production";
+  return environment === "production" && env.EMAIL_DELIVERY_MODE === "live" && emailSendNotBefore(env) !== null;
 }

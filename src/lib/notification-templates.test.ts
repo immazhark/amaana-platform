@@ -11,6 +11,23 @@ describe("notification email templates", () => {
   });
 
 
+  it("thanks for a donation without calling every gift an appeal, and never claims a tax benefit", () => {
+    const email = renderNotificationEmail("donation-acknowledgement", { referenceNumber: "AMN-123", givingIntent: "SADAQAH" });
+    expect(email.html).toContain("Thank you for your donation to Amaana Foundation.");
+    expect(email.html).not.toMatch(/appeal/i);
+    expect(email.text).not.toMatch(/appeal/i);
+    for (const forbidden of [/tax[- ]deductible/i, /tax benefit/i, /claim a deduction/i, /80G (approved|registered|exempt)/i]) {
+      expect(email.text).not.toMatch(forbidden);
+      expect(email.html).not.toMatch(forbidden);
+    }
+  });
+
+  it("escapes a hostile reference so a donation email cannot inject markup", () => {
+    const email = renderNotificationEmail("donation-acknowledgement", { referenceNumber: "<img src=x onerror=alert(1)>", givingIntent: "SADAQAH" });
+    expect(email.html).not.toContain("<img");
+    expect(email.html).toContain("&lt;img");
+  });
+
   it("renders the controlled operational acceptance without sensitive case data", () => {
     const email = renderNotificationEmail("operational-email-acceptance", {
       acceptanceType: "transactional-email",
