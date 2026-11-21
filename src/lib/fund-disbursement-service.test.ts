@@ -14,7 +14,7 @@ vi.mock("@/lib/prisma-transaction", () => ({
   }),
 }));
 
-import { DisbursementError, publishDisbursement, recordDisbursement, voidDisbursement } from "./fund-disbursement-service";
+import { DisbursementError, publishDisbursement, TWO_PERSON_MESSAGE, recordDisbursement, voidDisbursement } from "./fund-disbursement-service";
 
 const dec = (rupees: number) => ({ mul: (n: number) => ({ toNumber: () => rupees * n }) });
 const input = { fundId: "fund_orphan", pool: "NON_ZAKAT" as const, amountPaise: 5_000_000, spentOn: "2026-11-18", financialYear: "2026-27", title: "Stationery kits", publicSummary: "Kits for 25 children", zakatEligibilityBasis: null };
@@ -64,7 +64,7 @@ describe("recordDisbursement", () => {
 describe("publishDisbursement and voidDisbursement", () => {
   beforeEach(() => vi.clearAllMocks());
   it("publishes only a draft that has a clean public summary", async () => {
-    mocks.findUnique.mockResolvedValueOnce({ status: "DRAFT", publicSummary: "School fees for 12 children" });
+    mocks.findUnique.mockResolvedValueOnce({ status: "DRAFT", publicSummary: "School fees for 12 children", createdById: "maker_1" });
     mocks.updateMany.mockResolvedValueOnce({ count: 1 });
     await publishDisbursement("disb_1", "admin_1");
     expect(mocks.updateMany).toHaveBeenCalledWith({ where: { id: "disb_1", status: "DRAFT" }, data: expect.objectContaining({ status: "PUBLISHED" }) });
@@ -75,8 +75,31 @@ describe("publishDisbursement and voidDisbursement", () => {
     await expect(publishDisbursement("disb_1", "admin_1")).rejects.toBeInstanceOf(DisbursementError);
     expect(mocks.updateMany).not.toHaveBeenCalled();
   });
+  it("refuses to let the person who recorded an entry publish it, and changes nothing", async () => {
+    mocks.findUnique.mockResolvedValueOnce({ status: "DRAFT", publicSummary: "School fees for 12 children", createdById: "admin_1" });
+    await expect(publishDisbursement("disb_1", "admin_1", {})).rejects.toThrow(TWO_PERSON_MESSAGE);
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.audit).not.toHaveBeenCalled();
+  });
+  it("lets a different staff member publish, with no self-publication mark in the audit event", async () => {
+    mocks.findUnique.mockResolvedValueOnce({ status: "DRAFT", publicSummary: "School fees for 12 children", createdById: "maker_1" });
+    mocks.updateMany.mockResolvedValueOnce({ count: 1 });
+    await publishDisbursement("disb_1", "checker_1", {});
+    expect(mocks.audit.mock.calls[0]?.[0].data.metadata).toEqual({});
+  });
+  it("allows a declared sole operator to self-publish, and marks it in the audit event", async () => {
+    mocks.findUnique.mockResolvedValueOnce({ status: "DRAFT", publicSummary: "School fees for 12 children", createdById: "admin_1" });
+    mocks.updateMany.mockResolvedValueOnce({ count: 1 });
+    await publishDisbursement("disb_1", "admin_1", { FUND_SPENDING_SOLE_OPERATOR: "true" });
+    expect(mocks.audit.mock.calls[0]?.[0].data.metadata).toEqual({ selfPublished: true });
+  });
+  it.each(["True", "1", "yes", "false", ""])("treats FUND_SPENDING_SOLE_OPERATOR=%j as off (exact true only)", async value => {
+    mocks.findUnique.mockResolvedValueOnce({ status: "DRAFT", publicSummary: "School fees for 12 children", createdById: "admin_1" });
+    await expect(publishDisbursement("disb_1", "admin_1", { FUND_SPENDING_SOLE_OPERATOR: value })).rejects.toThrow(TWO_PERSON_MESSAGE);
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+  });
   it("fails safely when a concurrent change wins the publish", async () => {
-    mocks.findUnique.mockResolvedValueOnce({ status: "DRAFT", publicSummary: "School fees for 12 children" });
+    mocks.findUnique.mockResolvedValueOnce({ status: "DRAFT", publicSummary: "School fees for 12 children", createdById: "maker_1" });
     mocks.updateMany.mockResolvedValueOnce({ count: 0 });
     await expect(publishDisbursement("disb_1", "admin_1")).rejects.toThrow(/changed/);
     expect(mocks.audit).not.toHaveBeenCalled();

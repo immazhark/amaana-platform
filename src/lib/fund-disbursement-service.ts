@@ -39,14 +39,21 @@ export async function recordDisbursement(input: DisbursementInput, actorId: stri
   });
 }
 
-export async function publishDisbursement(id: string, actorId: string) {
+export const TWO_PERSON_MESSAGE = "A second staff member must review and publish this entry (two-person control). Ask a colleague to publish it.";
+
+// Maker-checker (AF-ALLOCATION): the person who records spending cannot publish it to the public ledger. A genuine single
+// operator can set FUND_SPENDING_SOLE_OPERATOR=true; that is an owner decision, off by default, and every self-published
+// entry is marked in its audit event so the exception stays visible.
+export async function publishDisbursement(id: string, actorId: string, env: Record<string, string | undefined> = process.env) {
   return withSerializableTransactionRetry(async tx => {
-    const row = await tx.fundDisbursement.findUnique({ where: { id }, select: { status: true, publicSummary: true } });
+    const row = await tx.fundDisbursement.findUnique({ where: { id }, select: { status: true, publicSummary: true, createdById: true } });
     if (!row || row.status !== "DRAFT") throw new DisbursementError("Only a draft entry can be published.");
+    const selfPublished = row.createdById === actorId;
+    if (selfPublished && env.FUND_SPENDING_SOLE_OPERATOR !== "true") throw new DisbursementError(TWO_PERSON_MESSAGE);
     if (!validPublishableSummary(row.publicSummary)) throw new DisbursementError("Add a public summary (10 to 400 characters, no contact details) before publishing.");
     const changed = await tx.fundDisbursement.updateMany({ where: { id, status: "DRAFT" }, data: { status: "PUBLISHED", publishedAt: new Date() } });
     if (changed.count !== 1) throw new DisbursementError("This entry changed; reload and try again.");
-    await tx.auditEvent.create({ data: { actorId, action: "fund.disbursement.publish", entityType: "FundDisbursement", entityId: id, metadata: {} } });
+    await tx.auditEvent.create({ data: { actorId, action: "fund.disbursement.publish", entityType: "FundDisbursement", entityId: id, metadata: selfPublished ? { selfPublished: true } : {} } });
   });
 }
 

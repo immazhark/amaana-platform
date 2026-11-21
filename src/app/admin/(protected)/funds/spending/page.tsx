@@ -27,7 +27,7 @@ export default async function FundSpendingPage({ searchParams }: Props) {
       <div>
         <p className="eyebrow">Funds ledger</p>
         <h1>Where the money went</h1>
-        <p className="muted">Record what each fund paid for. Entries are never edited: a mistake is voided and re-entered. A draft counts against the fund&apos;s balance straight away; the public sees it only once it is published. <Link href="/admin/funds">Back to balances</Link></p>
+        <p className="muted">Record what each fund paid for. Entries are never edited: a mistake is voided and re-entered. A draft counts against the fund&apos;s balance straight away; the public sees it only once it is published, and a second staff member must publish it: the person who recorded an entry cannot. <Link href="/admin/funds">Back to balances</Link></p>
       </div>
     </div>
     {notice ? <p className="status-badge" role="status">{notice.slice(0, 200)}</p> : null}
