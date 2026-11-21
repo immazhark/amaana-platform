@@ -7,3 +7,4 @@
 .v2-receipt-links a:is(:hover,:focus-visible){text-decoration-color:currentColor}
 .v2-receipt-links a:focus-visible,.print-button:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:3px}
 .v2-receipt-sheet{box-shadow:0 1rem 2.5rem rgb(18 34 57 / 5%)}
+.v2-receipt-copy{margin-top:.9rem}.v2-receipt-copy p{margin:.5rem 0 0;font-size:.9rem;line-height:1.5;max-width:42rem}
