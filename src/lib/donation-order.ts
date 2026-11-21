@@ -3,11 +3,12 @@ import { createDonationReference, createReceiptToken, hashReceiptToken } from "@
 import { prisma } from "@/lib/prisma";
 import { calculateFeeCover } from "@/lib/processing-fee";
 import { createRazorpayOrder } from "@/lib/razorpay";
+import { sponsorshipColumns, type SponsorshipRecord } from "@/lib/taleem-sponsorship";
 
 // Exactly one destination: an appeal or a fund. Mirrors the database CHECK on Donation.
 export type OrderDestination =
-  | { appealId: string; fundId?: undefined; fundSlug?: undefined; title: string; donorDirective?: undefined; campaignId?: undefined; units?: undefined; unitPrice?: undefined }
-  | { fundId: string; fundSlug: string; appealId?: undefined; title: string; donorDirective: string | null; campaignId?: string; units?: number; unitPrice?: number };
+  | { appealId: string; fundId?: undefined; fundSlug?: undefined; title: string; donorDirective?: undefined; campaignId?: undefined; units?: undefined; unitPrice?: undefined; sponsorship?: undefined }
+  | { fundId: string; fundSlug: string; appealId?: undefined; title: string; donorDirective: string | null; campaignId?: string; units?: number; unitPrice?: number; sponsorship?: SponsorshipRecord };
 
 export type OrderInput = {
   donorName: string;
@@ -58,6 +59,7 @@ export async function placeRazorpayDonationOrder(input: OrderInput, onProviderAt
         referenceNumber,
         ...(destination.appealId ? { appealId: destination.appealId } : { fundId: destination.fundId, donorDirective: destination.donorDirective }),
         ...(destination.campaignId ? { campaignId: destination.campaignId, units: destination.units, unitPrice: destination.unitPrice } : {}),
+        ...(destination.sponsorship ? sponsorshipColumns(destination.sponsorship) : {}),
         donorName: input.donorName,
         donorEmail: input.donorEmail.toLowerCase(),
         donorPhone: input.donorPhone || null,

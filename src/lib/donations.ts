@@ -52,11 +52,23 @@ const fundDonationFields = {
   // Seasonal fixed-price gift: the server checks the window, the limit and that amount equals units x price.
   campaignSlug: z.string().max(64).regex(FUND_SLUG_PATTERN).optional(),
   units: z.union([z.number().int(), z.string().regex(/^[0-9]+$/).transform(Number)]).pipe(z.number().int().min(1).max(1000)).optional(),
+  // Taleem programme sponsorship: the server recomputes the price from the approved catalogue and amount must equal it.
+  sponsorshipProgramme: z.string().max(40).regex(FUND_SLUG_PATTERN).optional(),
+  sponsorshipUnits: z.union([z.number().int(), z.string().regex(/^[0-9]+$/).transform(Number)]).pipe(z.number().int().min(1).max(50)).optional(),
+  sponsorshipMonths: z.union([z.number().int(), z.string().regex(/^[0-9]+$/).transform(Number)]).pipe(z.number().int().min(1).max(12)).optional(),
 };
 const campaignTogether = (value: { campaignSlug?: string | undefined; units?: number | undefined }) => (value.campaignSlug === undefined) === (value.units === undefined);
 const CAMPAIGN_TOGETHER = "Choose a campaign together with a number of units.";
-export const fundDonationSchema = z.strictObject({ ...fundDonationFields, coverProcessingFee: donationSchema.shape.coverProcessingFee }).refine(campaignTogether, CAMPAIGN_TOGETHER);
-export const fundDirectTransferSchema = z.strictObject({ ...fundDonationFields, ...transferFields }).refine(campaignTogether, CAMPAIGN_TOGETHER);
+type SponsorshipFields = { sponsorshipProgramme?: string | undefined; sponsorshipUnits?: number | undefined; sponsorshipMonths?: number | undefined; campaignSlug?: string | undefined; donorDirective?: string | undefined };
+const sponsorshipTogether = (value: SponsorshipFields) =>
+  (value.sponsorshipProgramme === undefined) === (value.sponsorshipUnits === undefined) && (value.sponsorshipUnits === undefined) === (value.sponsorshipMonths === undefined);
+const SPONSORSHIP_TOGETHER = "Choose a programme together with a number of units and months.";
+const sponsorshipAlone = (value: SponsorshipFields) => value.sponsorshipProgramme === undefined || (value.campaignSlug === undefined && !value.donorDirective);
+const SPONSORSHIP_ALONE = "A sponsorship cannot be combined with a campaign or a custom request.";
+export const fundDonationSchema = z.strictObject({ ...fundDonationFields, coverProcessingFee: donationSchema.shape.coverProcessingFee })
+  .refine(campaignTogether, CAMPAIGN_TOGETHER).refine(sponsorshipTogether, SPONSORSHIP_TOGETHER).refine(sponsorshipAlone, SPONSORSHIP_ALONE);
+export const fundDirectTransferSchema = z.strictObject({ ...fundDonationFields, ...transferFields })
+  .refine(campaignTogether, CAMPAIGN_TOGETHER).refine(sponsorshipTogether, SPONSORSHIP_TOGETHER).refine(sponsorshipAlone, SPONSORSHIP_ALONE);
 
 export function isDonationAmountAllowedForRemaining(amount: number, remainingAmount: number) {
   if (!Number.isFinite(remainingAmount) || remainingAmount <= 0) return false;

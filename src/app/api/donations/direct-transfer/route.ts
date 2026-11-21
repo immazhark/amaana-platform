@@ -5,6 +5,8 @@ import { getDonationCheckoutRemainingAmount } from "@/lib/donation-checkout-bala
 import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
 import { createDonationReference, createReceiptToken, directTransferSchema, fundDirectTransferSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
 import { resolveFundDestination } from "@/lib/fund-destination";
+import { isTaleemSponsorshipEnabled } from "@/lib/taleem-sponsorship-flag";
+import { sponsorshipColumns, sponsorshipInputFrom } from "@/lib/taleem-sponsorship";
 import { isFundGivingEnabled } from "@/lib/fund-giving-flag";
 import { prisma } from "@/lib/prisma";
 import { canExposePublicAppeal } from "@/lib/public-environment";
@@ -58,7 +60,7 @@ export async function POST(request: Request) {
     // donation amount, payment identity, donor fields or evidence alter a
     // financial claim through HTTP multipart parameter pollution.
     const scalarFields = [
-      "appealId", "fundSlug", "donorDirective", "campaignSlug", "units", "donorName", "donorEmail", "donorPhone", "amount",
+      "appealId", "fundSlug", "donorDirective", "campaignSlug", "units", "sponsorshipProgramme", "sponsorshipUnits", "sponsorshipMonths", "donorName", "donorEmail", "donorPhone", "amount",
       "givingIntent", "paymentMethod", "transferReference", "transferredAt",
     ] as const;
     if (scalarFields.some(field => form.getAll(field).length > 1) || form.getAll("evidence").length > 1) {
@@ -130,18 +132,18 @@ export async function POST(request: Request) {
     if (fundSlug !== null && form.get("appealId") !== null) {
       return NextResponse.json({ error: "Please choose either an appeal or a fund." }, { status: 400, headers: privateHeaders });
     }
-    const fundParsed = fundSlug === null ? null : fundDirectTransferSchema.safeParse({ fundSlug, donorDirective: form.get("donorDirective") ?? undefined, campaignSlug: form.get("campaignSlug") ?? undefined, units: form.get("units") ?? undefined, ...common });
+    const fundParsed = fundSlug === null ? null : fundDirectTransferSchema.safeParse({ fundSlug, donorDirective: form.get("donorDirective") ?? undefined, campaignSlug: form.get("campaignSlug") ?? undefined, units: form.get("units") ?? undefined, sponsorshipProgramme: form.get("sponsorshipProgramme") ?? undefined, sponsorshipUnits: form.get("sponsorshipUnits") ?? undefined, sponsorshipMonths: form.get("sponsorshipMonths") ?? undefined, ...common });
     const appealParsed = fundSlug === null ? directTransferSchema.safeParse({ appealId: form.get("appealId"), ...common }) : null;
     const checked = fundParsed ?? appealParsed;
     if (!checked?.success) return NextResponse.json({ error: "Please check the transfer information and reference." }, { status: 400, headers: privateHeaders });
     const data = checked.data;
 
-    let destination: { appealId: string } | { fundId: string; donorDirective: string | null; campaignId?: string; units?: number; unitPrice?: number };
+    let destination: { appealId: string } | { fundId: string; donorDirective: string | null; campaignId?: string; units?: number; unitPrice?: number; sponsorshipProgramme?: string; sponsorshipUnits?: number; sponsorshipMonths?: number; sponsorshipMonthlyRate?: number; sponsorshipRateVersion?: string };
     if (fundParsed?.success) {
       if (data.amount < MIN_DONATION_AMOUNT) return NextResponse.json({ error: `The minimum donation is ₹${MIN_DONATION_AMOUNT.toLocaleString("en-IN")}.` }, { status: 400, headers: privateHeaders });
-      const resolved = await resolveFundDestination(prisma, { fundSlug: fundParsed.data.fundSlug, givingIntent: data.givingIntent, donorDirective: fundParsed.data.donorDirective, campaignSlug: fundParsed.data.campaignSlug, units: fundParsed.data.units, amount: data.amount });
+      const resolved = await resolveFundDestination(prisma, { fundSlug: fundParsed.data.fundSlug, givingIntent: data.givingIntent, donorDirective: fundParsed.data.donorDirective, campaignSlug: fundParsed.data.campaignSlug, units: fundParsed.data.units, amount: data.amount, sponsorship: sponsorshipInputFrom(fundParsed.data), sponsorshipEnabled: isTaleemSponsorshipEnabled() });
       if (!resolved.ok) return NextResponse.json({ error: resolved.error }, { status: resolved.status, headers: privateHeaders });
-      destination = { fundId: resolved.value.fundId, donorDirective: resolved.value.donorDirective, ...(resolved.value.campaignId ? { campaignId: resolved.value.campaignId, units: resolved.value.units, unitPrice: resolved.value.unitPrice } : {}) };
+      destination = { fundId: resolved.value.fundId, donorDirective: resolved.value.donorDirective, ...(resolved.value.campaignId ? { campaignId: resolved.value.campaignId, units: resolved.value.units, unitPrice: resolved.value.unitPrice } : {}), ...(resolved.value.sponsorship ? sponsorshipColumns(resolved.value.sponsorship) : {}) };
     } else if (appealParsed?.success) {
       const appeal = await prisma.appeal.findFirst({
         where: { id: appealParsed.data.appealId, status: "PUBLISHED" },

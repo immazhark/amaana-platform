@@ -36,3 +36,31 @@ export function quoteSponsorship(input: unknown, catalogue: TaleemCatalogue = TA
 export function isCheckoutEnabled(quote: SponsorshipQuote): boolean {
   return quote.approval === "APPROVED";
 }
+
+/** Programme sponsorship is a gift to this fund and to no other. */
+export const TALEEM_FUND_SLUG = "taleem";
+
+/** What is stored on the donation. The rate is per unit per month in whole rupees, recorded with its version, so a later
+ * rate change can never rewrite what a donor was quoted. (The engine's monthlyPaise covers all units; this divides it.) */
+export type SponsorshipRecord = { programme: TaleemProgrammeId; units: number; months: number; monthlyRate: number; rateVersion: string };
+
+export function sponsorshipRecord(quote: SponsorshipQuote): SponsorshipRecord {
+  return { programme: quote.programmeId, units: quote.units, months: quote.months, monthlyRate: quote.monthlyPaise / quote.units / 100, rateVersion: quote.rateVersion };
+}
+
+export function sponsorshipColumns(record: SponsorshipRecord) {
+  return {
+    sponsorshipProgramme: record.programme,
+    sponsorshipUnits: record.units,
+    sponsorshipMonths: record.months,
+    sponsorshipMonthlyRate: record.monthlyRate,
+    sponsorshipRateVersion: record.rateVersion,
+  };
+}
+
+/** The request's programme, units and months, or undefined when the donation is not a sponsorship. */
+export function sponsorshipInputFrom(data: { sponsorshipProgramme?: string | undefined; sponsorshipUnits?: number | undefined; sponsorshipMonths?: number | undefined }) {
+  return data.sponsorshipProgramme !== undefined && data.sponsorshipUnits !== undefined && data.sponsorshipMonths !== undefined
+    ? { programmeId: data.sponsorshipProgramme, units: data.sponsorshipUnits, months: data.sponsorshipMonths }
+    : undefined;
+}
