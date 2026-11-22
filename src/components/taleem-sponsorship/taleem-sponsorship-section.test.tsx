@@ -30,6 +30,16 @@ describe("Taleem sponsorship section on the sponsor-education page", () => {
     expect(mocks.paymentDetails).not.toHaveBeenCalled();
   });
 
+  it("preselects the requested programme only when it is in the live offer", async () => {
+    vi.stubEnv("FUND_GIVING_ENABLED", "true");
+    vi.stubEnv("TALEEM_SPONSORSHIP_ENABLED", "true");
+    expect((await TaleemSponsorshipSection({ programme: "nazira" }))?.props.initialProgrammeId).toBe("nazira");
+    expect((await TaleemSponsorshipSection({ programme: ["hifdh-day-scholar", "qaida"] }))?.props.initialProgrammeId).toBe("hifdh-day-scholar");
+    for (const programme of [undefined, "", "unknown", "NAZIRA", "__proto__", []]) {
+      expect((await TaleemSponsorshipSection({ programme }))?.props.initialProgrammeId).toBeUndefined();
+    }
+  });
+
   it("renders the configurator for the active Taleem fund only when both switches are on", async () => {
     vi.stubEnv("FUND_GIVING_ENABLED", "true");
     vi.stubEnv("TALEEM_SPONSORSHIP_ENABLED", "true");

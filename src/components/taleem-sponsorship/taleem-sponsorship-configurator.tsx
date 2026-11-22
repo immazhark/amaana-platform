@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { DonationMethods } from "@/components/donation-methods";
 import type { DonationFormCopy } from "@/components/donation-form-copy";
+import type { TaleemProgrammeId } from "@/content/taleem-catalogue";
 import type { GiveFund } from "@/components/fund-giving/fund-copy";
 import type { TaleemClasses } from "./taleem-sponsorship-copy";
 import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
@@ -19,9 +20,9 @@ const plural = (count: number, one: string, many: string) => `${count} ${count =
  * checkout forms every other gift uses. The price shown here comes from the same engine the server uses, but the server
  * recomputes it from the approved catalogue and refuses any other amount. The gift supports the programme: it does not
  * name or reserve a student, and the period is paid once, never as a recurring mandate. */
-export function TaleemSponsorshipConfigurator({ fund, offer, copy, paymentDetails, feeBps, classes, head, intro, panelNote }: { fund: GiveFund; offer: SponsorshipOffer; copy: DonationFormCopy; paymentDetails: DonationPaymentDetails; feeBps: number; classes: TaleemClasses; head: ReactNode; intro: ReactNode; panelNote: ReactNode }) {
+export function TaleemSponsorshipConfigurator({ fund, offer, copy, paymentDetails, feeBps, classes, head, intro, panelNote, initialProgrammeId }: { fund: GiveFund; offer: SponsorshipOffer; copy: DonationFormCopy; paymentDetails: DonationPaymentDetails; feeBps: number; classes: TaleemClasses; head: ReactNode; intro: ReactNode; panelNote: ReactNode; initialProgrammeId?: TaleemProgrammeId }) {
   const { programmes, monthOptions, maxUnits } = offer;
-  const [programmeId, setProgrammeId] = useState(programmes[0]?.id);
+  const [programmeId, setProgrammeId] = useState(programmes.find(item => item.id === initialProgrammeId)?.id ?? programmes[0]?.id);
   const [months, setMonths] = useState<number>(monthOptions[0] ?? 1);
   const [unitsText, setUnitsText] = useState("1");
   const [requested, setRequested] = useState(false);
