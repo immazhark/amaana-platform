@@ -44,8 +44,11 @@ export type ApprovalFields = {
 
 export type ApprovalFieldName =
   | "needConfirmed" | "evidenceReviewed" | "verifiedNeedAmount" | "paymentDestination" | "otherFundingChecked" | "verificationSummary" | "zakatStatus"
-  | "approvedPublicTarget" | "publicNameConsent" | "photoConsent" | "medicalDetailsConsent" | "institutionNameConsent" | "archiveConsent";
+  | "approvedPublicTarget" | "publicNameConsent" | "photoConsent" | "medicalDetailsConsent" | "institutionNameConsent" | "archiveConsent"
+  | "approvedPublicTarget_missing" | "approvedPublicTarget_exceeds" | "approvedPublicTarget_notPublic";
 export type ApprovalFieldErrors = Partial<Record<ApprovalFieldName | "confirmation", string>>;
+
+export type ApprovalProblem = string;
 
 const CORE: Record<"needConfirmed" | "evidenceReviewed" | "verifiedNeedAmount" | "paymentDestination" | "otherFundingChecked" | "verificationSummary" | "zakatStatus", string> = {
   needConfirmed: "Need must be confirmed.",
@@ -81,18 +84,126 @@ export function approvalIssues(route: ApprovalRoute, fields: ApprovalFields, opt
 
   if (route === "APPROVED_PUBLIC") {
     const target = fields.approvedPublicTarget;
-    if (!target || !Number.isFinite(target) || target <= 0) errors.approvedPublicTarget = "Approved public target must be recorded.";
-    else if (fields.verifiedNeedAmount && target > fields.verifiedNeedAmount) errors.approvedPublicTarget = "Approved public target cannot exceed the verified need amount.";
+    if (!target || !Number.isFinite(target) || target <= 0) errors.approvedPublicTarget_missing = "Approved public target must be recorded.";
+    else if (fields.verifiedNeedAmount && target > fields.verifiedNeedAmount) errors.approvedPublicTarget_exceeds = "Approved public target cannot exceed the verified need amount.";
     for (const key of Object.keys(CONSENT) as (keyof typeof CONSENT)[]) {
       if (fields[key] === "UNCONFIRMED") errors[key] = CONSENT[key];
     }
   } else if (fields.approvedPublicTarget) {
-    errors.approvedPublicTarget = "A public fundraising target can only be stored for an approved public appeal";
+    errors.approvedPublicTarget_notPublic = "A public fundraising target can only be stored for an approved public appeal";
   }
 
   if (!options.confirmed) errors.confirmation = "Confirm the approval to continue.";
   return errors;
 }
+
+/** Converts field errors into an array of problem tokens for the redirect notice. */
+export function approvalProblemsFrom(errors: ApprovalFieldErrors): string[] {
+  return Object.keys(errors);
+}
+
+/** Human message for a problem token. For standard field tokens (e.g. "needConfirmed") it uses the CORE/MESSAGES maps.
+ * For the special approvalPublicTarget tokens, it returns the explicit message. */
+const SPECIAL_MESSAGES: Record<string, string> = {
+  approvedPublicTarget_missing: "Approved public target must be recorded.",
+  approvedPublicTarget_exceeds: "Approved public target cannot exceed the verified need amount.",
+  approvedPublicTarget_notPublic: "A public fundraising target can only be stored for an approved public appeal",
+  confirmation: "Confirm the approval to continue.",
+};
+
+/** Extracts the field name from a problem token (the part before the first underscore). */
+export function approvalProblemField(problem: string): ApprovalFieldName {
+  if (problem === "confirmation") return "confirmApproval" as ApprovalFieldName;
+  if (SPECIAL_MESSAGES[problem]) return "approvedPublicTarget" as ApprovalFieldName;
+  return problem.split("_")[0] as ApprovalFieldName;
+}
+
+/** Returns the human message for a problem token. Unknown tokens fall back to the form error message. */
+export function approvalProblemMessage(problem: string): string {
+  if (SPECIAL_MESSAGES[problem]) return SPECIAL_MESSAGES[problem];
+  const idx = problem.indexOf("_");
+  const field = idx >= 0 ? problem.slice(0, idx) : problem;
+  // Fallback to the original error message maps for standard fields
+  if (CORE[field as keyof typeof CORE]) return CORE[field as keyof typeof CORE];
+  if (CONSENT[field as keyof typeof CONSENT]) return CONSENT[field as keyof typeof CONSENT];
+  // Unknown or crafted token: never echo it back; use the generic form error instead.
+  return APPROVAL_ERROR_MESSAGES.form;
+}
+
+// ---- The outcome travels in the address; the private text never does -------------------------------------------
+//
+// The approval form is plain server-rendered HTML that posts to a server action, so it needs no client JavaScript and
+// still works if scripts fail to load. After the action the browser is redirected back to the request with a notice. The
+// notice names only the outcome and which fields were wrong. What the reviewer typed is NOT put in the address (addresses
+// are logged and shared): on a correctable error it is held in a short-lived, httpOnly, same-site cookie.
+
+export type ApprovalNotice =
+  | { kind: "error"; problems: string[]; code: string | null }
+  | { kind: "done"; outcome: "approved" | "already_approved"; route: ApprovalRoute | null };
+
+const APPROVAL_ERROR_CODES = ["incomplete", "not_found", "linked_appeal", "rejected", "closed", "not_eligible", "stale_request", "stale_verification", "forbidden", "form", "version"] as const;
+
+export function approvalRedirect(requestId: string, notice: ApprovalNotice): string {
+  const base = `/admin/requests/${encodeURIComponent(requestId)}`;
+  if (notice.kind === "done") return `${base}?approve=done&o=${notice.outcome}&r=${notice.route ?? ""}#approve-heading`;
+  const query = ["approve=error"];
+  if (notice.problems.length) query.push(`e=${encodeURIComponent(notice.problems.join(","))}`);
+  if (notice.code) query.push(`code=${notice.code}`);
+  return `${base}?${query.join("&")}#approve-errors`;
+}
+
+const one = (value: string | string[] | undefined): string | null => (typeof value === "string" ? value : null);
+
+/** Reads a notice back from the address, accepting only values this module writes, so a crafted link cannot put words on the page. */
+export function parseApprovalNotice(search: Readonly<Record<string, string | string[] | undefined>>): ApprovalNotice | null {
+  const kind = one(search.approve);
+  if (kind === "done") return { kind: "done", outcome: one(search.o) === "already_approved" ? "already_approved" : "approved", route: parseApprovalRoute(one(search.r)) };
+  if (kind !== "error") return null;
+  const listed = (one(search.e) ?? "").split(",").filter((token): token is string => token.length > 0);
+  const code = one(search.code);
+  return { kind: "error", problems: listed, code: code && (APPROVAL_ERROR_CODES as readonly string[]).includes(code) ? code : null };
+}
+
+/** A draft amount is kept for the reviewer only if its encoded form fits comfortably inside one cookie. */
+export function approvalAmountDraft(verifiedNeedAmount: string, approvedPublicTarget: string): string | null {
+  const encoded = encodeURIComponent(JSON.stringify({ v: verifiedNeedAmount, t: approvedPublicTarget }));
+  return encoded.length <= 3500 ? encoded : null;
+}
+
+/** The draft amounts back from the cookie, or empty strings if absent or unreadable. */
+export function approvalAmountDraftFromCookie(value: string | undefined): { verifiedNeedAmount: string; approvedPublicTarget: string } {
+  if (!value) return { verifiedNeedAmount: "", approvedPublicTarget: "" };
+  try {
+    const decoded = decodeURIComponent(value);
+    const parsed = JSON.parse(decoded) as { v?: string; t?: string };
+    return { verifiedNeedAmount: parsed.v ?? "", approvedPublicTarget: parsed.t ?? "" };
+  } catch {
+    return { verifiedNeedAmount: "", approvedPublicTarget: "" };
+  }
+}
+
+/** The cookie that holds one request's draft amounts, or null if the id is not a plain identifier. The name is only ever
+ * built from letters, digits, underscore and hyphen, so a crafted id cannot shape a cookie. */
+export function approvalDraftCookieName(requestId: string): string | null {
+  return /^[A-Za-z0-9_-]{8,40}$/.test(requestId) ? `amaana_ad_${requestId}` : null;
+}
+
+/** The words shown for a refused decision, in one place. */
+export const APPROVAL_ERROR_MESSAGES = {
+  incomplete: "Complete the checks listed before approving this request.",
+  not_found: "That request could not be found.",
+  linked_appeal: "This request has a linked appeal. Open the appeal to manage its status.",
+  rejected: "This request was rejected. Move it back into review under Review before approving it.",
+  closed: "This request is closed. Reopen the review under Review first if it needs to be approved.",
+  not_eligible: "This request cannot be approved from its current state.",
+  stale_request: "This request changed while you were reviewing it. Refresh the page and check it before approving.",
+  stale_verification: "The review changed while you were reviewing it. Refresh the page and check it before approving.",
+  forbidden: "Approval permission is required to approve a request.",
+  form: "The form was not submitted correctly. Refresh the page and try again.",
+  version: "The version of this request is missing or invalid. Refresh the page before approving.",
+} as const;
+
+export type ApprovalErrorCode = keyof typeof APPROVAL_ERROR_MESSAGES;
 
 export type RequirementField = ApprovalFieldName | "otherFundingNotes" | "assignment" | "internalNotes" | "publicTitle" | "publicSummary" | "publicStory" | "coverImage";
 export type RequirementLabel = "Required to approve" | "Required to publish" | "Optional" | "Not needed for this action";

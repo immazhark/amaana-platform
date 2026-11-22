@@ -35,6 +35,7 @@ const expectedMatrix: Record<string, string[]> = {
   "admin/(protected)/requests/[id]/actions.ts": ["appeal.create", "assistance.approve", "assistance.assign", "assistance.update", "assistance.view"],
   "admin/(protected)/requests/[id]/page.tsx": ["appeal.create", "appeal.view", "assistance.approve", "assistance.assign", "assistance.update", "assistance.view"],
   "admin/(protected)/requests/[id]/rejection-actions.ts": ["assistance.approve", "assistance.update"],
+  "admin/(protected)/requests/[id]/approval-actions.ts": ["assistance.approve", "assistance.update"],
   "admin/(protected)/retention/actions.ts": ["assistance.approve"],
   "admin/(protected)/retention/page.tsx": ["assistance.approve"],
   "admin/(protected)/taleem/actions.ts": ["assistance.approve"],

@@ -68,8 +68,8 @@ describe("public fundraising approval", () => {
   });
 
   it("needs an approved target that does not exceed the verified need", () => {
-    expect(approvalIssues("APPROVED_PUBLIC", { ...publicReady, approvedPublicTarget: null }, { confirmed: true })).toEqual({ approvedPublicTarget: "Approved public target must be recorded." });
-    expect(approvalIssues("APPROVED_PUBLIC", { ...publicReady, approvedPublicTarget: 5000.01 }, { confirmed: true })).toEqual({ approvedPublicTarget: "Approved public target cannot exceed the verified need amount." });
+    expect(approvalIssues("APPROVED_PUBLIC", { ...publicReady, approvedPublicTarget: null }, { confirmed: true })).toEqual({ approvedPublicTarget_missing: "Approved public target must be recorded." });
+    expect(approvalIssues("APPROVED_PUBLIC", { ...publicReady, approvedPublicTarget: 5000.01 }, { confirmed: true })).toEqual({ approvedPublicTarget_exceeds: "Approved public target cannot exceed the verified need amount." });
     expect(approvalIssues("APPROVED_PUBLIC", { ...publicReady, approvedPublicTarget: 4000 }, { confirmed: true })).toEqual({});
   });
 
@@ -81,8 +81,8 @@ describe("public fundraising approval", () => {
   });
 
   it("does not let a target be entered for a route that is not public", () => {
-    expect(keys("APPROVED_PRIVATE", { ...complete, approvedPublicTarget: 100 })).toEqual(["approvedPublicTarget"]);
-    expect(approvalIssues("APPROVED_PARTIAL", { ...complete, approvedPublicTarget: 100 }, { confirmed: true }).approvedPublicTarget).toMatch(/only be stored for an approved public appeal/);
+    expect(keys("APPROVED_PRIVATE", { ...complete, approvedPublicTarget: 100 })).toEqual(["approvedPublicTarget_notPublic"]);
+    expect(keys("APPROVED_PARTIAL", { ...complete, approvedPublicTarget: 100 }, true)).toEqual(["approvedPublicTarget_notPublic"]);
   });
 });
 

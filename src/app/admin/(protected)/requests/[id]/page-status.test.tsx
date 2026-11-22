@@ -57,10 +57,10 @@ describe("request review current-status preservation", () => {
     expect(options.some(option => ["APPROVED", "REJECTED"].includes(option.value ?? ""))).toBe(false);
   });
 
-  it("offers an approver the approval choice, but no longer a REJECTED choice: rejecting is its own form", async () => {
+  it("offers no APPROVED or REJECTED choice in the status dropdown for an approver: approving and rejecting are their own forms", async () => {
     mocks.permission.mockReturnValue(true);
     const { options } = await statusOptions("UNDER_VERIFICATION");
-    expect(options.map(option => option.value)).toContain("APPROVED");
+    expect(options.map(option => option.value)).not.toContain("APPROVED");
     expect(options.map(option => option.value)).not.toContain("REJECTED");
     const approved = await statusOptions("APPROVED");
     expect(approved.options.filter(option => option.selected).map(option => option.value)).toEqual(["APPROVED"]);

@@ -38,7 +38,7 @@ describe("an eligible request, seen by an approver", () => {
     expect(card).toContain("You do not need to complete any approval check to reject a request");
     expect(card).toContain('name="reason"');
     expect(card).toContain("Confirm rejection");
-    expect(html.indexOf('id="reject-heading"')).toBeLessThan(html.indexOf("Private verification"));
+    expect(html.indexOf('id="reject-heading"')).toBeLessThan(html.indexOf("Review and decision"));
   });
 
   it("works from a request with no verification record at all, sending an empty verification version", async () => {
