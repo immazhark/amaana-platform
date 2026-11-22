@@ -2,7 +2,7 @@ import { NotificationStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { renderNotificationEmail } from "@/lib/notification-templates";
-import { emailSendNotBefore } from "@/lib/env";
+import { emailSendNotBefore, hasOfficialEmailSender } from "@/lib/env";
 
 const MAX_BATCH_SIZE = 20;
 const MAX_ATTEMPTS = 5;
@@ -139,7 +139,7 @@ async function recoverStaleProcessingNotifications() {
 export async function processPendingEmailNotifications() {
   // Defence in depth: the job route already requires a go-live instant. Without one, nothing is selected or claimed.
   const notBefore = emailSendNotBefore();
-  if (!notBefore) return { selected: 0, sent: 0, failed: 0 };
+  if (!notBefore || !hasOfficialEmailSender()) return { selected: 0, sent: 0, failed: 0 };
   await recoverStaleProcessingNotifications();
 
   const pending = await prisma.notification.findMany({

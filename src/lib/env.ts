@@ -87,10 +87,17 @@ export function emailSendNotBefore(env: Record<string, string | undefined> = pro
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+/** The sender must be on the verified Amaana domain. The provider's own test sender only delivers to the account owner, so
+ * every other donor's message is refused at send time (a 403 that parks the message for good). Checked before going live. */
+export function hasOfficialEmailSender(env: Record<string, string | undefined> = process.env) {
+  const from = env.EMAIL_FROM?.trim();
+  return Boolean(from) && /@amaanafoundation\.org>?$/i.test(from as string);
+}
+
 export function isEmailDeliveryEnabled(env: Record<string, string | undefined> = process.env) {
   // The notification cron does not invoke the full deployment schema.
   // Refuse live delivery from staging even when its mode is misconfigured.
   // Live also needs a declared go-live instant, so a switch flipped alone can never drain the old queue.
   const environment = env.APP_ENVIRONMENT ?? "production";
-  return environment === "production" && env.EMAIL_DELIVERY_MODE === "live" && emailSendNotBefore(env) !== null;
+  return environment === "production" && env.EMAIL_DELIVERY_MODE === "live" && emailSendNotBefore(env) !== null && hasOfficialEmailSender(env);
 }

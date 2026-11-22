@@ -75,7 +75,7 @@ describe("notification worker flow", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.RESEND_API_KEY = "re_test_key";
-    process.env.EMAIL_FROM = "Amaana Foundation <notifications@example.test>";
+    process.env.EMAIL_FROM = "Amaana Foundation <notifications@amaanafoundation.org>";
     process.env.NOTIFICATION_SEND_NOT_BEFORE = "2026-01-01T00:00:00Z";
 
     mocks.findMany.mockResolvedValue([pendingNotification()]);
