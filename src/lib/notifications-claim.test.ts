@@ -14,6 +14,7 @@ import { processPendingEmailNotifications } from "./notifications";
 describe("notification atomic retry eligibility", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.stubEnv("NOTIFICATION_SEND_NOT_BEFORE", "2026-01-01T00:00:00Z");
     db.findMany.mockResolvedValue([{
       id: "queued-test",
       channel: "EMAIL",

@@ -22,6 +22,7 @@ describe("notification provider transport deadline", () => {
     vi.resetAllMocks();
     process.env.RESEND_API_KEY = "re_synthetic";
     process.env.EMAIL_FROM = "Synthetic <test@example.test>";
+    process.env.NOTIFICATION_SEND_NOT_BEFORE = "2026-01-01T00:00:00Z";
     db.findMany.mockResolvedValue([{
       id: "queued-timeout",
       recipient: "recipient@example.test",
@@ -36,6 +37,7 @@ describe("notification provider transport deadline", () => {
   afterEach(() => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
+    delete process.env.NOTIFICATION_SEND_NOT_BEFORE;
     for (const key of ["RESEND_API_KEY", "EMAIL_FROM"] as const) {
       if (saved[key] === undefined) delete process.env[key];
       else process.env[key] = saved[key];

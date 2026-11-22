@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { isEmailDeliveryEnabled, validateProductionEnvironment } from "./env";
+import { emailSendNotBefore, isEmailDeliveryEnabled, validateProductionEnvironment } from "./env";
 
 const requiredProductionEnv = {
   APP_ENVIRONMENT: "production",
@@ -35,9 +35,32 @@ afterEach(() => {
 });
 
 describe("production environment safety", () => {
-  it("accepts the default production deployment posture", () => {
+  it("accepts the default production deployment posture, with delivery still off until a go-live instant is declared", () => {
     expect(() => validateProductionEnvironment()).not.toThrow();
+    expect(isEmailDeliveryEnabled()).toBe(false);
+    process.env.NOTIFICATION_SEND_NOT_BEFORE = "2026-11-22T06:00:00Z";
     expect(isEmailDeliveryEnabled()).toBe(true);
+  });
+
+  it("never enables delivery without a valid go-live instant, even in live mode", () => {
+    for (const value of [undefined, "", "   ", "2026-11-22", "22 Nov 2026", "2026-11-22T06:00:00", "tomorrow", "2026-13-40T99:00:00Z", "1700000000"]) {
+      const env = { APP_ENVIRONMENT: "production", EMAIL_DELIVERY_MODE: "live", NOTIFICATION_SEND_NOT_BEFORE: value };
+      expect(emailSendNotBefore(env), String(value)).toBeNull();
+      expect(isEmailDeliveryEnabled(env), String(value)).toBe(false);
+    }
+  });
+
+  it("parses a strict ISO 8601 go-live instant with an explicit offset", () => {
+    expect(emailSendNotBefore({ NOTIFICATION_SEND_NOT_BEFORE: "2026-11-22T06:00:00Z" })?.toISOString()).toBe("2026-11-22T06:00:00.000Z");
+    expect(emailSendNotBefore({ NOTIFICATION_SEND_NOT_BEFORE: "2026-11-22T11:30:00+05:30" })?.toISOString()).toBe("2026-11-22T06:00:00.000Z");
+    expect(emailSendNotBefore({ NOTIFICATION_SEND_NOT_BEFORE: " 2026-11-22T06:00Z " })?.toISOString()).toBe("2026-11-22T06:00:00.000Z");
+  });
+
+  it("keeps delivery off outside production or unless the mode is exactly live, whatever the go-live instant", () => {
+    const base = { NOTIFICATION_SEND_NOT_BEFORE: "2026-11-22T06:00:00Z" };
+    expect(isEmailDeliveryEnabled({ ...base, APP_ENVIRONMENT: "staging", EMAIL_DELIVERY_MODE: "live" })).toBe(false);
+    for (const mode of [undefined, "disabled", "Live", "true", "1"]) expect(isEmailDeliveryEnabled({ ...base, APP_ENVIRONMENT: "production", EMAIL_DELIVERY_MODE: mode })).toBe(false);
+    expect(isEmailDeliveryEnabled({ ...base, EMAIL_DELIVERY_MODE: "live" })).toBe(true);
   });
 
   it("rejects a production canonical URL that is not the official Amaana origin", () => {
