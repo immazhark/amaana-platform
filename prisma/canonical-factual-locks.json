@@ -1,5 +1,5 @@
 {
-  "version": "facts-2026-09-15-v1",
+  "version": "facts-2026-11-22-v1",
   "initiatives": [
     {
       "slug": "emergency-neonatal-medical-aid",
@@ -29,6 +29,35 @@
         "Phase figures are supporting sub-measures within the overall drive and must not be added to 234."
       ],
       "dataCaveat": null
+    },
+    {
+      "slug": "taleem",
+      "primaryMetric": "26",
+      "primaryMetricLabel": "Nazira / Hifdh students combined · November 2026",
+      "textReplacements": [
+        {
+          "from": "As of September 2026, 25 students across Nazira and Hifdh were being sponsored through Amaana by multiple donors.",
+          "to": "As of November 2026, 26 students across Nazira and Hifdh are being sponsored through Amaana by multiple donors."
+        }
+      ]
+    },
+    {
+      "slug": "taleem-hifdh-sponsorship",
+      "textReplacements": [
+        {
+          "from": "As of September 2026, 25 students across Amaana's Qur'an Nazira and Hifdh sponsorships were being supported by multiple donors.",
+          "to": "As of November 2026, 26 students across Amaana's Qur'an Nazira and Hifdh sponsorships are being supported by multiple donors."
+        }
+      ]
+    },
+    {
+      "slug": "taleem-nazira-sponsorship",
+      "textReplacements": [
+        {
+          "from": "As of September 2026, 25 students across Amaana's Nazira and Hifdh sponsorships were being supported through multiple donors.",
+          "to": "As of November 2026, 26 students across Amaana's Nazira and Hifdh sponsorships are being supported through multiple donors."
+        }
+      ]
     }
   ]
 }

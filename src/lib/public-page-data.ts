@@ -8,6 +8,7 @@ import { canExposePublicAppeal, canExposeSyntheticStagingContent } from "@/lib/p
 import { IDENTITY_MEDIA_SORT_ORDER } from "@/lib/public-media";
 import { programmeCategories, programmes } from "@/lib/master-copy";
 import { programmeCategoryPath } from "@/lib/programme-category-routing";
+import { withCanonicalInitiativeFactsList } from "@/lib/canonical-initiative-facts";
 import {
   getPublishedFaithContentBySlug,
   getPublishedInitiativeBySlug,
@@ -183,7 +184,7 @@ export const getHomepageDiscoveryData = cache(async () => {
       orderBy: [{ displayOrder: "asc" }, { publishedAt: "desc" }],
       take: 5,
       select: homepageInitiativeSelect,
-    }),
+    }).then(withCanonicalInitiativeFactsList),
     prisma.initiative.findMany({
       where: {
         status: "PUBLISHED",
@@ -192,7 +193,7 @@ export const getHomepageDiscoveryData = cache(async () => {
       },
       orderBy: [{ displayOrder: "asc" }, { publishedAt: "desc" }],
       select: homepageInitiativeSelect,
-    }),
+    }).then(withCanonicalInitiativeFactsList),
     prisma.cause.findMany({
       where: { status: "PUBLISHED" },
       orderBy: [{ displayOrder: "asc" }, { publishedAt: "desc" }],
@@ -355,7 +356,7 @@ export const getImpactPageData = cache(async () => {
         select: PUBLIC_IMAGE_SELECT,
       },
     },
-  });
+  }).then(withCanonicalInitiativeFactsList);
 });
 
 /**
@@ -376,7 +377,7 @@ export const getImpactComparisonPageData = cache(async () => {
       primaryMetricLabel: true,
       cause: { select: { title: true } },
     },
-  });
+  }).then(withCanonicalInitiativeFactsList);
 });
 
 /**
@@ -544,7 +545,7 @@ export const getDonationImpactHighlights = cache(async () => {
     orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }, { id: "asc" }],
     take: 8,
     select: { slug: true, title: true, primaryMetric: true, primaryMetricLabel: true },
-  });
+  }).then(withCanonicalInitiativeFactsList);
   // SQL publication and cause review gates are necessary, but malformed
   // projection values must not become public factual claims or hide later rows.
   return (Array.isArray(rows) ? rows : []).filter(item =>
@@ -573,7 +574,7 @@ export const getTransparencyPageData = cache(async () => {
       primaryMetricLabel: true,
       cause: { select: { title: true } },
     },
-  });
+  }).then(withCanonicalInitiativeFactsList);
 });
 
 
