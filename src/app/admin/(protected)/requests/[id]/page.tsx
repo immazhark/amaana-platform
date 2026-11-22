@@ -8,7 +8,8 @@ import {
   MANUAL_ASSISTANCE_STATUSES,
   getPublicAppealVerificationIssues,
 } from "@/lib/assistance";
-import { rejectionEligibility } from "@/lib/assistance-rejection";
+import { cookies } from "next/headers";
+import { parseRejectionNotice, rejectionDraftCookieName, rejectionDraftFromCookie, rejectionEligibility } from "@/lib/assistance-rejection";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { assignRequest, convertToAppeal, saveVerificationWithFeedback, updateRequestWithFeedback } from "./actions";
@@ -16,12 +17,16 @@ import { rejectRequestAction } from "./rejection-actions";
 import { AdminActionFeedbackForm } from "@/components/admin-action-feedback-form";
 import { RejectRequestForm } from "@/components/reject-request-form";
 
-type Props = { params: Promise<{ id: string }> };
+type Props = { params: Promise<{ id: string }>; searchParams?: Promise<Record<string, string | string[] | undefined>> };
 const label = (value: string) => value.replaceAll("_", " ").toLowerCase().replace(/^./, character => character.toUpperCase());
 
-export default async function RequestDetailPage({ params }: Props) {
+export default async function RequestDetailPage({ params, searchParams }: Props) {
   const user = await requirePermission("assistance.view");
   const { id } = await params;
+  const notice = parseRejectionNotice(await (searchParams ?? Promise.resolve({})));
+  // What the reviewer typed before an error, held privately in a short-lived cookie (never in the address), read only then.
+  const draftName = notice?.kind === "error" ? rejectionDraftCookieName(id) : null;
+  const draftReason = draftName ? rejectionDraftFromCookie((await cookies()).get(draftName)?.value) : "";
   const [request, staff, history] = await Promise.all([
     prisma.assistanceRequest.findUnique({
       where: { id },
@@ -103,6 +108,10 @@ export default async function RequestDetailPage({ params }: Props) {
           </>}
           {rejection === "closed" && <p>This request is closed. Reopen the review under Review first if it needs to be rejected.</p>}
           {rejection === "already_rejected" && <>
+            {notice?.kind === "done" && <div role="status">
+              <p><strong>{notice.outcome === "rejected" ? "The request has been rejected." : "This request was already rejected."}</strong> {request.referenceNumber} is now Rejected. Your reason is kept privately with the request and is not sent to the applicant.</p>
+              <Link className="button secondary" href="/admin">Back to the queue</Link>
+            </div>}
             {latestRejection
               ? <dl className="details">
                 <div><dt>Recorded by</dt><dd>{latestRejection.rejectedBy.name}</dd></div>
@@ -114,7 +123,7 @@ export default async function RequestDetailPage({ params }: Props) {
           </>}
           {rejection === "eligible" && (canReject ? <>
             <p className="muted">Enter the reason and confirm. You do not need to complete any approval check to reject a request, and nothing you have entered in the verification form is used or required.</p>
-            <RejectRequestForm action={rejectRequestAction} requestId={id} referenceNumber={request.referenceNumber} requestVersion={request.updatedAt.toISOString()} verificationVersion={verification?.updatedAt.toISOString() ?? ""} />
+            <RejectRequestForm action={rejectRequestAction} requestId={id} referenceNumber={request.referenceNumber} requestVersion={request.updatedAt.toISOString()} verificationVersion={verification?.updatedAt.toISOString() ?? ""} notice={notice?.kind === "error" ? notice : null} draftReason={draftReason} />
           </> : <p className="muted">Only an authorised approver can reject a request. You can still save review notes; ask an approver to decide this case.</p>)}
         </section>}
 

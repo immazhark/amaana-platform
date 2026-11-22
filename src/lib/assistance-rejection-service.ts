@@ -1,6 +1,6 @@
 import { AssistanceStatus, AssistanceVerificationDecision, NotificationChannel } from "@prisma/client";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
-import { rejectionEligibility } from "@/lib/assistance-rejection";
+import { REJECTION_ERROR_MESSAGES, rejectionEligibility } from "@/lib/assistance-rejection";
 
 export type AssistanceRejectionErrorCode = "not_found" | "linked_appeal" | "closed" | "not_eligible" | "stale_request" | "stale_verification";
 
@@ -11,14 +11,7 @@ export class AssistanceRejectionError extends Error {
   }
 }
 
-export const REJECTION_MESSAGES: Record<AssistanceRejectionErrorCode, string> = {
-  not_found: "That request could not be found.",
-  linked_appeal: "This request has a linked appeal. Open the appeal to manage its status.",
-  closed: "This request is closed. Reopen the review first if it needs to be rejected.",
-  not_eligible: "This request cannot be rejected from its current state.",
-  stale_request: "This request changed while you were reviewing it. Refresh the page and check it before rejecting.",
-  stale_verification: "The review changed while you were reviewing it. Refresh the page and check it before rejecting.",
-};
+export const REJECTION_MESSAGES = REJECTION_ERROR_MESSAGES;
 
 export type RejectionInput = {
   requestId: string;

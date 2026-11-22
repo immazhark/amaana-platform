@@ -35,9 +35,9 @@ async function openCase(page) {
 
 test('an approver rejects an untouched eligible request with only a reason and a confirmation', async ({ page }) => {
   const card = await openCase(page);
-  const reason = card.locator('#reject-reason');
-  const confirm = card.locator('#reject-confirm');
-  const submit = card.getByRole('button', { name: 'Confirm rejection' });
+  const reason = () => page.locator('#reject-reason');
+  const confirm = () => page.locator('#reject-confirm');
+  const submit = () => page.locator('section[aria-labelledby="reject-heading"]').getByRole('button', { name: 'Confirm rejection' });
 
   // 23 and 24: requiredness is visible text, and nothing else on the page has to be touched. Invalid unsaved approval input
   // elsewhere on the page must not matter.
@@ -45,54 +45,55 @@ test('an approver rejects an untouched eligible request with only a reason and a
   await expect(card.getByText('You do not need to complete any approval check to reject a request')).toBeVisible();
   await page.locator('#approvedPublicTarget').fill('not a number');
 
-  // 25: nothing entered yet; every problem is listed together, linked to its field, and focus moves to the summary.
-  await expect(submit).toBeEnabled();
-  await submit.click();
-  const summary = card.getByRole('alert');
+  // 25: nothing entered yet. Every problem comes back together, in a summary that links to each field.
+  await submit().click();
+  const summary = page.locator('#reject-errors');
   await expect(summary).toBeVisible();
-  await expect(summary).toBeFocused();
+  await expect(summary).toHaveAttribute('role', 'alert');
   await expect(summary.getByRole('link', { name: 'Enter the reason for rejecting this request.' })).toBeVisible();
   await expect(summary.getByRole('link', { name: 'Confirm the rejection to continue.' })).toBeVisible();
-  await expect(reason).toHaveAttribute('aria-invalid', 'true');
-  await expect(confirm).toHaveAttribute('aria-invalid', 'true');
-  await expect(reason).toHaveAttribute('aria-describedby', /reject-reason-error/);
+  await expect(reason()).toHaveAttribute('aria-invalid', 'true');
+  await expect(confirm()).toHaveAttribute('aria-invalid', 'true');
+  await expect(reason()).toHaveAttribute('aria-describedby', /reject-reason-error/);
   await expect(page.locator('#reject-reason-error')).toBeVisible();
   await expect(page.locator('#reject-confirm-error')).toBeVisible();
 
-  // A summary link moves keyboard focus to its field.
+  // A summary link goes to its field.
   await summary.getByRole('link', { name: 'Enter the reason for rejecting this request.' }).click();
-  await expect(reason).toBeFocused();
+  await expect(page).toHaveURL(/#reject-reason$/);
+  await expect(reason()).toBeVisible();
 
-  // What is typed survives a recoverable error: too short, so the same text is still in the box.
-  await reason.fill('no');
-  await confirm.check();
-  await submit.click();
-  await expect(card.getByRole('alert').getByRole('link', { name: /at least 3 characters/ })).toBeVisible();
-  await expect(reason).toHaveValue('no');
+  // What is typed survives a recoverable error, kept privately in a cookie and never in the address: too short, so the same
+  // text is still in the box and the reason is nowhere in the URL.
+  await reason().fill('no');
+  await confirm().check();
+  await submit().click();
+  await expect(page.locator('#reject-errors').getByRole('link', { name: /at least 3 characters/ })).toBeVisible();
+  await expect(reason()).toHaveValue('no');
   await expect(page.locator('#reject-reason-error')).toContainText('at least 3');
+  expect(page.url()).not.toContain('no');
+  expect(decodeURIComponent(page.url())).not.toMatch(/reason=|draft/i);
 
-  // The reviewer fixes the one thing wrong and decides. The request was not changed by any failed attempt.
+  // No failed attempt changed the request.
   await expect(page.locator('.status-badge').first()).toContainText('SUBMITTED');
-  await reason.fill('Duplicate of an earlier request');
-  await confirm.check();
-  await submit.click();
+
+  // The reviewer extends the reason and decides.
+  await reason().fill('Duplicate of an earlier request');
+  await confirm().check();
+  await submit().click();
 
   // 26 and the recorded outcome: success, the new status, who and when, and a way back to the queue.
-  const done = card.getByRole('status');
-  await expect(done.getByRole('heading', { name: 'Request rejected' })).toBeVisible();
-  await expect(done.getByRole('heading', { name: 'Request rejected' })).toBeFocused();
-  await expect(done).toContainText('is now Rejected');
-  await expect(done).toContainText('Recorded by Synthetic audit administrator');
-  await expect(done).toContainText('not sent to the applicant');
-  await expect(done.getByRole('link', { name: 'Back to the queue' })).toHaveAttribute('href', '/admin');
-
-  // The page now shows the decision and the private reason, and no second rejection form.
-  await page.reload({ waitUntil: 'load' });
-  await expect(page.locator('.status-badge').first()).toContainText('REJECTED');
   const recorded = page.locator('section[aria-labelledby="reject-heading"]');
   await expect(recorded.getByRole('heading', { name: 'Request rejected' })).toBeVisible();
+  await expect(recorded.getByRole('status')).toContainText('The request has been rejected.');
+  await expect(recorded.getByRole('status')).toContainText('is now Rejected');
+  await expect(recorded.getByRole('status')).toContainText('not sent to the applicant');
+  await expect(recorded.getByRole('link', { name: 'Back to the queue' })).toHaveAttribute('href', '/admin');
+  await expect(recorded).toContainText('Recorded by Synthetic audit administrator');
   await expect(recorded).toContainText('Duplicate of an earlier request');
+  await expect(page.locator('.status-badge').first()).toContainText('REJECTED');
   await expect(recorded.getByRole('button', { name: 'Confirm rejection' })).toHaveCount(0);
+  expect(page.url()).not.toContain('Duplicate');
 });
 
 // Runs after the journey above in this serial file: the same case is now rejected.

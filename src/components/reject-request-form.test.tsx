@@ -1,14 +1,15 @@
+import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import type { RejectionFormState } from "@/app/admin/(protected)/requests/[id]/rejection-actions";
-import { RejectRequestFormView } from "./reject-request-form";
+import type { RejectionNotice } from "@/lib/assistance-rejection";
+import { RejectRequestForm } from "./reject-request-form";
 
-const props = { requestId: "req-1", referenceNumber: "AF-2026-123456", requestVersion: "2026-11-22T04:00:00.000Z", verificationVersion: "" };
-const view = (state: RejectionFormState, pending = false) => renderToStaticMarkup(<RejectRequestFormView {...props} state={state} formAction={() => undefined} pending={pending} />);
-const idle: RejectionFormState = { kind: "idle", message: "" };
+const props = { action: () => undefined, requestId: "req-1", referenceNumber: "AF-2026-123456", requestVersion: "2026-11-22T04:00:00.000Z", verificationVersion: "" };
+type ErrorNotice = Extract<RejectionNotice, { kind: "error" }>;
+const view = (notice: ErrorNotice | null = null, draftReason = "") => renderToStaticMarkup(<RejectRequestForm {...props} notice={notice} draftReason={draftReason} />);
 
 describe("initial form", () => {
-  const html = view(idle);
+  const html = view();
 
   it("asks for exactly a reason and a confirmation, labelled, with requiredness stated in words", () => {
     expect(html).toContain('for="reject-reason">Reason for rejection');
@@ -39,20 +40,23 @@ describe("initial form", () => {
     expect(html).not.toContain('role="alert"');
   });
 
-  it("is a form that reports errors itself rather than through the browser's own bubbles", () => {
+  it("reports errors itself rather than through the browser's own bubbles", () => {
     expect(html).toMatch(/<form[^>]*novalidate/i);
+  });
+
+  it("is plain server-rendered HTML: no client component, no hook, so it adds nothing to the JavaScript budget", () => {
+    const source = readFileSync(new URL("./reject-request-form.tsx", import.meta.url), "utf8");
+    expect(source).not.toMatch(/^["']use client["']/m);
+    expect(source).not.toMatch(/\buse(State|Effect|ActionState|Ref|FormStatus)\b/);
   });
 });
 
-describe("error state", () => {
-  const error: RejectionFormState = {
-    kind: "error", message: "Fix the highlighted fields to reject this request.", values: { reason: "no" },
-    fieldErrors: { reason: "Explain the reason in at least 3 characters, using letters or numbers.", confirmation: "Confirm the rejection to continue." },
-  };
-  const html = view(error);
+describe("a recoverable error", () => {
+  const both: ErrorNotice = { kind: "error", problems: ["reason-short", "confirmation"], code: null };
+  const html = view(both, "no");
 
-  it("lists every problem together in a summary that links to the fields and is announced", () => {
-    expect(html).toMatch(/role="alert"[^>]*tabindex="-1"|tabindex="-1"[^>]*role="alert"/);
+  it("lists every problem together in a summary that links to the fields and can take focus from the address fragment", () => {
+    expect(html).toMatch(/id="reject-errors"[^>]*role="alert"[^>]*tabindex="-1"|role="alert"[^>]*id="reject-errors"|tabindex="-1"[^>]*id="reject-errors"/);
     expect(html).toContain("There is a problem");
     expect(html).toContain('<a href="#reject-reason">Explain the reason in at least 3 characters');
     expect(html).toContain('<a href="#reject-confirm">Confirm the rejection to continue.</a>');
@@ -67,59 +71,46 @@ describe("error state", () => {
   });
 
   it("marks only the field that is wrong", () => {
-    const onlyReason = view({ ...error, fieldErrors: { reason: "Enter the reason for rejecting this request." } });
+    const onlyReason = view({ kind: "error", problems: ["reason-missing"], code: null });
     expect(onlyReason).toMatch(/<textarea[^>]*aria-invalid="true"/);
     expect(onlyReason).not.toMatch(/<input[^>]*id="reject-confirm"[^>]*aria-invalid/);
     expect(onlyReason).not.toContain("reject-confirm-error");
+    const onlyConfirm = view({ kind: "error", problems: ["confirmation"], code: null }, "Duplicate");
+    expect(onlyConfirm).not.toMatch(/<textarea[^>]*aria-invalid/);
+    expect(onlyConfirm).toMatch(/<textarea[^>]*>Duplicate<\/textarea>/);
   });
 
-  it("shows a conflict or a refusal as a form-level message and still keeps the reason", () => {
-    const conflict = view({ kind: "error", message: "This request changed while you were reviewing it. Refresh the page and check it before rejecting.", values: { reason: "Keep this reason" }, code: "stale_request" });
-    expect(conflict).toContain("This could not be rejected");
-    expect(conflict).toContain("This request changed while you were reviewing it.");
-    expect(conflict).toMatch(/<textarea[^>]*>Keep this reason<\/textarea>/);
-    expect(conflict).not.toContain("aria-invalid");
-  });
-});
-
-describe("pending state", () => {
-  it("disables the button and says so, so a double click cannot send the decision twice", () => {
-    const html = view(idle, true);
-    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Recording rejection…<\/button>/);
-    expect(html).toContain('aria-busy="true"');
+  it("uses the wording for each reason problem", () => {
+    expect(view({ kind: "error", problems: ["reason-missing"], code: null })).toContain("Enter the reason for rejecting this request.");
+    expect(view({ kind: "error", problems: ["reason-long"], code: null })).toContain("Keep the reason to 2000 characters or fewer.");
   });
 
-  it("is enabled when nothing is pending", () => {
-    expect(view(idle)).toMatch(/<button[^>]*type="submit"[^>]*>Confirm rejection<\/button>/);
-    expect(view(idle)).not.toMatch(/<button[^>]*disabled/);
+  it("escapes what the reviewer typed, so it cannot become markup", () => {
+    const markup = view({ kind: "error", problems: ["confirmation"], code: null }, '</textarea><script>alert(1)</script>');
+    // Only the typed text is under test: React's own form-replay script is not part of the draft.
+    expect(markup).not.toContain("<script>alert(1)");
+    expect(markup).not.toContain("</textarea><script>");
+    expect(markup).toContain("&lt;/textarea&gt;&lt;script&gt;");
   });
 });
 
-describe("success state", () => {
-  const success = (result: NonNullable<RejectionFormState["result"]>): RejectionFormState => ({ kind: "success", message: "ok", result });
-
-  it("shows the outcome, the recorded reviewer and time, that the reason stays private, and a route back to the queue", () => {
-    const html = view(success({ outcome: "rejected", rejectedAt: "2026-11-22T04:10:00.000Z", reviewerName: "Synthetic Approver" }));
-    expect(html).toContain('role="status"');
-    expect(html).toContain("Request rejected");
-    expect(html).toContain("AF-2026-123456 is now <strong>Rejected</strong>");
-    expect(html).toContain("Recorded by Synthetic Approver on 22 November 2026");
-    expect(html).toContain("not sent to the applicant");
-    expect(html).toContain('href="/admin"');
-    expect(html).toContain("Back to the queue");
-    expect(html).not.toContain("<textarea");
+describe("a refused decision", () => {
+  it.each([
+    ["stale_request", "This request changed while you were reviewing it. Refresh the page and check it before rejecting."],
+    ["stale_verification", "The review changed while you were reviewing it."],
+    ["linked_appeal", "This request has a linked appeal. Open the appeal to manage its status."],
+    ["forbidden", "Approval permission is required to reject a request."],
+    ["form", "The form was not submitted correctly. Refresh the page and try again."],
+    ["version", "The version of this request is missing or invalid. Refresh the page before rejecting."],
+  ])("shows the message for %s as a form-level notice and keeps the reason", (code, message) => {
+    const html = view({ kind: "error", problems: [], code }, "Keep this reason");
+    expect(html).toContain("This could not be rejected");
+    expect(html).toContain(message);
+    expect(html).toMatch(/<textarea[^>]*>Keep this reason<\/textarea>/);
+    expect(html).not.toContain("aria-invalid");
   });
 
-  it("says a repeat was already rejected, without claiming a second decision", () => {
-    const html = view(success({ outcome: "already_rejected", rejectedAt: "2026-11-22T03:00:00.000Z", reviewerName: "Earlier Reviewer" }));
-    expect(html).toContain("This request was already rejected");
-    expect(html).toContain("Recorded by Earlier Reviewer");
-  });
-
-  it("never invents a time or a reviewer for a legacy rejection", () => {
-    const html = view(success({ outcome: "already_rejected", rejectedAt: null, reviewerName: null }));
-    expect(html).toContain("The earlier decision has no recorded time or reviewer.");
-    expect(html).not.toContain("Recorded by");
-    expect(html).not.toMatch(/Recorded on/);
+  it("falls back to a safe message for a code it does not know", () => {
+    expect(view({ kind: "error", problems: [], code: null })).toContain("The form was not submitted correctly.");
   });
 });

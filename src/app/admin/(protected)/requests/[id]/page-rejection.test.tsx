@@ -1,9 +1,10 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ request: vi.fn(), staff: vi.fn(), history: vi.fn(), permission: vi.fn() }));
+const mocks = vi.hoisted(() => ({ request: vi.fn(), staff: vi.fn(), history: vi.fn(), permission: vi.fn(), draft: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ requirePermission: vi.fn(async () => ({ id: "synthetic-staff" })), hasPermission: mocks.permission }));
 vi.mock("@/lib/prisma", () => ({ prisma: { assistanceRequest: { findUnique: mocks.request }, user: { findMany: mocks.staff }, auditEvent: { findMany: mocks.history } } }));
+vi.mock("next/headers", () => ({ cookies: async () => ({ get: mocks.draft }) }));
 vi.mock("next/navigation", () => ({ notFound: () => { throw new Error("NOT_FOUND"); } }));
 vi.mock("./actions", () => ({ assignRequest: vi.fn(), convertToAppeal: vi.fn(), saveVerificationWithFeedback: vi.fn(), updateRequestWithFeedback: vi.fn() }));
 vi.mock("./rejection-actions", () => ({ rejectRequestAction: vi.fn() }));
@@ -16,9 +17,9 @@ const base = {
   assignedToId: null, internalNotes: null, documents: [], verification: null, rejections: [],
 };
 const grant = (...keys: string[]) => mocks.permission.mockImplementation((_user, permission) => keys.includes(permission));
-const render = async (over: Record<string, unknown> = {}) => {
+const render = async (over: Record<string, unknown> = {}, search: Record<string, string | string[] | undefined> = {}) => {
   mocks.request.mockResolvedValue({ ...base, ...over });
-  return renderToStaticMarkup(await RequestDetailPage({ params: Promise.resolve({ id: "synthetic-request" }) }));
+  return renderToStaticMarkup(await RequestDetailPage({ params: Promise.resolve({ id: "synthetic-request" }), searchParams: Promise.resolve(search) }));
 };
 const rejectCard = (html: string) => html.match(/<section class="card" aria-labelledby="reject-heading">[\s\S]*?<\/section>/)?.[0] ?? "";
 
@@ -129,6 +130,63 @@ describe("a request that is already rejected", () => {
 describe("the reason stays out of everything but this card", () => {
   it("is not repeated in the audit history, the notes or the status controls", async () => {
     const html = await render({ status: "REJECTED", rejections: [{ reason: "PRIVATE-REASON-TEXT", rejectedAt: new Date(), rejectedBy: { name: "Synthetic Approver" } }] });
+    expect(html.split("PRIVATE-REASON-TEXT")).toHaveLength(2);
+  });
+});
+
+describe("after an attempt: the notice in the address and the private draft", () => {
+  it("lists the problems from the address, and brings back what was typed from the private cookie", async () => {
+    mocks.draft.mockReturnValue({ value: encodeURIComponent("Keep this reason, please") });
+    const card = rejectCard(await render({}, { reject: "error", e: "reason-short,confirmation" }));
+    expect(card).toContain("There is a problem");
+    expect(card).toContain("Explain the reason in at least 3 characters");
+    expect(card).toContain("Confirm the rejection to continue.");
+    expect(card).toMatch(/<textarea[^>]*>Keep this reason, please<\/textarea>/);
+    expect(mocks.draft).toHaveBeenCalledWith("amaana_rd_synthetic-request");
+  });
+
+  it("reads the draft only after an error, so a stale cookie never fills the form on an ordinary visit", async () => {
+    mocks.draft.mockReturnValue({ value: encodeURIComponent("Stale draft") });
+    for (const search of [{}, { reject: "done" }, { reject: "maybe" }]) {
+      const card = rejectCard(await render({}, search));
+      expect(card).not.toContain("Stale draft");
+    }
+    expect(mocks.draft).not.toHaveBeenCalled();
+  });
+
+  it("shows a form-level refusal such as a conflict, with the reason kept", async () => {
+    mocks.draft.mockReturnValue({ value: encodeURIComponent("Keep this too") });
+    const card = rejectCard(await render({}, { reject: "error", code: "stale_request" }));
+    expect(card).toContain("This could not be rejected");
+    expect(card).toContain("This request changed while you were reviewing it.");
+    expect(card).toMatch(/<textarea[^>]*>Keep this too<\/textarea>/);
+  });
+
+  it("puts no words on the page from a crafted link", async () => {
+    mocks.draft.mockReturnValue(undefined);
+    const html = await render({}, { reject: "error", e: "<script>alert(1)</script>", code: "<b>owned</b>" });
+    expect(html).not.toContain("<script>alert");
+    expect(html).not.toContain("<b>owned</b>");
+    expect(rejectCard(html)).toContain("The form was not submitted correctly.");
+  });
+
+  it("confirms the decision after a rejection, with the way back, once the request shows as rejected", async () => {
+    const card = rejectCard(await render({ status: "REJECTED", rejections: [{ reason: "Duplicate", rejectedAt: new Date("2026-11-22T04:10:00.000Z"), rejectedBy: { name: "Synthetic Approver" } }] }, { reject: "done", o: "rejected" }));
+    expect(card).toContain("The request has been rejected.");
+    expect(card).toContain("AF-SYNTH-777 is now Rejected");
+    expect(card).toContain("not sent to the applicant");
+    expect(card).toContain('href="/admin"');
+    expect(card).toContain("Back to the queue");
+  });
+
+  it("says a repeat was already rejected, and never shows the banner for a request that is not rejected", async () => {
+    const rejected = { status: "REJECTED", rejections: [{ reason: "Duplicate", rejectedAt: new Date(), rejectedBy: { name: "Synthetic Approver" } }] };
+    expect(rejectCard(await render(rejected, { reject: "done", o: "already_rejected" }))).toContain("This request was already rejected.");
+    expect(rejectCard(await render({}, { reject: "done", o: "rejected" }))).not.toContain("Back to the queue");
+  });
+
+  it("keeps the private reason out of the address even though the page can show it", async () => {
+    const html = await render({ status: "REJECTED", rejections: [{ reason: "PRIVATE-REASON-TEXT", rejectedAt: new Date(), rejectedBy: { name: "Synthetic Approver" } }] }, { reject: "done", o: "rejected" });
     expect(html.split("PRIVATE-REASON-TEXT")).toHaveLength(2);
   });
 });
