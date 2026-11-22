@@ -5,6 +5,7 @@ export const ADMIN_NAV_ITEMS = [
   { permission: "content.update", path: "/admin/team", label: "Team" },
   { permission: "content.update", path: "/admin/home-carousel", label: "Home carousel" },
   { permission: "assistance.approve", path: "/admin/retention", label: "Retention review" },
+  { permission: "assistance.approve", path: "/admin/taleem", label: "Taleem learners" },
   { permission: "donation.view", path: "/admin/donations", label: "Donations" },
   { permission: "donation.view", path: "/admin/funds", label: "Funds ledger" },
   { permission: "notification.view", path: "/admin/notifications", label: "Notification delivery" },

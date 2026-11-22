@@ -61,6 +61,7 @@ describe("admin navigation visibility", () => {
       "Appeals",
       "Media review",
       "Retention review",
+      "Taleem learners",
       "Donations",
       "Funds ledger",
       "Notification delivery",

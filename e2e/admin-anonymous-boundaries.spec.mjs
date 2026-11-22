@@ -18,6 +18,7 @@ const protectedAdminSurfaces = [
   "/admin/requests",
   "/admin/requests/not-a-real-id",
   "/admin/retention",
+  "/admin/taleem",
   "/admin/documents/not-a-real-id",
 ];
 

@@ -50,7 +50,7 @@ test.describe('admin operational simulation without shared records', () => {
   test('case reviewer sees case and retention operations but no editorial or finance areas', async ({ page }) => {
     const navigation = await openProfile(page, 'case');
     await expectLinks(navigation,
-      ['Assistance queue', 'Retention review'],
+      ['Assistance queue', 'Retention review', 'Taleem learners'],
       ['Appeals', 'Media review', 'Donations', 'Funds ledger', 'Notification delivery']);
     await expect(adminBrand(page)).toHaveAttribute('href', '/admin');
     await expect(page.getByText('Fail-closed landing:')).toBeVisible();
@@ -61,7 +61,7 @@ test.describe('admin operational simulation without shared records', () => {
     const navigation = await openProfile(page, 'editorial');
     await expectLinks(navigation,
       ['Appeals', 'Media review'],
-      ['Assistance queue', 'Retention review', 'Donations', 'Funds ledger', 'Notification delivery']);
+      ['Assistance queue', 'Retention review', 'Taleem learners', 'Donations', 'Funds ledger', 'Notification delivery']);
     await expect(adminBrand(page)).toHaveAttribute('href', '/admin/appeals');
     await expect(page.locator('code')).toHaveText('/admin/appeals');
   });
@@ -70,7 +70,7 @@ test.describe('admin operational simulation without shared records', () => {
     const navigation = await openProfile(page, 'finance');
     await expectLinks(navigation,
       ['Donations', 'Funds ledger'],
-      ['Assistance queue', 'Appeals', 'Media review', 'Retention review', 'Notification delivery']);
+      ['Assistance queue', 'Appeals', 'Media review', 'Retention review', 'Taleem learners', 'Notification delivery']);
     await expect(adminBrand(page)).toHaveAttribute('href', '/admin/donations');
     await expect(page.locator('code')).toHaveText('/admin/donations');
   });
@@ -91,6 +91,7 @@ test.describe('admin operational simulation without shared records', () => {
       'Team',
       'Home carousel',
       'Retention review',
+      'Taleem learners',
       'Donations',
       'Funds ledger',
       'Notification delivery',

@@ -37,6 +37,8 @@ const expectedMatrix: Record<string, string[]> = {
   "admin/(protected)/requests/[id]/rejection-actions.ts": ["assistance.approve", "assistance.update"],
   "admin/(protected)/retention/actions.ts": ["assistance.approve"],
   "admin/(protected)/retention/page.tsx": ["assistance.approve"],
+  "admin/(protected)/taleem/actions.ts": ["assistance.approve"],
+  "admin/(protected)/taleem/page.tsx": ["assistance.approve"],
   "admin/(protected)/team/actions.ts": ["content.update"],
   "admin/(protected)/team/page.tsx": ["content.update"],
   "api/admin/media/curated-gallery/publish/route.ts": ["content.approve", "content.update"],
@@ -120,6 +122,8 @@ describe("AF-R012 admin permission matrix", () => {
     ["request rejection action", "admin/(protected)/requests/[id]/rejection-actions.ts"],
     ["retention page and actions", "admin/(protected)/retention/page.tsx"],
     ["retention actions", "admin/(protected)/retention/actions.ts"],
+    ["Taleem roster page", "admin/(protected)/taleem/page.tsx"],
+    ["Taleem roster actions", "admin/(protected)/taleem/actions.ts"],
   ])("denies the REVIEWER %s", (_name, file) => {
     expect(rolesHoldingAll(expectedMatrix[file]!)).not.toContain("REVIEWER");
     expect(rolesHoldingAll(expectedMatrix[file]!)).toContain("PRIMARY_APPROVER");
