@@ -1,0 +1,200 @@
+import { randomUUID } from "node:crypto";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { prisma } from "./prisma";
+import { rejectAssistanceRequest } from "./assistance-rejection-service";
+import { AssistanceApprovalError, approveAssistanceRequest, type ApprovalInput } from "./assistance-approval-service";
+
+// A real PostgreSQL test, deliberately unavailable to hosted and production DBs. Synthetic data only.
+describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("assistance approval PostgreSQL invariants", () => {
+  const tag = "synthetic-approve-" + randomUUID().replaceAll("-", "");
+  let actorId = "";
+  let otherActorId = "";
+  let isolatedTargetAccepted = false;
+  const requestIds: string[] = [];
+
+  const fields: ApprovalInput["fields"] = {
+    needConfirmed: true, evidenceReviewed: true, otherFundingChecked: true, verifiedNeedAmount: 5000, approvedPublicTarget: null,
+    paymentDestination: "Hospital billing desk", verificationSummary: "Checked the bills and the letter.", zakatStatus: "NOT_APPLICABLE",
+    publicNameConsent: "UNCONFIRMED", photoConsent: "UNCONFIRMED", medicalDetailsConsent: "UNCONFIRMED", institutionNameConsent: "UNCONFIRMED", archiveConsent: "UNCONFIRMED",
+    otherFundingNotes: "None found", confidentialityLevel: "CONFIDENTIAL",
+  };
+  const publicFields: ApprovalInput["fields"] = { ...fields, approvedPublicTarget: 4500, publicNameConsent: "NOT_ALLOWED", photoConsent: "NOT_APPLICABLE", medicalDetailsConsent: "ALLOWED", institutionNameConsent: "NOT_ALLOWED", archiveConsent: "ALLOWED" };
+
+  async function makeRequest(over: { status?: "SUBMITTED" | "DOCUMENTS_REQUESTED" | "UNDER_VERIFICATION" | "APPROVED" | "REJECTED" | "CLOSED" | "CONVERTED_TO_APPEAL"; email?: string | null; appealId?: string } = {}) {
+    const request = await prisma.assistanceRequest.create({
+      data: {
+        referenceNumber: "AF-TEST-" + randomUUID().slice(0, 8).toUpperCase(), applicantName: "Synthetic Applicant", phone: "9999999999", city: "Synthetic City",
+        category: "MEDICAL", description: "Synthetic description for an approval test, long enough to be a realistic request.",
+        consentGivenAt: new Date(), trackingTokenHash: tag, status: over.status ?? "UNDER_VERIFICATION",
+        email: over.email === undefined ? tag + "@example.invalid" : over.email, appealId: over.appealId ?? null,
+      },
+    });
+    requestIds.push(request.id);
+    return request;
+  }
+  const input = async (requestId: string, over: Partial<ApprovalInput> = {}): Promise<ApprovalInput> => {
+    const request = await prisma.assistanceRequest.findUniqueOrThrow({ where: { id: requestId }, select: { updatedAt: true, verification: { select: { updatedAt: true } } } });
+    return { requestId, route: "APPROVED_PRIVATE", fields, expectedRequestUpdatedAt: request.updatedAt, expectedVerificationUpdatedAt: request.verification?.updatedAt ?? null, actorId, ...over };
+  };
+  const refused = async (promise: Promise<unknown>) => { try { await promise; } catch (error) { return error as AssistanceApprovalError; } return null; };
+  const counts = async (requestId: string) => ({
+    audits: await prisma.auditEvent.count({ where: { entityType: "AssistanceRequest", entityId: requestId, action: "assistance.approved" } }),
+    notifications: await prisma.notification.count({ where: { assistanceRequestId: requestId } }),
+  });
+
+  beforeAll(async () => {
+    const url = new URL(process.env.DATABASE_URL!);
+    if (!["localhost", "127.0.0.1", "[::1]"].includes(url.hostname) || url.pathname !== "/amaana") throw new Error("Assistance approval DB tests require the isolated loopback amaana database");
+    isolatedTargetAccepted = true;
+    actorId = (await prisma.user.create({ data: { name: "Synthetic approver", email: tag + "-a@example.invalid", status: "ACTIVE" }, select: { id: true } })).id;
+    otherActorId = (await prisma.user.create({ data: { name: "Synthetic other", email: tag + "-b@example.invalid", status: "ACTIVE" }, select: { id: true } })).id;
+  });
+
+  afterAll(async () => {
+    if (!isolatedTargetAccepted) return;
+    await prisma.$executeRawUnsafe('DROP TRIGGER IF EXISTS "synthetic_approve_fail" ON "AuditEvent"');
+    await prisma.$executeRawUnsafe('DROP FUNCTION IF EXISTS "synthetic_approve_fail"()');
+    await prisma.notification.deleteMany({ where: { assistanceRequestId: { in: requestIds } } });
+    await prisma.auditEvent.deleteMany({ where: { OR: [{ actorId: { in: [actorId, otherActorId] } }, { entityId: { in: requestIds } }] } });
+    await prisma.assistanceRejection.deleteMany({ where: { assistanceRequestId: { in: requestIds } } });
+    await prisma.assistanceVerification.deleteMany({ where: { assistanceRequestId: { in: requestIds } } });
+    await prisma.assistanceRequest.deleteMany({ where: { id: { in: requestIds } } });
+    await prisma.user.deleteMany({ where: { id: { in: [actorId, otherActorId] } } });
+  });
+
+  it("17. records the completed verification and the approved status together, for each route", async () => {
+    for (const [route, f] of [["APPROVED_PRIVATE", fields], ["APPROVED_PARTIAL", fields], ["APPROVED_PUBLIC", publicFields]] as const) {
+      const request = await makeRequest();
+      const result = await approveAssistanceRequest(await input(request.id, { route, fields: f }));
+      expect(result).toMatchObject({ outcome: "approved", status: "APPROVED", route });
+      const after = await prisma.assistanceRequest.findUniqueOrThrow({ where: { id: request.id }, include: { verification: true } });
+      expect(after.status, route).toBe("APPROVED");
+      expect(after.verification, route).toMatchObject({ decision: route, needConfirmed: true, evidenceReviewed: true, otherFundingChecked: true, reviewedById: actorId, paymentDestination: "Hospital billing desk" });
+      expect(after.verification!.completedAt).not.toBeNull();
+      expect(after.appealId).toBeNull();
+      expect(await counts(request.id)).toEqual({ audits: 1, notifications: 1 });
+    }
+  });
+
+  it("14. private and partial approval store no public target and need no public content", async () => {
+    const request = await makeRequest();
+    await approveAssistanceRequest(await input(request.id, { route: "APPROVED_PRIVATE" }));
+    const verification = await prisma.assistanceVerification.findUniqueOrThrow({ where: { assistanceRequestId: request.id } });
+    expect(verification.approvedPublicTarget).toBeNull();
+    expect(verification).toMatchObject({ publicNameConsent: "UNCONFIRMED", photoConsent: "UNCONFIRMED", archiveConsent: "UNCONFIRMED" });
+  });
+
+  it("15 and 16. refuses an incomplete or inconsistent approval with every field error and no mutation", async () => {
+    const request = await makeRequest();
+    const bad = { ...publicFields, needConfirmed: false, evidenceReviewed: false, verificationSummary: "", approvedPublicTarget: 9999, publicNameConsent: "UNCONFIRMED" };
+    const error = await refused(approveAssistanceRequest(await input(request.id, { route: "APPROVED_PUBLIC", fields: bad })));
+    expect(error).toBeInstanceOf(AssistanceApprovalError);
+    expect(error!.code).toBe("incomplete");
+    expect(Object.keys(error!.fieldErrors ?? {}).sort()).toEqual(["approvedPublicTarget", "evidenceReviewed", "needConfirmed", "publicNameConsent", "verificationSummary"]);
+    const after = await prisma.assistanceRequest.findUniqueOrThrow({ where: { id: request.id }, include: { verification: true } });
+    expect(after.status).toBe("UNDER_VERIFICATION");
+    expect(after.verification).toBeNull();
+    expect(await counts(request.id)).toEqual({ audits: 0, notifications: 0 });
+  });
+
+  it("17. rolls the whole approval back when a later step fails: no status change, no verification, no event, no email", async () => {
+    const request = await makeRequest();
+    await prisma.$executeRawUnsafe(`CREATE OR REPLACE FUNCTION "synthetic_approve_fail"() RETURNS trigger AS $$ BEGIN IF NEW."entityId" = '${request.id}' AND NEW."action" = 'assistance.approved' THEN RAISE EXCEPTION 'synthetic audit failure'; END IF; RETURN NEW; END; $$ LANGUAGE plpgsql`);
+    await prisma.$executeRawUnsafe('CREATE TRIGGER "synthetic_approve_fail" BEFORE INSERT ON "AuditEvent" FOR EACH ROW EXECUTE FUNCTION "synthetic_approve_fail"()');
+    try {
+      expect(await refused(approveAssistanceRequest(await input(request.id)))).not.toBeNull();
+      const after = await prisma.assistanceRequest.findUniqueOrThrow({ where: { id: request.id }, include: { verification: true } });
+      expect(after.status).toBe("UNDER_VERIFICATION");
+      expect(after.verification).toBeNull();
+      expect(await counts(request.id)).toEqual({ audits: 0, notifications: 0 });
+    } finally {
+      await prisma.$executeRawUnsafe('DROP TRIGGER IF EXISTS "synthetic_approve_fail" ON "AuditEvent"');
+    }
+  });
+
+  it("refuses a stale request or verification version without overwriting", async () => {
+    const request = await makeRequest();
+    const stale = await input(request.id);
+    await prisma.assistanceRequest.update({ where: { id: request.id }, data: { internalNotes: "Changed by another reviewer" } });
+    expect((await refused(approveAssistanceRequest(stale)))!.code).toBe("stale_request");
+    const withVerification = await makeRequest();
+    const row = await prisma.assistanceVerification.create({ data: { assistanceRequestId: withVerification.id } });
+    const staleVerification = await input(withVerification.id);
+    await prisma.assistanceVerification.update({ where: { id: row.id }, data: { verificationSummary: "Edited after the page loaded" } });
+    expect((await refused(approveAssistanceRequest(staleVerification)))!.code).toBe("stale_verification");
+    expect((await prisma.assistanceRequest.findUniqueOrThrow({ where: { id: withVerification.id } })).status).toBe("UNDER_VERIFICATION");
+    expect(await counts(request.id)).toEqual({ audits: 0, notifications: 0 });
+  });
+
+  it("keeps existing partial work: it replaces only what the approval states, on the same verification record", async () => {
+    const request = await makeRequest();
+    const saved = await prisma.assistanceVerification.create({ data: { assistanceRequestId: request.id, verificationSummary: "Saved progress", otherFundingNotes: "Earlier note" } });
+    await approveAssistanceRequest(await input(request.id));
+    const after = await prisma.assistanceVerification.findUniqueOrThrow({ where: { assistanceRequestId: request.id } });
+    expect(after.id).toBe(saved.id);
+    expect(after.verificationSummary).toBe("Checked the bills and the letter.");
+  });
+
+  it("refuses a request with a linked appeal, a rejected one and a closed one, each with its own guidance", async () => {
+    expect((await refused(approveAssistanceRequest(await input((await makeRequest({ status: "CONVERTED_TO_APPEAL" })).id))))!.code).toBe("linked_appeal");
+    expect((await refused(approveAssistanceRequest(await input((await makeRequest({ status: "REJECTED" })).id))))!.code).toBe("rejected");
+    expect((await refused(approveAssistanceRequest(await input((await makeRequest({ status: "CLOSED" })).id))))!.code).toBe("closed");
+    expect((await refused(approveAssistanceRequest({ ...(await input((await makeRequest()).id)), requestId: "missing" })))!.code).toBe("not_found");
+  });
+
+  it("is safe to repeat: an already approved request returns the original decision and writes nothing", async () => {
+    const request = await makeRequest();
+    const first = await input(request.id);
+    const original = await approveAssistanceRequest(first);
+    const repeat = await approveAssistanceRequest({ ...first, route: "APPROVED_PUBLIC", fields: publicFields, actorId: otherActorId });
+    expect(repeat.outcome).toBe("already_approved");
+    expect(repeat.route).toBe("APPROVED_PRIVATE");
+    expect(repeat.approvedAt?.getTime()).toBe(original.approvedAt?.getTime());
+    expect(await counts(request.id)).toEqual({ audits: 1, notifications: 1 });
+  });
+
+  it("makes concurrent submissions one coherent approval", async () => {
+    const request = await makeRequest();
+    const base = await input(request.id);
+    const results = await Promise.allSettled([approveAssistanceRequest(base), approveAssistanceRequest({ ...base, actorId: otherActorId }), approveAssistanceRequest(base)]);
+    for (const result of results) expect(result.status, JSON.stringify(result)).toBe("fulfilled");
+    const outcomes = results.map(result => (result as PromiseFulfilledResult<{ outcome: string }>).value.outcome);
+    expect(outcomes.filter(outcome => outcome === "approved")).toHaveLength(1);
+    expect(await counts(request.id)).toEqual({ audits: 1, notifications: 1 });
+  });
+
+  it("never leaves a request both approved and rejected when the two decisions race", async () => {
+    for (let round = 0; round < 4; round += 1) {
+      const request = await makeRequest();
+      const params = await input(request.id);
+      await Promise.allSettled([
+        approveAssistanceRequest(params),
+        rejectAssistanceRequest({ requestId: request.id, reason: "Rejected in a race", expectedRequestUpdatedAt: params.expectedRequestUpdatedAt, expectedVerificationUpdatedAt: params.expectedVerificationUpdatedAt, actorId: otherActorId }),
+      ]);
+      const after = await prisma.assistanceRequest.findUniqueOrThrow({ where: { id: request.id }, include: { verification: true, rejections: true } });
+      expect(["APPROVED", "REJECTED"], `round ${round}`).toContain(after.status);
+      if (after.status === "APPROVED") {
+        expect(after.rejections).toHaveLength(0);
+        expect(after.verification?.decision).toBe("APPROVED_PRIVATE");
+      } else {
+        expect(after.rejections).toHaveLength(1);
+        expect(after.verification?.decision ?? "DECLINED").toBe("DECLINED");
+      }
+    }
+  });
+
+  it("queues no email when the applicant gave no address, and still approves", async () => {
+    const request = await makeRequest({ email: null });
+    await approveAssistanceRequest(await input(request.id));
+    expect(await counts(request.id)).toEqual({ audits: 1, notifications: 0 });
+  });
+
+  it("keeps the audit event and the email free of the private summary and notes", async () => {
+    const request = await makeRequest();
+    await approveAssistanceRequest(await input(request.id, { fields: { ...fields, verificationSummary: "PRIVATE-SUMMARY-" + tag, otherFundingNotes: "PRIVATE-NOTE-" + tag } }));
+    const audit = await prisma.auditEvent.findFirstOrThrow({ where: { entityId: request.id, action: "assistance.approved" } });
+    const notification = await prisma.notification.findFirstOrThrow({ where: { assistanceRequestId: request.id } });
+    for (const text of [JSON.stringify(audit), JSON.stringify(notification)]) expect(text).not.toContain("PRIVATE-");
+    expect(notification.payload).toEqual({ referenceNumber: request.referenceNumber, status: "APPROVED" });
+  });
+});
