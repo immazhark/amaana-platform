@@ -96,6 +96,25 @@ describe("read-time projection is applied to every initiative read that returns 
     return found;
   }
 
+  it.each(["src/lib/public-page-data.ts", "src/lib/public-content.ts"])("%s: a metric selected through ANY prisma read (including initiatives nested in another model) is projected", path => {
+    const source = read(path);
+    const nested: { text: string; index: number }[] = [];
+    for (const match of source.matchAll(/prisma\.(?!initiative\b)[a-zA-Z]+\.find(?:Many|First)\(/g)) {
+      let depth = 1;
+      let index = match.index! + match[0].length;
+      while (depth > 0) {
+        const char = source[index++]!;
+        if (char === "(" || char === "[" || char === "{") depth++;
+        else if (char === ")" || char === "]" || char === "}") depth--;
+      }
+      const text = source.slice(match.index!, index);
+      if (/primaryMetric: true/.test(text)) nested.push({ text, index });
+    }
+    // Each such read must pass its result through the projection before returning it.
+    const unprojected = nested.filter(item => !/withCanonicalInitiativeFactsList\(/.test(source.slice(item.index, item.index + 3500)));
+    expect(unprojected.map(item => item.text.slice(0, 60))).toEqual([]);
+  });
+
   it.each(["src/lib/public-page-data.ts", "src/lib/public-content.ts"])("%s", path => {
     const source = read(path);
     const all = calls(source);

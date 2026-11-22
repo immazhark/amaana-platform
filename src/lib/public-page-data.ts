@@ -316,7 +316,8 @@ export const getOurWorkIndexData = cache(async () => {
       && Array.isArray(cause.initiatives))
     .map(cause => ({
       ...cause,
-      initiatives: cause.initiatives.filter(item =>
+      // Initiatives are nested in this read, so the canonical-facts projection is applied here, after validation.
+      initiatives: withCanonicalInitiativeFactsList(cause.initiatives.filter(item =>
         item && typeof item === "object" && !Array.isArray(item)
         && typeof item.id === "string" && item.id.length > 0
         && slugIsSafe(item.slug)
@@ -326,7 +327,7 @@ export const getOurWorkIndexData = cache(async () => {
         && (item.primaryMetricLabel == null || typeof item.primaryMetricLabel === "string")
         && [item.year, item.startYear, item.endYear].every(
           year => year == null || Number.isSafeInteger(year))
-        && Array.isArray(item.mediaAssets)),
+        && Array.isArray(item.mediaAssets))),
     }));
 });
 
