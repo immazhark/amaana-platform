@@ -16,7 +16,7 @@ const STAGES: readonly { stage: FunnelStage; label: string }[] = [
 
 function Cell({ value }: { value: ReportableCount }) {
   return value.suppressed
-    ? <td title="Withheld so that a small count in this row cannot be picked out or worked out by subtraction"><span aria-label="withheld to protect small counts">withheld</span></td>
+    ? <td title="Withheld so that a small count in this row cannot be picked out or worked out by subtraction">withheld<span className="sr-only"> to protect small counts</span></td>
     : <td>{value.count}</td>;
 }
 

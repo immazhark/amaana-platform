@@ -11,12 +11,12 @@ describe("AdminDonationFunnel", () => {
     const html = render([group("RAZORPAY", "CAPTURED", 40), group("RAZORPAY", "FAILED", 10), group("BANK_TRANSFER", "CAPTURED", 12), group("BANK_TRANSFER", "PENDING_VERIFICATION", 8)]);
     expect(html).toContain("All methods");
     expect(html).toContain("80%");
-    expect(html).not.toContain("withheld to protect small counts");
+    expect(html).not.toContain("withheld<span class=\"sr-only\"> to protect small counts</span>");
   });
 
   it("never prints a count below the minimum, and withholds the all-methods row and the share when something is hidden", () => {
     const html = render([group("RAZORPAY", "CAPTURED", 40), group("DIRECT_UPI", "CAPTURED", 2), group("DIRECT_UPI", "PENDING_VERIFICATION", 9)]);
-    expect(html).toContain("withheld to protect small counts");
+    expect(html).toContain("withheld<span class=\"sr-only\"> to protect small counts</span>");
     expect(html).not.toContain("All methods");
     expect(html).not.toMatch(/>2</);
   });
@@ -28,7 +28,7 @@ describe("AdminDonationFunnel", () => {
     expect(html).not.toMatch(/>7</);
     expect(html).toContain(">40<");
     expect(html).toContain(">30<");
-    expect(html.match(/withheld to protect small counts/g)).toHaveLength(2);
+    expect(html.match(/to protect small counts/g)).toHaveLength(2);
     expect(html).not.toContain("&lt;5");
   });
 
@@ -42,6 +42,13 @@ describe("AdminDonationFunnel", () => {
   it("makes the scrollable table a labelled, keyboard-focusable region so it can be scrolled without a mouse", () => {
     const html = render([group("RAZORPAY", "CAPTURED", 40), group("RAZORPAY", "FAILED", 10)]);
     expect(html).toMatch(/<div class="admin-table-wrap" tabindex="0" role="region" aria-label="Donation outcomes by payment method, last 90 days">/);
+  });
+
+  it("puts no aria-label on an element without a role: assistive technology is not meant to read it (aria-prohibited-attr)", () => {
+    const html = render([group("RAZORPAY", "CAPTURED", 3), group("RAZORPAY", "PENDING_VERIFICATION", 30), group("RAZORPAY", "FAILED", 7)]);
+    const labelled = [...html.matchAll(/<(?:span|td|th|div|p)(?= |>)[^>]*? aria-label="[^"]*"[^>]*>/g)].map(match => match[0]);
+    // Only the scrollable region may carry a name, and it has a role.
+    for (const tag of labelled) expect(tag, tag).toMatch(/role="region"/);
   });
 
   it("states what it counts from and what it does not show", () => {

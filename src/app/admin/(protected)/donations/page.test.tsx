@@ -176,7 +176,7 @@ describe("admin donation outcomes card", () => {
     expect(html).toContain("Online (Razorpay)");
     expect(html).toContain("Direct UPI transfer");
     expect(html).toContain(">40<");
-    expect(html).toContain("withheld to protect small counts");
+    expect(html).toContain("withheld<span class=\"sr-only\"> to protect small counts</span>");
     expect(html).toContain("This does not show where donors came from.");
     expect(html).not.toContain("All methods");
   });
