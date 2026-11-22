@@ -8,7 +8,7 @@ import { PublicMedia } from "@/components/public-media";
 import { programmeBySlug } from "@/lib/master-copy";
 import { getSponsorEducationHeroMedia } from "@/lib/sponsorship-media";
 import { getInitiativePageData } from "@/lib/public-page-data";
-import { isTaleemSponsorshipEnabled } from "@/lib/taleem-sponsorship-flag";
+import { sponsorshipHrefForSlug } from "@/lib/taleem-sponsorship-link";
 import { TALEEM_HERO_SENTENCE } from "@/content/taleem-facts";
 import "./sponsor-education.css";
 
@@ -23,13 +23,16 @@ export const metadata: Metadata = {
 };
 
 const islamicPaths = [
-  { marker: "01", title: "Sponsor a Hifdh Student", copy: programmeBySlug("taleem-hifdh-sponsorship")!.story, path: "hifdh" },
-  { marker: "02", title: "Sponsor Qur’an Nazira Education", copy: programmeBySlug("taleem-nazira-sponsorship")!.story, path: "nazira" },
+  { marker: "01", title: "Sponsor a Hifdh Student", copy: programmeBySlug("taleem-hifdh-sponsorship")!.story, path: "hifdh", slug: "taleem-hifdh-sponsorship" },
+  { marker: "02", title: "Sponsor Qur’an Nazira Education", copy: programmeBySlug("taleem-nazira-sponsorship")!.story, path: "nazira", slug: "taleem-nazira-sponsorship" },
 ] as const;
 const enquiryHref = (path: string) => `/get-involved/sponsor-education?path=${path}&support=discuss#sponsorship-enquiry`;
 
 export default async function SponsorEducationPage({ searchParams = Promise.resolve({}) }: { searchParams?: Promise<Record<string, string | string[] | undefined>> } = {}) {
   const preferences = await searchParams;
+  // Rendered once and placed first when it exists, so every link to it can rely on the anchor being on the page.
+  const sponsorship = await TaleemSponsorshipSection({ programme: preferences.programme });
+  const programmeOpen = sponsorship !== null;
   const [heroMedia, taleemInitiative] = await Promise.all([
     getSponsorEducationHeroMedia(),
     getInitiativePageData("taleem"),
@@ -41,14 +44,14 @@ export default async function SponsorEducationPage({ searchParams = Promise.reso
   return (
     <div className="v2-home taleem-sponsor">
       <div className="v2-shell taleem-breadcrumb"><nav aria-label="Breadcrumb"><Link href="/">Home</Link><span aria-hidden="true"> / </span><Link href="/get-involved">Get involved</Link><span aria-hidden="true"> / </span><span>Sponsor education</span></nav></div>
-      <PageHero variant="level2" eyebrow="Amaana Taleem Initiative" title="Knowledge should open doors." description={<p>{TALEEM_HERO_SENTENCE} School and college sponsorship is a developing pathway.</p>} actions={isTaleemSponsorshipEnabled() ? [{label:"Give to a Taleem programme",href:"#programme-sponsorship"},{label:"Choose a sponsorship path",href:"#sponsorship-paths",secondary:true}] : [{label:"Choose a sponsorship path",href:"#sponsorship-paths"},{label:taleemActionLabel,href:taleemHref,secondary:true}]} visual={heroMedia ? <PublicMedia asset={heroMedia} priority /> : undefined} visualKicker="Education Sponsorship" visualTitle="Learn. Grow. Continue." visualNote="Hifdh · Qur’an Nazira · school and college pathways, matched to verified educational need." />
+      <PageHero variant="level2" eyebrow="Amaana Taleem Initiative" title="Knowledge should open doors." description={<p>{TALEEM_HERO_SENTENCE} School and college sponsorship is a developing pathway.</p>} actions={programmeOpen ? [{label:"Give to a Taleem programme",href:"#programme-sponsorship"},{label:"Choose a sponsorship path",href:"#sponsorship-paths",secondary:true}] : [{label:"Choose a sponsorship path",href:"#sponsorship-paths"},{label:taleemActionLabel,href:taleemHref,secondary:true}]} visual={heroMedia ? <PublicMedia asset={heroMedia} priority /> : undefined} visualKicker="Education Sponsorship" visualTitle="Learn. Grow. Continue." visualNote="Hifdh · Qur’an Nazira · school and college pathways, matched to verified educational need." />
+
+      {sponsorship}
 
       <div id="sponsorship-paths" className="taleem-paths">
-        <section className="v2-shell taleem-programme" aria-labelledby="islamic-education-title"><SectionHeading eyebrow="Islamic education" title="Sponsor Islamic Education" id="islamic-education-title" subtitle="Support sustained Qur’anic learning through one of two defined study paths." /><div className="taleem-islamic-grid">{islamicPaths.map(path => <article className="taleem-path" key={path.title}><span aria-hidden="true">{path.marker}</span><h3>{path.title}</h3><p>{path.copy}</p><a href={enquiryHref(path.path)}>Ask about this sponsorship <span aria-hidden="true">↗</span></a></article>)}</div></section>
+        <section className="v2-shell taleem-programme" aria-labelledby="islamic-education-title"><SectionHeading eyebrow="Islamic education" title="Sponsor Islamic Education" id="islamic-education-title" subtitle="Support sustained Qur’anic learning through one of two defined study paths." /><div className="taleem-islamic-grid">{islamicPaths.map(path => <article className="taleem-path" key={path.title}><span aria-hidden="true">{path.marker}</span><h3>{path.title}</h3><p>{path.copy}</p>{programmeOpen ? <a href={sponsorshipHrefForSlug(path.slug)}>Give to this programme <span aria-hidden="true">→</span></a> : <a href={enquiryHref(path.path)}>Ask about this sponsorship <span aria-hidden="true">↗</span></a>}</article>)}</div></section>
 
         <section className="taleem-school" aria-labelledby="child-education-title"><div className="v2-shell taleem-school-grid"><div><p className="v2-section-label">School and college</p><h2 id="child-education-title">Sponsor a Student’s School or College Education</h2></div><div><p className="taleem-school-lead">Developing pathway — verified school and college education support.</p><p>Amaana Taleem Initiative is designed to extend educational assistance to verified students from financially vulnerable households whose schooling or college education may be at risk because of fees or other essential academic costs. Support under this pathway will be matched to a clearly identified educational need, with verification and responsible follow-through before assistance is provided.</p><a className="v2-button" href={enquiryHref("school")}>Ask about school or college sponsorship</a></div></div></section>
-
-        <TaleemSponsorshipSection programme={preferences.programme} />
 
         <SponsorshipEnquiry preferences={preferences} />
 
