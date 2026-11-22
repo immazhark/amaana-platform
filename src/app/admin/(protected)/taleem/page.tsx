@@ -53,7 +53,7 @@ export default async function TaleemRosterPage({ searchParams }: Props) {
 
     <section className="card" aria-labelledby="places-heading">
       <h2 id="places-heading">Sponsored places</h2>
-      {roster.places.length === 0 ? <p className="muted">No places yet. Add each approved sponsored place once; a place is the commitment, and different learners can hold it over time.</p> : <div className="admin-table-wrap"><table>
+      {roster.places.length === 0 ? <p className="muted">No places yet. Add each approved sponsored place once; a place is the commitment, and different learners can hold it over time.</p> : <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Sponsored places and who holds each today"><table>
         <caption className="sr-only">Sponsored places and who holds each today</caption>
         <thead><tr><th scope="col">Place</th><th scope="col">Status</th><th scope="col">Held by</th><th scope="col">Change status</th></tr></thead>
         <tbody>{roster.places.map(place => <tr key={place.id}>

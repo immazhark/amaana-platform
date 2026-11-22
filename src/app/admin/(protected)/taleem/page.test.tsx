@@ -81,6 +81,11 @@ describe("Taleem roster admin page", () => {
     expect(html).toContain("Hifdh completed 2026-06-15");
   });
 
+  it("makes the scrollable places table a labelled, keyboard-focusable region", async () => {
+    const html = await render({ counts: counts(), learners: [], places: [{ id: "p1", placeCode: "TP-ABCDEF", status: "MAINTAINED", holderAlias: null, assignmentId: null }] });
+    expect(html).toMatch(/<div class="admin-table-wrap" tabindex="0" role="region" aria-label="Sponsored places and who holds each today">/);
+  });
+
   it("labels every form control", async () => {
     const html = await render({
       counts: counts(),
