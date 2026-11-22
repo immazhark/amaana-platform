@@ -26,3 +26,18 @@ export const TALEEM_METRIC = {
 /** The sentence used in hero copy. Typographic apostrophe, matching the rest of that page. */
 export const TALEEM_HERO_SENTENCE =
   `As of ${TALEEM_FACTS.asOf.label}, ${TALEEM_FACTS.sponsoredStudents} students across Qur’an Nazira and Hifdh are being sponsored through Amaana by multiple donors.`;
+
+/**
+ * Owner-confirmed on 22 November 2026: students in Amaana's SPONSORED cohort who completed Hifdh in 2026. It is a separate
+ * metric from the head-count above and is never added to it. It does not include the wider Madarsah graduating group, and
+ * nothing here states that any gift or ceremony took place: prepared gifts are not proof of a completed handover.
+ */
+export const TALEEM_HIFDH_COMPLETIONS = {
+  sponsored: 4,
+  year: 2026,
+  asOf: { iso: "2026-11-22", label: "November 2026" },
+} as const;
+
+/** The public sentence for the figure above. */
+export const TALEEM_HIFDH_COMPLETIONS_SENTENCE =
+  `${TALEEM_HIFDH_COMPLETIONS.sponsored} students in Amaana’s sponsored cohort completed Hifdh in ${TALEEM_HIFDH_COMPLETIONS.year}.`;
