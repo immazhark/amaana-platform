@@ -799,3 +799,101 @@ model TeamMember {
   updatedAt      DateTime  @updatedAt
   @@index([groupId, isPublished, sortOrder])
 }
+
+// ---- Taleem roster (brief v1.1 section 9). Private operational records about real learners: nothing here is public.
+// A learner is one person for life: changing programme, leaving and returning, or completing Hifdh never creates or
+// deletes a learner. A place is the sponsored commitment; a learner holds a place for a period. The public alias is
+// opaque (never a database id, never sequential) and unrelated to any access secret.
+
+enum TaleemProgrammeKind {
+  QAIDA
+  NAZIRA
+  HIFDH
+}
+
+enum TaleemLearnerStatus {
+  ACTIVE
+  ON_BREAK
+  LEFT
+  GRADUATED
+}
+
+enum TaleemPlaceStatus {
+  MAINTAINED
+  SUSPENDED
+  RETIRED
+}
+
+enum TaleemMilestoneKind {
+  HIFDH_COMPLETION
+}
+
+model TaleemLearner {
+  id          String                  @id @default(cuid())
+  publicAlias String                  @unique
+  fullName    String
+  status      TaleemLearnerStatus     @default(ACTIVE)
+  provenance  String?
+  enrolments  TaleemEnrolment[]
+  assignments TaleemPlaceAssignment[]
+  milestones  TaleemMilestone[]
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+
+  @@index([status])
+}
+
+model TaleemEnrolment {
+  id        String              @id @default(cuid())
+  learnerId String
+  programme TaleemProgrammeKind
+  startedOn DateTime            @db.Date
+  endedOn   DateTime?           @db.Date
+  learner   TaleemLearner       @relation(fields: [learnerId], references: [id], onDelete: Restrict)
+  createdAt DateTime            @default(now())
+
+  @@index([learnerId, startedOn])
+  @@index([programme, endedOn])
+}
+
+model TaleemPlace {
+  id          String                  @id @default(cuid())
+  placeCode   String                  @unique
+  status      TaleemPlaceStatus       @default(MAINTAINED)
+  approvedOn  DateTime?               @db.Date
+  note        String?
+  assignments TaleemPlaceAssignment[]
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+
+  @@index([status])
+}
+
+model TaleemPlaceAssignment {
+  id        String        @id @default(cuid())
+  placeId   String
+  learnerId String
+  startedOn DateTime      @db.Date
+  endedOn   DateTime?     @db.Date
+  endReason String?
+  place     TaleemPlace   @relation(fields: [placeId], references: [id], onDelete: Restrict)
+  learner   TaleemLearner @relation(fields: [learnerId], references: [id], onDelete: Restrict)
+  createdAt DateTime      @default(now())
+
+  @@index([placeId, startedOn])
+  @@index([learnerId, startedOn])
+}
+
+model TaleemMilestone {
+  id                String              @id @default(cuid())
+  learnerId         String
+  kind              TaleemMilestoneKind
+  completedOn       DateTime            @db.Date
+  supportAssociated Boolean             @default(false)
+  verifiedAt        DateTime?
+  learner           TaleemLearner       @relation(fields: [learnerId], references: [id], onDelete: Restrict)
+  createdAt         DateTime            @default(now())
+
+  @@unique([learnerId, kind])
+  @@index([kind, completedOn])
+}
