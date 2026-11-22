@@ -21,7 +21,7 @@ describe("notification provider transport deadline", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     process.env.RESEND_API_KEY = "re_synthetic";
-    process.env.EMAIL_FROM = "Synthetic <test@example.test>";
+    process.env.EMAIL_FROM = "Amaana Foundation <notifications@amaanafoundation.org>";
     process.env.NOTIFICATION_SEND_NOT_BEFORE = "2026-01-01T00:00:00Z";
     db.findMany.mockResolvedValue([{
       id: "queued-timeout",

@@ -15,6 +15,7 @@ describe("notification atomic retry eligibility", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.stubEnv("NOTIFICATION_SEND_NOT_BEFORE", "2026-01-01T00:00:00Z");
+    vi.stubEnv("EMAIL_FROM", "Amaana Foundation <notifications@amaanafoundation.org>");
     db.findMany.mockResolvedValue([{
       id: "queued-test",
       channel: "EMAIL",
@@ -45,7 +46,7 @@ describe("notification atomic retry eligibility", () => {
   });
   it("does not claim or send a retry after another attempt changes the selected version", async () => {
     vi.stubEnv("RESEND_API_KEY", "synthetic-key");
-    vi.stubEnv("EMAIL_FROM", "notifications@example.test");
+    vi.stubEnv("EMAIL_FROM", "Amaana Foundation <notifications@amaanafoundation.org>");
     const sender = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ id: "synthetic-receipt" }) });
     vi.stubGlobal("fetch", sender);
     db.findMany.mockResolvedValueOnce([{
