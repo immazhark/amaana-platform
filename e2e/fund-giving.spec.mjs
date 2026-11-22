@@ -129,7 +129,8 @@ for (const width of [390, 1280]) {
     await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
     await expect(page.getByRole('heading', { level: 2, name: 'Financial year 2026-27' })).toBeVisible();
     await expect(page.getByText('₹1,85,000').first()).toBeVisible();
-    await expect(page.getByText('No gifts recorded in this financial year yet.')).toBeVisible();
+    // A fund with no gifts, spending or held balance is one compact line; the funds with activity keep their full cards.
+    await expect(page.getByText('No gifts or published spending in 2026-27 yet.').first()).toBeVisible();
     await expect(page.getByText('Paid from Zakat funds')).toBeVisible();
     expect(await noHorizontalScroll(page)).toBe(true);
     const audit = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
