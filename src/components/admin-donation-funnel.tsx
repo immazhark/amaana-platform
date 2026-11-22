@@ -32,7 +32,7 @@ export function AdminDonationFunnel({ rows, windowDays }: { rows: readonly Funne
         Counted from recorded payment status, not from browser activity. Counts under {MIN_REPORTABLE_CELL} are withheld so no individual can be picked out; a neighbouring count in the same row is withheld too when showing it would let a hidden one be worked out, so a cell marked withheld is not necessarily small, and a total is left out when it would reveal one.
         This does not show where donors came from.
       </p>
-      {rows.length === 0 ? <p className="muted">No donations were started in this period.</p> : <div className="admin-table-wrap">
+      {rows.length === 0 ? <p className="muted">No donations were started in this period.</p> : <div className="admin-table-wrap" tabIndex={0} role="region" aria-label={`Donation outcomes by payment method, last ${windowDays} days`}>
         <table>
           <caption className="sr-only">Donation outcomes by payment method, last {windowDays} days</caption>
           <thead><tr><th scope="col">Payment method</th>{STAGES.map(item => <th scope="col" key={item.stage}>{item.label}</th>)}<th scope="col">Confirmed share</th></tr></thead>

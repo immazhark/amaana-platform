@@ -39,6 +39,11 @@ describe("AdminDonationFunnel", () => {
     expect(html).toContain('aria-labelledby="donation-funnel-heading"');
   });
 
+  it("makes the scrollable table a labelled, keyboard-focusable region so it can be scrolled without a mouse", () => {
+    const html = render([group("RAZORPAY", "CAPTURED", 40), group("RAZORPAY", "FAILED", 10)]);
+    expect(html).toMatch(/<div class="admin-table-wrap" tabindex="0" role="region" aria-label="Donation outcomes by payment method, last 90 days">/);
+  });
+
   it("states what it counts from and what it does not show", () => {
     const html = render([group("RAZORPAY", "CAPTURED", 40)]);
     expect(html).toContain("Counted from recorded payment status, not from browser activity");
