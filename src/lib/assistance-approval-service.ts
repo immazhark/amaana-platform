@@ -140,3 +140,53 @@ export async function approveAssistanceRequest(input: ApprovalInput): Promise<Ap
     return { outcome: "approved", status: "APPROVED", route: input.route, approvedAt, reviewerName: reviewer?.name ?? null };
   });
 }
+
+export type ApprovalDraftInput = Omit<ApprovalInput, "route"> & {
+  /** A route the reviewer is leaning towards, or null while undecided. Saved as progress; it decides nothing. */
+  route: ApprovalRoute | null;
+};
+
+/**
+ * Saves review progress without deciding anything. Whatever the reviewer has entered is kept as it is, however incomplete:
+ * no approval check is applied, no approval is recorded, the request status does not change, no reviewer or completion is
+ * stamped, and no email or audit decision event is written. Used when an approval is not ready (so nothing typed is lost) and
+ * available on its own as "Save review progress". It does nothing for a request that is not open to review (already
+ * approved, rejected, closed or linked to an appeal), and it refuses a stale version rather than overwrite another reviewer.
+ */
+export async function saveApprovalDraft(input: ApprovalDraftInput): Promise<"saved" | "skipped"> {
+  return withSerializableTransactionRetry(async tx => {
+    const current = await tx.assistanceRequest.findUnique({
+      where: { id: input.requestId },
+      select: { id: true, status: true, appealId: true, updatedAt: true, verification: { select: { updatedAt: true, decision: true } } },
+    });
+    if (!current) throw new AssistanceApprovalError("not_found", APPROVAL_MESSAGES.not_found);
+    const open = [AssistanceStatus.SUBMITTED, AssistanceStatus.DOCUMENTS_REQUESTED, AssistanceStatus.UNDER_VERIFICATION] as string[];
+    if (current.appealId || !open.includes(current.status)) return "skipped";
+
+    if (current.updatedAt.getTime() !== input.expectedRequestUpdatedAt.getTime()) throw new AssistanceApprovalError("stale_request", APPROVAL_MESSAGES.stale_request);
+    const version = current.verification?.updatedAt ?? null;
+    if (
+      (version === null) !== (input.expectedVerificationUpdatedAt === null) ||
+      (version && input.expectedVerificationUpdatedAt && version.getTime() !== input.expectedVerificationUpdatedAt.getTime())
+    ) {
+      throw new AssistanceApprovalError("stale_verification", APPROVAL_MESSAGES.stale_verification);
+    }
+
+    const f = input.fields;
+    const data = {
+      needConfirmed: f.needConfirmed, evidenceReviewed: f.evidenceReviewed, otherFundingChecked: f.otherFundingChecked,
+      verifiedNeedAmount: f.verifiedNeedAmount, approvedPublicTarget: input.route === "APPROVED_PUBLIC" ? f.approvedPublicTarget : null,
+      paymentDestination: f.paymentDestination.trim() || null, otherFundingNotes: f.otherFundingNotes.trim() || null,
+      verificationSummary: f.verificationSummary.trim() || null,
+      decision: (input.route ?? current.verification?.decision ?? "PENDING") as AssistanceVerificationDecision,
+      confidentialityLevel: f.confidentialityLevel as ConfidentialityLevel, zakatStatus: f.zakatStatus as ZakatReviewStatus,
+      publicNameConsent: f.publicNameConsent as ConsentDecision, photoConsent: f.photoConsent as ConsentDecision,
+      medicalDetailsConsent: f.medicalDetailsConsent as ConsentDecision, institutionNameConsent: f.institutionNameConsent as ConsentDecision,
+      archiveConsent: f.archiveConsent as ConsentDecision,
+      // Progress is never a completed decision: any earlier completion is cleared so the case reads as in review again.
+      completedAt: null, reviewedById: null,
+    };
+    await tx.assistanceVerification.upsert({ where: { assistanceRequestId: current.id }, create: { assistanceRequestId: current.id, ...data }, update: data });
+    return "saved";
+  });
+}

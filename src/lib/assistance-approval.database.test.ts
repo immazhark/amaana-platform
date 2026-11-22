@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { prisma } from "./prisma";
 import { rejectAssistanceRequest } from "./assistance-rejection-service";
-import { AssistanceApprovalError, approveAssistanceRequest, type ApprovalInput } from "./assistance-approval-service";
+import { AssistanceApprovalError, approveAssistanceRequest, saveApprovalDraft, type ApprovalInput } from "./assistance-approval-service";
 
 // A real PostgreSQL test, deliberately unavailable to hosted and production DBs. Synthetic data only.
 describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("assistance approval PostgreSQL invariants", () => {
@@ -196,5 +196,54 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("assistance approv
     const notification = await prisma.notification.findFirstOrThrow({ where: { assistanceRequestId: request.id } });
     for (const text of [JSON.stringify(audit), JSON.stringify(notification)]) expect(text).not.toContain("PRIVATE-");
     expect(notification.payload).toEqual({ referenceNumber: request.referenceNumber, status: "APPROVED" });
+  });
+  describe("saving review progress without deciding", () => {
+    const draft = (requestId: string, over: Record<string, unknown> = {}) => input(requestId).then(base => ({ ...base, route: null as ApprovalInput["route"] | null, ...over }));
+
+    it("13. keeps whatever was entered, incomplete as it is, without recording an approval or changing the status", async () => {
+      const request = await makeRequest();
+      const partial = { ...fields, needConfirmed: false, evidenceReviewed: false, verifiedNeedAmount: null, paymentDestination: "", verificationSummary: "Half-written summary", zakatStatus: "UNREVIEWED" };
+      expect(await saveApprovalDraft(await draft(request.id, { fields: partial }))).toBe("saved");
+      const after = await prisma.assistanceRequest.findUniqueOrThrow({ where: { id: request.id }, include: { verification: true } });
+      expect(after.status).toBe("UNDER_VERIFICATION");
+      expect(after.verification).toMatchObject({ decision: "PENDING", needConfirmed: false, verificationSummary: "Half-written summary", completedAt: null, reviewedById: null });
+      expect(await counts(request.id)).toEqual({ audits: 0, notifications: 0 });
+    });
+
+    it("stores a chosen route as a leaning, not a decision: no completion, no reviewer, no email", async () => {
+      const request = await makeRequest();
+      await saveApprovalDraft(await draft(request.id, { route: "APPROVED_PUBLIC", fields: publicFields }));
+      const after = await prisma.assistanceVerification.findUniqueOrThrow({ where: { assistanceRequestId: request.id } });
+      expect(after).toMatchObject({ decision: "APPROVED_PUBLIC", completedAt: null, reviewedById: null });
+      expect((await prisma.assistanceRequest.findUniqueOrThrow({ where: { id: request.id } })).status).toBe("UNDER_VERIFICATION");
+      expect(await counts(request.id)).toEqual({ audits: 0, notifications: 0 });
+    });
+
+    it("lets the same record be saved again, and then approved from that saved progress", async () => {
+      const request = await makeRequest();
+      await saveApprovalDraft(await draft(request.id, { fields: { ...fields, verificationSummary: "First pass" } }));
+      await saveApprovalDraft(await draft(request.id, { fields: { ...fields, verificationSummary: "Second pass" } }));
+      expect(await prisma.assistanceVerification.count({ where: { assistanceRequestId: request.id } })).toBe(1);
+      const result = await approveAssistanceRequest(await input(request.id));
+      expect(result.outcome).toBe("approved");
+    });
+
+    it("refuses a stale version, and does nothing for a request that is not open to review", async () => {
+      const request = await makeRequest();
+      const stale = await draft(request.id);
+      await prisma.assistanceRequest.update({ where: { id: request.id }, data: { internalNotes: "Changed" } });
+      expect(await refused(saveApprovalDraft(stale))).toBeInstanceOf(AssistanceApprovalError);
+      for (const status of ["APPROVED", "REJECTED", "CLOSED", "CONVERTED_TO_APPEAL"] as const) {
+        const other = await makeRequest({ status });
+        expect(await saveApprovalDraft(await draft(other.id)), status).toBe("skipped");
+        expect(await prisma.assistanceVerification.count({ where: { assistanceRequestId: other.id } }), status).toBe(0);
+      }
+    });
+
+    it("does not store a public target on a route that is not public", async () => {
+      const request = await makeRequest();
+      await saveApprovalDraft(await draft(request.id, { route: "APPROVED_PRIVATE", fields: { ...fields, approvedPublicTarget: 1000 } }));
+      expect((await prisma.assistanceVerification.findUniqueOrThrow({ where: { assistanceRequestId: request.id } })).approvedPublicTarget).toBeNull();
+    });
   });
 });
