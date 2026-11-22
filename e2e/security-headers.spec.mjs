@@ -125,7 +125,7 @@ test("anonymous performance reporting is private and rejects foreign origins wit
 });
 
 
-for (const path of ["/api/donations/acknowledgement", "/api/assistance/status"]) {
+for (const path of ["/api/donations/acknowledgement", "/api/donations/acknowledgement/pdf", "/api/assistance/status"]) {
   test(`private API ${path} keeps no-referrer on early origin rejection`, async ({ request }) => {
     const response = await request.post(path, {
       headers: { Origin: "https://not-amaana.invalid" }, data: {},
