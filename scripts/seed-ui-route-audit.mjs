@@ -24,6 +24,12 @@ try {
   const draft = await prisma.appeal.upsert({where:{slug:'synthetic-ui-audit-draft'},update:{...appealData,title:'Synthetic draft editor audit',status:'DRAFT',publishedAt:null},create:{slug:'synthetic-ui-audit-draft',...appealData,title:'Synthetic draft editor audit',status:'DRAFT',publishedAt:null}});
   const requestData = {applicantName:'Synthetic applicant',phone:'+910000000000',city:'Hyderabad',category:'OTHER',description:'Synthetic UI audit request. No real beneficiary data or documents.',consentGivenAt:now,trackingTokenHash:hash('synthetic-ui-audit-tracking-token'),assignedToId:user.id};
   const request = await prisma.assistanceRequest.upsert({where:{referenceNumber:'AMA-UI-AUDIT'},update:requestData,create:{referenceNumber:'AMA-UI-AUDIT',...requestData}});
+  // A request only the rejection journey changes (e2e/assistance-rejection.spec.mjs), reset on every run so the journey always
+  // starts from an untouched, eligible SUBMITTED case. The audited request above is never mutated.
+  const rejectData = {...requestData,description:'Synthetic rejection journey request. No real beneficiary data or documents.',assignedToId:null,email:null,status:'SUBMITTED',internalNotes:null};
+  const rejectRequest = await prisma.assistanceRequest.upsert({where:{referenceNumber:'AMA-UI-REJECT'},update:rejectData,create:{referenceNumber:'AMA-UI-REJECT',...rejectData}});
+  await prisma.assistanceRejection.deleteMany({where:{assistanceRequestId:rejectRequest.id}});
+  await prisma.assistanceVerification.deleteMany({where:{assistanceRequestId:rejectRequest.id}});
   const donationData = {appealId:appeal.id,donorName:'Synthetic donor',donorEmail:'ui-audit@example.invalid',domesticConfirmedAt:now,amount:'100',receiptTokenHash:hash('synthetic-only'),paymentMethod:'DIRECT_UPI',provider:null,providerOrderId:null,providerPaymentId:null,status:'PENDING_VERIFICATION',transferReference:'UI-AUDIT-SYNTHETIC-ONLY',transferredAt:now};
   const donation = await prisma.donation.upsert({where:{referenceNumber:'AFD-UI-AUDIT'},update:donationData,create:{referenceNumber:'AFD-UI-AUDIT',...donationData}});
   const storyData = {title:'Synthetic editorial audit story',summary:'Disposable content for the article layout audit.',body:'This is synthetic editorial content, created only for layout and accessibility testing in a disposable database. No claim about Amaana programmes or beneficiaries is made.',status:'PUBLISHED',publishedAt:now,privacyApprovedAt:now};
@@ -54,5 +60,5 @@ try {
     prisma.story.findMany({where:{status:'PUBLISHED',privacyApprovedAt:{not:null}},select:{slug:true}}),
     prisma.faithContent.findMany({where:{status:'PUBLISHED',religiousReviewStatus:'VERIFIED',verifiedAt:{not:null},sourceCitation:{not:null}},select:{slug:true}}),
   ]);
-  process.stdout.write(JSON.stringify({token,appealId:appeal.id,draftId:draft.id,requestId:request.id,donationId:donation.id,publicRoutes:[...initiatives.map(i=>'/our-work/'+i.slug),...stories.map(i=>'/stories/'+i.slug),...faith.map(i=>'/faith-and-reflections/'+i.slug),'/appeals/synthetic-ui-audit','/donate/synthetic-ui-audit']}));
+  process.stdout.write(JSON.stringify({token,appealId:appeal.id,draftId:draft.id,requestId:request.id,rejectRequestId:rejectRequest.id,donationId:donation.id,publicRoutes:[...initiatives.map(i=>'/our-work/'+i.slug),...stories.map(i=>'/stories/'+i.slug),...faith.map(i=>'/faith-and-reflections/'+i.slug),'/appeals/synthetic-ui-audit','/donate/synthetic-ui-audit']}));
 } finally { await prisma.$disconnect(); }

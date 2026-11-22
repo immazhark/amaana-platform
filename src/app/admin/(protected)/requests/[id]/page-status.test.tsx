@@ -57,11 +57,21 @@ describe("request review current-status preservation", () => {
     expect(options.some(option => ["APPROVED", "REJECTED"].includes(option.value ?? ""))).toBe(false);
   });
 
-  it("preserves both approval choices for an approver", async () => {
+  it("offers an approver the approval choice, but no longer a REJECTED choice: rejecting is its own form", async () => {
     mocks.permission.mockReturnValue(true);
-    const { options } = await statusOptions("APPROVED");
-    expect(options.filter(option => option.selected).map(option => option.value)).toEqual(["APPROVED"]);
-    expect(options.map(option => option.value)).toEqual(expect.arrayContaining(["APPROVED", "REJECTED"]));
+    const { options } = await statusOptions("UNDER_VERIFICATION");
+    expect(options.map(option => option.value)).toContain("APPROVED");
+    expect(options.map(option => option.value)).not.toContain("REJECTED");
+    const approved = await statusOptions("APPROVED");
+    expect(approved.options.filter(option => option.selected).map(option => option.value)).toEqual(["APPROVED"]);
+    expect(approved.options.map(option => option.value)).not.toContain("REJECTED");
+  });
+
+  it("still shows REJECTED as the current state of a request that is already rejected, so it can be moved back into review", async () => {
+    mocks.permission.mockReturnValue(true);
+    const { options } = await statusOptions("REJECTED");
+    expect(options.filter(option => option.selected).map(option => option.value)).toEqual(["REJECTED"]);
+    expect(options.map(option => option.value)).toContain("UNDER_VERIFICATION");
   });
 
   it("keeps converted status locked with its hidden form value", async () => {

@@ -8,10 +8,13 @@ import {
   MANUAL_ASSISTANCE_STATUSES,
   getPublicAppealVerificationIssues,
 } from "@/lib/assistance";
+import { rejectionEligibility } from "@/lib/assistance-rejection";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { assignRequest, convertToAppeal, saveVerificationWithFeedback, updateRequestWithFeedback } from "./actions";
+import { rejectRequestAction } from "./rejection-actions";
 import { AdminActionFeedbackForm } from "@/components/admin-action-feedback-form";
+import { RejectRequestForm } from "@/components/reject-request-form";
 
 type Props = { params: Promise<{ id: string }> };
 const label = (value: string) => value.replaceAll("_", " ").toLowerCase().replace(/^./, character => character.toUpperCase());
@@ -34,6 +37,8 @@ export default async function RequestDetailPage({ params }: Props) {
         },
         appeal: { select: { id: true, title: true, status: true } },
         verification: { include: { reviewedBy: { select: { name: true } } } },
+        // Only the latest decision, and only its private reason, who made it and when: a bounded read.
+        rejections: { orderBy: [{ rejectedAt: "desc" }, { id: "desc" }], take: 1, select: { reason: true, rejectedAt: true, rejectedBy: { select: { name: true } } } },
       },
     }),
     prisma.user.findMany({
@@ -47,12 +52,16 @@ export default async function RequestDetailPage({ params }: Props) {
 
   const currentAssigneeUnavailable = Boolean(request.assignedToId && !staff.some(member => member.id === request.assignedToId));
   const converted = request.status === "CONVERTED_TO_APPEAL" || Boolean(request.appealId);
-  const manualStatuses = [...MANUAL_ASSISTANCE_STATUSES];
+  // Rejecting is its own form below, so REJECTED is offered here only to show the state a request is already in.
+  const manualStatuses = MANUAL_ASSISTANCE_STATUSES.filter(status => status !== "REJECTED" || request.status === "REJECTED");
   const visibleStatuses = converted
     ? ["CONVERTED_TO_APPEAL"]
     : hasPermission(user, "assistance.approve")
       ? manualStatuses
-      : manualStatuses.filter(status => status === request.status || !["APPROVED", "REJECTED"].includes(status));
+      : manualStatuses.filter(status => status === request.status || status !== "APPROVED");
+  const rejection = rejectionEligibility(request.status, converted);
+  const latestRejection = request.rejections?.[0] ?? null;
+  const canReject = hasPermission(user, "assistance.update") && hasPermission(user, "assistance.approve");
   const verification = request.verification;
   const publicAppealIssues = getPublicAppealVerificationIssues(verification);
   const publicAppealReady = publicAppealIssues.length === 0;
@@ -84,6 +93,30 @@ export default async function RequestDetailPage({ params }: Props) {
           <h2>Private documents</h2>
           {request.documents.length ? <ul className="document-list">{request.documents.map(document => <li key={document.id}><a href={`/admin/documents/${document.id}`} target="_blank" rel="noreferrer">{document.originalName}<span className="sr-only"> (opens in a new tab)</span></a><small>{document.mimeType} · {(document.sizeBytes / 1048576).toFixed(2)} MB</small></li>)}</ul> : <p className="muted">No documents were submitted.</p>}
         </section>
+
+        {rejection !== "unknown" && <section className="card" aria-labelledby="reject-heading">
+          <h2 id="reject-heading">{rejection === "already_rejected" ? "Request rejected" : "Reject request"}</h2>
+          {rejection === "linked_appeal" && <>
+            <p>This request has a linked appeal. Open the appeal to manage its status.</p>
+            <p className="muted">A request with a linked appeal is not rejected here: pausing or closing a published appeal follows the appeal&apos;s own rules and does not change donations or financial records by itself.</p>
+            {request.appeal && hasPermission(user, "appeal.view") && <Link className="button secondary" href={`/admin/appeals/${request.appeal.id}`}>Open the linked appeal</Link>}
+          </>}
+          {rejection === "closed" && <p>This request is closed. Reopen the review under Review first if it needs to be rejected.</p>}
+          {rejection === "already_rejected" && <>
+            {latestRejection
+              ? <dl className="details">
+                <div><dt>Recorded by</dt><dd>{latestRejection.rejectedBy.name}</dd></div>
+                <div><dt>Recorded</dt><dd>{latestRejection.rejectedAt.toLocaleString("en-IN", { dateStyle: "long", timeStyle: "short", timeZone: "Asia/Kolkata" })}</dd></div>
+                <div className="full"><dt>Reason (private)</dt><dd>{latestRejection.reason}</dd></div>
+              </dl>
+              : <p>This request was rejected before reasons were recorded. No historical reason, reviewer or time is on file, and none has been invented.</p>}
+            <p className="muted">To review it again, change its status under Review. Nothing is deleted, and an earlier decision stays on record.</p>
+          </>}
+          {rejection === "eligible" && (canReject ? <>
+            <p className="muted">Enter the reason and confirm. You do not need to complete any approval check to reject a request, and nothing you have entered in the verification form is used or required.</p>
+            <RejectRequestForm action={rejectRequestAction} requestId={id} referenceNumber={request.referenceNumber} requestVersion={request.updatedAt.toISOString()} verificationVersion={verification?.updatedAt.toISOString() ?? ""} />
+          </> : <p className="muted">Only an authorised approver can reject a request. You can still save review notes; ask an approver to decide this case.</p>)}
+        </section>}
 
         <section className="card">
           <h2>Private verification & publication gate</h2>
