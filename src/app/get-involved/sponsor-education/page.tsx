@@ -48,7 +48,7 @@ export default async function SponsorEducationPage({ searchParams = Promise.reso
 
         <section className="taleem-school" aria-labelledby="child-education-title"><div className="v2-shell taleem-school-grid"><div><p className="v2-section-label">School and college</p><h2 id="child-education-title">Sponsor a Student’s School or College Education</h2></div><div><p className="taleem-school-lead">Developing pathway — verified school and college education support.</p><p>Amaana Taleem Initiative is designed to extend educational assistance to verified students from financially vulnerable households whose schooling or college education may be at risk because of fees or other essential academic costs. Support under this pathway will be matched to a clearly identified educational need, with verification and responsible follow-through before assistance is provided.</p><a className="v2-button" href={enquiryHref("school")}>Ask about school or college sponsorship</a></div></div></section>
 
-        <TaleemSponsorshipSection />
+        <TaleemSponsorshipSection programme={preferences.programme} />
 
         <SponsorshipEnquiry preferences={preferences} />
 

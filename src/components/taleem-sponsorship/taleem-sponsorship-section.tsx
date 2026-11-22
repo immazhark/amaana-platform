@@ -4,6 +4,7 @@ import { getDonationPaymentDetails } from "@/lib/donation-payment-details";
 import { feeEstimateBasisPoints } from "@/lib/processing-fee";
 import { isTaleemSponsorshipEnabled } from "@/lib/taleem-sponsorship-flag";
 import { sponsorshipOffer, TALEEM_FUND_SLUG } from "@/lib/taleem-sponsorship";
+import { requestedProgramme } from "@/lib/taleem-sponsorship-link";
 import { logServerError } from "@/lib/server-log";
 import { taleemClasses, taleemHead, taleemIntro, taleemPanelNote } from "./taleem-sponsorship-copy";
 import { TaleemSponsorshipConfigurator } from "./taleem-sponsorship-configurator";
@@ -24,7 +25,7 @@ async function loadTaleemFund() {
 
 /** The programme sponsorship section of the sponsor-education page. It renders nothing, and touches no database, while the
  * activation switches are off. It is an enhancement, so any lookup failure degrades to the page without it. */
-export async function TaleemSponsorshipSection() {
+export async function TaleemSponsorshipSection({ programme }: { programme?: string | string[] } = {}) {
   if (!isTaleemSponsorshipEnabled()) return null;
   const loaded = await loadTaleemFund();
   if (!loaded) return null;
@@ -35,5 +36,6 @@ export async function TaleemSponsorshipSection() {
     head={taleemHead}
     intro={taleemIntro}
     panelNote={taleemPanelNote}
+    initialProgrammeId={requestedProgramme(programme, offer.programmes)}
     copy={fundDonationFormCopy(loaded.fund)} paymentDetails={loaded.paymentDetails} feeBps={feeEstimateBasisPoints()} />;
 }
