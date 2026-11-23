@@ -54,3 +54,13 @@
 
 /* R-024: readable private-intake eyebrow at default and enlarged root sizes. */
 .form :global(.v2-form-heading>span){font-size:.75rem}
+
+/* Derive visible required badges from native constraints without changing the control's accessible label. */
+.form :global(.field > label:has(+ :required))::after,
+.form :global(.v2-consent-fieldset label.checkbox:has(input:required) strong)::after {
+  content: "Required";
+  display: inline-block;
+  margin-inline-start: .45rem;
+  color: var(--af-color-muted);
+  font-weight: 600;
+}
