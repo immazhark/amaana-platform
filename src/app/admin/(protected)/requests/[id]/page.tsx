@@ -174,6 +174,21 @@ export default async function RequestDetailPage({ params }: Props) {
           </form>
         </section>
 
+        {!converted && ["SUBMITTED", "DOCUMENTS_REQUESTED", "UNDER_VERIFICATION"].includes(request.status) && <section className="card" aria-labelledby="request-more-heading">
+          <h2 id="request-more-heading">Request additional information</h2>
+          <p className="muted">{request.status === "DOCUMENTS_REQUESTED" ? "Awaiting information from applicant. Record any remaining questions, then resume verification when private evidence has been reviewed." : "Use this when specific details or evidence are missing and the application is not ready for a decision."}</p>
+          <AdminActionFeedbackForm action={updateRequestWithFeedback}>
+            <input type="hidden" name="id" value={id}/>
+            <input type="hidden" name="expectedUpdatedAt" value={request.updatedAt.toISOString()}/>
+            <input type="hidden" name="status" value="DOCUMENTS_REQUESTED"/>
+            <label htmlFor="followUpNotes">Specific missing items or questions (Required)</label>
+            <textarea id="followUpNotes" name="internalNotes" minLength={10} maxLength={10000} required defaultValue={request.internalNotes ?? ""} aria-describedby="follow-up-instructions"/>
+            <small id="follow-up-instructions" className="muted">List the specific missing items in this private case note. Saving changes the status and may queue a standard status notification, but it does not send these questions to the applicant.</small>
+            <button className="button secondary" disabled={!hasPermission(user, "assistance.update")}>{request.status === "DOCUMENTS_REQUESTED" ? "Save follow-up details" : "Mark awaiting information"}</button>
+          </AdminActionFeedbackForm>
+          <p className="muted">After saving, contact the applicant through a verified private channel using the request reference. No applicant upload or reply portal is available. Do not collect sensitive evidence through social media or unverified contact methods.</p>
+        </section>}
+
         <section className="card">
           <h2>Review</h2>
           <AdminActionFeedbackForm action={updateRequestWithFeedback}>
@@ -215,5 +230,15 @@ export default async function RequestDetailPage({ params }: Props) {
         {request.appeal && <section className="card"><h2>Linked appeal</h2><p>{request.appeal.title}</p><span className="status-badge">{request.appeal.status}</span>{hasPermission(user, "appeal.view") && <Link className="button secondary" href={`/admin/appeals/${request.appeal.id}`}>Open appeal editor</Link>}</section>}
       </aside>
     </div>
+    <section className="card" aria-labelledby="assistance-workflow-guide">
+      <h2 id="assistance-workflow-guide">Review workflow guide</h2>
+      <ol>
+        <li><strong>Read the request.</strong> Review the contact details, description and any private evidence. An attachment is not automatically approved for public use.</li>
+        <li><strong>Verify the need.</strong> Confirm the facts, relevant amount, payment destination, other funding and applicable eligibility. Assign a reviewer if needed. Do not treat unverified fields as approved.</li>
+        <li><strong>Request missing information.</strong> If the evidence is incomplete, list the specific missing items in the private note, mark awaiting information and contact the applicant through a verified private channel. The standard status email is not the detailed request. After information is received and reviewed, resume verification.</li>
+        <li><strong>Decide and document.</strong> Record the verification decision and required checks before approval or rejection. Internal notes and assignment are optional for a complete case; supporting evidence and the decision must meet the selected support route.</li>
+        <li><strong>Handle any public appeal separately.</strong> A private request does not automatically become fundraising. Public story, target, disclosure, media privacy and publishing need their own review. No decision in this screen transfers funds.</li>
+      </ol>
+    </section>
   </>;
 }
