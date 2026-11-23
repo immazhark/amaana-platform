@@ -279,6 +279,21 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
           </form>
         </section>
 
+        {!converted && ["SUBMITTED", "DOCUMENTS_REQUESTED", "UNDER_VERIFICATION"].includes(request.status) && <section className="card" aria-labelledby="request-more-heading">
+          <h2 id="request-more-heading">Request additional information</h2>
+          <p className="muted">{request.status === "DOCUMENTS_REQUESTED" ? "Awaiting information from applicant. Update the missing items or resume verification when the information has been reviewed." : "Pause the decision until the applicant can clarify the need or supply appropriate private evidence."}</p>
+          <AdminActionFeedbackForm action={updateRequestWithFeedback}>
+            <input type="hidden" name="id" value={id}/>
+            <input type="hidden" name="expectedUpdatedAt" value={request.updatedAt.toISOString()}/>
+            <input type="hidden" name="status" value="DOCUMENTS_REQUESTED"/>
+            <label htmlFor="followUpNotes">Specific missing items or questions <span className="muted">(Required)</span></label>
+            <textarea id="followUpNotes" name="internalNotes" minLength={10} maxLength={10000} required defaultValue={request.internalNotes ?? ""} aria-describedby="follow-up-instructions"/>
+            <small id="follow-up-instructions" className="muted">List the specific missing items in a private note. Preserve any existing notes. Saving changes the request status only. A standard status email may be queued if an address was supplied, but the questions in this note are not sent.</small>
+            <button className="button secondary" disabled={!hasPermission(user, "assistance.update")}>{request.status === "DOCUMENTS_REQUESTED" ? "Save follow-up details" : "Mark awaiting information"}</button>
+          </AdminActionFeedbackForm>
+          <p className="muted">After saving, contact the applicant through a verified private channel and quote the request reference. No applicant upload or reply portal is available in this workflow. Do not request sensitive documents through ordinary email or social media messages.</p>
+        </section>}
+
         <section className="card">
           <h2>Review</h2>
           <AdminActionFeedbackForm action={updateRequestWithFeedback}>
@@ -320,5 +335,15 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
         {request.appeal && <section className="card"><h2>Linked appeal</h2><p>{request.appeal.title}</p><span className="status-badge">{request.appeal.status}</span>{hasPermission(user, "appeal.view") && <Link className="button secondary" href={`/admin/appeals/${request.appeal.id}`}>Open appeal editor</Link>}</section>}
       </aside>
     </div>
+    <section className="card" aria-labelledby="assistance-workflow-guide">
+      <h2 id="assistance-workflow-guide">Review workflow guide</h2>
+      <p className="muted">Follow these steps for every financial or medical request. Only verified information may be approved; an application does not guarantee funding.</p>
+      <ol>
+        <li><strong>1. Read the intake and private evidence.</strong> Confirm the applicant's contact details, request description and any documents. Assign a reviewer if needed. Submitted files are not automatically approved for public sharing.</li>
+        <li><strong>2. If information is missing, request it privately.</strong> Use Request additional information, list the exact missing items in the private note, change the status to Documents requested, then contact the applicant through a verified private channel. The standard status email is not the detailed request. Once received and verified, resume verification.</li>
+        <li><strong>3. Decide: approve or reject.</strong> Approval requires confirmed need, reviewed evidence, verified amount, payment destination, checked other funding, a verification summary and a Zakat decision. Public fundraising also requires a target and separately resolved disclosure permissions. Internal notes and assignment are optional. To reject, use Reject request with a private reason and explicit confirmation; approval fields are not required.</li>
+        <li><strong>4. Prepare public fundraising only when approved for that route.</strong> Create a draft appeal and separately review the public story, consent, privacy-safe media and payment eligibility. Publishing the appeal is a distinct decision; approval alone never transfers funds or opens fundraising.</li>
+      </ol>
+    </section>
   </>;
 }
