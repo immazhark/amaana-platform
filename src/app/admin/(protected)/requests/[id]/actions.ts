@@ -237,6 +237,7 @@ export async function updateRequest(formData: FormData) {
   });
   if (!isManualAssistanceStatusAllowed(previous.status, status, Boolean(previous.appealId))) throw new Error("This status can only be changed by the linked appeal workflow");
   // Rejection has one route: the dedicated Reject request form. A note-only save on an already rejected request is fine.
+  if (status === AssistanceStatus.DOCUMENTS_REQUESTED && previous.status !== status && internalNotes.length < 10) throw new Error("List the specific missing items in internal notes before requesting more information.");
   if (status === AssistanceStatus.REJECTED && previous.status !== status) throw new Error("Use Reject request to reject this request.");
   if (status === AssistanceStatus.APPROVED && previous.status !== status && !hasPermission(user, "assistance.approve")) throw new Error("Approval permission is required");
   if (status === AssistanceStatus.APPROVED && previous.status !== status && !canApproveAssistanceRequest(previous.verification)) throw new Error("Complete verification with an approved decision before marking this request approved");
@@ -440,6 +441,7 @@ const safeReviewFeedbackPrefixes = [
   "Invalid Zakat review status",
   "Invalid status",
   "Internal notes are too long",
+  "List the specific missing items in internal notes before requesting more information.",
   "Verification summary is too long",
   "Other-funding notes are too long",
   "Payment destination is too long",
