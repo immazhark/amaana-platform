@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getPublicAppealVerificationIssues } from "./assistance";
 import {
-  APPROVAL_ROUTES, approvalIssues, approvalRequirement, parseApprovalRoute, type ApprovalFields,
+  APPROVAL_ROUTES, approvalProblemField, approvalProblemMessage, parseApprovalNotice, approvalIssues, approvalRequirement, parseApprovalRoute, type ApprovalFields,
 } from "./assistance-approval";
 
 const complete: ApprovalFields = {
@@ -127,5 +127,28 @@ describe("one rule set, no drifting second checklist", () => {
       const fields = { ...publicReady, ...variant };
       expect(approvalMessages(fields), JSON.stringify(variant)).toEqual(publicMessages(fields));
     }
+  });
+});
+
+
+describe("approval notice field links", () => {
+  it("links a missing support route to the decision control with a useful message", () => {
+    expect(approvalProblemField("route")).toBe("decision");
+    expect(approvalProblemMessage("route")).toBe("Choose how this request is to be supported.");
+  });
+
+  it("preserves the specific target error and links it to the target control", () => {
+    expect(approvalProblemField("approvedPublicTarget_exceeds")).toBe("approvedPublicTarget");
+    expect(approvalProblemMessage("approvedPublicTarget_exceeds")).toBe("Approved public target cannot exceed the verified need amount.");
+    expect(approvalProblemField("confirmation")).toBe("confirmApproval");
+  });
+
+  it.each(["verifiedNeedAmount_format", "approvedPublicTarget_format", "paymentDestination_long", "verificationSummary_long", "otherFundingNotes_long"])("describes %s without falling back to a generic error", token => {
+    expect(approvalProblemMessage(token)).not.toBe(approvalProblemMessage("unknown"));
+    expect(approvalProblemField(token)).toBe(token.split("_")[0]);
+  });
+
+  it("discards unknown tokens so a crafted link cannot add broken field anchors", () => {
+    expect(parseApprovalNotice({ approve: "error", e: "route,unknown,approvedPublicTarget_exceeds,<script>" })).toEqual({ kind: "error", problems: ["route", "approvedPublicTarget_exceeds"], code: null });
   });
 });

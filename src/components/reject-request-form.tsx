@@ -33,7 +33,7 @@ export function RejectRequestForm({ action, requestId, referenceNumber, requestV
   ].filter((item): item is { href: string; text: string } => item !== null);
 
   return (
-    <form action={action} noValidate>
+    <form action={action} className="field" noValidate>
       <input type="hidden" name="id" value={requestId} />
       <input type="hidden" name="expectedRequestUpdatedAt" value={requestVersion} />
       <input type="hidden" name="expectedVerificationUpdatedAt" value={verificationVersion} />

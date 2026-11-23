@@ -40,6 +40,10 @@ describe("initial form", () => {
     expect(html).not.toContain('role="alert"');
   });
 
+  it("uses the governed field layout so controls have a measured row gap", () => {
+    expect(html).toMatch(/<form[^>]*class="field"/);
+  });
+
   it("reports errors itself rather than through the browser's own bubbles", () => {
     expect(html).toMatch(/<form[^>]*novalidate/i);
   });

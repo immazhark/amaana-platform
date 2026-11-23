@@ -90,7 +90,7 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("assistance approv
     const error = await refused(approveAssistanceRequest(await input(request.id, { route: "APPROVED_PUBLIC", fields: bad })));
     expect(error).toBeInstanceOf(AssistanceApprovalError);
     expect(error!.code).toBe("incomplete");
-    expect(Object.keys(error!.fieldErrors ?? {}).sort()).toEqual(["approvedPublicTarget", "evidenceReviewed", "needConfirmed", "publicNameConsent", "verificationSummary"]);
+    expect(Object.keys(error!.fieldErrors ?? {}).sort()).toEqual(["approvedPublicTarget_exceeds", "evidenceReviewed", "needConfirmed", "publicNameConsent", "verificationSummary"]);
     const after = await prisma.assistanceRequest.findUniqueOrThrow({ where: { id: request.id }, include: { verification: true } });
     expect(after.status).toBe("UNDER_VERIFICATION");
     expect(after.verification).toBeNull();

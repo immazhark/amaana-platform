@@ -15,9 +15,11 @@ test.beforeAll(() => {
   if (!isolated) return;
   seed = JSON.parse(execFileSync(process.execPath, ['scripts/seed-ui-route-audit.mjs'], {
     cwd: process.env.AMAANA_APP_WORKSPACE ?? process.cwd(),
-    env: { ...process.env, AMAANA_UI_AUDIT_TARGET: 'isolated-ci' },
+    env: { ...process.env, AMAANA_UI_AUDIT_TARGET: 'isolated-ci', AMAANA_ASSISTANCE_APPROVAL_FIXTURES: 'true' },
     encoding: 'utf8',
   }));
+  expect(seed.approveRequestId, 'private approval fixture must exist').toEqual(expect.any(String));
+  expect(seed.approvePublicRequestId, 'public approval fixture must exist').toEqual(expect.any(String));
 });
 
 async function open(page, requestId) {

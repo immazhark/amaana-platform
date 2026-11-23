@@ -4,6 +4,8 @@
 // is accepted and what the reviewer is told before they submit, so there is no second checklist to drift. The public route's
 // requirements are held to the publication gate's own wording by a test that compares them.
 
+import { ASSISTANCE_OTHER_FUNDING_NOTES_MAX_LENGTH, ASSISTANCE_PAYMENT_DESTINATION_MAX_LENGTH, ASSISTANCE_VERIFICATION_SUMMARY_MAX_LENGTH } from "./assistance";
+
 export type ApprovalRoute = "APPROVED_PRIVATE" | "APPROVED_PARTIAL" | "APPROVED_PUBLIC";
 
 export const APPROVAL_ROUTES: readonly { value: ApprovalRoute; label: string; meaning: string }[] = [
@@ -43,6 +45,7 @@ export type ApprovalFields = {
 };
 
 export type ApprovalFieldName =
+  | "decision" | "confirmApproval" | "otherFundingNotes"
   | "needConfirmed" | "evidenceReviewed" | "verifiedNeedAmount" | "paymentDestination" | "otherFundingChecked" | "verificationSummary" | "zakatStatus"
   | "approvedPublicTarget" | "publicNameConsent" | "photoConsent" | "medicalDetailsConsent" | "institutionNameConsent" | "archiveConsent"
   | "approvedPublicTarget_missing" | "approvedPublicTarget_exceeds" | "approvedPublicTarget_notPublic";
@@ -105,6 +108,12 @@ export function approvalProblemsFrom(errors: ApprovalFieldErrors): string[] {
 /** Human message for a problem token. For standard field tokens (e.g. "needConfirmed") it uses the CORE/MESSAGES maps.
  * For the special approvalPublicTarget tokens, it returns the explicit message. */
 const SPECIAL_MESSAGES: Record<string, string> = {
+  route: "Choose how this request is to be supported.",
+  verifiedNeedAmount_format: "Enter a positive verified need amount in rupees, with up to two decimal places.",
+  approvedPublicTarget_format: "Enter a positive public fundraising target in rupees, with up to two decimal places.",
+  paymentDestination_long: `Keep the payment destination to ${ASSISTANCE_PAYMENT_DESTINATION_MAX_LENGTH} characters or fewer.`,
+  verificationSummary_long: `Keep the verification summary to ${ASSISTANCE_VERIFICATION_SUMMARY_MAX_LENGTH} characters or fewer.`,
+  otherFundingNotes_long: `Keep the other funding notes to ${ASSISTANCE_OTHER_FUNDING_NOTES_MAX_LENGTH} characters or fewer.`,
   approvedPublicTarget_missing: "Approved public target must be recorded.",
   approvedPublicTarget_exceeds: "Approved public target cannot exceed the verified need amount.",
   approvedPublicTarget_notPublic: "A public fundraising target can only be stored for an approved public appeal",
@@ -113,8 +122,8 @@ const SPECIAL_MESSAGES: Record<string, string> = {
 
 /** Extracts the field name from a problem token (the part before the first underscore). */
 export function approvalProblemField(problem: string): ApprovalFieldName {
-  if (problem === "confirmation") return "confirmApproval" as ApprovalFieldName;
-  if (SPECIAL_MESSAGES[problem]) return "approvedPublicTarget" as ApprovalFieldName;
+  if (problem === "confirmation") return "confirmApproval";
+  if (problem === "route") return "decision";
   return problem.split("_")[0] as ApprovalFieldName;
 }
 
@@ -159,7 +168,7 @@ export function parseApprovalNotice(search: Readonly<Record<string, string | str
   const kind = one(search.approve);
   if (kind === "done") return { kind: "done", outcome: one(search.o) === "already_approved" ? "already_approved" : "approved", route: parseApprovalRoute(one(search.r)) };
   if (kind !== "error") return null;
-  const listed = (one(search.e) ?? "").split(",").filter((token): token is string => token.length > 0);
+  const listed = (one(search.e) ?? "").split(",").filter((token): token is string => Object.hasOwn(CORE, token) || Object.hasOwn(CONSENT, token) || Object.hasOwn(SPECIAL_MESSAGES, token));
   const code = one(search.code);
   return { kind: "error", problems: listed, code: code && (APPROVAL_ERROR_CODES as readonly string[]).includes(code) ? code : null };
 }
