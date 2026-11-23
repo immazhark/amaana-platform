@@ -67,7 +67,7 @@ export default async function MrKhajaPublicInformationPage() {
       title={info.title}
       description={<>
         <p><strong>{info.closureNotice}</strong></p>
-        <p>This page retains previously approved family-attributed information for reference. It does not invite further contributions or make medical outcome claims.</p>
+        <p>Collection has ended. Additional medical details and historical outcomes are not presented here while archive permissions remain unverified.</p>
       </>}
       actions={[
         { label: "Browse current appeals", href: "/appeals" },
