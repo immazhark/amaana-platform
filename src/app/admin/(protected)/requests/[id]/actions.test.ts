@@ -199,6 +199,25 @@ describe("private follow-up note before requesting missing information", () => {
     expect(mocks.auditCreate).not.toHaveBeenCalled();
   });
 
+  it("keeps a specific private note while the request is still awaiting information", async () => {
+    mocks.requestFind.mockResolvedValue({
+      id: "synthetic-request", status: AssistanceStatus.DOCUMENTS_REQUESTED, appealId: null,
+      email: null, referenceNumber: "AF-SYNTH-04", internalNotes: "Supply the missing private verification evidence.",
+      updatedAt: new Date("2026-11-23T08:00:00.000Z"), verification: null,
+    });
+    for (const notes of ["", "Need info"]) {
+      const result = await updateRequestWithFeedback({ kind: "idle", message: "" }, form({
+        id: "synthetic-request", expectedUpdatedAt: "2026-11-23T08:00:00.000Z",
+        status: "DOCUMENTS_REQUESTED", internalNotes: notes,
+      }));
+      expect(result.kind).toBe("error");
+      expect(result.message).toMatch(/specific missing items/i);
+    }
+    expect(mocks.requestUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.notificationCreate).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+  });
+
   it("queues a generic status only; the staff follow-up question stays private", async () => {
     mocks.requestFind.mockResolvedValue({
       id: "synthetic-request", status: AssistanceStatus.SUBMITTED, appealId: null,
