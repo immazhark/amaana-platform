@@ -9,7 +9,7 @@ const tracking = vi.hoisted(() => {
       credentials,
       record: {
         found: true as const,
-        status: "UNDER_VERIFICATION" as const,
+        status: "UNDER_VERIFICATION" as "UNDER_VERIFICATION" | "DOCUMENTS_REQUESTED",
         createdAt: "2026-10-26T19:00:00.000Z",
         updatedAt: "2026-10-26T20:00:00.000Z",
       },
@@ -29,6 +29,19 @@ vi.mock("react", async importOriginal => ({
 }));
 
 import { AssistanceStatusClient } from "./assistance-status-client";
+
+it("gives a safe next step when additional evidence is needed, without suggesting public document upload", () => {
+  tracking.snapshot.record.status = "DOCUMENTS_REQUESTED";
+  try {
+    const html = renderToStaticMarkup(<AssistanceStatusClient />);
+    expect(html).toContain("Documents requested");
+    expect(html).toContain("contact Amaana with your private reference");
+    expect(html).toContain("do not send sensitive documents through an unverified channel");
+    expect(html).not.toContain("Upload your documents here");
+  } finally {
+    tracking.snapshot.record.status = "UNDER_VERIFICATION";
+  }
+});
 
 it("shows private tracking dates in India even when the visitor's timezone is UTC", () => {
   // Emulate a UTC device only where no explicit timezone is supplied.
