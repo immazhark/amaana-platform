@@ -10,10 +10,12 @@ import {
   ASSISTANCE_VERIFICATION_SUMMARY_MAX_LENGTH, ASSISTANCE_ZAKAT_STATUSES,
 } from "@/lib/assistance";
 import {
-  approvalAmountDraft, approvalDraftCookieName, approvalIssues, approvalProblemsFrom, approvalRedirect, parseApprovalRoute,
-  type ApprovalNotice, type ApprovalProblem,
+  approvalProblemField, approvalProblemMessage, approvalAmountDraft, approvalDraftCookieName, approvalIssues, approvalProblemsFrom, approvalRedirect, parseApprovalRoute,
+  type ApprovalNotice, type ApprovalProblem, APPROVAL_ERROR_MESSAGES,
 } from "@/lib/assistance-approval";
 import { AssistanceApprovalError, approveAssistanceRequest, saveApprovalDraft, type ApprovalInput } from "@/lib/assistance-approval-service";
+
+import type { AdminActionFeedback } from "./actions";
 
 const DRAFT_PATH = "/admin/requests";
 const DRAFT_SECONDS = 300;
@@ -50,13 +52,37 @@ const on = (value: string | null) => value === "on";
  * reviewer never loses work to an error; the only thing held in a short cookie is an amount field that was not a valid amount.
  */
 export async function approveRequestAction(formData: FormData): Promise<never> {
+  await processReview(formData, "approve");
+  throw new Error("Approval must finish with a redirect");
+}
+
+export async function saveReviewProgressWithFeedback(_previous: AdminActionFeedback, formData: FormData): Promise<AdminActionFeedback> {
+  return processReview(formData, "save");
+}
+
+function feedbackFields(problems: string[]) {
+  const fields = new Map<string, { field: string; message: string }>();
+  for (const problem of problems) {
+    const field = approvalProblemField(problem);
+    if (!fields.has(field)) fields.set(field, { field, message: approvalProblemMessage(problem) });
+  }
+  return [...fields.values()];
+}
+
+export type ReviewFeedback = AdminActionFeedback & { fields?: { field: string; message: string }[] };
+
+export async function approveRequestWithFeedback(_previous: ReviewFeedback, formData: FormData): Promise<ReviewFeedback> {
+  return processReview(formData, "approve", true);
+}
+
+async function processReview(formData: FormData, intent: "save" | "approve", inline = false): Promise<ReviewFeedback> {
   const user = await requirePermission("assistance.update");
 
   const id = single(formData, "id");
   if (!id) redirect("/admin");
   const back = (notice: ApprovalNotice): never => redirect(approvalRedirect(id, notice));
 
-  if (!hasPermission(user, "assistance.approve")) back({ kind: "error", problems: [], code: "forbidden" });
+  if (intent === "approve" && !hasPermission(user, "assistance.approve")) back({ kind: "error", problems: [], code: "forbidden" });
 
   const raw = Object.fromEntries(
     ["decision", "needConfirmed", "evidenceReviewed", "otherFundingChecked", "verifiedNeedAmount", "approvedPublicTarget", "paymentDestination", "otherFundingNotes",
@@ -75,6 +101,7 @@ export async function approveRequestAction(formData: FormData): Promise<never> {
   if (requestVersion === "invalid" || requestVersion === null || verificationVersion === "invalid") back({ kind: "error", problems: [], code: "version" });
 
   const route = parseApprovalRoute(raw.decision);
+  const draftDecision = raw.decision === "PENDING" || raw.decision === "REFERRED" ? raw.decision : undefined;
   const verifiedNeed = amount(raw.verifiedNeedAmount!, "Verified need amount");
   const target = amount(raw.approvedPublicTarget!, "Approved public target");
   const destination = raw.paymentDestination!.trim();
@@ -82,7 +109,7 @@ export async function approveRequestAction(formData: FormData): Promise<never> {
   const notes = raw.otherFundingNotes!.trim();
 
   const problems: ApprovalProblem[] = [];
-  if (!route) problems.push("route");
+  if (intent === "approve" && !route) problems.push("route");
   if (verifiedNeed === "invalid") problems.push("verifiedNeedAmount_format");
   if (target === "invalid") problems.push("approvedPublicTarget_format");
   if (destination.length > ASSISTANCE_PAYMENT_DESTINATION_MAX_LENGTH) problems.push("paymentDestination_long");
@@ -97,20 +124,41 @@ export async function approveRequestAction(formData: FormData): Promise<never> {
     publicNameConsent: consents[0]!, photoConsent: consents[1]!, medicalDetailsConsent: consents[2]!, institutionNameConsent: consents[3]!, archiveConsent: consents[4]!,
   } satisfies ApprovalInput["fields"];
 
+  if (intent === "save") {
+    if (problems.length) return { kind: "error", message: "Correct the amount format or field length before saving. Nothing has been saved." };
+    try {
+      const result = await saveApprovalDraft({ requestId: id, route, draftDecision, fields, expectedRequestUpdatedAt: requestVersion as Date, expectedVerificationUpdatedAt: verificationVersion as Date | null, actorId: user.id });
+      if (result !== "saved") return { kind: "error", message: "This request is no longer open to review. Refresh the page before making changes. Nothing has been saved." };
+    } catch (error) {
+      return { kind: "error", message: error instanceof AssistanceApprovalError ? APPROVAL_ERROR_MESSAGES[error.code] : "Review progress could not be saved. Keep your work and try again." };
+    }
+    revalidatePath(`/admin/requests/${id}`);
+    return { kind: "success", message: "Review progress saved. No decision has been made." };
+  }
+
   problems.push(...approvalProblemsFrom(approvalIssues(route ?? "APPROVED_PRIVATE", fields, { confirmed: on(raw.confirmApproval!) })));
 
   if (problems.length) {
     // Not ready: keep what was entered as review progress so nothing is lost. This is best effort and never stops the redirect.
+    let saveCode: string | null = null;
     try {
-      await saveApprovalDraft({ requestId: id, route, fields, expectedRequestUpdatedAt: requestVersion as Date, expectedVerificationUpdatedAt: verificationVersion as Date | null, actorId: user.id });
-    } catch { /* a conflict or an outage must not hide the errors the reviewer needs to see */ }
+      const saved = await saveApprovalDraft({ requestId: id, route, draftDecision, fields, expectedRequestUpdatedAt: requestVersion as Date, expectedVerificationUpdatedAt: verificationVersion as Date | null, actorId: user.id });
+      if (saved !== "saved") saveCode = "draft_save_failed";
+    } catch (error) {
+      saveCode = error instanceof AssistanceApprovalError ? error.code : "draft_save_failed";
+    }
     const name = approvalDraftCookieName(id);
     if (name && (verifiedNeed === "invalid" || target === "invalid")) {
       (await cookies()).set(name, approvalAmountDraft(raw.verifiedNeedAmount!, raw.approvedPublicTarget!) ?? "", {
         httpOnly: true, sameSite: "strict", secure: process.env.NODE_ENV === "production", path: DRAFT_PATH, maxAge: DRAFT_SECONDS,
       });
     }
-    back({ kind: "error", problems, code: null });
+    if (inline && !saveCode) revalidatePath(`/admin/requests/${id}`);
+    if (inline) return {
+      kind: "error", message: saveCode ? "Review progress could not be saved. Your entered values are still on this page. Refresh only after preserving your work." : "Nothing has been approved. Your work has been saved as review progress.",
+      fields: feedbackFields(problems),
+    };
+    back({ kind: "error", problems, code: saveCode });
   }
 
   let outcome: "approved" | "already_approved";
@@ -124,9 +172,11 @@ export async function approveRequestAction(formData: FormData): Promise<never> {
     approvedRoute = result.route;
   } catch (error) {
     if (error instanceof AssistanceApprovalError) {
+      if (inline) return { kind: "error", message: APPROVAL_ERROR_MESSAGES[error.code], fields: feedbackFields(approvalProblemsFrom(error.fieldErrors ?? {})) };
       if (error.code === "incomplete") back({ kind: "error", problems: approvalProblemsFrom(error.fieldErrors ?? {}), code: null });
       back({ kind: "error", problems: [], code: error.code });
     }
+    if (inline) return { kind: "error", message: "Approval could not be confirmed. Keep your entered work and check the current status before trying again." };
     throw error;
   }
 

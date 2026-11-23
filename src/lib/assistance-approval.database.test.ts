@@ -240,6 +240,15 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("assistance approv
       }
     });
 
+    it.each(["PENDING", "REFERRED"] as const)("stores %s after an earlier public draft without approving", async draftDecision => {
+      const request = await makeRequest();
+      await saveApprovalDraft(await draft(request.id, { route: "APPROVED_PUBLIC", fields: publicFields }));
+      await saveApprovalDraft(await draft(request.id, { draftDecision }));
+      const after = await prisma.assistanceVerification.findUniqueOrThrow({ where: { assistanceRequestId: request.id } });
+      expect(after).toMatchObject({ decision: draftDecision, approvedPublicTarget: null, completedAt: null, reviewedById: null });
+      expect(await counts(request.id)).toEqual({ audits: 0, notifications: 0 });
+    });
+
     it("does not store a public target on a route that is not public", async () => {
       const request = await makeRequest();
       await saveApprovalDraft(await draft(request.id, { route: "APPROVED_PRIVATE", fields: { ...fields, approvedPublicTarget: 1000 } }));

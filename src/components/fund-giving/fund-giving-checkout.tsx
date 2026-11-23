@@ -6,7 +6,9 @@ import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
 import { zakatNoticeForFund } from "@/lib/giving-funds";
 import { FundGlyph } from "./fund-glyphs";
 import type { CampaignSelection } from "@/lib/fund-campaign";
-import { fundDonationFormCopy, ZAKAT_TAG, type GiveCampaign, type GiveFund } from "./fund-copy";
+import type { GiveCampaign, GiveFund } from "./fund-copy";
+import type { DonationFormCopy } from "@/components/donation-form-copy";
+import { ZAKAT_TAG } from "./fund-labels";
 import styles from "./fund-giving.module.css";
 
 const RUNNING_COSTS_SLUG = "foundation-operations";
@@ -32,7 +34,7 @@ function FundCard({ fund, index, selected, locked, onSelect }: { fund: GiveFund;
 
 /** Donor chooses a designated fund, then pays through the same hardened checkout forms the appeals use.
  * The server re-validates the fund, the Zakat rule and every amount; nothing here is trusted. */
-export function FundGivingCheckout({ funds, initialSlug, paymentDetails, feeBps, campaigns = [] }: { funds: readonly GiveFund[]; initialSlug?: string; paymentDetails: DonationPaymentDetails; feeBps: number; campaigns?: readonly GiveCampaign[] }) {
+export function FundGivingCheckout({ funds, copies, initialSlug, paymentDetails, feeBps, campaigns = [] }: { copies: Record<string, DonationFormCopy>; funds: readonly GiveFund[]; initialSlug?: string; paymentDetails: DonationPaymentDetails; feeBps: number; campaigns?: readonly GiveCampaign[] }) {
   const primary = useMemo(() => funds.filter(fund => fund.slug !== RUNNING_COSTS_SLUG), [funds]);
   const running = useMemo(() => funds.filter(fund => fund.slug === RUNNING_COSTS_SLUG), [funds]);
   const fallback = funds.find(fund => fund.isGeneral) ?? funds[0];
@@ -71,7 +73,8 @@ export function FundGivingCheckout({ funds, initialSlug, paymentDetails, feeBps,
   const total = selection ? selection.units * selection.unitPrice : 0;
   const changeGift = (next: () => void) => { if (lockRef.current) return; next(); setRequested(false); };
   const notice = zakatNoticeForFund(selected.zakatPolicy);
-  const copy = fundDonationFormCopy(selected);
+  const copy = copies[selected.slug];
+  if (!copy) return null;
   const customRequest = selected.isGeneral ? (
     <div className="field full">
       <label htmlFor="donorDirective">Want it used for something specific? <span className="muted">optional</span></label>

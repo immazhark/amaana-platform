@@ -8,7 +8,7 @@ vi.mock("next/headers", () => ({ cookies: async () => ({ get: mocks.draft }) }))
 vi.mock("next/navigation", () => ({ notFound: () => { throw new Error("NOT_FOUND"); } }));
 vi.mock("./actions", () => ({ assignRequest: vi.fn(), convertToAppeal: vi.fn(), saveVerificationWithFeedback: vi.fn(), updateRequestWithFeedback: vi.fn() }));
 vi.mock("./rejection-actions", () => ({ rejectRequestAction: vi.fn() }));
-vi.mock("./approval-actions", () => ({ approveRequestAction: vi.fn() }));
+vi.mock("./approval-actions", () => ({ approveRequestAction: vi.fn(), approveRequestWithFeedback: vi.fn(), saveReviewProgressWithFeedback: vi.fn() }));
 import RequestDetailPage from "./page";
 
 const base = {
@@ -247,7 +247,7 @@ describe("accessibility of the review card", () => {
 describe("what stays out of reach", () => {
   it("locks every field and offers no approval for a converted request", async () => {
     const card = reviewCard(await render({ status: "CONVERTED_TO_APPEAL", appealId: "a1", appeal: { id: "a1", title: "t", status: "DRAFT" }, verification: verification() }));
-    expect(card).toContain("Verification is locked because this request has already been converted");
+    expect(card).toContain("Verification is locked while this request is approved, rejected, closed or linked to an appeal");
     expect(card).not.toMatch(APPROVE_BUTTON);
     expect((card.match(/disabled=""/g) ?? []).length).toBeGreaterThan(8);
   });
@@ -255,5 +255,25 @@ describe("what stays out of reach", () => {
   it("never shows the reviewer's private summary anywhere but its own field", async () => {
     const html = await render({ verification: verification({ verificationSummary: "PRIVATE-SUMMARY-TEXT" }) });
     expect(html.split("PRIVATE-SUMMARY-TEXT")).toHaveLength(2);
+  });
+});
+
+
+describe("approval summary and completed decision protection", () => {
+  it("requires the check-answers interaction before enabling approval", async () => {
+    const html = await render();
+    expect(html).toContain('data-review-approval="" disabled=""');
+    expect(html).toContain("Check answers before approval");
+    expect(html).toContain("Confirm approval");
+  });
+  it("locks completed review fields and Save progress after approval", async () => {
+    const html = await render({ status: "APPROVED", verification: verification({ decision: "APPROVED_PRIVATE", completedAt: new Date(), reviewedBy: { name: "Synthetic approver" } }) });
+    expect(html).toMatch(/id="verifiedNeedAmount"[^>]*disabled=""/);
+    expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Save review progress<\/button>/);
+  });
+  it("does not claim progress was saved when the draft write failed", async () => {
+    const html = await render({}, { approve: "error", e: "needConfirmed", code: "draft_save_failed" });
+    expect(html).toContain("Review progress was not confirmed saved");
+    expect(html).not.toContain("What you entered has been saved");
   });
 });

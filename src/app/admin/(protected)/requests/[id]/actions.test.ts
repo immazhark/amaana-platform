@@ -297,12 +297,13 @@ describe("rejection has one route: the dedicated Reject request form", () => {
     expect(mocks.verificationUpsert).not.toHaveBeenCalled();
   });
 
-  it("does not make an already declined verification pass the approval checklist to be saved again", async () => {
+  it("requires reopening a terminal request before changing a completed verification", async () => {
     const declined = { decision: "DECLINED", completedAt: new Date("2026-11-21T00:00:00Z"), updatedAt: new Date("2026-11-22T04:05:00.000Z") };
     mocks.requestFind.mockResolvedValue({ id: "synthetic-request", appealId: null, status: AssistanceStatus.REJECTED, verification: declined });
     mocks.requestFindFirst.mockResolvedValue({ id: "synthetic-request", updatedAt: new Date("2026-11-22T04:00:00.000Z"), verification: { updatedAt: declined.updatedAt } });
     const result = await saveVerificationWithFeedback(idle, verificationForm({ markComplete: "on", expectedVerificationUpdatedAt: declined.updatedAt.toISOString() }));
-    expect(result.kind).toBe("success");
-    expect(mocks.verificationUpsert).toHaveBeenCalledOnce();
+    expect(result.kind).toBe("error");
+    expect(result.message).toContain("Reopen");
+    expect(mocks.verificationUpsert).not.toHaveBeenCalled();
   });
 });

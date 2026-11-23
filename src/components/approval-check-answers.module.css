@@ -1,0 +1,11 @@
+.dialog {
+  width: min(42rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  overflow: auto;
+  padding: 1.5rem;
+  border: 1px solid var(--af-color-border);
+  border-radius: 1rem;
+  background: var(--af-color-surface);
+  color: var(--af-color-text);
+}
+.dialog dd { overflow-wrap: anywhere; }

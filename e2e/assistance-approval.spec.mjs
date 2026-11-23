@@ -33,6 +33,14 @@ async function open(page, requestId) {
 }
 
 const approve = card => card.getByRole('button', { name: 'Approve assistance' });
+async function submitApproval(card, page) {
+  await approve(card).click();
+  const summary = page.getByRole('dialog', { name: 'Check answers before approval' });
+  await expect(summary).toBeVisible();
+  await expect(summary).toContainText('Support route');
+  await expect(page.locator('.status-badge').first()).toContainText('UNDER VERIFICATION');
+  await summary.getByRole('button', { name: 'Confirm approval', exact: true }).click();
+}
 
 async function fillCore(page) {
   await page.locator('#needConfirmed').check();
@@ -57,24 +65,31 @@ test('what each route needs is visible before anything is submitted', async ({ p
   const statuses = await page.locator('#status').locator('option').evaluateAll(nodes => nodes.map(node => node.value));
   expect(statuses).not.toContain('APPROVED');
   expect(statuses).not.toContain('REJECTED');
+  await approve(card).click();
+  const checkAnswers = page.getByRole('dialog', { name: 'Check answers before approval' });
+  await expect(checkAnswers).toContainText('Support route');
+  await expect(checkAnswers).toContainText('Not decided yet');
+  await checkAnswers.getByRole('button', { name: 'Back to edit' }).click();
+  await expect(checkAnswers).not.toBeVisible();
+  await expect(page.locator('.status-badge').first()).toContainText('UNDER VERIFICATION');
 });
 
 test('an approval that is not ready lists every problem together, keeps the work and changes nothing', async ({ page }) => {
   const card = await open(page, seed.approveRequestId);
   await page.locator('#needConfirmed').check();
   await page.locator('#verificationSummary').fill('Half written summary kept as progress');
-  await approve(card).click();
+  await submitApproval(card, page);
 
-  const summary = page.locator('#approve-errors');
+  const summary = page.locator('#approval-inline-errors');
   await expect(summary).toBeVisible();
   await expect(summary).toHaveAttribute('role', 'alert');
   for (const text of ['Supporting evidence must be reviewed.', 'Verified need amount must be recorded.', 'Payment destination must be confirmed.', 'Other funding or duplicate fundraising must be checked.', 'Zakat review must be recorded', 'Choose how this request is to be supported', 'Confirm the approval to continue.']) {
     await expect(summary.getByRole('link', { name: new RegExp(text) })).toBeVisible();
   }
-  await expect(summary).toContainText('saved as review progress. Nothing has been approved.');
+  await expect(summary).toContainText('Nothing has been approved. Your work has been saved as review progress.');
   await expect(page.locator('#evidenceReviewed')).toHaveAttribute('aria-invalid', 'true');
-  await expect(page.locator('#evidenceReviewed')).toHaveAttribute('aria-describedby', /evidenceReviewed-error/);
-  await expect(page.locator('#evidenceReviewed-error')).toBeVisible();
+  await expect(page.locator('#evidenceReviewed')).toHaveAttribute('aria-describedby', /evidenceReviewed-inline-error/);
+  await expect(page.locator('#evidenceReviewed-inline-error')).toBeVisible();
   await expect(page.locator('#confirmApproval')).toHaveAttribute('aria-invalid', 'true');
   await expect(page.locator('#needConfirmed')).not.toHaveAttribute('aria-invalid', 'true');
 
@@ -94,7 +109,7 @@ test('one confirmation completes the verification and approves a private case, a
   await fillCore(page);
   await page.locator('#decision').selectOption('APPROVED_PRIVATE');
   await page.locator('#confirmApproval').check();
-  await approve(card).click();
+  await submitApproval(card, page);
 
   const banner = page.locator('#approve-heading');
   await expect(banner).toBeVisible();
@@ -116,8 +131,8 @@ test('public approval never publishes: it only makes the draft appeal available'
 
   // Public fundraising also needs every disclosure permission decided: leaving them unconfirmed is stopped, naming each.
   await page.locator('#confirmApproval').check();
-  await approve(card).click();
-  const summary = page.locator('#approve-errors');
+  await submitApproval(card, page);
+  const summary = page.locator('#approval-inline-errors');
   await expect(summary.getByRole('link', { name: /Public-name consent must be resolved/ })).toBeVisible();
   await expect(summary.getByRole('link', { name: /Public archive consent must be resolved/ })).toBeVisible();
   await expect(page.locator('.status-badge').first()).toContainText('UNDER VERIFICATION');
@@ -126,7 +141,7 @@ test('public approval never publishes: it only makes the draft appeal available'
     await page.locator(`#${id}`).selectOption(answer);
   }
   await page.locator('#confirmApproval').check();
-  await approve(card).click();
+  await submitApproval(card, page);
 
   const banner = page.locator('#approve-heading');
   await expect(banner).toContainText('as public fundraising');
@@ -139,3 +154,28 @@ test('public approval never publishes: it only makes the draft appeal available'
 
 // Phone width, keyboard and 200% text zoom for the untouched audited request, with this form on it, are covered by the page
 // audit (e2e/all-page-audit.spec.mjs: mobile and desktop, overflow, text resizing and serious accessibility violations).
+
+
+test('a conflicting approval keeps entered work and does not overwrite the newer review', async ({ page, context }) => {
+  const card = await open(page, seed.staleApproveRequestId);
+  await fillCore(page);
+  await page.locator('#verificationSummary').fill('Unsaved original review text');
+  await page.locator('#decision').selectOption('APPROVED_PRIVATE');
+  await page.locator('#confirmApproval').check();
+  const newer = await context.newPage();
+  try {
+    const other = await open(newer, seed.staleApproveRequestId);
+    await newer.locator('#verificationSummary').fill('Newer saved review text');
+    await newer.locator('#decision').selectOption('REFERRED');
+    await other.getByRole('button', { name: 'Save review progress' }).click();
+    await expect(other.getByRole('status')).toContainText('Review progress saved');
+    await submitApproval(card, page);
+    await expect(page.locator('#approval-inline-errors')).toContainText('review changed');
+    await expect(page.locator('#verificationSummary')).toHaveValue('Unsaved original review text');
+    await expect(page.locator('#decision')).toHaveValue('APPROVED_PRIVATE');
+    await expect(page.locator('.status-badge').first()).toContainText('UNDER VERIFICATION');
+    await newer.reload();
+    await expect(newer.locator('#verificationSummary')).toHaveValue('Newer saved review text');
+    await expect(newer.locator('#decision')).toHaveValue('REFERRED');
+  } finally { await newer.close(); }
+});

@@ -150,7 +150,7 @@ export type ApprovalNotice =
   | { kind: "error"; problems: string[]; code: string | null }
   | { kind: "done"; outcome: "approved" | "already_approved"; route: ApprovalRoute | null };
 
-const APPROVAL_ERROR_CODES = ["incomplete", "not_found", "linked_appeal", "rejected", "closed", "not_eligible", "stale_request", "stale_verification", "forbidden", "form", "version"] as const;
+const APPROVAL_ERROR_CODES = ["draft_save_failed", "incomplete", "not_found", "linked_appeal", "rejected", "closed", "not_eligible", "stale_request", "stale_verification", "forbidden", "form", "version"] as const;
 
 export function approvalRedirect(requestId: string, notice: ApprovalNotice): string {
   const base = `/admin/requests/${encodeURIComponent(requestId)}`;
@@ -199,6 +199,7 @@ export function approvalDraftCookieName(requestId: string): string | null {
 
 /** The words shown for a refused decision, in one place. */
 export const APPROVAL_ERROR_MESSAGES = {
+  draft_save_failed: "Review progress could not be saved. Refresh and check the current review before trying again.",
   incomplete: "Complete the checks listed before approving this request.",
   not_found: "That request could not be found.",
   linked_appeal: "This request has a linked appeal. Open the appeal to manage its status.",

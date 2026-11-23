@@ -144,6 +144,7 @@ export async function approveAssistanceRequest(input: ApprovalInput): Promise<Ap
 export type ApprovalDraftInput = Omit<ApprovalInput, "route"> & {
   /** A route the reviewer is leaning towards, or null while undecided. Saved as progress; it decides nothing. */
   route: ApprovalRoute | null;
+  draftDecision?: "PENDING" | "REFERRED";
 };
 
 /**
@@ -178,7 +179,7 @@ export async function saveApprovalDraft(input: ApprovalDraftInput): Promise<"sav
       verifiedNeedAmount: f.verifiedNeedAmount, approvedPublicTarget: input.route === "APPROVED_PUBLIC" ? f.approvedPublicTarget : null,
       paymentDestination: f.paymentDestination.trim() || null, otherFundingNotes: f.otherFundingNotes.trim() || null,
       verificationSummary: f.verificationSummary.trim() || null,
-      decision: (input.route ?? current.verification?.decision ?? "PENDING") as AssistanceVerificationDecision,
+      decision: (input.draftDecision ?? input.route ?? current.verification?.decision ?? "PENDING") as AssistanceVerificationDecision,
       confidentialityLevel: f.confidentialityLevel as ConfidentialityLevel, zakatStatus: f.zakatStatus as ZakatReviewStatus,
       publicNameConsent: f.publicNameConsent as ConsentDecision, photoConsent: f.photoConsent as ConsentDecision,
       medicalDetailsConsent: f.medicalDetailsConsent as ConsentDecision, institutionNameConsent: f.institutionNameConsent as ConsentDecision,

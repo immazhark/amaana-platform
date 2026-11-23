@@ -14,10 +14,12 @@ import {
 import { parseRejectionNotice, rejectionDraftCookieName, rejectionDraftFromCookie, rejectionEligibility } from "@/lib/assistance-rejection";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { assignRequest, convertToAppeal, saveVerificationWithFeedback, updateRequestWithFeedback } from "./actions";
-import { approveRequestAction } from "./approval-actions";
+import { assignRequest, convertToAppeal, updateRequestWithFeedback } from "./actions";
+import { approveRequestAction, approveRequestWithFeedback, saveReviewProgressWithFeedback } from "./approval-actions";
 import { rejectRequestAction } from "./rejection-actions";
 import { AdminActionFeedbackForm } from "@/components/admin-action-feedback-form";
+import { ApprovalSummary } from "@/components/approval-summary";
+import { ApprovalCheckAnswers } from "@/components/approval-check-answers";
 import { RejectRequestForm } from "@/components/reject-request-form";
 
 type Props = { params: Promise<{ id: string }>; searchParams?: Promise<Record<string, string | string[] | undefined>> };
@@ -96,7 +98,7 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
     const problem = approvalProblems.find(item => approvalProblemField(item) === field);
     return problem ? <small id={`${field}-error`} className="form-error">{approvalProblemMessage(problem)}</small> : null;
   };
-  const verificationLocked = converted;
+  const verificationLocked = !approvalOpen;
 
   return <>
     <div className="admin-heading">
@@ -164,13 +166,13 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
             {approvalProblems.length
               ? <ul>{approvalProblems.map(problem => <li key={problem}><a href={`#${approvalProblemField(problem)}`}>{approvalProblemMessage(problem)}</a></li>)}</ul>
               : <p>{APPROVAL_ERROR_MESSAGES[(approvalNotice.code ?? "form") as keyof typeof APPROVAL_ERROR_MESSAGES] ?? APPROVAL_ERROR_MESSAGES.form}</p>}
-            {approvalProblems.length > 0 && <p className="muted">What you entered has been saved as review progress. Nothing has been approved.</p>}
+            {approvalProblems.length > 0 && <p className="muted">{approvalNotice.code ? "Review progress was not confirmed saved. Check the current review before trying again. Nothing has been approved." : "What you entered has been saved as review progress. Nothing has been approved."}</p>}
           </div>}
           <h3>What each support route means and needs</h3>
           <dl className="details">
             {APPROVAL_ROUTES.map(route => <div key={route.value} className="full"><dt>{route.label}</dt><dd>{route.meaning} {route.value === "APPROVED_PUBLIC" ? "Needs the approved public target and every disclosure permission decided, as well as the checks below." : "Needs the checks below only."}</dd></div>)}
           </dl>
-          <AdminActionFeedbackForm action={saveVerificationWithFeedback}>
+          <ApprovalCheckAnswers approveAction={approveRequestWithFeedback} saveAction={saveReviewProgressWithFeedback}><AdminActionFeedbackForm action={saveReviewProgressWithFeedback}>
             <input type="hidden" name="id" value={id}/>
             <input type="hidden" name="expectedRequestUpdatedAt" value={request.updatedAt.toISOString()}/>
             <input type="hidden" name="expectedVerificationUpdatedAt" value={verification?.updatedAt.toISOString() ?? ""}/>
@@ -247,10 +249,10 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
             </>}
             {!canApprove && !verificationLocked && <small className="muted">You may save review progress, but only an authorised approver can approve a request.</small>}
             {verification?.completedAt && <small className="muted">Completed {verification.completedAt.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} by {verification.reviewedBy?.name ?? "authorised reviewer"}.</small>}
-            {verificationLocked && <small className="muted">Verification is locked because this request has already been converted into a linked appeal.</small>}
-            <button className="button secondary" disabled={!hasPermission(user, "assistance.update") || verificationLocked}>Save review progress</button>
-            {approvalOpen && canApprove && <button className="button" type="submit" formAction={approveRequestAction}>Approve assistance</button>}
-          </AdminActionFeedbackForm>
+            {verificationLocked && <small className="muted">Verification is locked while this request is approved, rejected, closed or linked to an appeal. Reopen the review through the status workflow before changing it.</small>}
+            <button className="button secondary" data-save-review-progress="" disabled={!hasPermission(user, "assistance.update") || verificationLocked}>Save review progress</button>
+            {approvalOpen && canApprove && <button className="button" type="submit" data-review-approval="" disabled formAction={approveRequestAction}>Approve assistance</button>}
+          </AdminActionFeedbackForm><ApprovalSummary /></ApprovalCheckAnswers>
 
           {verification?.decision === "APPROVED_PUBLIC" && <div>
             <h3>Public appeal readiness</h3>

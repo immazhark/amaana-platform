@@ -33,7 +33,7 @@ try {
   // Dedicated approval records keep the audit/rejection journeys independent. They are reset only in the guarded,
   // disposable CI database above; no donor email is set, so these fixtures cannot queue applicant messages.
   const approvalIds = {};
-  if (process.env.AMAANA_ASSISTANCE_APPROVAL_FIXTURES === 'true') for (const [key, referenceNumber] of [['approveRequestId', 'AMA-UI-APPROVE'], ['approvePublicRequestId', 'AMA-UI-APPROVE-PUBLIC']]) {
+  if (process.env.AMAANA_ASSISTANCE_APPROVAL_FIXTURES === 'true') for (const [key, referenceNumber] of [['approveRequestId', 'AMA-UI-APPROVE'], ['approvePublicRequestId', 'AMA-UI-APPROVE-PUBLIC'], ['staleApproveRequestId', 'AMA-UI-APPROVE-STALE']]) {
     const data = {...requestData, description:'Synthetic approval journey request. No real beneficiary data or documents.', assignedToId:null, email:null, status:'UNDER_VERIFICATION', internalNotes:null};
     const approvalRequest = await prisma.assistanceRequest.upsert({where:{referenceNumber}, update:data, create:{referenceNumber,...data}});
     await prisma.assistanceRejection.deleteMany({where:{assistanceRequestId:approvalRequest.id}});

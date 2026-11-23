@@ -81,6 +81,7 @@ export async function saveVerification(formData: FormData) {
     select: { id: true, appealId: true, status: true, verification: true },
   });
   if (request.appealId || request.status === AssistanceStatus.CONVERTED_TO_APPEAL) throw new Error("Verification is locked after conversion to an appeal");
+  if ([AssistanceStatus.APPROVED, AssistanceStatus.REJECTED, AssistanceStatus.CLOSED].includes(request.status as never)) throw new Error("Reopen this request before changing its completed verification.");
 
   const needConfirmed = formData.get("needConfirmed") === "on";
   const evidenceReviewed = formData.get("evidenceReviewed") === "on";
@@ -145,7 +146,7 @@ export async function saveVerification(formData: FormData) {
   const reviewedById = markComplete ? user.id : null;
   await withSerializableTransactionRetry(async tx => {
     const stillEditable = await tx.assistanceRequest.findFirst({
-      where: { id, appealId: null, status: { not: AssistanceStatus.CONVERTED_TO_APPEAL } },
+      where: { id, appealId: null, status: { in: [AssistanceStatus.SUBMITTED, AssistanceStatus.DOCUMENTS_REQUESTED, AssistanceStatus.UNDER_VERIFICATION] } },
       select: { id: true, updatedAt: true, verification: { select: { updatedAt: true } } },
     });
     if (!stillEditable) {
@@ -423,6 +424,7 @@ const safeReviewFeedbackPrefixes = [
   "This request changed while you were reviewing it.",
   "Verification was locked because this request was converted",
   "Verification is locked after conversion to an appeal",
+  "Reopen this request before changing its completed verification.",
   "Approval permission is required to complete verification",
   "Approval permission is required to reopen a completed verification",
   "Approval permission is required",

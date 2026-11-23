@@ -10,7 +10,6 @@ import type { SponsorshipSelection } from "@/lib/taleem-sponsorship";
 import { useRouter } from "next/navigation";
 import { privateDonationAcknowledgementPath } from "@/lib/private-donation-ack";
 import type { DonationFormCopy } from "./donation-form-copy";
-import styles from "./donation-form.module.css";
 
 type RazorpayResponse = { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string };
 type RazorpayOptions = { key: string; amount: number; currency: string; name: string; description: string; order_id: string; prefill: { name: string; email: string; contact?: string }; handler: (response: RazorpayResponse) => Promise<void>; modal: { ondismiss: () => void }; theme: { color: string } };
@@ -23,6 +22,7 @@ const ORDER_UNCERTAIN = "Checkout status is uncertain. An order may have been cr
 declare global { interface Window { Razorpay: new (options: RazorpayOptions) => { open(): void } } }
 
 export function DonationForm({ appealId, fundSlug, feeBps, extraFields, campaign, sponsorship, appealTitle, maxAmount, copy, onLockChange }: { appealId?: string; fundSlug?: string; feeBps?: number; extraFields?: ReactNode; campaign?: CampaignSelection; sponsorship?: SponsorshipSelection; appealTitle: string; maxAmount: number; zakatEligible?: boolean; copy: DonationFormCopy; onLockChange?: (locked: boolean) => void }) {
+  const styles = copy.classes;
   const router = useRouter();
   const fixedAmount = campaign ? campaign.units * campaign.unitPrice : sponsorship?.totalRupees;
   const errorRef = useRef<HTMLDivElement>(null);

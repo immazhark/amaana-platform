@@ -12,7 +12,7 @@ vi.mock("@/lib/assistance-approval-service", async () => {
 });
 
 import { AssistanceApprovalError } from "@/lib/assistance-approval-service";
-import { approveRequestAction } from "./approval-actions";
+import { approveRequestAction, approveRequestWithFeedback, saveReviewProgressWithFeedback } from "./approval-actions";
 
 const token = Buffer.alloc(32, 0x3c).toString("base64url");
 const staff = (permissions: string[]) => ({ id: "synthetic-staff", status: "ACTIVE", roles: [{ role: { permissions: permissions.map(key => ({ permission: { key } })) } }] });
@@ -240,5 +240,55 @@ describe("private text never appears in an address", () => {
       expect(decodeURIComponent(address)).not.toContain("LEAKCHECK");
     }
     expect(addresses).toHaveLength(6);
+  });
+});
+
+
+describe("Save review progress uses the guarded draft contract", () => {
+  it("saves incomplete progress without deciding or requiring approval permission", async () => {
+    mocks.user.mockResolvedValue(staff(["assistance.view", "assistance.update"]));
+    const result = await saveReviewProgressWithFeedback({ kind: "idle", message: "" }, form({ decision: "PENDING", confirmApproval: null, verifiedNeedAmount: "", verificationSummary: "Half written" }));
+    expect(result.kind).toBe("success");
+    expect(mocks.draft).toHaveBeenCalledOnce();
+    expect(mocks.approve).not.toHaveBeenCalled();
+  });
+  it("does not report a terminal case as saved", async () => {
+    mocks.draft.mockResolvedValue("skipped");
+    const result = await saveReviewProgressWithFeedback({ kind: "idle", message: "" }, form());
+    expect(result.kind).toBe("error");
+    expect(mocks.approve).not.toHaveBeenCalled();
+  });
+  it("does not report failed saving as saved", async () => {
+    mocks.draft.mockRejectedValue(new AssistanceApprovalError("stale_verification", "Review changed"));
+    const result = await saveReviewProgressWithFeedback({ kind: "idle", message: "" }, form());
+    expect(result.kind).toBe("error");
+    expect(result.message).toContain("Refresh");
+  });
+});
+
+
+describe("inline approval failures preserve the current form", () => {
+  it("returns field errors instead of redirecting after a draft conflict", async () => {
+    mocks.draft.mockRejectedValue(new AssistanceApprovalError("stale_verification", "Synthetic conflict"));
+    const result = await approveRequestWithFeedback({ kind: "idle", message: "" }, form({ needConfirmed: null }));
+    expect(result.kind).toBe("error");
+    expect(result.message).toContain("entered values are still on this page");
+    expect(result.fields).toContainEqual({ field: "needConfirmed", message: "Need must be confirmed." });
+    expect(mocks.approve).not.toHaveBeenCalled();
+  });
+  it("returns an approval conflict without discarding the entered work", async () => {
+    mocks.approve.mockRejectedValue(new AssistanceApprovalError("stale_verification", "Synthetic conflict"));
+    const result = await approveRequestWithFeedback({ kind: "idle", message: "" }, form());
+    expect(result.kind).toBe("error");
+    expect(result.message).toContain("Refresh");
+    expect(mocks.draft).not.toHaveBeenCalled();
+  });
+});
+
+
+describe("saving a draft support choice", () => {
+  it.each(["PENDING", "REFERRED"])("retains the explicit %s selection", async decision => {
+    await saveReviewProgressWithFeedback({ kind: "idle", message: "" }, form({ decision }));
+    expect(mocks.draft.mock.calls[0]![0]).toMatchObject({ route: null, draftDecision: decision });
   });
 });
