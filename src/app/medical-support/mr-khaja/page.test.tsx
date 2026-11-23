@@ -19,6 +19,14 @@ it("does not guess a financial case or query records without an explicit binding
   expect(mocks.donation).not.toHaveBeenCalled();
 });
 
+it("shows collection closed without inviting a new case-specific donation", async () => {
+  const html = renderToStaticMarkup(await Page());
+  expect(html).toContain("Collection for this appeal is closed");
+  expect(html).not.toContain("Enquire about support in India");
+  expect(html).not.toContain("Contact Amaana about this request");
+  expect(html).not.toContain("Dedicated checkout for this request is not yet active");
+});
+
 it("uses only the explicitly bound publicly reviewed appeal and its reviewed cover", async () => {
   vi.stubEnv("MR_KHAJA_PUBLIC_APPEAL_SLUG", "synthetic-reviewed-case");
   const appeal = { slug: "synthetic-reviewed-case", coverImageUrl: "/media/synthetic-reviewed.webp" };
