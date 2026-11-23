@@ -16,6 +16,7 @@ import styles from "../appeals-audit.module.css";
 import { canExposeSyntheticStagingContent, isSyntheticStagingAppeal } from "@/lib/public-environment";
 import { selectGalleryPublicImage } from "@/lib/public-media";
 import { selectAppealDiscovery, type AppealSearch } from "@/lib/appeal-discovery";
+import { selectCompletedMedicalAidShowcase } from "@/lib/completed-medical-aid-showcase";
 
 export const metadata: Metadata = {
   title: "Verified Appeals",
@@ -45,9 +46,7 @@ export default async function AppealsPage({ searchParams }: { searchParams: Prom
     return `/appeals?${query.toString()}#current-appeals`;
   };
   const completedAidMedia = new Map(completedAid.map(item => [item.slug, selectGalleryPublicImage(item.mediaAssets)]));
-  const publishedCompletedProgrammes = programmes.filter(
-    programme => programme.causeSlug === "medical-financial-relief" && completedAidMedia.has(programme.slug),
-  );
+  const publishedCompletedProgrammes = selectCompletedMedicalAidShowcase(programmes, new Set(completedAidMedia.keys()));
 
   return (
     <div className="v2-home v2-appeals-page">
