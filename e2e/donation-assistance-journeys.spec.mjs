@@ -89,6 +89,26 @@ async function openAssistance(page) {
   await expect(page.getByRole('heading', { name: 'Tell us about the request.' })).toBeVisible();
 }
 
+test('assistance intake visibly marks all required fields and distinguishes the optional inputs', async ({ page }) => {
+  await openAssistance(page);
+  for (const id of ['name', 'phone', 'city', 'category', 'description']) {
+    const label = page.locator(`label[for="${id}"]`);
+    await expect(label).toContainText('Required');
+    await expect(page.locator(`#${id}`)).toHaveAttribute('required', '');
+  }
+  await expect(page.locator('label[for="email"]')).toContainText('optional');
+  await expect(page.locator('#email')).not.toHaveAttribute('required');
+  await expect(page.locator('#assistance-step-3 legend')).toContainText('optional');
+  await expect(page.locator('#documents')).not.toHaveAttribute('required');
+
+  await fillAssistanceForm(page);
+  await expect(page.locator('#assistance-step-4 label.checkbox')).toContainText('Required');
+  await expect(page.locator('input[name="consent"]')).toHaveAttribute('required', '');
+  // The visual markers must not change accessible field labels used by keyboard/screen-reader users.
+  await page.getByRole('button', { name: /Contact/ }).click();
+  await expect(page.getByLabel('Applicant name', { exact: true })).toBeVisible();
+});
+
 test('assistance errors are linked before keyboard focus reaches invalid input', async ({ page }) => {
   await openAssistance(page);
   await page.evaluate(() => {
