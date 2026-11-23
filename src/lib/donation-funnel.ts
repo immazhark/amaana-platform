@@ -33,13 +33,15 @@ const empty = (): Record<FunnelStage, number> => ({ started: 0, awaiting: 0, con
 
 function rowFrom(method: FunnelRow["method"], raw: Record<FunnelStage, number>, minCell: number): FunnelRow {
   const small = STAGES.filter(stage => raw[stage] > 0 && raw[stage] < minCell);
-  // started = awaiting + confirmed + unsuccessful, so one hidden cell is recoverable from the other three. Hide the
-  // smallest remaining positive cell as well, unless every other cell is a true zero.
+  // started = awaiting + confirmed + unsuccessful. Even two suppressed stages can be reconstructed when their
+  // sum is two: both must be one. Suppress the derived total whenever a component is hidden. Keep complementary
+  // suppression of one additional positive stage as a separate safeguard against very small populations.
   const hidden = new Set<FunnelStage>(small);
   if (hidden.size === 1) {
     const others = STAGES.filter(stage => !hidden.has(stage) && raw[stage] > 0).sort((a, b) => raw[a] - raw[b]);
     if (others[0]) hidden.add(others[0]);
   }
+  if (hidden.size > 0) hidden.add("started");
   const cells = Object.fromEntries(STAGES.map(stage => [stage, hidden.has(stage) ? { suppressed: true } : { suppressed: false, count: raw[stage] }])) as FunnelRow["cells"];
   // A share is only meaningful, and only safe, when nothing in the row is hidden and the base is large enough.
   const confirmedShare = hidden.size === 0 && raw.started >= minCell ? Math.round((raw.confirmed / raw.started) * 1000) / 10 : null;
