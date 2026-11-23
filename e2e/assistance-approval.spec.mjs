@@ -59,6 +59,13 @@ test('what each route needs is visible before anything is submitted', async ({ p
   await expect(card.getByText('Required to approve').first()).toBeVisible();
   await expect(card.getByText('Required for public fundraising only').first()).toBeVisible();
   await expect(card.getByRole('button', { name: 'Save review progress' })).toBeVisible();
+  const followUp = page.locator('section:has(#request-more-heading)');
+  await expect(followUp.getByRole('heading', { name: 'Request additional information' })).toBeVisible();
+  await expect(followUp.getByLabel(/Specific missing items or questions/i)).toBeVisible();
+  await expect(followUp.locator('input[name="status"]')).toHaveValue('DOCUMENTS_REQUESTED');
+  await expect(followUp).toContainText('No applicant upload or reply portal is available');
+  await expect(page.getByRole('heading', { name: 'Review workflow guide' })).toBeVisible();
+
   await expect(approve(card)).toBeVisible();
   // The old controls are gone: no completion checkbox, and no APPROVED or REJECTED to pick as a status.
   await expect(card.locator('input[name="markComplete"]')).toHaveCount(0);
