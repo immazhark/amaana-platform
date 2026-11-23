@@ -1,11 +1,11 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ section: vi.fn(), hero: vi.fn(), initiative: vi.fn() }));
+const mocks = vi.hoisted(() => ({ section: vi.fn(), hero: vi.fn(), initiative: vi.fn(), enquiry: vi.fn() }));
 vi.mock("@/components/taleem-sponsorship/taleem-sponsorship-section", () => ({ TaleemSponsorshipSection: mocks.section }));
 vi.mock("@/lib/sponsorship-media", () => ({ getSponsorEducationHeroMedia: mocks.hero }));
 vi.mock("@/lib/public-page-data", () => ({ getInitiativePageData: mocks.initiative }));
-vi.mock("@/components/sponsorship-enquiry", () => ({ SponsorshipEnquiry: () => <section id="sponsorship-enquiry">Enquiry form</section> }));
+vi.mock("@/components/sponsorship-enquiry", () => ({ SponsorshipEnquiry: ({ preferences }: { preferences: Record<string, string | string[] | undefined> }) => { mocks.enquiry(preferences); return <section id="sponsorship-enquiry">Enquiry form</section>; } }));
 
 import SponsorEducationPage from "./page";
 
@@ -34,6 +34,14 @@ describe("sponsor-education page while the programme form is open", () => {
     const html = await render({ programme: "nazira" });
     expect(html.match(/id="programme-sponsorship"/g)).toHaveLength(1);
     expect(mocks.section).toHaveBeenCalledWith({ programme: "nazira" });
+  });
+
+  it("keeps the checkout programme hint out of enquiry validation but preserves genuine enquiry and unknown fields", async () => {
+    await render({ programme: "nazira", utm_source: "education-outreach" });
+    expect(mocks.section).toHaveBeenCalledWith({ programme: "nazira" });
+    expect(mocks.enquiry).toHaveBeenCalledWith({ utm_source: "education-outreach" });
+    await render({ programme: "hifdh-day-scholar", path: "school", support: "discuss", studentName: "PRIVATE" });
+    expect(mocks.enquiry).toHaveBeenLastCalledWith({ path: "school", support: "discuss", studentName: "PRIVATE" });
   });
 
   it("sends each programme card to the form on that programme instead of to a second enquiry", async () => {

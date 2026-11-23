@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   getRecord: vi.fn(),
@@ -77,6 +77,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   mocks.getChildren.mockResolvedValue([]);
 });
+afterEach(() => vi.unstubAllEnvs());
 
 describe("canonical programme reviewed-media archive", () => {
   it.each([
@@ -89,6 +90,16 @@ describe("canonical programme reviewed-media archive", () => {
     const html = renderToStaticMarkup(await ProgrammeDetail({ slug: "approved-programme" }));
     expect(html).toContain("Documented work");
     expect(html).not.toContain("unreviewed");
+  });
+
+  it("never labels school and college enquiry as immediate Islamic programme giving", async () => {
+    vi.stubEnv("FUND_GIVING_ENABLED", "true");
+    vi.stubEnv("TALEEM_SPONSORSHIP_ENABLED", "true");
+    mocks.getRecord.mockResolvedValue(recordWithMedia(0));
+    const html = renderToStaticMarkup(await ProgrammeDetail({ slug: "taleem-school-college-sponsorship" }));
+    expect(html).toContain("Ask about school or college sponsorship");
+    expect(html).toContain('href="/get-involved/sponsor-education?path=school&amp;support=discuss#sponsorship-enquiry"');
+    expect(html).not.toContain("Give to a Taleem programme");
   });
 
   it("links to the paginated archive when the initial 48 approved media are filled", async () => {

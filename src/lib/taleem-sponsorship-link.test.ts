@@ -10,6 +10,11 @@ describe("sponsorshipHrefForSlug", () => {
     expect(sponsorshipHrefForSlug("taleem-hifdh-sponsorship")).toBe("/get-involved/sponsor-education?programme=hifdh-day-scholar#programme-sponsorship");
   });
 
+  it("routes school and college support to an enquiry rather than an Islamic programme checkout", () => {
+    expect(sponsorshipHrefForSlug("taleem-school-college-sponsorship"))
+      .toBe("/get-involved/sponsor-education?path=school&support=discuss#sponsorship-enquiry");
+  });
+
   it("does not choose for the donor on the overview or an unmapped page", () => {
     expect(sponsorshipHrefForSlug("taleem")).toBe("/get-involved/sponsor-education#programme-sponsorship");
     expect(sponsorshipHrefForSlug("something-else")).toBe("/get-involved/sponsor-education#programme-sponsorship");

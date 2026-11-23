@@ -11,9 +11,12 @@ const PROGRAMME_FOR_SLUG: Readonly<Record<string, TaleemProgrammeId>> = {
   "taleem-hifdh-sponsorship": "hifdh-day-scholar",
 };
 
-/** The link a Taleem page uses to start sponsoring. Programme pages preselect their own programme; the overview, which
- * has three, goes to the form without choosing for the donor. */
+/** The link a Taleem page uses to start sponsoring. The school/college pathway is enquiry-led;
+ * only the approved Islamic programmes preselect checkout. The overview offers the programme selector. */
 export function sponsorshipHrefForSlug(slug: string): string {
+  if (slug === "taleem-school-college-sponsorship") {
+    return `${SPONSOR_PAGE_PATH}?path=school&support=discuss#sponsorship-enquiry`;
+  }
   const programme = PROGRAMME_FOR_SLUG[slug];
   return programme ? `${SPONSOR_PAGE_PATH}?programme=${programme}#programme-sponsorship` : `${SPONSOR_PAGE_PATH}#programme-sponsorship`;
 }

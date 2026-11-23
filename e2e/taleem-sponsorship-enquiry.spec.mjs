@@ -14,6 +14,12 @@ test("Taleem sponsor can select a reviewed path and prepare, but not send, an em
   expect(await page.locator('input[type="email"],input[type="file"]').count()).toBe(0);
 });
 
+test("direct programme links do not produce a false invalid-enquiry warning", async ({ page }) => {
+  await page.goto("/get-involved/sponsor-education?programme=nazira");
+  await expect(page.locator('main [role="alert"]')).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Open email with these preferences" })).toHaveCount(0);
+});
+
 test("bounded education preferences do not reflect private or duplicate query fields", async ({ page }) => {
   await page.goto("/get-involved/sponsor-education?path=school&path=hifdh&support=once&student=PRIVATE_STUDENT");
   await expect(page.locator('main p[role="alert"]')).toHaveText(/These preferences could not be read/);
