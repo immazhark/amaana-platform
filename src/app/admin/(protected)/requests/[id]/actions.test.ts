@@ -239,6 +239,34 @@ describe("reviewer-facing validation feedback (AF-ADMIN-500)", () => {
   });
 });
 
+describe("missing-information status requires a reviewer action note", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requirePermission.mockResolvedValue({ id: "synthetic-reviewer" });
+    mocks.hasPermission.mockReturnValue(true);
+    mocks.transaction.mockImplementation(async callback => callback(tx()));
+    mocks.requestUpdateMany.mockResolvedValue({ count: 1 });
+  });
+
+  it("refuses to request more information with an empty or vague internal note, without saving or emailing", async () => {
+    mocks.requestFind.mockResolvedValue({
+      id: "synthetic-request", status: AssistanceStatus.SUBMITTED, appealId: null,
+      email: "synthetic@example.invalid", referenceNumber: "AF-SYNTH-04",
+      updatedAt: new Date("2026-11-23T08:00:00.000Z"), verification: null,
+    });
+    for (const note of ["", "Need info"]) {
+      const result = await updateRequestWithFeedback({ kind: "idle", message: "" }, form({
+        id: "synthetic-request", expectedUpdatedAt: "2026-11-23T08:00:00.000Z",
+        status: "DOCUMENTS_REQUESTED", internalNotes: note,
+      }));
+      expect(result.kind).toBe("error");
+      expect(result.message).toMatch(/specific missing items/i);
+    }
+    expect(mocks.requestUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.notificationCreate).not.toHaveBeenCalled();
+  });
+});
+
 describe("rejection has one route: the dedicated Reject request form", () => {
   const idle = { kind: "idle" as const, message: "" };
   const versioned = (status: string, verification: Record<string, unknown> | null) => ({
