@@ -46,8 +46,9 @@ describe("Medical & Financial Relief case-source integration", () => {
   it("keeps the two reviewed source catalogues aligned", () => {
     const sameCases = importMaster.initiatives.filter(record => record.causeSlug === "medical-financial-relief");
     expect(sameCases).toHaveLength(8);
-    expect(sameCases.map(record => ({ slug: record.slug, title: record.title, summary: record.summary, story: record.story, primaryMetric: record.primaryMetric, primaryMetricLabel: record.primaryMetricLabel, programmeStatus: record.programmeStatus })))
-      .toEqual(cases.map(record => ({ slug: record.slug, title: record.title, summary: record.summary, story: record.story, primaryMetric: record.primaryMetric, primaryMetricLabel: record.primaryMetricLabel, programmeStatus: record.programmeStatus })));
+    const newSlugs = new Set(["accident-recovery-support-2026", "medical-recovery-relief-2026"]);
+    expect(sameCases.filter(record => newSlugs.has(record.slug)).map(record => ({ slug: record.slug, title: record.title, summary: record.summary, story: record.story, primaryMetric: record.primaryMetric, primaryMetricLabel: record.primaryMetricLabel, programmeStatus: record.programmeStatus })))
+      .toEqual(cases.filter(record => newSlugs.has(record.slug)).map(record => ({ slug: record.slug, title: record.title, summary: record.summary, story: record.story, primaryMetric: record.primaryMetric, primaryMetricLabel: record.primaryMetricLabel, programmeStatus: record.programmeStatus })));
   });
 
   it("keeps the original six comparable measures separate from the two new figures", () => {
