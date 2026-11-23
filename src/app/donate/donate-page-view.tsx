@@ -79,7 +79,7 @@ export function DonatePageView({ choices, impactItems, paymentDetails, fundGivin
         ? "Every contribution is an amaana. Choose a specific verified appeal, or support a currently approved programme."
         : fundGivingEnabled
           ? "Fund giving is open. Choose an eligible Amaana fund to give in domestic INR. Appeal checkout appears here only when a specific reviewed appeal is payable."
-          : "Every contribution is an amaana. No reviewed on-page checkout is currently available. Browse the public appeals, or speak with Amaana about a currently approved programme before contributing."
+          : "Every contribution is an amaana. No reviewed on-page checkout is currently available. Browse the public appeals, or speak with Amaana about a currently approved programme before contributing."}
       blocks={[
         {
           title: "Domestic donations only",
