@@ -9,19 +9,19 @@ describe("public medical-support information: Mr. Khaja", () => {
     expect(mrKhajaPublicInformation.title).not.toMatch(/Ansari/i);
   });
 
-  it("distinguishes family-requested amount from a financially approved site appeal", () => {
+  it("keeps the earlier target separate from live checkout and financial reconciliation", () => {
     expect(mrKhajaPublicInformation.requestedINR).toBe(500_000);
-    expect(mrKhajaPublicInformation.fundraisingStatus).toBe("INFORMATION_ONLY");
+    expect(mrKhajaPublicInformation.fundraisingStatus).toBe("CLOSED");
     expect(mrKhajaPublicInformation.donationCheckoutPath).toBeNull();
     expect(mrKhajaPublicInformation.zakatEligibility).toBe("UNVERIFIED");
   });
 
-  it("shows the owner's approved ₹5,00,000 fundraising target without asserting case checkout is live", () => {
+  it("preserves the earlier approved ₹5,00,000 target as historical context without restarting checkout", () => {
     expect(mrKhajaPublicInformation.requestedINR).toBe(500_000);
-    expect(mrKhajaPublicInformation.evidenceNotice).toMatch(/approved fundraising target/i);
+    expect(mrKhajaPublicInformation.evidenceNotice).toMatch(/previously approved.*fundraising target/i);
     expect(mrKhajaPublicInformation.evidenceNotice).toMatch(/not an independently certified medical estimate/i);
     expect(mrKhajaPublicInformation.evidenceNotice).not.toMatch(/not an approved(?:, remaining)? fundraising target/i);
-    expect(mrKhajaPublicInformation.fundraisingStatus).toBe("INFORMATION_ONLY");
+    expect(mrKhajaPublicInformation.fundraisingStatus).toBe("CLOSED");
     expect(mrKhajaPublicInformation.donationCheckoutPath).toBeNull();
   });
 
@@ -47,6 +47,6 @@ describe("public medical-support information: Mr. Khaja", () => {
 
   it("attributes medical and financial circumstances to the family, rather than certifying them", () => {
     expect(mrKhajaPublicInformation.summary).toMatch(/family reports|according to the family|family has requested/i);
-    expect(mrKhajaPublicInformation.paymentNotice).toMatch(/not yet available|not yet active/i);
+    expect(mrKhajaPublicInformation.paymentNotice).toMatch(/collection for this appeal is closed/i);
   });
 });
