@@ -6,10 +6,8 @@ import { ReviewedMedicalAppeal } from "@/components/reviewed-medical-appeal";
 import { getAppealPageData, getDonationPageData, getAppealCoverMedia } from "@/lib/public-page-data";
 import { getDonationPaymentDetails } from "@/lib/donation-payment-details";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { PageHero } from "@/components/page-hero";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
-import { formatINR } from "@/lib/appeals";
 import { mrKhajaPublicInformation as info } from "@/lib/mr-khaja-public-information";
 
 const informationMetadata: Metadata = {
@@ -77,25 +75,5 @@ export default async function MrKhajaPublicInformationPage() {
       ]}
       visual={<WorkVisualPlaceholder label="Support with dignity" />}
     />
-    <section className="v2-section paper" aria-labelledby="khaja-story-heading">
-      <div className="v2-shell">
-        <p className="v2-section-label">The family&apos;s account</p>
-        <h2 className="v2-section-title" id="khaja-story-heading">Background of the family request</h2>
-        {info.story.map((paragraph, index) => <p key={index}>{paragraph}</p>)}
-      </div>
-    </section>
-    <section className="v2-section" aria-labelledby="khaja-request-heading">
-      <div className="v2-shell">
-        <p className="v2-section-label">Foundation-approved fundraising target</p>
-        <h2 className="v2-section-title" id="khaja-request-heading">Collection closed · previous target {formatINR(info.requestedINR)}</h2>
-        <p>{info.evidenceNotice}</p>
-        <p>{info.paymentNotice}</p>
-        <p>Privacy: only the approved short name is used. Private clinical documents and identifiable contact details are not published on this page.</p>
-        <div className="v2-hero-actions">
-          <Link className="v2-button" href="/appeals">Browse current appeals</Link>
-          <Link className="v2-text-link" href="/how-we-verify">How verification works</Link>
-        </div>
-      </div>
-    </section>
   </div>;
 }
