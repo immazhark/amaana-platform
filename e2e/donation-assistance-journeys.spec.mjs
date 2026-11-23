@@ -106,7 +106,13 @@ test('assistance intake visibly marks all required fields and distinguishes the 
   await expect(page.locator('input[name="consent"]')).toHaveAttribute('required', '');
   // The visual markers must not change accessible field labels used by keyboard/screen-reader users.
   await page.getByRole('button', { name: /Contact/ }).click();
-  await expect(page.getByLabel('Applicant name', { exact: true })).toBeVisible();
+  for (const name of ['Applicant name', 'Phone number', 'City']) {
+    await expect(page.getByLabel(name, { exact: true })).toBeVisible();
+  }
+  await page.getByRole('button', { name: /Need/ }).click();
+  for (const name of ['Type of assistance', 'Describe the need']) {
+    await expect(page.getByLabel(name, { exact: true })).toBeVisible();
+  }
 });
 
 test('assistance errors are linked before keyboard focus reaches invalid input', async ({ page }) => {
