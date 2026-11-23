@@ -20,7 +20,7 @@ describe("completed medical assistance showcase", () => {
   });
 
   it("fails closed on unknown or missing programme status and preserves source ordering", () => {
-    const duplicate = { ...records[0], slug: "medical-second" };
+    const duplicate = { slug: "medical-second", causeSlug: "medical-financial-relief", programmeStatus: "COMPLETED", title: "Another completed case" };
     expect(selectCompletedMedicalAidShowcase([duplicate, ...records], new Set(["medical-second", "medical-completed", "medical-unknown"])).map(p => p.slug))
       .toEqual(["medical-second", "medical-completed"]);
   });
