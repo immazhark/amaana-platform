@@ -9,7 +9,7 @@ const tracking = vi.hoisted(() => {
       credentials,
       record: {
         found: true as const,
-        status: "UNDER_VERIFICATION" as const,
+        status: "UNDER_VERIFICATION" as "UNDER_VERIFICATION" | "DOCUMENTS_REQUESTED",
         createdAt: "2026-10-26T19:00:00.000Z",
         updatedAt: "2026-10-26T20:00:00.000Z",
       },
@@ -40,5 +40,18 @@ it("shows private tracking dates in India even when the visitor's timezone is UT
     expect(markup).toContain("Submitted 27 October 2026 · Last updated 27 October 2026");
   } finally {
     dateSpy.mockRestore();
+  }
+});
+
+it("explains a documents-requested status without claiming the follow-up note or a public upload is available", () => {
+  tracking.snapshot.record.status = "DOCUMENTS_REQUESTED";
+  try {
+    const markup = renderToStaticMarkup(<AssistanceStatusClient />);
+    expect(markup).toContain("Documents requested");
+    expect(markup).toContain("contact Amaana with your private reference");
+    expect(markup).toContain("do not send sensitive documents through an unverified channel");
+    expect(markup).not.toContain("Upload your documents here");
+  } finally {
+    tracking.snapshot.record.status = "UNDER_VERIFICATION";
   }
 });
