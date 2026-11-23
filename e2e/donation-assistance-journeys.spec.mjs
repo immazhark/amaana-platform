@@ -93,16 +93,17 @@ test('assistance intake visibly marks all required fields and distinguishes the 
   await openAssistance(page);
   for (const id of ['name', 'phone', 'city', 'category', 'description']) {
     const label = page.locator(`label[for="${id}"]`);
-    await expect(label).toContainText('Required');
+    expect(await label.evaluate(el => getComputedStyle(el, '::after').content)).toContain('Required');
     await expect(page.locator(`#${id}`)).toHaveAttribute('required', '');
   }
   await expect(page.locator('label[for="email"]')).toContainText('optional');
+  expect(await page.locator('label[for="email"]').evaluate(el => getComputedStyle(el, '::after').content)).not.toContain('Required');
   await expect(page.locator('#email')).not.toHaveAttribute('required');
   await expect(page.locator('#assistance-step-3 legend')).toContainText('optional');
   await expect(page.locator('#documents')).not.toHaveAttribute('required');
 
   await fillAssistanceForm(page);
-  await expect(page.locator('#assistance-step-4 label.checkbox')).toContainText('Required');
+  expect(await page.locator('#assistance-step-4 label.checkbox strong').evaluate(el => getComputedStyle(el, '::after').content)).toContain('Required');
   await expect(page.locator('input[name="consent"]')).toHaveAttribute('required', '');
   // The visual markers must not change accessible field labels used by keyboard/screen-reader users.
   await page.getByRole('button', { name: /Contact/ }).click();
