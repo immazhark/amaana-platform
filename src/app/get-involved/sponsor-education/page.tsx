@@ -30,8 +30,11 @@ const enquiryHref = (path: string) => `/get-involved/sponsor-education?path=${pa
 
 export default async function SponsorEducationPage({ searchParams = Promise.resolve({}) }: { searchParams?: Promise<Record<string, string | string[] | undefined>> } = {}) {
   const preferences = await searchParams;
+  // Checkout programme hints and enquiry preferences are separate GET contracts.
+  // Unknown fields still reach the enquiry validator and fail closed.
+  const { programme, ...enquiryPreferences } = preferences;
   // Rendered once and placed first when it exists, so every link to it can rely on the anchor being on the page.
-  const sponsorship = await TaleemSponsorshipSection({ programme: preferences.programme });
+  const sponsorship = await TaleemSponsorshipSection({ programme });
   const programmeOpen = sponsorship !== null;
   const [heroMedia, taleemInitiative] = await Promise.all([
     getSponsorEducationHeroMedia(),
@@ -53,7 +56,7 @@ export default async function SponsorEducationPage({ searchParams = Promise.reso
 
         <section className="taleem-school" aria-labelledby="child-education-title"><div className="v2-shell taleem-school-grid"><div><p className="v2-section-label">School and college</p><h2 id="child-education-title">Sponsor a Student’s School or College Education</h2></div><div><p className="taleem-school-lead">Developing pathway — verified school and college education support.</p><p>Amaana Taleem Initiative is designed to extend educational assistance to verified students from financially vulnerable households whose schooling or college education may be at risk because of fees or other essential academic costs. Support under this pathway will be matched to a clearly identified educational need, with verification and responsible follow-through before assistance is provided.</p><a className="v2-button" href={enquiryHref("school")}>Ask about school or college sponsorship</a></div></div></section>
 
-        <SponsorshipEnquiry preferences={preferences} />
+        <SponsorshipEnquiry preferences={enquiryPreferences} />
 
         <section className="v2-shell taleem-process" aria-labelledby="process-title"><SectionHeading eyebrow={<>How it works</>} title={<>A clear path from interest to support.</>} subtitle={<>Sponsorship begins with a conversation, not an assumption about a student’s circumstances.</>} id="process-title" /><ol><li><span>01</span><div><h3>Choose a path</h3><p>Tell Amaana which education route you are interested in supporting.</p></div></li><li><span>02</span><div><h3>Review the available need</h3><p>The team confirms the learner, institution and current sponsorship scope.</p></div></li><li><span>03</span><div><h3>Confirm your support</h3><p>You receive the relevant details and can decide whether to proceed.</p></div></li><li><span>04</span><div><h3>Follow responsibly</h3><p>Updates are shared in a way that protects the dignity and privacy of the student.</p></div></li></ol></section>
       </div>
