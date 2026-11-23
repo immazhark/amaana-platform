@@ -42,7 +42,7 @@ describe("public medical-support information: Mr. Khaja", () => {
     expect(copy).not.toMatch(/\b(?:\+?91[- ]?)?[6-9]\d{9}\b/);
     expect(copy).not.toContain("925020008040264");
     expect(copy).not.toContain("UTIB0002922");
-    expect(copy).toMatch(/India/);
+    expect(copy).not.toMatch(/pay using|make a donation|bank transfer|UPI|transfer to/i);
   });
 
   it("attributes medical and financial circumstances to the family, rather than certifying them", () => {
