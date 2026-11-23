@@ -27,6 +27,20 @@ describe("donation funnel aggregate", () => {
     expect(row.confirmedShare).toBeNull();
   });
 
+  it("never reveals the combined total when hidden stages can each be inferred as a single gift", () => {
+    const rows = summariseDonationFunnel([
+      g("RAZORPAY", "CAPTURED", 20),
+      g("RAZORPAY", "FAILED", 1),
+      g("RAZORPAY", "CREATED", 1),
+    ]);
+    expect(rows).toHaveLength(1);
+    const row = rows[0]!;
+    expect(row.cells.awaiting).toEqual({ suppressed: true });
+    expect(row.cells.unsuccessful).toEqual({ suppressed: true });
+    expect(row.cells.started).toEqual({ suppressed: true });
+    expect(row.confirmedShare).toBeNull();
+  });
+
   it("does not hide a true zero and does not invent suppression when every cell is large", () => {
     const [row] = summariseDonationFunnel([g("BANK_TRANSFER", "CAPTURED", 20), g("BANK_TRANSFER", "FAILED", 7)]);
     expect(counts(row!)).toEqual({ started: 27, awaiting: 0, confirmed: 20, unsuccessful: 7 });
