@@ -69,6 +69,8 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
  const parentRecord=parentCandidate?await getPublishedInitiativeBySlug(parentCandidate.slug):null;
  const parent=parentRecord?parentCandidate:undefined;
  const facts=canonical&&'facts' in canonical?canonical.facts:[];
+ const schoolCollegeEnquiry=slug==='taleem-school-college-sponsorship';
+ const sponsorOpen=(slug==='taleem'||slug.startsWith('taleem-'))&&isTaleemSponsorshipEnabled();
  const storyParagraphs=programmeStoryParagraphs(summary,story);
  const historicalGrassroots=['hyderabad-flood-relief-2020','covid-essential-support-2020'].includes(slug);
  const fallbackStory=buildPublicRecordFallback({metric:primaryMetric,metricLabel:primaryMetricLabel});
@@ -115,7 +117,7 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
   {highlightMedia&&<section className="campaign-data-visual"><div className="v2-shell"><div><span className="v2-section-label">Beneficiary breakdown</span><h2>Who the 2026 Eid Gift Kits reached</h2><p>{highlightMedia.caption}</p></div><PublicMedia asset={highlightMedia}/></div></section>}
   {gallery.length>0&&<section className="campaign-gallery" id="campaign-gallery"><div className="v2-shell"><SectionHeading className="campaign-section-heading" eyebrow="Programme photographs" title="Real Work. Shared Responsibly." subtitle="Original photographs from this programme. Personal documents remain private." /><CampaignMediaGallery items={toPublicGalleryItems(gallery)}/><div className="campaign-gallery-grid">{gallery.filter(asset=>asset.kind!=='IMAGE').map(asset=><PublicMedia asset={asset} key={asset.id}/>)}</div></div></section>}
   {record.mediaAssets.length >= PUBLIC_DETAIL_MEDIA_LIMIT && <div className="v2-shell"><Link className="v2-text-link" prefetch={false} href={`/media-archive/initiative/${encodeURIComponent(record.slug)}`}>Browse the complete approved media archive</Link></div>}
-  {(slug==='taleem'||slug.startsWith('taleem-'))&&<section className="v2-section"><div className="v2-shell"><SectionHeading eyebrow="Education sponsorship" title="Knowledge should open doors — financial hardship should not close them." subtitle="Identify a genuine educational barrier, verify the need, and respond responsibly." /><Link className="v2-button" href={isTaleemSponsorshipEnabled()?sponsorshipHrefForSlug(slug):"/get-involved/sponsor-education"}>{isTaleemSponsorshipEnabled()?"Give to a Taleem programme":"Sponsor a Learner"}</Link></div></section>}
+  {(slug==='taleem'||slug.startsWith('taleem-'))&&<section className="v2-section"><div className="v2-shell"><SectionHeading eyebrow="Education sponsorship" title="Knowledge should open doors — financial hardship should not close them." subtitle="Identify a genuine educational barrier, verify the need, and respond responsibly." /><Link className="v2-button" href={schoolCollegeEnquiry||sponsorOpen?sponsorshipHrefForSlug(slug):"/get-involved/sponsor-education"}>{schoolCollegeEnquiry?"Ask about school or college sponsorship":sponsorOpen?"Give to a Taleem programme":"Sponsor a Learner"}</Link></div></section>}
   <ProgrammeNext />
  </div>;
 }
