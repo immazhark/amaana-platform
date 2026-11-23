@@ -44,6 +44,24 @@ async function statusOptions(status: string) {
   return { html, select: select[0], options };
 }
 
+describe("requesting missing information from an applicant", () => {
+  it("gives staff a separate guidance path without pretending the applicant can upload new documents", async () => {
+    const { html } = await statusOptions("SUBMITTED");
+    expect(html).toContain("Request additional information");
+    expect(html).toContain("List the specific missing items");
+    expect(html).toContain("contact the applicant through a verified private channel");
+    expect(html).toContain("No applicant upload or reply portal is available");
+    expect(html).toContain('name="status" value="DOCUMENTS_REQUESTED"');
+    expect(html).toContain("Mark awaiting information");
+  });
+
+  it("shows the outstanding-information guide when already awaiting documents", async () => {
+    const { html } = await statusOptions("DOCUMENTS_REQUESTED");
+    expect(html).toContain("Awaiting information from applicant");
+    expect(html).toContain("resume verification");
+  });
+});
+
 describe("request review current-status preservation", () => {
   it.each(["APPROVED", "REJECTED"])("retains %s for a note-only editor without granting the other restricted transition", async status => {
     const { options } = await statusOptions(status);
