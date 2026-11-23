@@ -25,6 +25,13 @@ describe("public medical-support information: Mr. Khaja", () => {
     expect(mrKhajaPublicInformation.donationCheckoutPath).toBeNull();
   });
 
+  it("honours the confirmed collection closure without soliciting further case-specific support", () => {
+    expect(mrKhajaPublicInformation.fundraisingStatus).toBe("CLOSED");
+    expect(mrKhajaPublicInformation.paymentNotice).toMatch(/collection for this appeal is closed/i);
+    expect([...mrKhajaPublicInformation.story, mrKhajaPublicInformation.paymentNotice].join(" "))
+      .not.toMatch(/sharing this request may help|confirm an approved way to contribute/i);
+  });
+
   it("keeps confidential medical proofs, foreign payment instructions and private identifiers out of public copy", () => {
     const copy = [mrKhajaPublicInformation.title,
       mrKhajaPublicInformation.summary,
