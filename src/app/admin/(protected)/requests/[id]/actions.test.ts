@@ -218,6 +218,23 @@ describe("private follow-up note before requesting missing information", () => {
     expect(mocks.auditCreate).not.toHaveBeenCalled();
   });
 
+  it("allows a revised specific note while the request continues awaiting information", async () => {
+    mocks.requestFind.mockResolvedValue({
+      id: "synthetic-request", status: AssistanceStatus.DOCUMENTS_REQUESTED, appealId: null,
+      email: null, referenceNumber: "AF-SYNTH-04",
+      updatedAt: new Date("2026-11-23T08:00:00.000Z"), verification: null,
+    });
+    const specific = "Please provide the updated private medical quotation.";
+    const result = await updateRequestWithFeedback({ kind: "idle", message: "" }, form({
+      id: "synthetic-request", expectedUpdatedAt: "2026-11-23T08:00:00.000Z",
+      status: "DOCUMENTS_REQUESTED", internalNotes: specific,
+    }));
+    expect(result).toEqual({ kind: "success", message: "Request changes saved." });
+    expect(mocks.requestUpdateMany).toHaveBeenCalledWith(expect.objectContaining({
+      data: { status: "DOCUMENTS_REQUESTED", internalNotes: specific },
+    }));
+  });
+
   it("queues a generic status only; the staff follow-up question stays private", async () => {
     mocks.requestFind.mockResolvedValue({
       id: "synthetic-request", status: AssistanceStatus.SUBMITTED, appealId: null,
