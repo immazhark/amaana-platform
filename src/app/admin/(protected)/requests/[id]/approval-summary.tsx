@@ -1,4 +1,4 @@
-import styles from "./approval-check-answers.module.css";
+import styles from "@/components/approval-check-answers.module.css";
 
 const FIELDS = [
   ["decision", "Support route"], ["verifiedNeedAmount", "Verified need (₹)"], ["approvedPublicTarget", "Public target (₹)"],

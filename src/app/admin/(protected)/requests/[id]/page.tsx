@@ -18,7 +18,7 @@ import { assignRequest, convertToAppeal, updateRequestWithFeedback } from "./act
 import { approveRequestAction, approveRequestWithFeedback, saveReviewProgressWithFeedback } from "./approval-actions";
 import { rejectRequestAction } from "./rejection-actions";
 import { AdminActionFeedbackForm } from "@/components/admin-action-feedback-form";
-import { ApprovalSummary } from "@/components/approval-summary";
+import { ApprovalSummary } from "./approval-summary";
 import { ApprovalCheckAnswers } from "@/components/approval-check-answers";
 import { RejectRequestForm } from "@/components/reject-request-form";
 
