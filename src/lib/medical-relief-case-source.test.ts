@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { programmes } from "@/lib/master-copy";
 import { documentedAssistanceTotal } from "@/lib/documented-assistance";
+import importMaster from "../../prisma/master-programmes.json";
 
 const knownSix = [
   "auto-rickshaw-livelihood-support",
@@ -40,6 +41,13 @@ describe("Medical & Financial Relief case-source integration", () => {
     expect(caseRecord?.primaryMetricLabel).toMatch(/collected and handed over/i);
     expect(caseRecord?.story).toMatch(/collection is closed/i);
     expect(caseRecord?.summary + " " + caseRecord?.story).not.toMatch(/donate now|support this appeal|tax deduction|full medical recovery/i);
+  });
+
+  it("keeps the two reviewed source catalogues aligned", () => {
+    const sameCases = importMaster.initiatives.filter(record => record.causeSlug === "medical-financial-relief");
+    expect(sameCases).toHaveLength(8);
+    expect(sameCases.map(record => ({ slug: record.slug, title: record.title, summary: record.summary, story: record.story, primaryMetric: record.primaryMetric, primaryMetricLabel: record.primaryMetricLabel, programmeStatus: record.programmeStatus })))
+      .toEqual(cases.map(record => ({ slug: record.slug, title: record.title, summary: record.summary, story: record.story, primaryMetric: record.primaryMetric, primaryMetricLabel: record.primaryMetricLabel, programmeStatus: record.programmeStatus })));
   });
 
   it("keeps the original six comparable measures separate from the two new figures", () => {
