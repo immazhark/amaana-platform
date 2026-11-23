@@ -248,6 +248,26 @@ describe("missing-information status requires a reviewer action note", () => {
     mocks.requestUpdateMany.mockResolvedValue({ count: 1 });
   });
 
+  it("records a specific private follow-up note and queues only a generic status notice", async () => {
+    const current = {
+      id: "synthetic-request", status: AssistanceStatus.SUBMITTED, appealId: null,
+      email: "synthetic@example.invalid", referenceNumber: "AF-SYNTH-04",
+      updatedAt: new Date("2026-11-23T08:00:00.000Z"), verification: null,
+    };
+    mocks.requestFind.mockResolvedValue(current);
+    const result = await updateRequestWithFeedback({ kind: "idle", message: "" }, form({
+      id: current.id, expectedUpdatedAt: current.updatedAt.toISOString(),
+      status: "DOCUMENTS_REQUESTED", internalNotes: "Please verify the hospital's updated cost estimate.",
+    }));
+    expect(result).toEqual({ kind: "success", message: "Request changes saved." });
+    expect(mocks.requestUpdateMany).toHaveBeenCalledWith(expect.objectContaining({
+      data: { status: "DOCUMENTS_REQUESTED", internalNotes: "Please verify the hospital's updated cost estimate." },
+    }));
+    const notification = mocks.notificationCreate.mock.calls[0]?.[0];
+    expect(notification?.data.payload).toEqual({ referenceNumber: "AF-SYNTH-04", status: "DOCUMENTS_REQUESTED" });
+    expect(JSON.stringify(notification)).not.toContain("hospital");
+  });
+
   it("refuses to request more information with an empty or vague internal note, without saving or emailing", async () => {
     mocks.requestFind.mockResolvedValue({
       id: "synthetic-request", status: AssistanceStatus.SUBMITTED, appealId: null,
