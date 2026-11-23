@@ -13,8 +13,8 @@ import { formatINR } from "@/lib/appeals";
 import { mrKhajaPublicInformation as info } from "@/lib/mr-khaja-public-information";
 
 const informationMetadata: Metadata = {
-  title: "Mr. Khaja — Family Medical Support Request",
-  description: metaDescription(info.summary),
+  title: "Mr. Khaja — Collection Closed",
+  description: metaDescription(info.closureNotice),
   // The family has approved limited website disclosure, not indefinite search indexing.
   robots: { index: false, follow: true, nocache: true },
   alternates: { canonical: info.path },
@@ -22,10 +22,10 @@ const informationMetadata: Metadata = {
     type: "article",
     url: info.path,
     title: info.title + " | Amaana Foundation",
-    description: metaDescription(info.summary),
+    description: metaDescription(info.closureNotice),
     images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }],
   },
-  twitter: { card: "summary_large_image", title: info.title, description: metaDescription(info.summary) },
+  twitter: { card: "summary_large_image", title: info.title, description: metaDescription(info.closureNotice) },
 };
 
 export const dynamic = "force-dynamic";
@@ -68,31 +68,31 @@ export default async function MrKhajaPublicInformationPage() {
       eyebrow="Family medical assistance request · Hyderabad"
       title={info.title}
       description={<>
-        <p>{info.summary}</p>
-        <p><strong>Foundation-approved fundraising target: {formatINR(info.requestedINR)}.</strong> This is not an independently certified medical estimate. Dedicated checkout for this request is not yet active.</p>
+        <p><strong>{info.closureNotice}</strong></p>
+        <p>This page retains previously approved family-attributed information for reference. It does not invite further contributions or make medical outcome claims.</p>
       </>}
       actions={[
-        { label: "Enquire about support in India", href: "/contact" },
-        { label: "Browse reviewed appeals", href: "/appeals", secondary: true },
+        { label: "Browse current appeals", href: "/appeals" },
+        { label: "How verification works", href: "/how-we-verify", secondary: true },
       ]}
       visual={<WorkVisualPlaceholder label="Support with dignity" />}
     />
     <section className="v2-section paper" aria-labelledby="khaja-story-heading">
       <div className="v2-shell">
         <p className="v2-section-label">The family&apos;s account</p>
-        <h2 className="v2-section-title" id="khaja-story-heading">Supporting treatment and recovery</h2>
+        <h2 className="v2-section-title" id="khaja-story-heading">Background of the family request</h2>
         {info.story.map((paragraph, index) => <p key={index}>{paragraph}</p>)}
       </div>
     </section>
     <section className="v2-section" aria-labelledby="khaja-request-heading">
       <div className="v2-shell">
         <p className="v2-section-label">Foundation-approved fundraising target</p>
-        <h2 className="v2-section-title" id="khaja-request-heading">{formatINR(info.requestedINR)} approved fundraising target</h2>
+        <h2 className="v2-section-title" id="khaja-request-heading">Collection closed · previous target {formatINR(info.requestedINR)}</h2>
         <p>{info.evidenceNotice}</p>
-        <p><strong>India-only support:</strong> {info.paymentNotice}</p>
+        <p>{info.paymentNotice}</p>
         <p>Privacy: only the approved short name is used. Private clinical documents and identifiable contact details are not published on this page.</p>
         <div className="v2-hero-actions">
-          <Link className="v2-button" href="/contact">Contact Amaana about this request</Link>
+          <Link className="v2-button" href="/appeals">Browse current appeals</Link>
           <Link className="v2-text-link" href="/how-we-verify">How verification works</Link>
         </div>
       </div>
