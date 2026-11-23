@@ -47,6 +47,15 @@ it.each([
   expect(html).not.toContain("Existing payment methods");
 });
 
+it("keeps a deliberately CLOSED reviewed appeal in read-only funding status with no payment form", () => {
+  const closedAppeal = { ...appeal, status: "CLOSED" as const };
+  const closedDonation = { ...donation, status: "CLOSED" as const };
+  const html = renderToStaticMarkup(<ReviewedMedicalAppeal highlySensitive={true} appeal={closedAppeal} donation={closedDonation} coverMedia={null} paymentDetails={paymentDetails} />);
+  expect(html).toContain("Funding status");
+  expect(html).not.toContain("Existing payment methods");
+  expect(methods).not.toHaveBeenCalled();
+});
+
 it("renders only a supplied reviewed cover and public update copy", () => {
   const cover = { id: "synthetic-reviewed-image", kind: "IMAGE" as const, title: "Reviewed redacted photo", publicUrl: "/media/synthetic.webp", externalUrl: null, altText: "Reviewed redacted photo", caption: null, sourceYear: 2026, sortOrder: 0, width: 800, height: 600 };
   const html = renderToStaticMarkup(<ReviewedMedicalAppeal highlySensitive={true} appeal={{ ...appeal, updates: [{ id: "synthetic-update", title: "Confirmed update", content: "Approved public update", publishedAt: new Date("2026-11-07T00:00:00Z") }] }} donation={donation} coverMedia={cover} paymentDetails={paymentDetails} />);

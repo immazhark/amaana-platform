@@ -51,9 +51,8 @@ it("renders only the selected eligible page with search-preserving navigation", 
  expect(html).not.toContain("PRIVATE_TRACKING");
 });
 
-it("carries the Mr. Khaja family request on the page that is actually served", async () => {
-  // A second root page.tsx used to shadow this file in production, so tests passed on code that did not serve.
+it("does not promote the owner-confirmed closed Mr. Khaja collection as an active family request", async () => {
   const html = renderToStaticMarkup(await AppealsPage({ searchParams: Promise.resolve({}) }));
-  expect(html).toContain("Help Mr. Khaja Continue His Treatment and Recovery");
-  expect(html).toContain('href="/medical-support/mr-khaja"');
+  expect(html).not.toContain("Help Mr. Khaja Continue His Treatment and Recovery");
+  expect(html).not.toContain('href="/medical-support/mr-khaja"');
 });
