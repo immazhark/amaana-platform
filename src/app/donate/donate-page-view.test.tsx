@@ -53,10 +53,10 @@ describe("donate hero panel", () => {
   });
 
   it("signals that fund giving is open even when no individual appeal is payable", () => {
-    const panel = donateHeroPanel(0, true);
-    expect(panel.title).toBe("Fund Giving Is Open");
-    expect(panel.note).toContain("Choose an approved fund");
-    expect(panel.note).not.toContain("ask Amaana about an approved programme route");
+    const html = view([], true);
+    expect(html).toContain("Fund Giving Is Open");
+    expect(html).toContain("Choose an approved fund");
+    expect(html).not.toContain("ask Amaana about an approved programme route");
   });
 
   it("does not claim an open appeal when there is none", () => {
