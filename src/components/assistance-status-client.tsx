@@ -20,7 +20,7 @@ const statusLabels: Record<string, string> = {
 
 const statusCopy: Record<string, string> = {
   SUBMITTED: "Your request has been received and is waiting for review.",
-  DOCUMENTS_REQUESTED: "The team needs additional supporting information before review can continue.",
+  DOCUMENTS_REQUESTED: "The team needs additional supporting information before review can continue. Please contact Amaana with your private reference using the official contact options. Ask the team for an appropriate private way to share the specific items; do not send sensitive documents through an unverified channel.",
   UNDER_VERIFICATION: "The information supplied is currently being reviewed and verified.",
   APPROVED: "The request has passed the current review stage. The team will communicate the next step directly.",
   REJECTED: "The request was not approved. Any available explanation or follow-up will be communicated through the contact details supplied.",
