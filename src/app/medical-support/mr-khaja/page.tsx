@@ -63,7 +63,7 @@ export default async function MrKhajaPublicInformationPage() {
     <PageHero
       variant="level2"
       className="page-hero--long-title"
-      eyebrow="Family medical assistance request · Hyderabad"
+      eyebrow="Collection closed · Hyderabad"
       title={info.title}
       description={<>
         <p><strong>{info.closureNotice}</strong></p>
