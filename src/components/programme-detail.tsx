@@ -16,6 +16,7 @@ import { WorkVisualPlaceholder } from '@/components/work-visual-placeholder';
 import { getPublishedInitiativeBySlug, PUBLIC_DETAIL_MEDIA_LIMIT } from '@/lib/public-content';
 import { getProgrammeChildMedia } from '@/lib/public-page-data';
 import { programmeBySlug, programmeChildren } from '@/lib/master-copy';
+import { programmeStatusLabel } from '@/lib/programme-status-label';
 import { PublicMedia } from '@/components/public-media';
 import { canRenderPublicMedia, dedupeRenderablePublicMediaByUrl, resolvePublicMediaUrl, selectGalleryPublicImage, selectIdentityPublicImage } from '@/lib/public-media';
 import { buildPublicRecordFallback, programmeStoryParagraphs, heroTeaser } from '@/lib/public-copy';
@@ -64,7 +65,7 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
  const status=canonical?.programmeStatus??'RECURRING';
  const primaryMetric=record.primaryMetric;
  const primaryMetricLabel=record.primaryMetricLabel;
- const statusLabel=canonical?.causeSlug==='medical-financial-relief'?(slug==='jewellery-loan-intervention'?'Assistance completed':'Fundraising completed'):status==='EXPANDING'?'Developing pathway':status==='ONGOING'?'Ongoing sponsorship':status==='HISTORICAL'?'Historical response':status==='COMPLETED'?'Completed work':'Recurring programme';
+ const statusLabel=programmeStatusLabel(canonical?.causeSlug,slug,status);
  const parentCandidate=canonical?.parentSlug?programmeBySlug(canonical.parentSlug):undefined;
  const parentRecord=parentCandidate?await getPublishedInitiativeBySlug(parentCandidate.slug):null;
  const parent=parentRecord?parentCandidate:undefined;

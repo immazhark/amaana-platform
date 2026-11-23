@@ -22,6 +22,7 @@ async function fixture({ stripTimestamps = false, initiativeCount = 2 } = {}) {
     await symlink(path.join(projectRoot, 'node_modules'), path.join(directory, 'node_modules'), 'junction');
     const sourceFile = path.join(projectRoot, 'prisma/apply-master-content.mjs');
     const importerFile = path.join(directory, 'apply-master-content.mjs');
+    await copyFile(path.join(projectRoot, 'prisma/master-content-publication.mjs'), path.join(directory, 'master-content-publication.mjs'));
     if (stripTimestamps) {
       // Controlled counterexample in a temporary copy, never the repo/runtime.
       const source = await readFile(sourceFile, 'utf8');
