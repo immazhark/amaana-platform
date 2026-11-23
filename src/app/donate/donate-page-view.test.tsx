@@ -52,6 +52,13 @@ describe("donate hero panel", () => {
     expect(donateHeroPanel(2).note).not.toMatch(/₹/);
   });
 
+  it("signals that fund giving is open even when no individual appeal is payable", () => {
+    const panel = donateHeroPanel(0, true);
+    expect(panel.title).toBe("Fund Giving Is Open");
+    expect(panel.note).toContain("Choose an approved fund");
+    expect(panel.note).not.toContain("ask Amaana about an approved programme route");
+  });
+
   it("does not claim an open appeal when there is none", () => {
     const panel = donateHeroPanel(0);
     expect(panel.title).toBe("Support Responsibly");
@@ -75,6 +82,22 @@ describe("donate page view", () => {
     expect(html).not.toContain("choose-appeal-checkout");
     expect(html).toContain("View verified appeals");
     expect(html).toContain("Find an Approved Way to Support.");
+  });
+
+  it("never implies donations are unavailable when the active fund route can accept gifts", () => {
+    const html = view([], true);
+    expect(html).toContain("Choose a Fund. Give With Purpose.");
+    expect(html).toContain("Fund giving is open");
+    expect(html).toContain('href="/give"');
+    expect(html).not.toContain("No reviewed on-page checkout is currently available");
+    expect(html).not.toContain("Find an Approved Way to Support.");
+  });
+
+  it("distinguishes available Taleem programme giving from the school and college enquiry route", () => {
+    const html = view([], true);
+    expect(html).toContain("School and college support starts with an enquiry");
+    expect(html).toContain("Programme availability and terms are shown on the Taleem page");
+    expect(html).not.toContain("Taleem sponsorship and programme giving are arranged only when Amaana confirms an approved destination.");
   });
 
   it("shows the fund route only when enabled", () => {
