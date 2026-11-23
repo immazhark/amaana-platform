@@ -14,7 +14,6 @@ const fieldStep: Record<AssistanceField, AssistanceStep> = {
   consent: 4,
 };
 const stepLabels = ["Contact", "Need", "Evidence", "Confirm"] as const;
-// One static, noninteractive element serves each mandatory label; native required remains authoritative.
 
 type AssistanceCopy = {
   heading: ReactNode;
