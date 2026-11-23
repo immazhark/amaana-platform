@@ -57,3 +57,9 @@ it("carries the Mr. Khaja family request on the page that is actually served", a
   expect(html).toContain("Help Mr. Khaja Continue His Treatment and Recovery");
   expect(html).toContain('href="/medical-support/mr-khaja"');
 });
+
+it("does not promote the owner-confirmed closed Mr. Khaja collection as an active family request", async () => {
+  const html = renderToStaticMarkup(await AppealsPage({ searchParams: Promise.resolve({}) }));
+  expect(html).not.toContain("Help Mr. Khaja Continue His Treatment and Recovery");
+  expect(html).not.toContain('href="/medical-support/mr-khaja"');
+});
