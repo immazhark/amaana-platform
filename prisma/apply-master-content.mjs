@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { readFile } from 'node:fs/promises';
+import { eligibleMasterInitiatives } from './master-content-publication.mjs';
 
 const LEGACY_CATEGORY_TARGETS = {
   'seasonal-food-support': 'ramadan-eid',
@@ -116,6 +117,7 @@ async function reconcileLegacyCategories(tx) {
 
 export async function applyMasterContent(prisma) {
   const master = await readJson('./master-programmes.json');
+  const importableInitiatives = eligibleMasterInitiatives(master.initiatives);
   const factualLocks = await readJson('./canonical-factual-locks.json');
 
   return prisma.$transaction(
@@ -143,13 +145,14 @@ export async function applyMasterContent(prisma) {
       }
 
       const existingInitiatives = await tx.initiative.findMany({
-        where: { slug: { in: master.initiatives.map((record) => record.slug) } },
+        where: { slug: { in: importableInitiatives.map((record) => record.slug) } },
         select: { slug: true, financialSummary: true },
       });
       const existingInitiativeBySlug = new Map(existingInitiatives.map((record) => [record.slug, record]));
 
-      for (const [displayOrder, record] of master.initiatives.entries()) {
-        const { causeSlug, parentSlug, programmeStatus, facts, dataCaveat, ...copy } = record;
+      for (const [displayOrder, record] of importableInitiatives.entries()) {
+        const { causeSlug, parentSlug, programmeStatus, publicationReviewStatus, facts, dataCaveat, ...copy } = record;
+        void publicationReviewStatus;
         const existing = existingInitiativeBySlug.get(copy.slug);
         const data = {
           ...copy,
@@ -256,7 +259,7 @@ export async function applyMasterContent(prisma) {
       });
 
       await applyCanonicalFactualLocks(tx, factualLocks);
-      return master.initiatives.length;
+      return importableInitiatives.length;
     },
     { timeout: 180000, maxWait: 10000 },
   );
