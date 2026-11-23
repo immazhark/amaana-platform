@@ -108,7 +108,8 @@
       "primaryMetric": "₹82,000",
       "primaryMetricLabel": "assistance provided to date · ongoing",
       "programmeStatus": "ONGOING",
-      "year": 2026
+      "year": 2026,
+      "publicationReviewStatus": "PENDING"
     },
     {
       "slug": "medical-recovery-relief-2026",
@@ -119,7 +120,8 @@
       "primaryMetric": "₹1,26,000",
       "primaryMetricLabel": "collected and handed over · collection closed",
       "programmeStatus": "COMPLETED",
-      "year": 2026
+      "year": 2026,
+      "publicationReviewStatus": "PENDING"
     },
     {
       "slug": "hyderabad-flood-relief-2020",
