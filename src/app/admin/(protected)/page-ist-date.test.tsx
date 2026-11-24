@@ -115,7 +115,7 @@ describe("assistance queue triage order", () => {
     expect(html).toContain('href="/admin?view=tests&amp;sort=oldest&amp;status=SUBMITTED&amp;page=3"');
     expect(html).toContain('href="/admin?view=tests&amp;status=SUBMITTED"');
     expect(html).toContain('href="/admin?view=tests&amp;status=SUBMITTED&amp;sort=oldest"');
-    expect(html).toContain('href="/admin?view=tests&amp;sort=oldest&amp;status=UNDER_REVIEW"');
+    expect(html).toContain('href="/admin?view=tests&amp;sort=oldest&amp;status=UNDER_VERIFICATION"');
     expect(html).toContain('href="/admin?sort=oldest&amp;view=tests"');
     expect(html).toMatch(/<a[^>]*aria-current="page"[^>]*>Oldest first<\/a>/);
   });
