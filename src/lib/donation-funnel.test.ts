@@ -74,3 +74,20 @@ describe("donation funnel aggregate", () => {
     }
   });
 });
+
+describe("donation funnel privacy threshold", () => {
+  it.each([0, 1, 2, 4, -1, 4.5, Number.NaN, Number.POSITIVE_INFINITY, Number.MAX_SAFE_INTEGER + 1])(
+    "rejects invalid or below-minimum threshold %s before reporting any counts",
+    (threshold) => {
+      expect(() => summariseDonationFunnel([g("RAZORPAY", "CAPTURED", 2)], threshold)).toThrow(RangeError);
+      expect(() => summariseDonationFunnel([], threshold)).toThrow(RangeError);
+    },
+  );
+
+  it("preserves the minimum and allows a stricter safe-integer threshold", () => {
+    const groups = [g("RAZORPAY", "CAPTURED", 5)];
+    expect(summariseDonationFunnel(groups, MIN_REPORTABLE_CELL)[0]!.cells.confirmed).toEqual({ suppressed: false, count: 5 });
+    expect(summariseDonationFunnel(groups, 6)[0]!.cells.confirmed).toEqual({ suppressed: true });
+    expect(summariseDonationFunnel(groups, 6)[0]!.confirmedShare).toBeNull();
+  });
+});
