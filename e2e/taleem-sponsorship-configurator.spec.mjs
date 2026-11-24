@@ -77,6 +77,32 @@ test('the order carries programme, units, months and the quoted amount, and the 
   expect(body).not.toHaveProperty('appealId');
 });
 
+test('Taleem direct transfer guidance matches the fund and retains the selected quote without submitting payment', async ({ page }) => {
+  await prepare(page);
+  let requests = 0;
+  for (const endpoint of ['order', 'direct-transfer']) {
+    await page.route('**/api/donations/' + endpoint, route => {
+      requests++;
+      return route.abort('failed');
+    });
+  }
+  await page.goto(PAGE);
+  await choose(page, { programme: "Qur'an Nazira", months: '3 months', extraUnits: 1 });
+  await page.getByRole('button', { name: "Give ₹7,200 to Qur'an Nazira" }).click();
+  const panel = page.locator('#programme-payment');
+  const guidance = 'Your contribution is recorded as verified only after Amaana matches the transfer to funds received.';
+  for (const method of ['Direct UPI / QR', 'Bank transfer']) {
+    await panel.getByRole('button', { name: method, exact: true }).click();
+    await expect(panel.getByText(guidance, { exact: false })).toBeVisible();
+    await expect(panel.getByText('Your appeal total changes only after verification.', { exact: false })).toHaveCount(0);
+    await expect(panel.getByLabel('Amount (INR)')).toHaveValue('7200');
+    await expect(panel.getByLabel('Amount (INR)')).toHaveAttribute('readonly', '');
+    await expect(panel.locator('input[name="domesticConfirmed"]')).toBeVisible();
+    await expect(panel.locator('input[name="domesticConfirmed"]')).not.toBeChecked();
+  }
+  expect(requests).toBe(0);
+});
+
 test('changing the selection after payment opens closes the payment forms, so the amount cannot go stale', async ({ page }) => {
   await prepare(page);
   await page.goto(PAGE);
