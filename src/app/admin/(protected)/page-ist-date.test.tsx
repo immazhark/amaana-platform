@@ -134,3 +134,42 @@ describe("assistance queue triage order", () => {
     }));
   });
 });
+
+describe("assistance queue assignment filter", () => {
+  it.each([
+    { view: undefined, referenceNumber: { not: "AF-STAGING-ACCEPTANCE" } },
+    { view: "tests", referenceNumber: "AF-STAGING-ACCEPTANCE" },
+  ])("narrows existing visibility scope and status counts to unassigned cases", async ({ view, referenceNumber }) => {
+    mocks.count.mockResolvedValue(101);
+    mocks.findMany.mockResolvedValue([]);
+    const html = renderToStaticMarkup(await AdminQueuePage({ searchParams: Promise.resolve({
+      view, status: "SUBMITTED", assignment: "unassigned", sort: "oldest", page: "2",
+    }) }));
+    const where = { referenceNumber, assignedToId: null, status: "SUBMITTED" };
+    expect(mocks.count).toHaveBeenCalledWith({ where });
+    expect(mocks.groupBy).toHaveBeenCalledWith({
+      by: ["status"], where: { referenceNumber, assignedToId: null }, _count: { _all: true },
+    });
+    expect(mocks.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where, orderBy: [{ createdAt: "asc" }, { id: "asc" }], skip: 50, take: 50,
+    }));
+    expect(html).toContain("Unassigned only");
+    expect(html).toMatch(/<a[^>]*aria-current="page"[^>]*>Unassigned only<\/a>/);
+    expect(html).toContain("assignment=unassigned&amp;status=SUBMITTED&amp;page=3");
+    expect(html).toContain("assignment=unassigned&amp;status=UNDER_VERIFICATION");
+    expect(html).toContain("assignment=unassigned&amp;status=SUBMITTED");
+  });
+
+  it.each([
+    { assignment: undefined }, { assignment: "all" }, { assignment: "assigned" },
+    { assignment: ["unassigned"] }, { assignment: ["unassigned", "all"] },
+    { assignment: "synthetic-user-id" },
+  ])("preserves the default scope for absent or unsupported assignment filters", async ({ assignment }) => {
+    mocks.findMany.mockResolvedValue([]);
+    await AdminQueuePage({ searchParams: Promise.resolve({ assignment }) });
+    expect(mocks.count).toHaveBeenCalledWith({ where: { referenceNumber: { not: "AF-STAGING-ACCEPTANCE" } } });
+    expect(mocks.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { referenceNumber: { not: "AF-STAGING-ACCEPTANCE" } },
+    }));
+  });
+});

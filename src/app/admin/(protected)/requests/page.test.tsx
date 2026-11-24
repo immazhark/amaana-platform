@@ -42,3 +42,15 @@ describe("legacy queue ordering", () => {
     await expect(AdminRequestsAlias(props({ sort }))).rejects.toThrow("REDIRECT:/admin");
   });
 });
+
+describe("legacy queue assignment filter", () => {
+  it("retains the supported unassigned filter with the existing queue parameters", async () => {
+    await expect(AdminRequestsAlias(props({ status: "SUBMITTED", sort: "oldest", assignment: "unassigned" })))
+      .rejects.toThrow("REDIRECT:/admin?status=SUBMITTED&sort=oldest&assignment=unassigned");
+  });
+  it.each([{ assignment: ["unassigned"] }, { assignment: "synthetic-user-id" }, { assignment: "assigned" }])(
+    "does not forward unsupported assignment filters", async ({ assignment }) => {
+      await expect(AdminRequestsAlias(props({ assignment }))).rejects.toThrow("REDIRECT:/admin");
+    },
+  );
+});
