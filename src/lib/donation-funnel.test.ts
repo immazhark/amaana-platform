@@ -23,7 +23,22 @@ describe("donation funnel aggregate", () => {
     expect(row.cells.unsuccessful).toEqual({ suppressed: true });
     expect(row.cells.awaiting).toEqual({ suppressed: true });
     const visible = Object.values(row.cells).filter(cell => !cell.suppressed).length;
-    expect(visible).toBe(2); // started and confirmed: two unknowns remain in the equation, so neither hidden cell is recoverable
+    expect(visible).toBe(1); // only the safe confirmed count; the derived started total must not expose hidden components
+    expect(row.cells.started).toEqual({ suppressed: true });
+    expect(row.confirmedShare).toBeNull();
+  });
+
+  it("never reveals the combined total when hidden stages can each be inferred as a single gift", () => {
+    const rows = summariseDonationFunnel([
+      g("RAZORPAY", "CAPTURED", 20),
+      g("RAZORPAY", "FAILED", 1),
+      g("RAZORPAY", "CREATED", 1),
+    ]);
+    expect(rows).toHaveLength(1);
+    const row = rows[0]!;
+    expect(row.cells.awaiting).toEqual({ suppressed: true });
+    expect(row.cells.unsuccessful).toEqual({ suppressed: true });
+    expect(row.cells.started).toEqual({ suppressed: true });
     expect(row.confirmedShare).toBeNull();
   });
 

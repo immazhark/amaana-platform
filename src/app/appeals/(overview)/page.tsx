@@ -16,6 +16,7 @@ import styles from "../appeals-audit.module.css";
 import { canExposeSyntheticStagingContent, isSyntheticStagingAppeal } from "@/lib/public-environment";
 import { selectGalleryPublicImage } from "@/lib/public-media";
 import { selectAppealDiscovery, type AppealSearch } from "@/lib/appeal-discovery";
+import { selectCompletedMedicalAidShowcase } from "@/lib/completed-medical-aid-showcase";
 
 export const metadata: Metadata = {
   title: "Verified Appeals",
@@ -45,9 +46,7 @@ export default async function AppealsPage({ searchParams }: { searchParams: Prom
     return `/appeals?${query.toString()}#current-appeals`;
   };
   const completedAidMedia = new Map(completedAid.map(item => [item.slug, selectGalleryPublicImage(item.mediaAssets)]));
-  const publishedCompletedProgrammes = programmes.filter(
-    programme => programme.causeSlug === "medical-financial-relief" && completedAidMedia.has(programme.slug),
-  );
+  const publishedCompletedProgrammes = selectCompletedMedicalAidShowcase(programmes, new Set(completedAidMedia.keys()));
 
   return (
     <div className="v2-home v2-appeals-page">
@@ -64,15 +63,6 @@ export default async function AppealsPage({ searchParams }: { searchParams: Prom
       />
 
       <section className={`v2-appeals-trustline ${styles.lifecycle}`} aria-label="Appeal review journey"><div className={`v2-shell ${styles.lifecycleTrack}`}><span>Need received</span><b aria-hidden="true">→</b><span>Information reviewed</span><b aria-hidden="true">→</b><span>Decision made</span><b aria-hidden="true">→</b><span>Public-safe appeal</span><b aria-hidden="true">→</b><span>Known outcome recorded</span></div></section>
-
-      <section className="v2-section paper" aria-labelledby="khaja-family-information">
-        <div className="v2-shell">
-          <p className="v2-section-label">Family medical assistance request · Informational update</p>
-          <h2 className="v2-section-title" id="khaja-family-information">Help Mr. Khaja Continue His Treatment and Recovery</h2>
-          <p>The family has requested support during recovery from major surgery. This public information is separate from the reviewed fundraising records below; case-specific donation checkout is not yet active.</p>
-          <Link className="v2-button" href="/medical-support/mr-khaja">Read the family&apos;s request</Link>
-        </div>
-      </section>
 
       <div className="v2-shell"><VerifiedImpactStrip headingId="appeals-published-outcomes" items={publishedOutcomes.flatMap(item =>
         item.primaryMetric && item.primaryMetricLabel ? [{ slug: item.slug, title: item.title, value: item.primaryMetric, label: item.primaryMetricLabel }] : [],

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { fundDonationFormCopy } from "@/components/fund-giving/fund-copy";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { CanonicalArticle } from "@/components/canonical-article";
@@ -62,7 +61,7 @@ async function GiveContent({ fundParam }: { fundParam: Promise<{ fund?: string |
         { title: "Domestic donations only", paragraphs: [complianceCopy.domestic, complianceCopy.tax] },
       ]}
     >
-      <FundGivingCheckout funds={funds} copies={Object.fromEntries(funds.map(fund => [fund.slug, fundDonationFormCopy(fund)]))} campaigns={campaigns} initialSlug={initialSlug} paymentDetails={getDonationPaymentDetails()} feeBps={feeEstimateBasisPoints()} />
+      <FundGivingCheckout funds={funds} campaigns={campaigns} initialSlug={initialSlug} paymentDetails={getDonationPaymentDetails()} feeBps={feeEstimateBasisPoints()} />
     </CanonicalArticle>
   );
 }

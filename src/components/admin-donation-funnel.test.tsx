@@ -23,13 +23,26 @@ describe("AdminDonationFunnel", () => {
 
   it("never lets a hidden cell be recovered from the rest of its row, and never calls a large count small", () => {
     const html = render([group("RAZORPAY", "CAPTURED", 3), group("RAZORPAY", "PENDING_VERIFICATION", 30), group("RAZORPAY", "FAILED", 7)]);
-    // Confirmed (3) is small, so unsuccessful (7) is withheld with it: neither can be worked out from the visible 40 and 30.
+    // Confirmed (3) is small; unsuccessful (7) and the derived total (40) are withheld too.
     expect(html).not.toMatch(/>3</);
     expect(html).not.toMatch(/>7</);
-    expect(html).toContain(">40<");
+    expect(html).not.toContain(">40<");
     expect(html).toContain(">30<");
-    expect(html.match(/to protect small counts/g)).toHaveLength(2);
+    expect(html.match(/to protect small counts/g)).toHaveLength(3);
     expect(html).not.toContain("&lt;5");
+  });
+
+  it("hides a reconstructable two-small-cell total in the actual admin table", () => {
+    const html = render([
+      group("RAZORPAY", "CAPTURED", 20),
+      group("RAZORPAY", "FAILED", 1),
+      group("RAZORPAY", "CREATED", 1),
+    ]);
+    expect(html).not.toContain(">22<");
+    expect(html).not.toContain(">1<");
+    expect(html).toContain(">20<");
+    expect(html.match(/to protect small counts/g)).toHaveLength(3);
+    expect(html).not.toContain("All methods");
   });
 
   it("labels every column and carries a table caption for screen readers", () => {

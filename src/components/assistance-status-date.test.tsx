@@ -30,6 +30,19 @@ vi.mock("react", async importOriginal => ({
 
 import { AssistanceStatusClient } from "./assistance-status-client";
 
+it("gives a safe next step when additional evidence is needed, without suggesting public document upload", () => {
+  tracking.snapshot.record.status = "DOCUMENTS_REQUESTED";
+  try {
+    const html = renderToStaticMarkup(<AssistanceStatusClient />);
+    expect(html).toContain("Documents requested");
+    expect(html).toContain("contact Amaana with your private reference");
+    expect(html).toContain("do not send sensitive documents through an unverified channel");
+    expect(html).not.toContain("Upload your documents here");
+  } finally {
+    tracking.snapshot.record.status = "UNDER_VERIFICATION";
+  }
+});
+
 it("shows private tracking dates in India even when the visitor's timezone is UTC", () => {
   // Emulate a UTC device only where no explicit timezone is supplied.
   const dateSpy = vi.spyOn(Date.prototype, "toLocaleDateString").mockImplementation(function (this: Date, locales, options) {
@@ -40,18 +53,5 @@ it("shows private tracking dates in India even when the visitor's timezone is UT
     expect(markup).toContain("Submitted 27 October 2026 · Last updated 27 October 2026");
   } finally {
     dateSpy.mockRestore();
-  }
-});
-
-it("explains a documents-requested status without claiming the follow-up note or a public upload is available", () => {
-  tracking.snapshot.record.status = "DOCUMENTS_REQUESTED";
-  try {
-    const markup = renderToStaticMarkup(<AssistanceStatusClient />);
-    expect(markup).toContain("Documents requested");
-    expect(markup).toContain("contact Amaana with your private reference");
-    expect(markup).toContain("do not send sensitive documents through an unverified channel");
-    expect(markup).not.toContain("Upload your documents here");
-  } finally {
-    tracking.snapshot.record.status = "UNDER_VERIFICATION";
   }
 });

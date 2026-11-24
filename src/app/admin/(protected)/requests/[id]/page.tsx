@@ -75,7 +75,7 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
   const currentAssigneeUnavailable = Boolean(request.assignedToId && !staff.some(member => member.id === request.assignedToId));
   const converted = request.status === "CONVERTED_TO_APPEAL" || Boolean(request.appealId);
   // Approving and rejecting are their own actions, so APPROVED and REJECTED are offered here only to show the state a request is already in.
-  const manualStatuses = MANUAL_ASSISTANCE_STATUSES.filter(status => (status !== "REJECTED" || request.status === "REJECTED") && (status !== "APPROVED" || request.status === "APPROVED"));
+  const manualStatuses = MANUAL_ASSISTANCE_STATUSES.filter(status => (status !== "REJECTED" || request.status === "REJECTED") && (status !== "APPROVED" || request.status === "APPROVED") && (status !== "DOCUMENTS_REQUESTED" || request.status === "DOCUMENTS_REQUESTED"));
   const visibleStatuses = converted
     ? ["CONVERTED_TO_APPEAL"]
     : hasPermission(user, "assistance.approve")
@@ -156,7 +156,7 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
 
         <section className="card">
           <h2 id="review-heading">Review and decision</h2>
-          <p className="muted">Record verification, funding checks, disclosure permissions and Zakat review here. This information is internal and is not copied automatically into public appeal text. <strong>Save review progress</strong> keeps your work without deciding anything. <strong>Approve assistance</strong> completes the verification and approves the request in one step.</p>
+          <p className="muted">Record verification, funding checks, disclosure permissions and Zakat review here. This information is internal and is not copied automatically into public appeal text. <strong>Save review progress</strong> keeps your work without deciding anything. <strong>Approve assistance</strong> completes the verification and approves the request in one step. Approval does not publish an appeal or transfer funds.</p>
           {approvalNotice?.kind === "done" && request.status === "APPROVED" && <div id="approve-heading" role="status" tabIndex={-1}>
             <h3>{approvalNotice.outcome === "approved" ? "Request approved" : "This request was already approved"}</h3>
             <p>{request.referenceNumber} is now <strong>Approved</strong>{approvalNotice.route ? ` as ${APPROVAL_ROUTES.find(route => route.value === approvalNotice.route)?.label.toLowerCase()}` : ""}. {approvalNotice.route === "APPROVED_PUBLIC" ? "Nothing has been published: prepare the public appeal below, then it goes through its own review and a separate publication decision." : "No public appeal is created."} Approved does not mean funds have been paid.</p>
@@ -272,7 +272,7 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
           <form action={assignRequest} className="field">
             <input type="hidden" name="id" value={id}/>
             <input type="hidden" name="expectedUpdatedAt" value={request.updatedAt.toISOString()}/>
-            <label htmlFor="assignedToId">Assigned staff member</label>
+            <label htmlFor="assignedToId">Assigned staff member (Optional)</label>
             <select id="assignedToId" name="assignedToId" defaultValue={request.assignedToId ?? ""} aria-describedby={currentAssigneeUnavailable ? "assignment-availability" : undefined}><option value="">Unassigned</option>{currentAssigneeUnavailable && <option value={request.assignedToId!}>{`${request.assignedTo?.name ?? "Current staff member"} (currently unavailable)`}</option>}{staff.map(member => <option key={member.id} value={member.id}>{member.name}</option>)}</select>
             {currentAssigneeUnavailable && <small id="assignment-availability" className="muted">The current assignee is unavailable for assignment. Choose an available staff member or Unassigned before saving a change.</small>}
             <button className="button secondary" disabled={!hasPermission(user, "assistance.assign")}>Save assignment</button>
@@ -281,17 +281,17 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
 
         {!converted && ["SUBMITTED", "DOCUMENTS_REQUESTED", "UNDER_VERIFICATION"].includes(request.status) && <section className="card" aria-labelledby="request-more-heading">
           <h2 id="request-more-heading">Request additional information</h2>
-          <p className="muted">{request.status === "DOCUMENTS_REQUESTED" ? "Awaiting information from applicant. Update the missing items or resume verification when the information has been reviewed." : "Pause the decision until the applicant can clarify the need or supply appropriate private evidence."}</p>
+          <p className="muted">{request.status === "DOCUMENTS_REQUESTED" ? "Awaiting information from applicant. Record any remaining questions, then resume verification when private evidence has been reviewed." : "Use this when specific details or evidence are missing and the application is not ready for a decision."}</p>
           <AdminActionFeedbackForm action={updateRequestWithFeedback}>
             <input type="hidden" name="id" value={id}/>
             <input type="hidden" name="expectedUpdatedAt" value={request.updatedAt.toISOString()}/>
             <input type="hidden" name="status" value="DOCUMENTS_REQUESTED"/>
-            <label htmlFor="followUpNotes">Specific missing items or questions <span className="muted">(Required)</span></label>
+            <label htmlFor="followUpNotes">Specific missing items or questions (Required)</label>
             <textarea id="followUpNotes" name="internalNotes" minLength={10} maxLength={10000} required defaultValue={request.internalNotes ?? ""} aria-describedby="follow-up-instructions"/>
-            <small id="follow-up-instructions" className="muted">List the specific missing items in a private note. Preserve any existing notes. Saving changes the request status only. A standard status email may be queued if an address was supplied, but the questions in this note are not sent.</small>
+            <small id="follow-up-instructions" className="muted">List the specific missing items in this private case note. Saving changes the status and may queue a standard status notification, but it does not send these questions to the applicant.</small>
             <button className="button secondary" disabled={!hasPermission(user, "assistance.update")}>{request.status === "DOCUMENTS_REQUESTED" ? "Save follow-up details" : "Mark awaiting information"}</button>
           </AdminActionFeedbackForm>
-          <p className="muted">After saving, contact the applicant through a verified private channel and quote the request reference. No applicant upload or reply portal is available in this workflow. Do not request sensitive documents through ordinary email or social media messages.</p>
+          <p className="muted">After saving, contact the applicant through a verified private channel using the request reference. No applicant upload or reply portal is available. Do not collect sensitive evidence through social media or unverified contact methods.</p>
         </section>}
 
         <section className="card">
@@ -303,6 +303,7 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
             <select id="status" name="status" defaultValue={request.status} disabled={converted}>{visibleStatuses.map(status => <option key={status} value={status}>{status.replaceAll("_", " ")}</option>)}</select>
             {converted && <input type="hidden" name="status" value="CONVERTED_TO_APPEAL"/>}
             <label htmlFor="internalNotes">Internal notes</label>
+            <small className="muted">Optional for ordinary review; retain specific missing items while awaiting information.</small>
             <textarea id="internalNotes" name="internalNotes" defaultValue={request.internalNotes ?? ""} maxLength={10000}/>
             {converted && <small className="muted">The converted status is managed by the linked appeal workflow; internal notes can still be updated here.</small>}
             <button className="button" disabled={!hasPermission(user, "assistance.update")}>Save review</button>

@@ -44,8 +44,8 @@ async function statusOptions(status: string) {
   return { html, select: select[0], options };
 }
 
-describe("requesting missing information from an applicant", () => {
-  it("gives staff a separate guidance path without pretending the applicant can upload new documents", async () => {
+describe("reviewer guidance when information is missing", () => {
+  it("presents a separate, clear action to request additional information and explains private follow-up", async () => {
     const { html } = await statusOptions("SUBMITTED");
     expect(html).toContain("Request additional information");
     expect(html).toContain("List the specific missing items");
@@ -53,12 +53,28 @@ describe("requesting missing information from an applicant", () => {
     expect(html).toContain("No applicant upload or reply portal is available");
     expect(html).toContain('name="status" value="DOCUMENTS_REQUESTED"');
     expect(html).toContain("Mark awaiting information");
+    expect(html).toContain("Review workflow guide");
   });
 
-  it("shows the outstanding-information guide when already awaiting documents", async () => {
+  it("explains how to resume verification when an application awaits documents", async () => {
     const { html } = await statusOptions("DOCUMENTS_REQUESTED");
     expect(html).toContain("Awaiting information from applicant");
     expect(html).toContain("resume verification");
+  });
+});
+
+describe("one path for requesting additional information", () => {
+  it.each(["SUBMITTED", "UNDER_VERIFICATION"])("does not offer DOCUMENTS_REQUESTED in the generic %s status editor", async status => {
+    const { html, options } = await statusOptions(status);
+    expect(options.some(option => option.value === "DOCUMENTS_REQUESTED")).toBe(false);
+    expect(html).toContain('name="status" value="DOCUMENTS_REQUESTED"');
+    expect(html).toContain("Request additional information");
+  });
+
+  it("preserves the existing DOCUMENTS_REQUESTED state for note-only saves and allows verification to resume", async () => {
+    const { options } = await statusOptions("DOCUMENTS_REQUESTED");
+    expect(options.filter(option => option.selected).map(option => option.value)).toEqual(["DOCUMENTS_REQUESTED"]);
+    expect(options.some(option => option.value === "UNDER_VERIFICATION")).toBe(true);
   });
 });
 
@@ -75,21 +91,13 @@ describe("request review current-status preservation", () => {
     expect(options.some(option => ["APPROVED", "REJECTED"].includes(option.value ?? ""))).toBe(false);
   });
 
-  it("offers no APPROVED or REJECTED choice in the status dropdown for an approver: approving and rejecting are their own forms", async () => {
+  it("keeps approval and rejection out of the generic editor even for approvers", async () => {
     mocks.permission.mockReturnValue(true);
-    const { options } = await statusOptions("UNDER_VERIFICATION");
-    expect(options.map(option => option.value)).not.toContain("APPROVED");
-    expect(options.map(option => option.value)).not.toContain("REJECTED");
-    const approved = await statusOptions("APPROVED");
-    expect(approved.options.filter(option => option.selected).map(option => option.value)).toEqual(["APPROVED"]);
-    expect(approved.options.map(option => option.value)).not.toContain("REJECTED");
-  });
-
-  it("still shows REJECTED as the current state of a request that is already rejected, so it can be moved back into review", async () => {
-    mocks.permission.mockReturnValue(true);
-    const { options } = await statusOptions("REJECTED");
-    expect(options.filter(option => option.selected).map(option => option.value)).toEqual(["REJECTED"]);
-    expect(options.map(option => option.value)).toContain("UNDER_VERIFICATION");
+    for (const status of ["SUBMITTED", "UNDER_VERIFICATION", "APPROVED", "REJECTED"]) {
+      const { options } = await statusOptions(status);
+      expect(options.filter(option => option.selected).map(option => option.value)).toEqual([status]);
+      expect(options.filter(option => ["APPROVED", "REJECTED"].includes(option.value ?? "")).map(option => option.value)).toEqual(["APPROVED", "REJECTED"].includes(status) ? [status] : []);
+    }
   });
 
   it("keeps converted status locked with its hidden form value", async () => {
@@ -169,5 +177,21 @@ describe("request to appeal staff navigation", () => {
     expect(html).toContain("Linked appeal");
     expect(html).not.toContain('href="/admin/appeals/synthetic-linked-appeal"');
     expect(html).not.toContain("Open appeal editor");
+  });
+});
+
+
+describe("verification field requirements", () => {
+  it("distinguishes completion requirements, public fundraising requirements and optional notes without requiring a complete draft", async () => {
+    const { html } = await statusOptions("SUBMITTED");
+    expect(html).toContain("Required to approve");
+    expect(html).toContain("Required for public fundraising only");
+    expect(html).toMatch(/Other funding \/ duplication notes[\s\S]{0,60}Optional/);
+    expect(html).toContain("Save review progress");
+    expect(html).not.toContain('name="markComplete"');
+    expect(html).toContain("Approval does not publish an appeal or transfer funds");
+    const form = html.match(/<input[^>]*name="verifiedNeedAmount"[^>]*>/)?.[0];
+    expect(form).toBeDefined();
+    expect(form).not.toMatch(/\brequired(?:=|\s|>)/);
   });
 });

@@ -12,11 +12,22 @@ afterEach(() => vi.unstubAllEnvs());
 
 it("does not guess a financial case or query records without an explicit binding", async () => {
   const html = renderToStaticMarkup(await Page());
-  expect(html).toContain("not yet active");
-  expect(html).toContain("approved fundraising target");
+  expect(html).toContain("Collection for this appeal is closed");
+  expect(html).not.toContain("₹5,00,000");
+  expect(html).not.toContain("The family reports");
   expect(html).not.toContain("not an approved, remaining fundraising target");
   expect(mocks.publicAppeal).not.toHaveBeenCalled();
   expect(mocks.donation).not.toHaveBeenCalled();
+});
+
+it("shows collection closed without inviting a new case-specific donation", async () => {
+  const html = renderToStaticMarkup(await Page());
+  expect(html).toContain("Collection for this appeal is closed");
+  expect(html).not.toContain("Enquire about support in India");
+  expect(html).not.toContain("Contact Amaana about this request");
+  expect(html).not.toContain("Dedicated checkout for this request is not yet active");
+  expect(html).not.toContain("Family medical assistance request");
+  expect(html).not.toContain("Supporting treatment and recovery");
 });
 
 it("uses only the explicitly bound publicly reviewed appeal and its reviewed cover", async () => {

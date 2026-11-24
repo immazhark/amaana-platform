@@ -12,11 +12,12 @@ import type { CampaignSelection } from "@/lib/fund-campaign";
 import type { SponsorshipSelection } from "@/lib/taleem-sponsorship";
 import type { DonationFormCopy } from "@/components/donation-form-copy";
 import { CopyIcon } from "./donation-interface-icons";
+import styles from "./direct-transfer-form.module.css";
+import choiceStyles from "./donation-form.module.css";
 
 type Method = "DIRECT_UPI" | "BANK_TRANSFER";
 
 export function DirectTransferForm({ appealId, fundSlug, extraFields, campaign, sponsorship, maxAmount, method, paymentDetails, onLockChange, copy }: { appealId?: string; fundSlug?: string; extraFields?: ReactNode; campaign?: CampaignSelection; sponsorship?: SponsorshipSelection; maxAmount: number; method: Method; paymentDetails: DonationPaymentDetails; onLockChange: (locked: boolean) => void; copy: DonationFormCopy["direct"] }) {
-  const styles = copy.classes;
   const router = useRouter();
   const fixedAmount = campaign ? campaign.units * campaign.unitPrice : sponsorship?.totalRupees;
   const [error, setError] = useState("");
@@ -143,8 +144,8 @@ export function DirectTransferForm({ appealId, fundSlug, extraFields, campaign, 
       <div className="field"><label htmlFor={`direct-date-${method}`}>Transfer date and time</label><input id={`direct-date-${method}`} name="transferredAt" type="datetime-local" required disabled={locked}/></div>
       <div className="field full"><label htmlFor={`direct-evidence-${method}`}>Screenshot / receipt <span className="muted">optional, max 5 MB</span></label><input id={`direct-evidence-${method}`} name="evidence" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" disabled={locked}/><small>Supporting evidence only. It does not prove receipt until an Amaana administrator verifies the transfer.</small></div>
       <fieldset className="field full" disabled={locked}><legend>Giving intention</legend>{copy.intentOptions}</fieldset>
-      <div className={`field full v2-form-choice ${copy.choiceClass}`}><label className="checkbox"><input name="isAnonymous" type="checkbox" disabled={locked}/>{copy.privacy}</label></div>
-      <div className={`field full v2-form-choice ${copy.choiceClass}`}><label className="checkbox"><input name="domesticConfirmed" type="checkbox" required disabled={locked}/>{copy.domestic}</label></div>
+      <div className={`field full v2-form-choice ${choiceStyles.choice}`}><label className="checkbox"><input name="isAnonymous" type="checkbox" disabled={locked}/>{copy.privacy}</label></div>
+      <div className={`field full v2-form-choice ${choiceStyles.choice}`}><label className="checkbox"><input name="domesticConfirmed" type="checkbox" required disabled={locked}/>{copy.domestic}</label></div>
       {extraFields}
       <div className="field full"><button className="v2-button" type="submit" disabled={locked}>{uncertain ? "Verification follow-up required" : busy ? "Submitting for verification…" : "Submit transfer for verification"}</button>{copy.next}</div>
     </form>
