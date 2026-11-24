@@ -1,19 +1,19 @@
 # Amaana Foundation — current verified state
 
-**24 November 2026 IST — owner-approved release continuation; preparation checkpoint, not a live feed.** Sole writer `CHATGPT_ACTIVE`. The owner approved finishing existing #1143 and then #1141. Read current GitHub PR/head/check/merge and Railway evidence before acting; source, tests, merge, deployment and live acceptance remain separate.
+**24 November 2026 IST — dated release checkpoint, not a live feed.** Sole writer `CHATGPT_ACTIVE`. Reverify source, PRs, CI, Railway and public runtime before acting.
 
-| Boundary | Latest independently observed evidence at this checkpoint |
+| Boundary | Verified evidence |
 |---|---|
-| Main before this release batch | `d85acb54791c6b5c78accc7ec332b3775f4b971d` (#1142); main selected CI/verify passed |
-| First release | #1143 completed-medical-showcase status filter, candidate `ccc51c64917756670ace320d60165e3a3ace1a40`; full CI45311977595 browser outstanding at preparation; no merge claimed here |
-| Current task | #1141 on `fix/assistance-single-missing-information-route-20261124`: preserved source head6208667b non-force reconciled with exact #1143 candidate so CI can overlap; four assistance blobs unchanged; merge only after #1143 and current-tree parity/full+ready checks |
-| Release outcomes | Use the existing PRs' exact-head checks, separate ready_for_review run and merge SHA as canonical final evidence; this source preparation note does not pre-claim a later merge/deploy |
-| Last provider release | Railway website0977bf61-b9c6-45ee-87f8-40ae2a77097c SUCCESS/online for d85acb54; public version/readiness independently blocked403 in this audit environment |
-| Backlog |149 unique IDs:59 Completed /7 Implemented /64 Partial /17 Not started /1 Superseded /1 Not applicable; no whole-item promotion from these corrections |
-| Held lanes | #1134 additive rejection-history migration, #1132 overlap, #845 payment eligibility. No migration, live payment, media publication, provider setting, cron or outbound communication authorized by this release batch |
-| Next | Complete #1143 full+ready protected merge; verify source/provider/public boundary; verify #1141 diff/current-main tree parity, finish exact-head full+ready and guarded merge. Do not force rollout to align SHAs |
+| Protected main at preparation | `a757f7b61310c7ea5c88a35502d8181f0e996990`, #1149 mobile diagnostics merged after full CI 45387807172 and separate ready-state 45401347738. 1707 Chromium, 24 cross-browser and 122 PostgreSQL passed on the accepted candidate. No actual mobile profiling measurement claimed. |
+| Runtime | Railway website deployment 1d853ee2-45b2-4ae4-9a29-dd78c5ba1a56 SUCCESS for `722cb563e4262e1573afdca2a50de26f3c2b95de` (#1147). Tooling-only #1149 deployment 0264909e-5e13-44ac-bba6-641a11906d46 SKIPPED as expected. Independent public version/readiness unverified in audit environment. |
+| Assistance workflow | #1134 merged and deployed; provider logs confirmed additive private rejection-history migration 20261122040000_assistance_rejection applied successfully. No backfill/deletion. Application rollback retains table. |
+| Financial reporting | #1147 merged after CI 45377960242 and ready 45383349593; 122 database, 1706 Chromium plus one retry on Contact blocking-time budget, 24 cross-browser. Fee-first reporting and Taleem receipt/reissue coverage released, no payment execution change. |
+| Active release #1148 | Current candidate 570e3c12c95d8be56161162c1fe8df36f4beecc9, CI 45401780107 fast/database/production passed, browser outstanding at observation. Eight substantive source/test blobs preserved through reconciliation. |
+| Active #1150 | Assistance queue oldest-first/unassigned filters, exact head 62f6d69f60ec7f9fb2b9f78c90f01c4bf73d8e13, CI 45402530767 fast outstanding. AF-LOCAL remains Partial. No assignment mutation or new access. |
+| Canonical 149 | Current main: 59 Completed / 7 Implemented / 64 Partial / 17 Not started / 1 Superseded / 1 Not applicable. Candidate AF-N13 withdrawal disposition only proposes 59/7/64/16/1/2; 87 actionable, no new Completed. The queue consistency guard detects stale derived rows. |
+| Next | Finish #1148 and #1150 exact-head and ready-state gates, merge serially with current-main parity and independently verify provider/runtime. Release prepared backlog guard only after its own acceptance. Obtain actual isolated mobile metrics; no field performance claims. |
 
-Domestic INR only/no FCRA; 12A provisional and unresolved80G governing-evidence conflict retained; ordinary acknowledgements are not statutory certificates. Every identifiable public donor/beneficiary face needs reviewed redaction and EXIF/GPS removal; preserve originals privately. Official logo and cream/blue/gold identity unchanged. Provider/source merges do not authorize live financial, schema, auth, checkout CSP, media, telemetry or infrastructure activation.
+Domestic INR only; no FCRA. 12A/12AB provisional, 80G evidence conflict unresolved. Ordinary acknowledgements are not statutory certificates. Preserve redaction/EXIF removal, originals and official brand. No unapproved live payment, production data, schema, notification, provider or infrastructure action.
 
 ## Historical detailed checkpoint — 22 November 2026
 

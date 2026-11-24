@@ -4,11 +4,14 @@ import {
   MOBILE_PROFILE,
   MOBILE_ROUTES,
   assertLocalProfileTarget,
+  assertSyntheticProfileRuntime,
   calculateClsSessionWindows,
   isAllowedProfileRequest,
   profileTraceName,
   reportBuildIdentity,
   summarizeMobileSamples,
+  summarizeResourceTimings,
+  summarizeResourceTimingSamples,
 } from "./mobile-profile-core.mjs";
 
 const sample = (run, lcpMs, cls, blockingMs, route = "/impact") => ({
@@ -193,4 +196,82 @@ test("synthetic profile prevents local image optimizer from fetching remote or p
   }
   assert.equal(isAllowedProfileRequest(image("/hero/approved.webp")), true);
   assert.equal(isAllowedProfileRequest(image("/media/drive/photo.jpg")), true);
+});
+
+test("synthetic runtime identity requires an explicitly supported non-live payment mode", () => {
+  for (const environment of ["staging", "development", "test"]) {
+    for (const paymentMode of ["test", "unconfigured"]) {
+      assert.doesNotThrow(() => assertSyntheticProfileRuntime({ status: "ok", environment, paymentMode }));
+    }
+  }
+  for (const paymentMode of [undefined, null, "", "unknown", "LIVE", "live", false, {}, ["test"]]) {
+    assert.throws(() => assertSyntheticProfileRuntime({ status: "ok", environment: "test", paymentMode }), /non-production synthetic profile target/);
+  }
+  for (const runtime of [null, [], {}, { status: "ok", environment: "production", paymentMode: "test" }, { status: "error", environment: "test", paymentMode: "test" }]) {
+    assert.throws(() => assertSyntheticProfileRuntime(runtime), /non-production synthetic profile target/);
+  }
+});
+
+
+test("resource timing totals retain byte counts, never URLs or initiator details", () => {
+  const entries = [
+    { initiatorType: "img", transferSize: 1500, encodedBodySize: 1200 },
+    { initiatorType: "script", transferSize: 400, encodedBodySize: 300 },
+    { initiatorType: "img", transferSize: 0, encodedBodySize: 200 },
+    { initiatorType: "css", transferSize: 250, encodedBodySize: 200 },
+  ];
+  assert.deepEqual(summarizeResourceTimings(entries), {
+    entryCount: 4, transferBytes: 2150, encodedBodyBytes: 1900,
+    zeroTransferEntries: 1, imageInitiatorCount: 2,
+    imageInitiatorTransferBytes: 1500, imageInitiatorEncodedBodyBytes: 1400,
+  });
+  assert.deepEqual(summarizeResourceTimings([]), {
+    entryCount: 0, transferBytes: 0, encodedBodyBytes: 0,
+    zeroTransferEntries: 0, imageInitiatorCount: 0,
+    imageInitiatorTransferBytes: 0, imageInitiatorEncodedBodyBytes: 0,
+  });
+  assert.equal(summarizeResourceTimings(null), null);
+});
+
+test("resource timing rejects incomplete, oversized, identifying or noninteger samples", () => {
+  const valid = { initiatorType: "img", transferSize: 1, encodedBodySize: 1 };
+  for (const entries of [
+    undefined, {}, [null], [{ ...valid, name: "http://127.0.0.1:3000/private" }],
+    [{ ...valid, transferSize: -1 }], [{ ...valid, encodedBodySize: 0.5 }],
+    [{ ...valid, transferSize: Infinity }], [{ ...valid, initiatorType: 1 }],
+    [{ ...valid, encodedBodySize: Number.MAX_SAFE_INTEGER }, valid],
+    Array.from({ length: 4096 }, () => valid),
+  ]) assert.throws(() => summarizeResourceTimings(entries), /Invalid resource timing/);
+});
+
+test("resource summaries compare five runs and preserve unavailable measurements", () => {
+  const samples = [5, 1, 3, 2, 4].map(run => ({ run, totals: summarizeResourceTimings([
+    { initiatorType: "img", transferSize: run * 100, encodedBodySize: run * 50 },
+    { initiatorType: "script", transferSize: 100, encodedBodySize: 75 },
+  ]) }));
+  const report = summarizeResourceTimingSamples(samples);
+  assert.equal(report.sampleCount, 5);
+  assert.equal(report.measuredSampleCount, 5);
+  assert.deepEqual(report.median, { entryCount: 2, transferBytes: 400, encodedBodyBytes: 225, zeroTransferEntries: 0, imageInitiatorCount: 1, imageInitiatorTransferBytes: 300, imageInitiatorEncodedBodyBytes: 150 });
+  assert.deepEqual(report.samples.map(s => s.run), [1, 2, 3, 4, 5]);
+  const incomplete = summarizeResourceTimingSamples(samples.map(s => s.run === 3 ? { ...s, totals: null } : s));
+  assert.equal(incomplete.measuredSampleCount, 4);
+  assert.equal(incomplete.median, null);
+  assert.equal(incomplete.samples[2].totals, null);
+  assert.equal(summarizeResourceTimingSamples(samples.map(s => ({ ...s, totals: null }))).median, null);
+});
+
+test("resource summaries reject duplicate runs, impossible aggregate counts and identifiers", () => {
+  const totals = summarizeResourceTimings([{ initiatorType: "img", transferSize: 100, encodedBodySize: 50 }]);
+  const good = [1, 2, 3, 4, 5].map(run => ({ run, totals }));
+  for (const samples of [
+    good.slice(1),
+    good.map((s, i) => i === 0 ? { ...s, run: 2 } : s),
+    good.map((s, i) => i === 0 ? { ...s, url: "/private" } : s),
+    good.map((s, i) => i === 0 ? { ...s, totals: { ...totals, imageInitiatorCount: 2 } } : s),
+    good.map((s, i) => i === 0 ? { ...s, totals: { ...totals, imageInitiatorTransferBytes: 101 } } : s),
+    good.map((s, i) => i === 0 ? { ...s, totals: { ...totals, zeroTransferEntries: 2 } } : s),
+    good.map((s, i) => i === 0 ? { ...s, totals: { ...totals, encodedBodyBytes: -1 } } : s),
+    good.map((s, i) => i === 0 ? { ...s, totals: { ...totals, name: "private" } } : s),
+  ]) assert.throws(() => summarizeResourceTimingSamples(samples), /Invalid resource timing summary/);
 });
