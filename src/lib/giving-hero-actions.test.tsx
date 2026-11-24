@@ -1,3 +1,4 @@
+import { fundDonationFormCopy } from "@/components/fund-giving/fund-copy";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
@@ -22,7 +23,7 @@ describe("fund-giving hero actions", () => {
 
   it("the give page's first action lands on a real element in the checkout", () => {
     expect(GIVE_HERO_ACTIONS[0]?.href).toBe(FUND_CHOICE_ANCHOR);
-    const html = renderToStaticMarkup(<FundGivingCheckout funds={funds} paymentDetails={paymentDetails} feeBps={236} />);
+    const html = renderToStaticMarkup(<FundGivingCheckout funds={funds} copies={Object.fromEntries(funds.map(fund => [fund.slug, fundDonationFormCopy(fund)]))} paymentDetails={paymentDetails} feeBps={236} />);
     expect(html).toContain(`id="${FUND_CHOICE_ANCHOR.slice(1)}"`);
   });
 

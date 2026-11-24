@@ -22,6 +22,21 @@ describe("public staging content boundary", () => {
     expect(isSyntheticStagingAppeal(real)).toBe(false);
   });
 
+  it("never exposes mixed-case synthetic staging markers in production", () => {
+    process.env.APP_ENVIRONMENT = "production";
+    const synthetic = [
+      { slug: "StAgInG-checkout-fixture", title: "Synthetic checkout fixture" },
+      { slug: "public-appeal", title: "StAgInG TeSt — Private acceptance fixture" },
+    ];
+    for (const record of synthetic) {
+      expect(isSyntheticStagingAppeal(record)).toBe(true);
+      expect(canExposePublicAppeal(record)).toBe(false);
+    }
+    expect(canExposePublicAppeal({ slug: "published-appeal", title: "Reviewed public appeal" })).toBe(true);
+    process.env.APP_ENVIRONMENT = "staging";
+    expect(canExposePublicAppeal(synthetic[0]!)).toBe(true);
+  });
+
   it("allows synthetic appeals only in staging", () => {
     process.env.APP_ENVIRONMENT = "production";
     expect(canExposeSyntheticStagingContent()).toBe(false);

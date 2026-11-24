@@ -17,7 +17,7 @@ const funds: GiveFund[] = [
 const paymentDetails = { upi: { id: "x@bank", qrImageUrl: null }, bank: null } as unknown as DonationPaymentDetails;
 const radios = (html: string) => (html.match(/<input[^>]*>/g) ?? []).filter(tag => tag.includes('name="fund"'));
 const checked = (html: string) => radios(html).filter(tag => tag.includes('checked=""')).map(tag => /value="([^"]+)"/.exec(tag)?.[1]);
-const render = (initialSlug?: string) => renderToStaticMarkup(<FundGivingCheckout funds={funds} initialSlug={initialSlug} paymentDetails={paymentDetails} feeBps={236} />);
+const render = (initialSlug?: string) => renderToStaticMarkup(<FundGivingCheckout funds={funds} copies={Object.fromEntries(funds.map(fund => [fund.slug, fundDonationFormCopy(fund)]))} initialSlug={initialSlug} paymentDetails={paymentDetails} feeBps={236} />);
 
 describe("fund giving checkout", () => {
   it("offers every fund as a native radio in one named group, with the General Fund selected by default", () => {
@@ -86,7 +86,7 @@ describe("fund donation form copy", () => {
 
 describe("seasonal campaign on the giving page", () => {
   const campaign = { slug: "eid-kits-2027", fundSlug: "eid-kits", title: "Eid Kits 2027", unitLabel: "kit", unitLabelPlural: "kits", unitPrice: 1500, maxUnits: 100, note: "Packed before Eid.", closesLabel: "24 February 2027" };
-  const withCampaign = (initialSlug?: string) => renderToStaticMarkup(<FundGivingCheckout funds={funds} campaigns={[campaign]} initialSlug={initialSlug} paymentDetails={paymentDetails} feeBps={236} />);
+  const withCampaign = (initialSlug?: string) => renderToStaticMarkup(<FundGivingCheckout funds={funds} copies={Object.fromEntries(funds.map(fund => [fund.slug, fundDonationFormCopy(fund)]))} campaigns={[campaign]} initialSlug={initialSlug} paymentDetails={paymentDetails} feeBps={236} />);
 
   it("offers fixed-price units on the campaign's fund, with the price, the close date and the exact total", () => {
     const html = withCampaign("eid-kits");
