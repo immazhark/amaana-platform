@@ -6,6 +6,7 @@ import { requirePermission } from "@/lib/auth";
 import { formatINR } from "@/lib/appeals";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { donationIntentLabel } from "@/lib/donation-intent";
+import { loadDonationReconciliationTotals } from "@/lib/donation-reconciliation-totals";
 import { prisma } from "@/lib/prisma";
 import { donationOperationalState } from "@/lib/operational-signals";
 
@@ -30,10 +31,7 @@ export default async function DonationsPage({ searchParams }: Props) {
 
   const [totalItems, reconciliation, pendingDirectTransfers, unmatchedCriticalEventCount, unmatchedCriticalEvents, missingAcknowledgements, refundedWithoutCompletionTime, statusGroups, intentGroups, funnelGroups] = await Promise.all([
     prisma.donation.count({ where }),
-    prisma.donation.aggregate({
-      where: { status: { in: ["CAPTURED", "REFUNDED"] } },
-      _sum: { amount: true, refundedAmount: true },
-    }),
+    loadDonationReconciliationTotals(prisma),
     prisma.donation.count({ where: { status: DonationStatus.PENDING_VERIFICATION, paymentMethod: { in: ["DIRECT_UPI", "BANK_TRANSFER"] } } }),
     prisma.paymentEvent.count({
       where: {
@@ -109,9 +107,7 @@ export default async function DonationsPage({ searchParams }: Props) {
 
   const statusCounts = new Map(statusGroups.map(item => [item.status, item._count._all]));
   const intentCounts = new Map(intentGroups.map(item => [item.givingIntent, item._count._all]));
-  const grossCaptured = reconciliation._sum.amount?.toNumber() ?? 0;
-  const refunded = reconciliation._sum.refundedAmount?.toNumber() ?? 0;
-  const netRetained = Math.max(0, grossCaptured - refunded);
+  const { grossCaptured, refunded, netRetained } = reconciliation;
   const operational = donationOperationalState({
     unmatchedCriticalEvents: unmatchedCriticalEventCount,
     missingAcknowledgements,
@@ -147,6 +143,7 @@ export default async function DonationsPage({ searchParams }: Props) {
         <h1>Donations</h1>
         <p className="lead">
           Gross captured: {formatINR(grossCaptured)} · Refunded: {formatINR(refunded)} · Net retained: {formatINR(netRetained)}
+          <small className="muted"> (Donation amounts only; returned processing fees excluded.)</small>
         </p>
       </div>
     </div>
