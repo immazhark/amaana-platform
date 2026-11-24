@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { prisma } from "@/lib/prisma";
 import { loadFundsLedger } from "@/lib/funds-ledger";
+import { loadDonationReconciliationTotals } from "@/lib/donation-reconciliation-totals";
 
 class Rollback extends Error {}
 class NotRefused extends Error {}
@@ -23,10 +24,10 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("designated giving
   afterAll(async () => { await prisma.$disconnect(); });
 
   // Runs work in a transaction and always rolls back; resolves with whatever the work returned.
-  async function probe<T>(work: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T> {
+  async function probe<T>(work: (tx: Prisma.TransactionClient) => Promise<T>, isolationLevel?: Prisma.TransactionIsolationLevel): Promise<T> {
     let result: T | undefined;
     try {
-      await prisma.$transaction(async tx => { result = await work(tx); throw new Rollback(); });
+      await prisma.$transaction(async tx => { result = await work(tx); throw new Rollback(); }, { isolationLevel });
     } catch (error) { if (!(error instanceof Rollback)) throw error; }
     return result as T;
   }
@@ -166,6 +167,32 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("designated giving
     });
     // The first Rs 12 returned the fee, so only Rs 38 of the gift is refunded and Rs 62 is still received.
     expect(result?.total).toMatchObject({ receivedPaise: 6_200, refundedPaise: 3_800, spentPaise: 0, balancePaise: 6_200 });
+  });
+
+  it("reports fee-first donation refunds across all captured and refunded rows in one snapshot", async () => {
+    const result = await probe(async tx => {
+      const f = await fund(tx);
+      const before = await loadDonationReconciliationTotals(tx);
+      const captured = new Date("2026-11-10T06:00:00Z");
+      const gift = (over: Partial<Prisma.DonationUncheckedCreateInput>) => tx.donation.create({
+        data: donation(f.id, { status: "CAPTURED", capturedAt: captured, amount: 100, ...over }),
+      });
+      await gift({ feeContributionAmount: 12, refundedAmount: 5 });
+      await gift({ feeContributionAmount: 2, refundedAmount: 7 });
+      await gift({ status: "REFUNDED", feeContributionAmount: 12, refundedAmount: 112, refundedAt: captured });
+      await gift({ feeContributionAmount: 3 });
+      await gift({ refundedAmount: 25 });
+      await gift({ status: "PENDING_VERIFICATION", capturedAt: null });
+      await gift({ status: "FAILED", capturedAt: null });
+      const after = await loadDonationReconciliationTotals(tx);
+      // Compare to the existing scoped fund ledger, which applies the same per-row rule.
+      const ledger = (await loadFundsLedger(tx, { fundId: f.id })).byFund[f.id]?.total;
+      return { gross: after.grossCaptured - before.grossCaptured, refunds: after.refunded - before.refunded, retained: after.netRetained - before.netRetained, ledger };
+    }, Prisma.TransactionIsolationLevel.RepeatableRead);
+    expect(result.gross).toBeCloseTo(500, 2);
+    expect(result.refunds).toBeCloseTo(130, 2);
+    expect(result.retained).toBeCloseTo(370, 2);
+    expect(result.ledger).toMatchObject({ refundedPaise: 13000, receivedPaise: 37000 });
   });
 
   it("caps a recorded refund at the whole charge: the gift plus any covered gateway fee", async () => {
