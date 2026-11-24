@@ -10,6 +10,7 @@ import {
   profileTraceName,
   reportBuildIdentity,
   summarizeMobileSamples,
+  summarizeResourceTimings,
 } from "./mobile-profile-core.mjs";
 
 const sample = (run, lcpMs, cls, blockingMs, route = "/impact") => ({
@@ -208,4 +209,36 @@ test("synthetic runtime identity requires an explicitly supported non-live payme
   for (const runtime of [null, [], {}, { status: "ok", environment: "production", paymentMode: "test" }, { status: "error", environment: "test", paymentMode: "test" }]) {
     assert.throws(() => assertSyntheticProfileRuntime(runtime), /non-production synthetic profile target/);
   }
+});
+
+
+test("resource timing totals retain byte counts, never URLs or initiator details", () => {
+  const entries = [
+    { initiatorType: "img", transferSize: 1500, encodedBodySize: 1200 },
+    { initiatorType: "script", transferSize: 400, encodedBodySize: 300 },
+    { initiatorType: "img", transferSize: 0, encodedBodySize: 200 },
+    { initiatorType: "css", transferSize: 250, encodedBodySize: 200 },
+  ];
+  assert.deepEqual(summarizeResourceTimings(entries), {
+    entryCount: 4, transferBytes: 2150, encodedBodyBytes: 1900,
+    zeroTransferEntries: 1, imageInitiatorCount: 2,
+    imageInitiatorTransferBytes: 1500, imageInitiatorEncodedBodyBytes: 1400,
+  });
+  assert.deepEqual(summarizeResourceTimings([]), {
+    entryCount: 0, transferBytes: 0, encodedBodyBytes: 0,
+    zeroTransferEntries: 0, imageInitiatorCount: 0,
+    imageInitiatorTransferBytes: 0, imageInitiatorEncodedBodyBytes: 0,
+  });
+  assert.equal(summarizeResourceTimings(null), null);
+});
+
+test("resource timing rejects incomplete, oversized, identifying or noninteger samples", () => {
+  const valid = { initiatorType: "img", transferSize: 1, encodedBodySize: 1 };
+  for (const entries of [
+    undefined, {}, [null], [{ ...valid, name: "http://127.0.0.1:3000/private" }],
+    [{ ...valid, transferSize: -1 }], [{ ...valid, encodedBodySize: 0.5 }],
+    [{ ...valid, transferSize: Infinity }], [{ ...valid, initiatorType: 1 }],
+    [{ ...valid, encodedBodySize: Number.MAX_SAFE_INTEGER }, valid],
+    Array.from({ length: 4096 }, () => valid),
+  ]) assert.throws(() => summarizeResourceTimings(entries), /Invalid resource timing/);
 });
