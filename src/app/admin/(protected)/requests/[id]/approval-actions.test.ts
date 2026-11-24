@@ -292,3 +292,19 @@ describe("saving a draft support choice", () => {
     expect(mocks.draft.mock.calls[0]![0]).toMatchObject({ route: null, draftDecision: decision });
   });
 });
+
+describe("completed verification reopening authority", () => {
+  it.each([false, true])("derives reopening permission from the authenticated actor, never form input (%s)", async allowed => {
+    mocks.user.mockResolvedValue(allowed ? approver() : staff(["assistance.view", "assistance.update"]));
+    const result = await saveReviewProgressWithFeedback({ kind: "idle", message: "" }, form({
+      decision: "PENDING", confirmApproval: null, canReopenCompletedVerification: allowed ? "false" : "true",
+    }));
+    expect(result.kind).toBe("success");
+    expect(mocks.draft).toHaveBeenCalledWith(expect.objectContaining({ canReopenCompletedVerification: allowed }));
+  });
+
+  it("passes server-derived approver authority to incomplete approval progress saves", async () => {
+    await redirected(form({ needConfirmed: null }));
+    expect(mocks.draft).toHaveBeenCalledWith(expect.objectContaining({ canReopenCompletedVerification: true }));
+  });
+});

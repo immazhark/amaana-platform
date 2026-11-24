@@ -249,6 +249,31 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("assistance approv
       expect(await counts(request.id)).toEqual({ audits: 0, notifications: 0 });
     });
 
+    it.each([undefined, false, true])("preserves completed verification unless reopening authority is explicitly granted (%s)", async authority => {
+      const request = await makeRequest();
+      await saveApprovalDraft(await draft(request.id, { route: "APPROVED_PRIVATE" }));
+      const before = await prisma.assistanceVerification.update({
+        where: { assistanceRequestId: request.id },
+        data: { completedAt: new Date("2026-11-22T04:00:00Z"), reviewedById: actorId },
+      });
+      const params = await draft(request.id, {
+        actorId: otherActorId, draftDecision: "PENDING",
+        fields: { ...fields, verificationSummary: "Synthetic reopening attempt" },
+        canReopenCompletedVerification: authority,
+      });
+      if (authority === true) {
+        expect(await saveApprovalDraft(params)).toBe("saved");
+        const after = await prisma.assistanceVerification.findUniqueOrThrow({ where: { assistanceRequestId: request.id } });
+        expect(after).toMatchObject({ completedAt: null, reviewedById: null, decision: "PENDING", verificationSummary: "Synthetic reopening attempt" });
+      } else {
+        await expect(saveApprovalDraft(params)).rejects.toThrow("Approval permission is required to reopen a completed verification");
+        expect(await prisma.assistanceVerification.findUniqueOrThrow({ where: { assistanceRequestId: request.id } })).toEqual(before);
+      }
+      expect((await prisma.assistanceRequest.findUniqueOrThrow({ where: { id: request.id } })).status).toBe("UNDER_VERIFICATION");
+      expect(await prisma.auditEvent.count({ where: { entityType: "AssistanceRequest", entityId: request.id } })).toBe(0);
+      expect(await counts(request.id)).toEqual({ audits: 0, notifications: 0 });
+    });
+
     it("does not store a public target on a route that is not public", async () => {
       const request = await makeRequest();
       await saveApprovalDraft(await draft(request.id, { route: "APPROVED_PRIVATE", fields: { ...fields, approvedPublicTarget: 1000 } }));
