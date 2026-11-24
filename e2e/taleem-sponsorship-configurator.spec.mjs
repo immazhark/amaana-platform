@@ -103,6 +103,62 @@ test('Taleem direct transfer guidance matches the fund and retains the selected 
   expect(requests).toBe(0);
 });
 
+for (const [methodLabel, paymentMethod] of [['Direct UPI / QR', 'DIRECT_UPI'], ['Bank transfer', 'BANK_TRANSFER']]) {
+  test(`Taleem ${paymentMethod} posts the selected sponsorship quote and domestic confirmation to a mocked endpoint`, async ({ page }) => {
+    await prepare(page);
+    let claims = 0, orders = 0;
+    let submitted;
+    await page.route('**/api/donations/order', route => {
+      orders++;
+      return route.abort('failed');
+    });
+    await page.route('**/api/donations/direct-transfer', async route => {
+      claims++;
+      const request = route.request();
+      const payload = request.postDataBuffer();
+      const contentType = request.headers()['content-type'];
+      expect(request.method()).toBe('POST');
+      expect(contentType).toContain('multipart/form-data;');
+      expect(payload).not.toBeNull();
+      submitted = await new Response(payload, { headers: { 'content-type': contentType } }).formData();
+      return route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ error: 'Synthetic refusal before any write.' }) });
+    });
+    await page.goto(PAGE);
+    await choose(page, { programme: "Qur'an Nazira", months: '3 months', extraUnits: 1 });
+    await page.getByRole('button', { name: "Give ₹7,200 to Qur'an Nazira" }).click();
+    const panel = page.locator('#programme-payment');
+    await panel.getByRole('button', { name: methodLabel, exact: true }).click();
+    const submit = panel.getByRole('button', { name: 'Submit transfer for verification', exact: true });
+    await expect(submit).toBeEnabled();
+    await expect(panel.getByLabel('Amount (INR)')).toHaveValue('7200');
+    await expect(panel.getByLabel('Amount (INR)')).toHaveAttribute('readonly', '');
+    await panel.getByLabel('Full name').fill('Synthetic Taleem donor');
+    await panel.getByLabel('Email').fill('taleem@example.test');
+    await panel.getByLabel('UTR / transaction reference').fill('SYNTHETIC-TALEEM-123');
+    await panel.getByLabel('Transfer date and time').fill('2026-11-20T10:30');
+    await panel.locator('input[name="givingIntent"][value="SADAQAH"]').check();
+    const domestic = panel.locator('input[name="domesticConfirmed"]');
+    await expect(domestic).not.toBeChecked();
+    await submit.click();
+    expect(claims).toBe(0);
+    await domestic.check();
+    await submit.click();
+    await expect(panel.getByRole('alert')).toHaveText('Synthetic refusal before any write.');
+    await expect(submit).toBeEnabled();
+    expect(claims).toBe(1);
+    expect(orders).toBe(0);
+    expect(Object.fromEntries(submitted.entries())).toMatchObject({
+      fundSlug: 'taleem', paymentMethod, sponsorshipProgramme: 'nazira', sponsorshipUnits: '2',
+      sponsorshipMonths: '3', amount: '7200', givingIntent: 'SADAQAH', domesticConfirmed: 'true',
+      transferReference: 'SYNTHETIC-TALEEM-123',
+    });
+    expect(submitted.has('appealId')).toBe(false);
+    expect(submitted.has('campaignSlug')).toBe(false);
+    await expect(panel.getByLabel('Amount (INR)')).toHaveValue('7200');
+    await expect(panel.getByLabel('UTR / transaction reference')).toHaveValue('SYNTHETIC-TALEEM-123');
+  });
+}
+
 test('changing the selection after payment opens closes the payment forms, so the amount cannot go stale', async ({ page }) => {
   await prepare(page);
   await page.goto(PAGE);
