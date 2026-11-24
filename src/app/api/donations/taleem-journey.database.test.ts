@@ -18,6 +18,7 @@ vi.mock("@/lib/request-security", async importOriginal => ({
 }));
 
 import { prisma } from "@/lib/prisma";
+import { reconcileDirectDonation } from "@/lib/direct-donation-reconciliation";
 import { POST as acknowledgement } from "./acknowledgement/route";
 import { POST as order } from "./order/route";
 import { POST as directTransfer } from "./direct-transfer/route";
@@ -36,6 +37,7 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("Taleem programme 
   const goodBody = { fundSlug: "taleem", donorName: "Synthetic donor", donorEmail: email, amount: 6000, givingIntent: "SADAQAH", domesticConfirmed: true, ...sponsorship };
   const state: { donationId?: string; receiptToken?: string; reference?: string } = {};
 
+  const reviewerIds: string[] = [];
   let isolatedDatabaseConfirmed = false;
   beforeAll(async () => {
     const url = new URL(process.env.DATABASE_URL!);
@@ -66,11 +68,13 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("Taleem programme 
     const donations = await prisma.donation.findMany({ where: { donorEmail: email }, select: { id: true } });
     const donationIds = donations.map(row => row.id);
     if (donationIds.length) {
+      await prisma.auditEvent.deleteMany({ where: { entityType: "Donation", entityId: { in: donationIds }, actorId: { in: reviewerIds } } });
       await prisma.notification.deleteMany({ where: { donationId: { in: donationIds } } });
       await prisma.paymentEvent.deleteMany({ where: { donationId: { in: donationIds } } });
       await prisma.refundLedger.deleteMany({ where: { donationId: { in: donationIds } } });
       await prisma.donation.deleteMany({ where: { id: { in: donationIds } } });
     }
+    if (reviewerIds.length) await prisma.user.deleteMany({ where: { id: { in: reviewerIds } } });
     if (created.createdFund && created.fundId) await prisma.fund.delete({ where: { id: created.fundId } });
     await prisma.$disconnect();
   });
@@ -238,6 +242,86 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("Taleem programme 
       expect(duplicate.status).toBe(409);
       expect(await rowsFor()).toBe(count + 1);
       expect(provider.createOrder.mock.calls.length).toBe(calls);
+    });
+
+
+    async function reconciliationClaim(suffix: string, paymentMethod: "DIRECT_UPI" | "BANK_TRANSFER") {
+      vi.stubEnv("FUND_GIVING_ENABLED", "true");
+      vi.stubEnv("TALEEM_SPONSORSHIP_ENABLED", "true");
+      const reviewer = await prisma.user.create({ data: {
+        name: "Synthetic reconciler", email: `${prefix}-${suffix}@example.test`,
+      } });
+      reviewerIds.push(reviewer.id);
+      const response = await makeClaim(`${prefix}-${suffix}`, { paymentMethod });
+      expect(response.status).toBe(202);
+      const payload = await response.json();
+      const row = await prisma.donation.findUniqueOrThrow({ where: { referenceNumber: payload.referenceNumber } });
+      return { row, reviewer, payload };
+    }
+
+    it("verifies a Taleem UPI claim once under concurrent reconciliation and preserves the historical quote", async () => {
+      const { row, reviewer, payload } = await reconciliationClaim("verify-race", "DIRECT_UPI");
+      expect(row.status).toBe("PENDING_VERIFICATION");
+      expect(await prisma.notification.count({ where: { donationId: row.id } })).toBe(0);
+      const input = { donationId: row.id, actorId: reviewer.id, decision: "VERIFY" as const, notes: "Synthetic bank entry matched" };
+      const results = await Promise.allSettled([reconcileDirectDonation(input), reconcileDirectDonation(input)]);
+      expect(results.filter(result => result.status === "fulfilled")).toHaveLength(1);
+      expect(results.filter(result => result.status === "rejected")).toHaveLength(1);
+      await expect(reconcileDirectDonation(input)).rejects.toThrow("Donation is no longer pending verification");
+
+      const verified = await prisma.donation.findUniqueOrThrow({ where: { id: row.id } });
+      expect(verified).toMatchObject({
+        status: "CAPTURED", reconciledById: reviewer.id, receiptNumber: `ACK-${row.referenceNumber}`,
+        reconciliationNotes: input.notes, providerOrderId: null, providerPaymentId: null,
+        sponsorshipProgramme: "qaida", sponsorshipUnits: 2, sponsorshipMonths: 3,
+        sponsorshipRateVersion: "approved-2026-11",
+      });
+      expect(verified.capturedAt).toBeInstanceOf(Date);
+      expect(verified.reconciledAt).toBeInstanceOf(Date);
+      expect(verified.amount.toNumber()).toBe(6000);
+      expect(verified.sponsorshipMonthlyRate?.toNumber()).toBe(1000);
+      const events = await prisma.auditEvent.findMany({ where: { entityType: "Donation", entityId: row.id } });
+      expect(events).toHaveLength(1);
+      expect(events[0]).toMatchObject({ action: "donation.transfer.verify", actorId: reviewer.id });
+      const notifications = await prisma.notification.findMany({ where: { donationId: row.id } });
+      expect(notifications).toHaveLength(1);
+      expect(notifications[0]).toMatchObject({
+        templateKey: "donation-acknowledgement", recipient: email,
+        payload: { referenceNumber: row.referenceNumber, givingIntent: "SADAQAH" },
+      });
+      const receipt = await acknowledgement(json("/api/donations/acknowledgement", {
+        reference: payload.referenceNumber, token: payload.receiptToken,
+      }));
+      expect(receipt.status).toBe(200);
+      expect(await receipt.json()).toMatchObject({
+        found: true, presentation: { tone: "captured", statusLabel: "Payment verified" },
+        donation: { receiptNumber: verified.receiptNumber, amount: 6000, sponsorship: {
+          programme: "Qaida", units: 2, months: 3, monthlyRate: 1000,
+        } },
+      });
+    });
+
+    it("rejects an unmatched Taleem bank claim without issuing a receipt or acknowledgement email", async () => {
+      const { row, reviewer, payload } = await reconciliationClaim("reject-bank", "BANK_TRANSFER");
+      const input = { donationId: row.id, actorId: reviewer.id, decision: "REJECT" as const, notes: "Synthetic bank entry not matched" };
+      await expect(reconcileDirectDonation(input)).resolves.toMatchObject({ status: "REJECTED" });
+      await expect(reconcileDirectDonation({ ...input, decision: "VERIFY" })).rejects.toThrow("Donation is no longer pending verification");
+      const rejected = await prisma.donation.findUniqueOrThrow({ where: { id: row.id } });
+      expect(rejected).toMatchObject({
+        status: "REJECTED", receiptNumber: null, capturedAt: null, reconciledById: reviewer.id,
+        reconciliationNotes: input.notes, sponsorshipProgramme: "qaida", sponsorshipRateVersion: "approved-2026-11",
+      });
+      expect(await prisma.notification.count({ where: { donationId: row.id } })).toBe(0);
+      const events = await prisma.auditEvent.findMany({ where: { entityType: "Donation", entityId: row.id } });
+      expect(events).toHaveLength(1);
+      expect(events[0]).toMatchObject({ action: "donation.transfer.reject", actorId: reviewer.id });
+      const receipt = await acknowledgement(json("/api/donations/acknowledgement", {
+        reference: payload.referenceNumber, token: payload.receiptToken,
+      }));
+      expect(receipt.status).toBe(200);
+      const body = await receipt.json();
+      expect(body).toMatchObject({ found: true, presentation: { tone: "failed", statusLabel: "Transfer not verified" }, donation: { receiptNumber: null } });
+      expect(JSON.stringify(body)).not.toContain(input.notes);
     });
   });
 });
