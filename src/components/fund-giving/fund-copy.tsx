@@ -18,7 +18,7 @@ export const ZAKAT_TAG: Record<FundZakatPolicyId, string> = { ACCEPTED: "Zakat a
 
 // Same shape as an appeal's copy so the existing, hardened checkout forms are reused unchanged.
 export function fundDonationFormCopy(fund: GiveFund): DonationFormCopy {
-  const base = donationFormCopy(false);
+  const base = donationFormCopy(false, "fund");
   const intents = allowedIntentsForFund(fund.zakatPolicy);
   const notice = zakatNoticeForFund(fund.zakatPolicy);
   const options = (checkedByDefault: boolean) => <>{intents.map((intent, index) => (
