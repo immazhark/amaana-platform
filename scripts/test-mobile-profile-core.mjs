@@ -11,6 +11,7 @@ import {
   reportBuildIdentity,
   summarizeMobileSamples,
   summarizeResourceTimings,
+  summarizeResourceTimingSamples,
 } from "./mobile-profile-core.mjs";
 
 const sample = (run, lcpMs, cls, blockingMs, route = "/impact") => ({
@@ -242,7 +243,6 @@ test("resource timing rejects incomplete, oversized, identifying or noninteger s
     Array.from({ length: 4096 }, () => valid),
   ]) assert.throws(() => summarizeResourceTimings(entries), /Invalid resource timing/);
 });
-
 
 test("resource summaries compare five runs and preserve unavailable measurements", () => {
   const samples = [5, 1, 3, 2, 4].map(run => ({ run, totals: summarizeResourceTimings([

@@ -216,3 +216,34 @@ export function summarizeResourceTimings(entries) {
   }
   return totals;
 }
+
+/** Report a median only when all five independent observations are available. */
+export function summarizeResourceTimingSamples(samples) {
+  const invalid = () => { throw new Error("Invalid resource timing summary"); };
+  if (!Array.isArray(samples) || samples.length !== MOBILE_PROFILE.runs) invalid();
+  const keys = Object.keys(summarizeResourceTimings([]));
+  const runs = new Set();
+  for (const sample of samples) {
+    if (!sample || typeof sample !== "object" || Array.isArray(sample) ||
+        Object.keys(sample).length !== 2 || !Object.hasOwn(sample, "run") || !Object.hasOwn(sample, "totals") ||
+        !Number.isInteger(sample.run) || sample.run < 1 || sample.run > MOBILE_PROFILE.runs || runs.has(sample.run)) invalid();
+    runs.add(sample.run);
+    const t = sample.totals;
+    if (t === null) continue;
+    if (!t || typeof t !== "object" || Array.isArray(t) || Object.keys(t).length !== keys.length ||
+        keys.some(key => !Object.hasOwn(t, key) || !Number.isSafeInteger(t[key]) || t[key] < 0) ||
+        t.entryCount >= RESOURCE_TIMING_LIMIT || t.zeroTransferEntries > t.entryCount || t.imageInitiatorCount > t.entryCount ||
+        t.imageInitiatorTransferBytes > t.transferBytes || t.imageInitiatorEncodedBodyBytes > t.encodedBodyBytes ||
+        (t.entryCount === 0 && keys.some(key => t[key] !== 0)) ||
+        (t.imageInitiatorCount === 0 && (t.imageInitiatorTransferBytes !== 0 || t.imageInitiatorEncodedBodyBytes !== 0))) invalid();
+  }
+  const ordered = [...samples].sort((a, b) => a.run - b.run);
+  const measuredSampleCount = ordered.filter(sample => sample.totals !== null).length;
+  return {
+    sampleCount: ordered.length,
+    measuredSampleCount,
+    median: measuredSampleCount === MOBILE_PROFILE.runs
+      ? Object.fromEntries(keys.map(key => [key, median(ordered.map(sample => sample.totals[key]))])) : null,
+    samples: ordered.map(({ run, totals }) => ({ run, totals: totals === null ? null : Object.fromEntries(keys.map(key => [key, totals[key]])) })),
+  };
+}

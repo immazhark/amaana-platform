@@ -12,7 +12,7 @@ import {
   MOBILE_PROFILE, MOBILE_ROUTES, assertLocalProfileTarget, assertSyntheticProfileRuntime,
   calculateClsSessionWindows, isAllowedProfileRequest,
   profileTraceName, reportBuildIdentity, summarizeMobileSamples,
-  RESOURCE_TIMING_LIMIT, summarizeResourceTimings,
+  RESOURCE_TIMING_LIMIT, summarizeResourceTimings, summarizeResourceTimingSamples,
 } from "./mobile-profile-core.mjs";
 
 const localOrigin = assertLocalProfileTarget("http://127.0.0.1:3000");
@@ -177,7 +177,7 @@ export async function collectMobileProfile() {
       samples.push(sample);
       resourceTimingSamples.push({ run, totals: resourceTiming });
     }
-    routes.push({ ...summarizeMobileSamples(route, samples), resourceTimingSamples });
+    routes.push({ ...summarizeMobileSamples(route, samples), resourceTiming: summarizeResourceTimingSamples(resourceTimingSamples) });
   }
   const report = {
     methodology: "Isolated synthetic Chromium emulation; intercepts HTTP requests but is not a universal network firewall, CPU flamegraph or real Android/field data",
