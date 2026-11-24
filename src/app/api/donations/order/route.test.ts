@@ -53,10 +53,6 @@ vi.mock("@/lib/env", () => ({
   validateProductionEnvironment: () => undefined,
 }));
 
-vi.mock("@/lib/public-environment", () => ({
-  canExposePublicAppeal: () => true,
-}));
-
 import { POST } from "./route";
 
 describe("donation order request bounds", () => {
@@ -365,5 +361,33 @@ describe("donation order provider-side uncertainty", () => {
     expect((await response.json()).orderId).toBe("order_synthetic123");
     expect(mocks.createRazorpayOrder).toHaveBeenCalledTimes(1);
     expect(mocks.create).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("production staging marker checkout boundary", () => {
+  it.each([
+    { slug: "StAgInG-checkout-fixture", title: "Synthetic fixture" },
+    { slug: "public-appeal", title: "StAgInG TeSt — Synthetic fixture" },
+  ])("refuses a synthetic appeal before provider or database writes: $slug / $title", async identity => {
+    vi.clearAllMocks();
+    vi.stubEnv("APP_ENVIRONMENT", "production");
+    try {
+      mocks.enforceDonationRateLimit.mockResolvedValue(true);
+      mocks.safeParse.mockReturnValue({ success: true, data: {
+        appealId: "clx1234567890abcdef123456", donorName: "Synthetic donor",
+        donorEmail: "synthetic@example.test", amount: 500, givingIntent: "GENERAL", domesticConfirmed: true,
+      } });
+      mocks.findFirst.mockResolvedValue({
+        id: "appeal_1", ...identity, status: "PUBLISHED", goalAmount: 1000,
+        amountRaised: 100, closesAt: null, assistanceRequest: null,
+      });
+      const response = await POST(new Request("https://amaana.example/api/donations/order", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: "{}",
+      }));
+      expect(response.status).toBe(409);
+      expect(await response.json()).toEqual({ error: "This appeal is not accepting donations." });
+      expect(mocks.createRazorpayOrder).not.toHaveBeenCalled();
+      expect(mocks.create).not.toHaveBeenCalled();
+    } finally { vi.unstubAllEnvs(); }
   });
 });

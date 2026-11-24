@@ -52,7 +52,6 @@ vi.mock("@/lib/storage", () => ({
 }));
 
 vi.mock("@/lib/env", () => ({ validateProductionEnvironment: () => undefined }));
-vi.mock("@/lib/public-environment", () => ({ canExposePublicAppeal: () => true }));
 
 import { POST } from "./route";
 
@@ -627,5 +626,25 @@ describe("direct-transfer multipart field ambiguity", () => {
     expect(mocks.findFirst).not.toHaveBeenCalled();
     expect(mocks.donationCreate).not.toHaveBeenCalled();
     expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+  });
+});
+
+describe("production staging marker transfer boundary", () => {
+  it.each([
+    { slug: "StAgInG-checkout-fixture", title: "Synthetic fixture" },
+    { slug: "public-appeal", title: "StAgInG TeSt — Synthetic fixture" },
+  ])("refuses a synthetic appeal before recording a claim: $slug / $title", async identity => {
+    vi.stubEnv("APP_ENVIRONMENT", "production");
+    try {
+      mocks.findFirst.mockResolvedValue({
+        id: "appeal-1", ...identity, status: "PUBLISHED", goalAmount: 1000,
+        amountRaised: 100, closesAt: null, assistanceRequest: null,
+      });
+      const response = await POST(requestWith());
+      expect(response.status).toBe(409);
+      expect(await response.json()).toEqual({ error: "This appeal is not accepting donations." });
+      expect(mocks.donationCreate).not.toHaveBeenCalled();
+      expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+    } finally { vi.unstubAllEnvs(); }
   });
 });
