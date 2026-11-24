@@ -44,6 +44,7 @@ function donation(overrides: Record<string, unknown> = {}) {
     receiptNumber: null,
     amount: amount(2000),
     refundedAmount: amount(0),
+    feeContributionAmount: amount(0),
     createdAt: istNewYear,
     capturedAt: null,
     failedAt: null,
@@ -288,6 +289,7 @@ it("reads only displayed private Donation detail fields and the existing bounded
       receiptNumber: true,
       amount: true,
       refundedAmount: true,
+      feeContributionAmount: true,
       createdAt: true,
       capturedAt: true,
       failedAt: true,
@@ -326,5 +328,30 @@ describe("private donation detail shows a Taleem programme sponsorship", () => {
     const html = await renderDonation();
     expect(html).not.toContain("Programme sponsorship");
     expect(html).not.toContain("rate version");
+  });
+});
+
+describe("private donation detail separates charitable principal and provider refunds", () => {
+  it.each([
+    ["CAPTURED", 100, 12, 5, "0", "100"],
+    ["CAPTURED", 100, 2, 7, "5", "95"],
+    ["CAPTURED", 100, 0, 25, "25", "75"],
+    ["CAPTURED", 100, 2.41, 7.44, "5.03", "94.97"],
+    ["REFUNDED", 100, 12, 112, "100", "0"],
+  ])("reports %s gift %s, fee %s and total returned %s", async (status, gift, fee, returned, refunded, retained) => {
+    mocks.findDonation.mockResolvedValueOnce(donation({
+      status, paymentMethod: "RAZORPAY",
+      amount: amount(gift), feeContributionAmount: amount(fee), refundedAmount: amount(returned),
+    }));
+    const html = await renderDonation();
+    expect(html).toContain("<dt>Donation refunded</dt><dd>₹" + refunded + "</dd>");
+    expect(html).toContain("<dt>Net retained</dt><dd>₹" + retained + "</dd>");
+    expect(html).toContain("<dt>Total returned (including any fee)</dt>");
+  });
+
+  it.each(["PENDING_VERIFICATION", "CREATED", "AUTHORIZED", "FAILED", "REJECTED"])("does not count a %s donation as retained", async status => {
+    mocks.findDonation.mockResolvedValueOnce(donation({ status, amount: amount(100) }));
+    const html = await renderDonation();
+    expect(html).toContain("<dt>Net retained</dt><dd>₹0</dd>");
   });
 });
