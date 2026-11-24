@@ -32,3 +32,13 @@ describe("legacy assistance-queue admin URL", () => {
     }))).rejects.toThrow("REDIRECT:/admin");
   });
 });
+
+describe("legacy queue ordering", () => {
+  it("retains an explicitly selected oldest-first order", async () => {
+    await expect(AdminRequestsAlias(props({ sort: "oldest", status: "SUBMITTED", page: "2" })))
+      .rejects.toThrow("REDIRECT:/admin?status=SUBMITTED&page=2&sort=oldest");
+  });
+  it.each([["bad"], ["oldest", "newest"]])("does not forward repeated sort parameters", async sort => {
+    await expect(AdminRequestsAlias(props({ sort }))).rejects.toThrow("REDIRECT:/admin");
+  });
+});

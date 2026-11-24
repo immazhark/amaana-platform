@@ -96,3 +96,29 @@ describe("assistance queue minimum displayed-data projection", () => {
     expect(html).toContain("<td>3</td>");
   });
 });
+
+describe("assistance queue triage order", () => {
+  it("supports oldest-first with stable ordering and preserves selected visibility and status", async () => {
+    mocks.count.mockResolvedValue(101);
+    mocks.findMany.mockResolvedValue([]);
+    const html = renderToStaticMarkup(await AdminQueuePage({ searchParams: Promise.resolve({
+      view: "tests", status: "SUBMITTED", sort: "oldest", page: "2",
+    }) }));
+    expect(mocks.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { referenceNumber: "AF-STAGING-ACCEPTANCE", status: "SUBMITTED" },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+      skip: 50, take: 50,
+    }));
+    expect(html).toContain("Oldest first");
+    expect(html).toContain("sort=oldest");
+    expect(html).toContain("page=3");
+  });
+
+  it.each([undefined, "invalid", ["oldest"]])("keeps newest-first for invalid or absent sort %s", async sort => {
+    mocks.findMany.mockResolvedValue([]);
+    await AdminQueuePage({ searchParams: Promise.resolve({ sort }) });
+    expect(mocks.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    }));
+  });
+});
