@@ -15,3 +15,7 @@ Keep trace archives local and private; they may contain request metadata even th
 ## Diagnostic regression verification
 
 `node --test scripts/test-mobile-profile-core.mjs` — 24 November 2026: 14 passed, zero failed or skipped on Node 22.16.0, using source/test files verified against GitHub blob hashes `8a4a793ae3248f99c55052c6f6a9ad3cc94cb0f2` and `834e7127be210aba5035635bfd44246e5ce3d2ae`. Controlled local mutation restoring the old live-only rejection failed exactly the new regression (13 passed, 1 failed); committed source unchanged. This verifies the contract, not a real Chromium trace, Android device or field performance result.
+
+## Resource transfer diagnostics (AF-R053/AF-R048)
+
+Each run also reports `resourceTimingSamples`: aggregate observed Resource Timing entry count, browser-reported transfer and encoded body bytes, zero-transfer entry count, and the corresponding image-initiated subset (`initiatorType === "img"`, not CSS backgrounds or all images). Navigation document bytes are excluded. Zero transfer can reflect cache or visibility limits; do not infer cache hits, actual total network transfer, field performance or image optimization from these values alone. A full/unavailable buffer is null, not zero. The report stores no resource URLs or per-entry data; existing private trace restrictions still apply. Native Node contract tests cover totals, absent measurements, invalid fields, safe integer overflow and buffer bounds. Actual isolated browser collection remains outstanding.

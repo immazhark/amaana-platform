@@ -181,3 +181,38 @@ export function summarizeMobileSamples(route, samples) {
     })),
   };
 }
+
+export const RESOURCE_TIMING_LIMIT = 4096;
+
+/** Aggregate observed browser resource entries only; no URLs or identifiers. */
+export function summarizeResourceTimings(entries) {
+  if (entries === null) return null;
+  const invalid = () => { throw new Error("Invalid resource timing sample"); };
+  if (!Array.isArray(entries) || entries.length >= RESOURCE_TIMING_LIMIT) invalid();
+  const totals = {
+    entryCount: entries.length, transferBytes: 0, encodedBodyBytes: 0,
+    zeroTransferEntries: 0, imageInitiatorCount: 0,
+    imageInitiatorTransferBytes: 0, imageInitiatorEncodedBodyBytes: 0,
+  };
+  const add = (key, value) => {
+    totals[key] += value;
+    if (!Number.isSafeInteger(totals[key])) invalid();
+  };
+  for (const entry of entries) {
+    if (!entry || typeof entry !== "object" || Array.isArray(entry) ||
+        Object.keys(entry).length !== 3 ||
+        !["initiatorType", "transferSize", "encodedBodySize"].every(key => Object.hasOwn(entry, key)) ||
+        typeof entry.initiatorType !== "string" ||
+        !Number.isSafeInteger(entry.transferSize) || entry.transferSize < 0 ||
+        !Number.isSafeInteger(entry.encodedBodySize) || entry.encodedBodySize < 0) invalid();
+    add("transferBytes", entry.transferSize);
+    add("encodedBodyBytes", entry.encodedBodySize);
+    if (entry.transferSize === 0) totals.zeroTransferEntries++;
+    if (entry.initiatorType === "img") {
+      totals.imageInitiatorCount++;
+      add("imageInitiatorTransferBytes", entry.transferSize);
+      add("imageInitiatorEncodedBodyBytes", entry.encodedBodySize);
+    }
+  }
+  return totals;
+}
