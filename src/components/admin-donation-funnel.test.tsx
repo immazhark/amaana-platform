@@ -74,3 +74,11 @@ describe("AdminDonationFunnel", () => {
     expect(render([])).toContain("No donations were started in this period.");
   });
 });
+
+it("describes suppression as table-level protection, not a guarantee of anonymity", () => {
+  const html = render([group("RAZORPAY", "CAPTURED", 3), group("RAZORPAY", "FAILED", 12)]);
+  expect(html).toContain("reduce disclosure risk");
+  expect(html).toContain("does not guarantee anonymity");
+  expect(html).toContain("other reports or changes over time");
+  expect(html).not.toContain("so no individual can be picked out");
+});
