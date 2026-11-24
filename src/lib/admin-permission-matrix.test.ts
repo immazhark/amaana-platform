@@ -34,6 +34,8 @@ const expectedMatrix: Record<string, string[]> = {
   "admin/(protected)/page.tsx": ["assistance.view"],
   "admin/(protected)/requests/[id]/actions.ts": ["appeal.create", "assistance.approve", "assistance.assign", "assistance.update", "assistance.view"],
   "admin/(protected)/requests/[id]/page.tsx": ["appeal.create", "appeal.view", "assistance.approve", "assistance.assign", "assistance.update", "assistance.view"],
+  "admin/(protected)/requests/[id]/rejection-actions.ts": ["assistance.approve", "assistance.update"],
+  "admin/(protected)/requests/[id]/approval-actions.ts": ["assistance.approve", "assistance.update"],
   "admin/(protected)/retention/actions.ts": ["assistance.approve"],
   "admin/(protected)/retention/page.tsx": ["assistance.approve"],
   "admin/(protected)/taleem/actions.ts": ["assistance.approve"],
@@ -118,6 +120,7 @@ describe("AF-R012 admin permission matrix", () => {
   it.each([
     ["donation reconciliation actions", "admin/(protected)/donations/actions.ts"],
     ["notification requeue actions", "admin/(protected)/notifications/actions.ts"],
+    ["request rejection action", "admin/(protected)/requests/[id]/rejection-actions.ts"],
     ["retention page and actions", "admin/(protected)/retention/page.tsx"],
     ["retention actions", "admin/(protected)/retention/actions.ts"],
     ["Taleem roster page", "admin/(protected)/taleem/page.tsx"],

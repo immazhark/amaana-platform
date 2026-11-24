@@ -10,10 +10,10 @@ import { DirectTransferForm } from "@/components/direct-transfer-form";
 import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
 import type { CampaignSelection } from "@/lib/fund-campaign";
 import type { SponsorshipSelection } from "@/lib/taleem-sponsorship";
-import styles from "./donation-methods.module.css";
 
 type Method = "RAZORPAY" | "DIRECT_UPI" | "BANK_TRANSFER";
 export function DonationMethods(props: { appealId?: string; fundSlug?: string; feeBps?: number; extraFields?: ReactNode; campaign?: CampaignSelection; sponsorship?: SponsorshipSelection; appealTitle: string; maxAmount: number; zakatEligible?: boolean; paymentDetails: DonationPaymentDetails; copy: DonationFormCopy; onLockChange?: (locked: boolean) => void }) {
+  const styles = props.copy.methodClasses;
   const [method,setMethod]=useState<Method>("RAZORPAY");
   const [transferLocked,setTransferLocked]=useState(false);
   const [onlineLocked,setOnlineLocked]=useState(false);
@@ -75,6 +75,7 @@ export function AppealLandingCheckout({ appeals, paymentDetails }: {
   const selected = eligible.find(appeal => appeal.id === selectedId) ?? eligible[0];
   if (!selected) return null;
 
+  const styles = selected.copy.methodClasses;
   const single = eligible.length === 1;
   return <section id="choose-appeal-checkout" className={styles.landing} aria-labelledby="choose-appeal-checkout-title">
     <span className="v2-section-label">Currently reviewed giving destinations</span>

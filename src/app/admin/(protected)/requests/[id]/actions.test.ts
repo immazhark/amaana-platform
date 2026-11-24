@@ -323,3 +323,72 @@ describe("reviewer-facing validation feedback (AF-ADMIN-500)", () => {
       .rejects.toThrow("Not authorized");
   });
 });
+
+describe("rejection has one route: the dedicated Reject request form", () => {
+  const idle = { kind: "idle" as const, message: "" };
+  const versioned = (status: string, verification: Record<string, unknown> | null) => ({
+    id: "synthetic-request", status, appealId: null, email: null, referenceNumber: "AF-SYNTH-02",
+    updatedAt: new Date("2026-11-22T04:00:00.000Z"), verification,
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requirePermission.mockResolvedValue({ id: "synthetic-approver" });
+    mocks.hasPermission.mockReturnValue(true);
+    mocks.transaction.mockImplementation(async callback => callback(tx()));
+    mocks.auditCreate.mockResolvedValue({ id: "audit-1" });
+    mocks.requestUpdateMany.mockResolvedValue({ count: 1 });
+  });
+
+  it("refuses the old status-form route to REJECTED, even when its old preconditions were met", async () => {
+    for (const verification of [null, { decision: "PENDING", completedAt: null }, { decision: "DECLINED", completedAt: new Date("2026-11-21T00:00:00Z") }]) {
+      mocks.requestFind.mockResolvedValue(versioned("UNDER_VERIFICATION", verification));
+      const result = await updateRequestWithFeedback(idle, form({ id: "synthetic-request", expectedUpdatedAt: "2026-11-22T04:00:00.000Z", status: "REJECTED", internalNotes: "" }));
+      expect(result, JSON.stringify(verification)).toEqual({ kind: "error", message: "Use Reject request to reject this request." });
+    }
+    expect(mocks.requestUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+    expect(mocks.notificationCreate).not.toHaveBeenCalled();
+  });
+
+  it("still saves notes on a request that is already rejected, without a status change or a second email", async () => {
+    mocks.requestFind.mockResolvedValue(versioned("REJECTED", { decision: "DECLINED", completedAt: new Date("2026-11-21T00:00:00Z") }));
+    const result = await updateRequestWithFeedback(idle, form({ id: "synthetic-request", expectedUpdatedAt: "2026-11-22T04:00:00.000Z", status: "REJECTED", internalNotes: "A follow-up note" }));
+    expect(result).toEqual({ kind: "success", message: "Request changes saved." });
+    expect(mocks.requestUpdateMany).toHaveBeenCalledOnce();
+    expect(mocks.notificationCreate).not.toHaveBeenCalled();
+  });
+
+  it("keeps the recovery route: a rejected request can be moved back into review through the status form", async () => {
+    mocks.requestFind.mockResolvedValue(versioned("REJECTED", { decision: "DECLINED", completedAt: new Date("2026-11-21T00:00:00Z") }));
+    const result = await updateRequestWithFeedback(idle, form({ id: "synthetic-request", expectedUpdatedAt: "2026-11-22T04:00:00.000Z", status: "UNDER_VERIFICATION", internalNotes: "" }));
+    expect(result.kind).toBe("success");
+    expect(mocks.requestUpdateMany).toHaveBeenCalledOnce();
+  });
+
+  const verificationForm = (over: Record<string, string> = {}) => form({
+    id: "synthetic-request", expectedRequestUpdatedAt: "2026-11-22T04:00:00.000Z", expectedVerificationUpdatedAt: "",
+    verifiedNeedAmount: "", approvedPublicTarget: "", paymentDestination: "", verificationSummary: "", decision: "DECLINED",
+    confidentialityLevel: "CONFIDENTIAL", publicNameConsent: "UNCONFIRMED", photoConsent: "UNCONFIRMED", medicalDetailsConsent: "UNCONFIRMED",
+    institutionNameConsent: "UNCONFIRMED", archiveConsent: "UNCONFIRMED", zakatStatus: "UNREVIEWED", ...over,
+  });
+
+  it("refuses to decline through the verification form: declining a request is Reject request", async () => {
+    mocks.requestFind.mockResolvedValue({ id: "synthetic-request", appealId: null, status: AssistanceStatus.UNDER_VERIFICATION, verification: null });
+    for (const markComplete of [{}, { markComplete: "on" }] as Record<string, string>[]) {
+      const result = await saveVerificationWithFeedback(idle, verificationForm(markComplete));
+      expect(result).toEqual({ kind: "error", message: "To decline a request, use Reject request." });
+    }
+    expect(mocks.verificationUpsert).not.toHaveBeenCalled();
+  });
+
+  it("requires reopening a terminal request before changing a completed verification", async () => {
+    const declined = { decision: "DECLINED", completedAt: new Date("2026-11-21T00:00:00Z"), updatedAt: new Date("2026-11-22T04:05:00.000Z") };
+    mocks.requestFind.mockResolvedValue({ id: "synthetic-request", appealId: null, status: AssistanceStatus.REJECTED, verification: declined });
+    mocks.requestFindFirst.mockResolvedValue({ id: "synthetic-request", updatedAt: new Date("2026-11-22T04:00:00.000Z"), verification: { updatedAt: declined.updatedAt } });
+    const result = await saveVerificationWithFeedback(idle, verificationForm({ markComplete: "on", expectedVerificationUpdatedAt: declined.updatedAt.toISOString() }));
+    expect(result.kind).toBe("error");
+    expect(result.message).toContain("Reopen");
+    expect(mocks.verificationUpsert).not.toHaveBeenCalled();
+  });
+});
