@@ -59,6 +59,15 @@ export function isAllowedProfileRequest(rawUrl, method = "GET") {
   }
 }
 
+export function assertSyntheticProfileRuntime(runtime) {
+  if (!runtime || typeof runtime !== "object" || Array.isArray(runtime) ||
+      runtime.status !== "ok" ||
+      !["staging", "development", "test"].includes(runtime.environment) ||
+      !["test", "unconfigured"].includes(runtime.paymentMode)) {
+    throw new Error("Local runtime is not a verified non-production synthetic profile target");
+  }
+}
+
 export function reportBuildIdentity(sourceSha, runtimeSha) {
   if (typeof sourceSha !== "string" || !/^[a-f0-9]{40}$/.test(sourceSha)) {
     throw new Error("A full source commit SHA is required");

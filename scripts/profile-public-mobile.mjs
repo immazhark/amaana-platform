@@ -9,7 +9,7 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import {
-  MOBILE_PROFILE, MOBILE_ROUTES, assertLocalProfileTarget,
+  MOBILE_PROFILE, MOBILE_ROUTES, assertLocalProfileTarget, assertSyntheticProfileRuntime,
   calculateClsSessionWindows, isAllowedProfileRequest,
   profileTraceName, reportBuildIdentity, summarizeMobileSamples,
 } from "./mobile-profile-core.mjs";
@@ -133,10 +133,7 @@ export async function collectMobileProfile() {
     throw new Error("Local runtime identity endpoint did not return the expected response");
   }
   const runtime = await versionResponse.json();
-  if (runtime.status !== "ok" || !["staging", "development", "test"].includes(runtime.environment) ||
-      runtime.paymentMode === "live") {
-    throw new Error("Local runtime is not a verified non-production synthetic profile target");
-  }
+  assertSyntheticProfileRuntime(runtime);
   const sourceSha = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8", timeout: 5_000 }).trim();
   const identity = reportBuildIdentity(sourceSha, runtime.commitSha);
   let localBuildId = null;
