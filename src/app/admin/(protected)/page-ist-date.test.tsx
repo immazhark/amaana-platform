@@ -141,6 +141,7 @@ describe("assistance queue assignment filter", () => {
     { view: "tests", referenceNumber: "AF-STAGING-ACCEPTANCE" },
   ])("narrows existing visibility scope and status counts to unassigned cases", async ({ view, referenceNumber }) => {
     mocks.count.mockResolvedValue(101);
+    mocks.groupBy.mockResolvedValue([{ status: "SUBMITTED", _count: { _all: 101 } }, { status: "UNDER_VERIFICATION", _count: { _all: 4 } }]);
     mocks.findMany.mockResolvedValue([]);
     const html = renderToStaticMarkup(await AdminQueuePage({ searchParams: Promise.resolve({
       view, status: "SUBMITTED", assignment: "unassigned", sort: "oldest", page: "2",
@@ -154,6 +155,9 @@ describe("assistance queue assignment filter", () => {
       where, orderBy: [{ createdAt: "asc" }, { id: "asc" }], skip: 50, take: 50,
     }));
     expect(html).toContain("Unassigned only");
+    expect(html).toMatch(/>SUBMITTED\s*\(101\)<\/a>/);
+    expect(html).toMatch(/>UNDER VERIFICATION\s*\(4\)<\/a>/);
+    expect(html).toMatch(/>REJECTED\s*\(0\)<\/a>/);
     expect(html).toMatch(/<a[^>]*aria-current="page"[^>]*>Unassigned only<\/a>/);
     expect(html).toContain("assignment=unassigned&amp;status=SUBMITTED&amp;page=3");
     expect(html).toContain("assignment=unassigned&amp;status=UNDER_VERIFICATION");
@@ -171,5 +175,18 @@ describe("assistance queue assignment filter", () => {
     expect(mocks.findMany).toHaveBeenCalledWith(expect.objectContaining({
       where: { referenceNumber: { not: "AF-STAGING-ACCEPTANCE" } },
     }));
+  });
+});
+
+describe("assistance queue triage authorization boundary", () => {
+  it("does not read any case or grouped count if assistance.view is denied", async () => {
+    mocks.permission.mockReturnValue(false);
+    await expect(AdminQueuePage({ searchParams: Promise.resolve({
+      view: "tests", status: "SUBMITTED", sort: "oldest", assignment: "unassigned", page: "2",
+    }) })).rejects.toThrow("NEXT_REDIRECT");
+    expect(mocks.permission).toHaveBeenCalledWith({ id: "synthetic-operator" }, "assistance.view");
+    expect(mocks.count).not.toHaveBeenCalled();
+    expect(mocks.groupBy).not.toHaveBeenCalled();
+    expect(mocks.findMany).not.toHaveBeenCalled();
   });
 });
