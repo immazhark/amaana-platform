@@ -242,3 +242,36 @@ test("resource timing rejects incomplete, oversized, identifying or noninteger s
     Array.from({ length: 4096 }, () => valid),
   ]) assert.throws(() => summarizeResourceTimings(entries), /Invalid resource timing/);
 });
+
+
+test("resource summaries compare five runs and preserve unavailable measurements", () => {
+  const samples = [5, 1, 3, 2, 4].map(run => ({ run, totals: summarizeResourceTimings([
+    { initiatorType: "img", transferSize: run * 100, encodedBodySize: run * 50 },
+    { initiatorType: "script", transferSize: 100, encodedBodySize: 75 },
+  ]) }));
+  const report = summarizeResourceTimingSamples(samples);
+  assert.equal(report.sampleCount, 5);
+  assert.equal(report.measuredSampleCount, 5);
+  assert.deepEqual(report.median, { entryCount: 2, transferBytes: 400, encodedBodyBytes: 225, zeroTransferEntries: 0, imageInitiatorCount: 1, imageInitiatorTransferBytes: 300, imageInitiatorEncodedBodyBytes: 150 });
+  assert.deepEqual(report.samples.map(s => s.run), [1, 2, 3, 4, 5]);
+  const incomplete = summarizeResourceTimingSamples(samples.map(s => s.run === 3 ? { ...s, totals: null } : s));
+  assert.equal(incomplete.measuredSampleCount, 4);
+  assert.equal(incomplete.median, null);
+  assert.equal(incomplete.samples[2].totals, null);
+  assert.equal(summarizeResourceTimingSamples(samples.map(s => ({ ...s, totals: null }))).median, null);
+});
+
+test("resource summaries reject duplicate runs, impossible aggregate counts and identifiers", () => {
+  const totals = summarizeResourceTimings([{ initiatorType: "img", transferSize: 100, encodedBodySize: 50 }]);
+  const good = [1, 2, 3, 4, 5].map(run => ({ run, totals }));
+  for (const samples of [
+    good.slice(1),
+    good.map((s, i) => i === 0 ? { ...s, run: 2 } : s),
+    good.map((s, i) => i === 0 ? { ...s, url: "/private" } : s),
+    good.map((s, i) => i === 0 ? { ...s, totals: { ...totals, imageInitiatorCount: 2 } } : s),
+    good.map((s, i) => i === 0 ? { ...s, totals: { ...totals, imageInitiatorTransferBytes: 101 } } : s),
+    good.map((s, i) => i === 0 ? { ...s, totals: { ...totals, zeroTransferEntries: 2 } } : s),
+    good.map((s, i) => i === 0 ? { ...s, totals: { ...totals, encodedBodyBytes: -1 } } : s),
+    good.map((s, i) => i === 0 ? { ...s, totals: { ...totals, name: "private" } } : s),
+  ]) assert.throws(() => summarizeResourceTimingSamples(samples), /Invalid resource timing summary/);
+});
