@@ -4,6 +4,7 @@ import {
   MOBILE_PROFILE,
   MOBILE_ROUTES,
   assertLocalProfileTarget,
+  assertSyntheticProfileRuntime,
   calculateClsSessionWindows,
   isAllowedProfileRequest,
   profileTraceName,
@@ -193,4 +194,18 @@ test("synthetic profile prevents local image optimizer from fetching remote or p
   }
   assert.equal(isAllowedProfileRequest(image("/hero/approved.webp")), true);
   assert.equal(isAllowedProfileRequest(image("/media/drive/photo.jpg")), true);
+});
+
+test("synthetic runtime identity requires an explicitly supported non-live payment mode", () => {
+  for (const environment of ["staging", "development", "test"]) {
+    for (const paymentMode of ["test", "unconfigured"]) {
+      assert.doesNotThrow(() => assertSyntheticProfileRuntime({ status: "ok", environment, paymentMode }));
+    }
+  }
+  for (const paymentMode of [undefined, null, "", "unknown", "LIVE", "live", false, {}, ["test"]]) {
+    assert.throws(() => assertSyntheticProfileRuntime({ status: "ok", environment: "test", paymentMode }), /non-production synthetic profile target/);
+  }
+  for (const runtime of [null, [], {}, { status: "ok", environment: "production", paymentMode: "test" }, { status: "error", environment: "test", paymentMode: "test" }]) {
+    assert.throws(() => assertSyntheticProfileRuntime(runtime), /non-production synthetic profile target/);
+  }
 });
