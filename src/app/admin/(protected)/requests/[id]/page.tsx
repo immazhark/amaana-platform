@@ -88,57 +88,59 @@ export default async function RequestDetailPage({ params }: Props) {
         <section className="card">
           <h2>Private verification & publication gate</h2>
           <p className="muted">Record verification, funding checks, disclosure permissions and Zakat review here. This information is internal and is not copied automatically into public appeal text.</p>
+          <p>Save incomplete verification with Verification complete unchecked. Fields marked required apply when completing verification, not when saving progress. Approval does not publish an appeal or transfer funds.</p>
+          <p className="muted">Private assistance and partial support do not create public appeals. For public fundraising, complete the additional target and disclosure checks. A declined or referred decision still requires the existing verification checks before completion.</p>
           <AdminActionFeedbackForm action={saveVerificationWithFeedback}>
             <input type="hidden" name="id" value={id}/>
             <input type="hidden" name="expectedRequestUpdatedAt" value={request.updatedAt.toISOString()}/>
             <input type="hidden" name="expectedVerificationUpdatedAt" value={verification?.updatedAt.toISOString() ?? ""}/>
 
-            <label htmlFor="confidentialityLevel">Confidentiality level</label>
+            <label htmlFor="confidentialityLevel">Confidentiality level (Required; defaults to confidential)</label>
             <select id="confidentialityLevel" name="confidentialityLevel" defaultValue={verification?.confidentialityLevel ?? "CONFIDENTIAL"} disabled={verificationLocked}>
               {ASSISTANCE_CONFIDENTIALITY_LEVELS.map(value => <option key={value} value={value}>{label(value)}</option>)}
             </select>
 
-            <label className="checkbox"><input type="checkbox" name="needConfirmed" defaultChecked={verification?.needConfirmed ?? false} disabled={verificationLocked}/><span><strong>Need confirmed</strong><small>The underlying charitable need has been verified.</small></span></label>
-            <label className="checkbox"><input type="checkbox" name="evidenceReviewed" defaultChecked={verification?.evidenceReviewed ?? false} disabled={verificationLocked}/><span><strong>Supporting evidence reviewed</strong><small>Relevant private proof has been reviewed; do not publish the raw documents.</small></span></label>
-            <label className="checkbox"><input type="checkbox" name="otherFundingChecked" defaultChecked={verification?.otherFundingChecked ?? false} disabled={verificationLocked}/><span><strong>Other funding checked</strong><small>Duplicate fundraising, concessions, insurance, government help or other major support has been considered.</small></span></label>
+            <label className="checkbox"><input type="checkbox" name="needConfirmed" defaultChecked={verification?.needConfirmed ?? false} disabled={verificationLocked}/><span><strong>Need confirmed</strong> (Required to complete verification)<small>The underlying charitable need has been verified.</small></span></label>
+            <label className="checkbox"><input type="checkbox" name="evidenceReviewed" defaultChecked={verification?.evidenceReviewed ?? false} disabled={verificationLocked}/><span><strong>Supporting evidence reviewed</strong> (Required to complete verification)<small>Relevant private proof has been reviewed; do not publish the raw documents.</small></span></label>
+            <label className="checkbox"><input type="checkbox" name="otherFundingChecked" defaultChecked={verification?.otherFundingChecked ?? false} disabled={verificationLocked}/><span><strong>Other funding checked</strong> (Required to complete verification)<small>Duplicate fundraising, concessions, insurance, government help or other major support has been considered.</small></span></label>
 
-            <label htmlFor="verifiedNeedAmount">Verified need amount (₹)</label>
+            <label htmlFor="verifiedNeedAmount">Verified need amount (₹) (Required to complete verification)</label>
             <input id="verifiedNeedAmount" name="verifiedNeedAmount" type="text" inputMode="decimal" pattern="(?:0\.(?:0[1-9]|[1-9][0-9]?)|[1-9][0-9]*(?:\.[0-9]{1,2})?)" maxLength={16} defaultValue={verification?.verifiedNeedAmount?.toString() ?? ""} disabled={verificationLocked}/>
 
-            <label htmlFor="approvedPublicTarget">Approved public fundraising target (₹)</label>
+            <label htmlFor="approvedPublicTarget">Approved public fundraising target (₹) (Required for public fundraising only)</label>
             <input id="approvedPublicTarget" name="approvedPublicTarget" type="text" inputMode="decimal" pattern="(?:0\.(?:0[1-9]|[1-9][0-9]?)|[1-9][0-9]*(?:\.[0-9]{1,2})?)" maxLength={16} defaultValue={verification?.approvedPublicTarget?.toString() ?? ""} disabled={verificationLocked}/>
             <small className="muted">Positive rupees only; up to two decimal places. Use only when the decision is Approved Public. It cannot exceed the verified need.</small>
 
-            <label htmlFor="paymentDestination">Payment destination</label>
+            <label htmlFor="paymentDestination">Payment destination (Required to complete verification)</label>
             <input id="paymentDestination" name="paymentDestination" maxLength={500} defaultValue={verification?.paymentDestination ?? ""} placeholder="Hospital, vendor, beneficiary transfer, asset purchase, verified settlement…" disabled={verificationLocked}/>
 
-            <label htmlFor="otherFundingNotes">Other funding / duplication notes</label>
+            <label htmlFor="otherFundingNotes">Other funding / duplication notes (Optional)</label>
             <textarea id="otherFundingNotes" name="otherFundingNotes" maxLength={2000} defaultValue={verification?.otherFundingNotes ?? ""} disabled={verificationLocked}/>
 
-            <label htmlFor="verificationSummary">Verification summary</label>
+            <label htmlFor="verificationSummary">Verification summary (Required to complete verification)</label>
             <textarea id="verificationSummary" name="verificationSummary" maxLength={5000} defaultValue={verification?.verificationSummary ?? ""} placeholder="Internal factual summary of what was checked and what is approved." disabled={verificationLocked}/>
 
-            <label htmlFor="decision">Verification decision</label>
+            <label htmlFor="decision">Verification decision (Required to complete verification)</label>
             <select id="decision" name="decision" defaultValue={verification?.decision ?? "PENDING"} disabled={verificationLocked}>
               {ASSISTANCE_VERIFICATION_DECISIONS.map(value => <option key={value} value={value}>{label(value)}</option>)}
             </select>
 
-            <label htmlFor="publicNameConsent">Public name permission</label>
+            <label htmlFor="publicNameConsent">Public name permission (Required for public fundraising only)</label>
             <select id="publicNameConsent" name="publicNameConsent" defaultValue={verification?.publicNameConsent ?? "UNCONFIRMED"} disabled={verificationLocked}>{ASSISTANCE_CONSENT_DECISIONS.map(value => <option key={value} value={value}>{label(value)}</option>)}</select>
 
-            <label htmlFor="photoConsent">Photo/media permission</label>
+            <label htmlFor="photoConsent">Photo/media permission (Required for public fundraising only)</label>
             <select id="photoConsent" name="photoConsent" defaultValue={verification?.photoConsent ?? "UNCONFIRMED"} disabled={verificationLocked}>{ASSISTANCE_CONSENT_DECISIONS.map(value => <option key={value} value={value}>{label(value)}</option>)}</select>
 
-            <label htmlFor="medicalDetailsConsent">Medical-detail disclosure permission</label>
+            <label htmlFor="medicalDetailsConsent">Medical-detail disclosure permission (Required for public fundraising only)</label>
             <select id="medicalDetailsConsent" name="medicalDetailsConsent" defaultValue={verification?.medicalDetailsConsent ?? "UNCONFIRMED"} disabled={verificationLocked}>{ASSISTANCE_CONSENT_DECISIONS.map(value => <option key={value} value={value}>{label(value)}</option>)}</select>
 
-            <label htmlFor="institutionNameConsent">Hospital / institution naming permission</label>
+            <label htmlFor="institutionNameConsent">Hospital / institution naming permission (Required for public fundraising only)</label>
             <select id="institutionNameConsent" name="institutionNameConsent" defaultValue={verification?.institutionNameConsent ?? "UNCONFIRMED"} disabled={verificationLocked}>{ASSISTANCE_CONSENT_DECISIONS.map(value => <option key={value} value={value}>{label(value)}</option>)}</select>
 
-            <label htmlFor="archiveConsent">Public archive permission after closure</label>
+            <label htmlFor="archiveConsent">Public archive permission after closure (Required for public fundraising only)</label>
             <select id="archiveConsent" name="archiveConsent" defaultValue={verification?.archiveConsent ?? "UNCONFIRMED"} disabled={verificationLocked}>{ASSISTANCE_CONSENT_DECISIONS.map(value => <option key={value} value={value}>{label(value)}</option>)}</select>
 
-            <label htmlFor="zakatStatus">Zakat review</label>
+            <label htmlFor="zakatStatus">Zakat review (Required to complete verification)</label>
             <select id="zakatStatus" name="zakatStatus" defaultValue={verification?.zakatStatus ?? "UNREVIEWED"} disabled={verificationLocked}>{ASSISTANCE_ZAKAT_STATUSES.map(value => <option key={value} value={value}>{label(value)}</option>)}</select>
             <small className="muted">Never infer Zakat eligibility. Choose Not applicable when the case is not being assessed for Zakat.</small>
 
@@ -167,7 +169,7 @@ export default async function RequestDetailPage({ params }: Props) {
           <form action={assignRequest} className="field">
             <input type="hidden" name="id" value={id}/>
             <input type="hidden" name="expectedUpdatedAt" value={request.updatedAt.toISOString()}/>
-            <label htmlFor="assignedToId">Assigned staff member</label>
+            <label htmlFor="assignedToId">Assigned staff member (Optional)</label>
             <select id="assignedToId" name="assignedToId" defaultValue={request.assignedToId ?? ""} aria-describedby={currentAssigneeUnavailable ? "assignment-availability" : undefined}><option value="">Unassigned</option>{currentAssigneeUnavailable && <option value={request.assignedToId!}>{`${request.assignedTo?.name ?? "Current staff member"} (currently unavailable)`}</option>}{staff.map(member => <option key={member.id} value={member.id}>{member.name}</option>)}</select>
             {currentAssigneeUnavailable && <small id="assignment-availability" className="muted">The current assignee is unavailable for assignment. Choose an available staff member or Unassigned before saving a change.</small>}
             <button className="button secondary" disabled={!hasPermission(user, "assistance.assign")}>Save assignment</button>
@@ -198,6 +200,7 @@ export default async function RequestDetailPage({ params }: Props) {
             <select id="status" name="status" defaultValue={request.status} disabled={converted}>{visibleStatuses.map(status => <option key={status} value={status}>{status.replaceAll("_", " ")}</option>)}</select>
             {converted && <input type="hidden" name="status" value="CONVERTED_TO_APPEAL"/>}
             <label htmlFor="internalNotes">Internal notes</label>
+            <small className="muted">Optional for ordinary review; retain specific missing items while awaiting information.</small>
             <textarea id="internalNotes" name="internalNotes" defaultValue={request.internalNotes ?? ""} maxLength={10000}/>
             {converted && <small className="muted">The converted status is managed by the linked appeal workflow; internal notes can still be updated here.</small>}
             <button className="button" disabled={!hasPermission(user, "assistance.update")}>Save review</button>
