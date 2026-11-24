@@ -8,7 +8,7 @@ import {
   parseRejectionInput, rejectionDraftCookieName, rejectionDraftCookieValue, rejectionProblems, rejectionRedirect,
   type RejectionNotice,
 } from "@/lib/assistance-rejection";
-import { composeDeclineReason } from "@/lib/assistance-policy";
+import { ASSISTANCE_DECLINE_REASONS, composeDeclineReason } from "@/lib/assistance-policy";
 import { AssistanceRejectionError, rejectAssistanceRequest } from "@/lib/assistance-rejection-service";
 
 const DRAFT_PATH = "/admin/requests";
@@ -81,7 +81,7 @@ export async function rejectRequestAction(formData: FormData): Promise<never> {
   let outcome: "rejected" | "already_rejected";
   try {
     const result = await rejectAssistanceRequest({
-      requestId: id, reason: (parsed as { ok: true; reason: string }).reason, actorId: user.id,
+      requestId: id, reason: (parsed as { ok: true; reason: string }).reason, reasonCode: ASSISTANCE_DECLINE_REASONS.some(reason => reason.code === codeField) ? codeField : null, actorId: user.id,
       expectedRequestUpdatedAt: requestVersion as Date, expectedVerificationUpdatedAt: verificationVersion as Date | null,
     });
     outcome = result.outcome;

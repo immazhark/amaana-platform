@@ -314,6 +314,12 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
             {fieldError("zakatStatus")}
 
             {approvalOpen && canApprove && <>
+              {approvalNotice?.kind === "error" && approvalNotice.code === "capacity_full" && <fieldset>
+                <legend>Capacity exception</legend>
+                <label className="checkbox"><input type="checkbox" name="capacityException" /><span><strong>Accept this case beyond the annual planning limit</strong><small>Recorded in the audit history with your name.</small></span></label>
+                <label htmlFor="capacityExceptionNote">Reason for the exception</label>
+                <textarea id="capacityExceptionNote" name="capacityExceptionNote" rows={2} maxLength={1000} />
+              </fieldset>}
               <label className="checkbox"><input id="confirmApproval" type="checkbox" name="confirmApproval" {...fieldAttrs("confirmApproval")}/><span><strong>I confirm I am approving this request on the support route chosen above</strong> <span className="muted">({REQUIRED_TO_APPROVE})</span><small>This completes the verification and marks the request Approved with your name on it. If the applicant gave an email address, the standard “status updated” message is queued (queued is not delivered). Approval is not payment, and for public fundraising it does not publish anything.</small></span></label>
               {fieldError("confirmApproval")}
             </>}

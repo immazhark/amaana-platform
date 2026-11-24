@@ -1,7 +1,8 @@
 import { AppealCategory, NotificationChannel } from "@prisma/client";
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
-import { INTAKE_PAUSED_MESSAGE, OUTSIDE_SERVICE_AREA_MESSAGE, isAssistanceIntakePaused } from "@/lib/assistance-policy";
+import { INTAKE_PAUSED_MESSAGE, OUTSIDE_SERVICE_AREA_MESSAGE } from "@/lib/assistance-policy";
+import { isIntakePaused } from "@/lib/assistance-capacity";
 import { assistanceSchema, createReferenceNumber, createTrackingToken, hashTrackingToken } from "@/lib/assistance";
 import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
 import { prisma } from "@/lib/prisma";
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
     }
 
     // Server-side intake switch: enforced here so a direct API request cannot bypass a paused intake.
-    if (isAssistanceIntakePaused()) {
+    if (await isIntakePaused(prisma)) {
       return NextResponse.json({ error: INTAKE_PAUSED_MESSAGE, code: "intake_paused" }, { status: 403, headers: privateHeaders });
     }
 
@@ -189,6 +190,7 @@ export async function POST(request: Request) {
           applicantName: parsed.data.applicantName,
           phone: parsed.data.phone,
           email,
+          beneficiaryResidence: parsed.data.beneficiaryResidence,
           city: parsed.data.city,
           category: parsed.data.category as AppealCategory,
           description: parsed.data.description,

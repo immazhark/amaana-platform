@@ -6,6 +6,9 @@ import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { adminRecordView, assistanceAdminWhere } from "@/lib/admin-record-visibility";
 import { hasPermission, permissionKeys, requireAuthenticatedUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { capacityRemaining, capacityUsed, isIntakePaused } from "@/lib/assistance-capacity";
+import { INDIVIDUAL_CASE_ANNUAL_CAPACITY } from "@/lib/assistance-policy";
+import { setAssistanceIntakeAction } from "./intake-actions";
 
 type Props = { searchParams: Promise<{ status?: string; page?: string; view?: string }> };
 const allowed = Object.values(AssistanceStatus);
@@ -18,6 +21,8 @@ export default async function AdminQueuePage({ searchParams }: Props) {
   const selected = allowed.includes(status as AssistanceStatus) ? status as AssistanceStatus : undefined;
   const scope = assistanceAdminWhere(view);
   const where = assistanceAdminWhere(view, selected);
+  const [used, paused] = await Promise.all([capacityUsed(prisma), isIntakePaused(prisma)]);
+  const canApprove = hasPermission(user, "assistance.approve");
   const [totalItems, grouped] = await Promise.all([
     prisma.assistanceRequest.count({ where }),
     prisma.assistanceRequest.groupBy({ by: ["status"], where: scope, _count: { _all: true } }),
@@ -49,6 +54,12 @@ export default async function AdminQueuePage({ searchParams }: Props) {
 
   return <>
     <div className="admin-heading"><div><p className="eyebrow">Case management</p><h1>Assistance queue</h1></div></div>
+    <section className="card" aria-labelledby="capacity-heading">
+      <h2 id="capacity-heading">Intake and annual capacity</h2>
+      <p>{used} of {INDIVIDUAL_CASE_ANNUAL_CAPACITY} individual cases taken up this calendar year ({capacityRemaining(used)} places left). A maximum, not a commitment. Counted when a case is approved; annual distributions and Taleem sponsorships are separate.</p>
+      <p>New requests are <strong>{paused ? "paused" : "open"}</strong>. Intake never reopens by itself at a year boundary.</p>
+      {canApprove && <form action={setAssistanceIntakeAction}><input type="hidden" name="paused" value={paused ? "false" : "true"} /><button className="button" type="submit">{paused ? "Reopen new requests" : "Pause new requests"}</button></form>}
+    </section>
     <div className="filter-row" role="group" aria-label="Record visibility"><strong>Records:</strong><Link href="/admin" aria-current={view === "live" ? "page" : undefined}>Live records</Link><Link href="/admin?view=tests" aria-current={view === "tests" ? "page" : undefined}>Historical tests</Link></div>
     {view === "tests" && <p className="muted">Retained staging acceptance records only. Related payment and refund history remains available for audit.</p>}
     <div className="filter-row" role="group" aria-label="Assistance request status filter"><strong>Status:</strong><Link href={{ pathname: "/admin", query: viewQuery }} aria-current={!selected ? "page" : undefined}>All</Link>{allowed.map(item => <Link key={item} href={{ pathname: "/admin", query: { ...viewQuery, status: item } }} aria-current={selected === item ? "page" : undefined}>{item.replaceAll("_", " ")} ({counts.get(item) ?? 0})</Link>)}</div>

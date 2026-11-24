@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "./prisma";
 import { rejectAssistanceRequest } from "./assistance-rejection-service";
 import { AssistanceApprovalError, approveAssistanceRequest, saveApprovalDraft, type ApprovalInput } from "./assistance-approval-service";
@@ -48,6 +48,11 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("assistance approv
     isolatedTargetAccepted = true;
     actorId = (await prisma.user.create({ data: { name: "Synthetic approver", email: tag + "-a@example.invalid", status: "ACTIVE" }, select: { id: true } })).id;
     otherActorId = (await prisma.user.create({ data: { name: "Synthetic other", email: tag + "-b@example.invalid", status: "ACTIVE" }, select: { id: true } })).id;
+  });
+
+  // Capacity is global to the year, so every test starts with none of this file's cases counted.
+  beforeEach(async () => {
+    if (isolatedTargetAccepted) await prisma.assistanceRequest.updateMany({ where: { id: { in: requestIds } }, data: { acceptedAt: null } });
   });
 
   afterAll(async () => {
@@ -278,6 +283,44 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("assistance approv
       const request = await makeRequest();
       await saveApprovalDraft(await draft(request.id, { route: "APPROVED_PRIVATE", fields: { ...fields, approvedPublicTarget: 1000 } }));
       expect((await prisma.assistanceVerification.findUniqueOrThrow({ where: { assistanceRequestId: request.id } })).approvedPublicTarget).toBeNull();
+    });
+  });
+
+  describe("annual individual-case capacity", () => {
+    const fillCapacity = async () => {
+      const existing = await prisma.assistanceRequest.count({ where: { acceptedAt: { not: null }, status: { in: ["APPROVED", "CONVERTED_TO_APPEAL", "CLOSED"] } } });
+      for (let i = existing; i < 12; i++) {
+        const filler = await makeRequest({ status: "APPROVED" });
+        await prisma.assistanceRequest.update({ where: { id: filler.id }, data: { acceptedAt: new Date() } });
+      }
+    };
+
+    it("records the acceptance time and refuses a thirteenth case without an exception", async () => {
+      await fillCapacity();
+      const blocked = await makeRequest();
+      const error = await refused(approveAssistanceRequest(await input(blocked.id)));
+      expect(error?.code).toBe("capacity_full");
+      expect((await prisma.assistanceRequest.findUniqueOrThrow({ where: { id: blocked.id } })).status).toBe("UNDER_VERIFICATION");
+    });
+
+    it("accepts beyond capacity only with a stated exception, which is audited", async () => {
+      await fillCapacity();
+      const request = await makeRequest();
+      await approveAssistanceRequest(await input(request.id, { capacityExceptionNote: "Owner decision: critical surgery" }));
+      const after = await prisma.assistanceRequest.findUniqueOrThrow({ where: { id: request.id } });
+      expect(after).toMatchObject({ status: "APPROVED", capacityExceptionNote: "Owner decision: critical surgery" });
+      expect(after.acceptedAt).not.toBeNull();
+    });
+
+    it("lets concurrent acceptances take only the places left", async () => {
+      await fillCapacity();
+      // Free exactly one place: the oldest filler is moved back into review.
+      const filler = await prisma.assistanceRequest.findFirstOrThrow({ where: { id: { in: requestIds }, acceptedAt: { not: null }, status: "APPROVED" } });
+      await prisma.assistanceRequest.update({ where: { id: filler.id }, data: { status: "UNDER_VERIFICATION" } });
+      const a = await makeRequest();
+      const b = await makeRequest();
+      const results = await Promise.allSettled([approveAssistanceRequest(await input(a.id)), approveAssistanceRequest(await input(b.id))]);
+      expect(results.filter(result => result.status === "fulfilled")).toHaveLength(1);
     });
   });
 });

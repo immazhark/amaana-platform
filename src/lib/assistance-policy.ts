@@ -33,6 +33,7 @@ export const ASSISTANCE_SCOPE_POINTS = [
   "Support depends on verification, our capacity and available funding.",
   "We are not an emergency response service. Please do not delay urgent care while waiting for a response.",
   "Repeat messages or repeat submissions do not improve priority.",
+  "We currently take up at most 12 new individual cases a year. This is a limit of our present resources, not a promise of any number, and we hope to raise it as we grow.",
 ] as const;
 
 /** Outcome codes for declining a request. The label is what the reviewer sees and what is recorded with the decision. */

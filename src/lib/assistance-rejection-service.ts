@@ -17,6 +17,7 @@ export type RejectionInput = {
   requestId: string;
   /** Already validated and trimmed by parseRejectionInput. */
   reason: string;
+  reasonCode?: string | null;
   /** The versions the reviewer's page was showing. A change since then is a conflict, never silently overwritten. */
   expectedRequestUpdatedAt: Date;
   expectedVerificationUpdatedAt: Date | null;
@@ -88,7 +89,7 @@ export async function rejectAssistanceRequest(input: RejectionInput): Promise<Re
     if (changed.count !== 1) throw new AssistanceRejectionError("stale_request", REJECTION_MESSAGES.stale_request);
 
     const decision = await tx.assistanceRejection.create({
-      data: { assistanceRequestId: current.id, reason: input.reason, rejectedById: input.actorId, previousStatus: current.status },
+      data: { assistanceRequestId: current.id, reason: input.reason, reasonCode: input.reasonCode ?? null, rejectedById: input.actorId, previousStatus: current.status },
       select: { rejectedAt: true, rejectedBy: { select: { name: true } } },
     });
 
