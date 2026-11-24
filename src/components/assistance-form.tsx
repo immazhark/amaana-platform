@@ -5,11 +5,12 @@ import { type FormEvent, type ReactNode, useEffect, useRef, useState } from "rea
 import { privateTrackingPath } from "@/lib/private-tracking";
 import { assistanceDocumentSelectionIssue } from "@/lib/assistance-document-selection";
 import { ASSISTANCE_FIELDS as assistanceFieldOrder, classifyAssistanceResponse, UNCERTAIN_ASSISTANCE_MESSAGE, type AssistanceField, type AssistanceFieldErrors as FieldErrors } from "@/lib/assistance-feedback";
+import { OUTSIDE_SERVICE_AREA_MESSAGE, type AssistanceResidence } from "@/lib/assistance-policy";
 import styles from "./assistance-form.module.css";
 
 type AssistanceStep = 1 | 2 | 3 | 4;
 const fieldStep: Record<AssistanceField, AssistanceStep> = {
-  applicantName: 1, phone: 1, email: 1, city: 1,
+  beneficiaryResidence: 1, applicantName: 1, phone: 1, email: 1, city: 1,
   category: 2, description: 2,
   consent: 4,
 };
@@ -38,6 +39,8 @@ export function AssistanceForm({ copy }: { copy: AssistanceCopy }) {
   const submissionLocked = useRef(false);
   const submitting = phase === "submitting";
   const locked = phase !== "ready";
+  const [residence, setResidence] = useState<AssistanceResidence | "">("");
+  const outsideArea = residence === "OUTSIDE_SERVICE_AREA";
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [documentError, setDocumentError] = useState<string | null>(null);
 
@@ -107,13 +110,13 @@ export function AssistanceForm({ copy }: { copy: AssistanceCopy }) {
   }
 
   function advance() {
-    if (submissionLocked.current || !validateStep(step) || step >= 4) return;
+    if (submissionLocked.current || outsideArea || !validateStep(step) || step >= 4) return;
     goToStep((step + 1) as AssistanceStep);
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (submissionLocked.current) return;
+    if (submissionLocked.current || outsideArea) return;
     const form = event.currentTarget;
     setError("");
     setFieldErrors({});
@@ -157,6 +160,7 @@ export function AssistanceForm({ copy }: { copy: AssistanceCopy }) {
       const response = await fetch("/api/assistance", { method: "POST", body: values });
       const result = classifyAssistanceResponse(response.status, await response.json());
       if (result.kind === "rejected") {
+        if (result.code === "outside_service_area") setResidence("OUTSIDE_SERVICE_AREA");
         const nextFieldErrors = result.fields;
         const message = result.message;
         setFieldErrors(nextFieldErrors);
@@ -187,7 +191,7 @@ export function AssistanceForm({ copy }: { copy: AssistanceCopy }) {
     }
   }
 
-  const nameError = firstFieldError("applicantName"); const phoneError = firstFieldError("phone"); const emailError = firstFieldError("email"); const cityError = firstFieldError("city"); const categoryError = firstFieldError("category"); const descriptionError = firstFieldError("description"); const consentError = firstFieldError("consent");
+  const residenceError = firstFieldError("beneficiaryResidence"); const nameError = firstFieldError("applicantName"); const phoneError = firstFieldError("phone"); const emailError = firstFieldError("email"); const cityError = firstFieldError("city"); const categoryError = firstFieldError("category"); const descriptionError = firstFieldError("description"); const consentError = firstFieldError("consent");
 
   return <form ref={formRef} className={`v2-premium-form v2-assistance-form ${styles.form}`} onSubmit={submit} encType="multipart/form-data" noValidate aria-busy={submitting} aria-labelledby="assistance-form-heading" aria-describedby="assistance-form-description">
     {copy.heading}
@@ -197,11 +201,17 @@ export function AssistanceForm({ copy }: { copy: AssistanceCopy }) {
     </nav>
     {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}{phase === "followup" && <p><a className="v2-text-link" href="/contact" target="_blank" rel="noreferrer">Contact Amaana about this request<span className="sr-only"> (opens in a new tab)</span></a></p>}</div>}
     <fieldset id="assistance-step-1" data-assistance-step="1" tabIndex={-1} hidden={step !== 1} disabled={locked}><legend><span>01</span> Contact</legend><div className="form-grid">
+      <div className="field full"><fieldset className="v2-form-choice" aria-describedby={residenceError ? "residence-help residence-error" : "residence-help"}><legend>Where does the person who needs help live?</legend><small id="residence-help">Answer for the beneficiary, not for the person filling in the form. A family member or friend living elsewhere may apply for someone who lives in our Hyderabad service area.</small>
+        <label className="checkbox"><input type="radio" name="beneficiaryResidence" value="HYDERABAD_SERVICE_AREA" required checked={residence === "HYDERABAD_SERVICE_AREA"} onChange={() => { setResidence("HYDERABAD_SERVICE_AREA"); clearFieldError("beneficiaryResidence"); }} /><span>In our Hyderabad service area</span></label>
+        <label className="checkbox"><input type="radio" name="beneficiaryResidence" value="OUTSIDE_SERVICE_AREA" checked={outsideArea} onChange={() => { setResidence("OUTSIDE_SERVICE_AREA"); clearFieldError("beneficiaryResidence"); }} /><span>Somewhere else</span></label>
+        {residenceError && <small id="residence-error" className="v2-field-error">{residenceError}</small>}
+        {outsideArea && <p className="form-error" role="status" id="outside-area-notice">{OUTSIDE_SERVICE_AREA_MESSAGE}</p>}
+      </fieldset></div>
       <div className="field"><label htmlFor="name">Applicant name</label><input id="name" aria-label="Applicant name" name="applicantName" autoComplete="name" minLength={2} maxLength={120} required aria-invalid={Boolean(nameError) || undefined} aria-describedby={nameError ? "name-error" : undefined} onChange={() => clearFieldError("applicantName")} />{nameError && <small id="name-error" className="v2-field-error">{nameError}</small>}</div>
       <div className="field"><label htmlFor="phone">Phone number</label><input id="phone" aria-label="Phone number" name="phone" type="tel" autoComplete="tel" required aria-invalid={Boolean(phoneError) || undefined} aria-describedby={phoneError ? "phone-error" : undefined} onChange={() => clearFieldError("phone")} />{phoneError && <small id="phone-error" className="v2-field-error">{phoneError}</small>}</div>
       <div className="field"><label htmlFor="email">Email <span className="muted">optional</span></label><input id="email" name="email" type="email" autoComplete="email" aria-invalid={Boolean(emailError) || undefined} aria-describedby={emailError ? "email-error" : undefined} onChange={() => clearFieldError("email")} />{emailError && <small id="email-error" className="v2-field-error">{emailError}</small>}</div>
-      <div className="field"><label htmlFor="city">City</label><input id="city" aria-label="City" name="city" autoComplete="address-level2" required aria-invalid={Boolean(cityError) || undefined} aria-describedby={cityError ? "city-error" : undefined} onChange={() => clearFieldError("city")} />{cityError && <small id="city-error" className="v2-field-error">{cityError}</small>}</div>
-    </div><div className={styles.stepActions}><button className="v2-button" type="button" onClick={advance}>Continue to need →</button></div></fieldset>
+      <div className="field"><label htmlFor="city">Beneficiary’s locality or area in Hyderabad</label><input id="city" aria-label="Beneficiary’s locality or area in Hyderabad" name="city" autoComplete="address-level2" required aria-invalid={Boolean(cityError) || undefined} aria-describedby={cityError ? "city-error" : undefined} onChange={() => clearFieldError("city")} />{cityError && <small id="city-error" className="v2-field-error">{cityError}</small>}</div>
+    </div><div className={styles.stepActions}><button className="v2-button" type="button" onClick={advance} disabled={outsideArea}>Continue to need →</button></div></fieldset>
     <fieldset id="assistance-step-2" data-assistance-step="2" tabIndex={-1} hidden={step !== 2} disabled={locked}><legend><span>02</span> Need</legend><div className="form-grid">
       <div className="field full"><label htmlFor="category">Type of assistance</label><select id="category" aria-label="Type of assistance" name="category" required defaultValue="" aria-invalid={Boolean(categoryError) || undefined} aria-describedby={categoryError ? "category-error" : undefined} onChange={() => clearFieldError("category")}><option value="" disabled>Select the closest category</option><option value="MEDICAL">Medical</option><option value="EDUCATION">Education</option><option value="LIVELIHOOD">Livelihood</option><option value="FOOD_HARDSHIP">Food hardship</option><option value="HOUSING">Housing</option><option value="EMERGENCY">Emergency</option><option value="OTHER">Other</option></select>{categoryError && <small id="category-error" className="v2-field-error">{categoryError}</small>}</div>
       <div className="field full"><label htmlFor="description">Describe the need</label><textarea id="description" aria-label="Describe the need" name="description" minLength={40} maxLength={5000} required placeholder="In your own words: what has happened, what support is needed, approximate amount if known, and anything time-sensitive." aria-invalid={Boolean(descriptionError) || undefined} aria-describedby={descriptionError ? "description-help description-error" : "description-help"} onChange={() => clearFieldError("description")} />{copy.descriptionHelp}{descriptionError && <small id="description-error" className="v2-field-error">{descriptionError}</small>}</div>

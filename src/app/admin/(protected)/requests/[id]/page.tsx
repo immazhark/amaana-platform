@@ -23,14 +23,70 @@ import { ApprovalCheckAnswers } from "@/components/approval-check-answers";
 import { RejectRequestForm } from "@/components/reject-request-form";
 
 type Props = { params: Promise<{ id: string }>; searchParams?: Promise<Record<string, string | string[] | undefined>> };
-const REQUIRED_TO_APPROVE = "Required to approve";
-const REQUIRED_FOR_PUBLIC = "Required for public fundraising only; not needed for private or partial support";
+const REQUIRED_TO_APPROVE = <span className="required-badge">Required to approve</span>;
+const REQUIRED_FOR_PUBLIC = <span className="required-badge public">Required for public fundraising only</span>;
 const CONSENT_LABEL: Record<string, string> = { UNCONFIRMED: "Unconfirmed (not decided yet)", ALLOWED: "Allowed", NOT_ALLOWED: "Not allowed (a restriction)", NOT_APPLICABLE: "Not applicable (genuinely irrelevant)" };
 const ROUTE_CHOICE_LABEL: Record<string, string> = {
   PENDING: "Not decided yet", REFERRED: "Referred elsewhere (saves progress only)", APPROVED_PRIVATE: "Private assistance", APPROVED_PARTIAL: "Partial support",
   APPROVED_PUBLIC: "Public fundraising", DECLINED: "Declined (set by Reject request)",
 };
 const label = (value: string) => value.replaceAll("_", " ").toLowerCase().replace(/^./, character => character.toUpperCase());
+
+function RequestWorkflowProgress({ status, decision, hasAppeal }: { status: string; decision?: string | null; hasAppeal: boolean }) {
+  const stages = [
+    { id: "verify", label: "Verify", active: ["SUBMITTED", "DOCUMENTS_REQUESTED", "UNDER_VERIFICATION"].includes(status) },
+    { id: "approve", label: "Approve", active: false }, // Transient state
+    { id: "draft", label: "Prepare draft", active: status === "APPROVED" && decision === "APPROVED_PUBLIC" && !hasAppeal },
+    { id: "review", label: "Review & Publish", active: status === "CONVERTED_TO_APPEAL" || hasAppeal },
+  ];
+
+  if (status === "APPROVED" && decision !== "APPROVED_PUBLIC" && !hasAppeal) {
+    stages[1] = { id: "approve", label: "Approved (Internal)", active: true };
+  } else if (status === "APPROVED" && decision === "APPROVED_PUBLIC" && !hasAppeal) {
+    stages[1] = { id: "approve", label: "Approved", active: false };
+  }
+
+  // Calculate current stage index for a "completed" look
+  let currentIdx = -1;
+  if (["SUBMITTED", "DOCUMENTS_REQUESTED", "UNDER_VERIFICATION"].includes(status)) currentIdx = 0;
+  else if (status === "APPROVED" && !hasAppeal) currentIdx = (decision === "APPROVED_PUBLIC" ? 2 : 1);
+  else if (status === "CONVERTED_TO_APPEAL" || hasAppeal) currentIdx = 3;
+  else if (status === "REJECTED") currentIdx = -2; // Special case
+
+  if (currentIdx === -2) return null;
+
+  return (
+    <div className="card workflow-progress" aria-label="Workflow progress">
+      <ol className="workflow-steps">
+        {stages.map((stage, idx) => {
+          const isCompleted = idx < currentIdx || (currentIdx === 2 && idx === 1);
+          const isCurrent = idx === currentIdx;
+          return (
+            <li key={stage.id} className={`${isCompleted ? "completed" : ""} ${isCurrent ? "current" : ""}`}>
+              <span className="step-number">{isCompleted ? "✓" : idx + 1}</span>
+              <span className="step-label">{stage.label}</span>
+            </li>
+          );
+        })}
+      </ol>
+      <div className="next-action">
+        <strong>Next action:</strong>{" "}
+        {currentIdx === 0 && "Complete verification checks and select a support route to approve."}
+        {currentIdx === 1 && "Request is approved for private/partial assistance. No further action needed here."}
+        {currentIdx === 2 && (
+          <>
+            Request approved for public fundraising.{" "}
+            <a href="#create-draft-appeal" className="inline-link">
+              Create the draft appeal
+            </a>{" "}
+            to continue.
+          </>
+        )}
+        {currentIdx === 3 && "Managed via the linked appeal workflow."}
+      </div>
+    </div>
+  );
+}
 
 export default async function RequestDetailPage({ params, searchParams }: Props) {
   const user = await requirePermission("assistance.view");
@@ -110,8 +166,22 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
       <span className="status-badge">{request.status.replaceAll("_", " ")}</span>
     </div>
 
+    <RequestWorkflowProgress status={request.status} decision={verification?.decision} hasAppeal={Boolean(request.appealId)} />
+
     <div className="admin-detail-grid">
       <div className="grid">
+        <details className="card">
+          <summary><h2 id="reviewer-guide-heading">Reviewer guide</h2></summary>
+          <ol>
+            <li><strong>Review first:</strong> where the beneficiary lives (the applicant may be a representative elsewhere), then whether the need is severe hardship within current scope, then whether we can verify it locally.</li>
+            <li><strong>Need more information:</strong> set Documents requested and ask only for what assessment needs, through the private channel, never in public comments.</li>
+            <li><strong>Decline respectfully:</strong> reject with a reason category (outside service area, outside scope, insufficient information, unable to verify, duplicate, capacity unavailable, withdrawn, or other with a note). Rejection needs only a reason and a confirmation. Never describe an applicant as dishonest.</li>
+            <li><strong>Duplicates:</strong> a shared phone number or similar text is a prompt for your judgement, not proof. Compare, then decide; do not decline on a match alone.</li>
+            <li><strong>Acceptance is not publication:</strong> approving a request does not publish a story, name, photo or medical detail. Publication is a separate decision with its own consent review.</li>
+            <li><strong>Capacity:</strong> the planning limit is 12 new individual cases a year, counted when a case is formally taken up, not when a request arrives or money is paid. Annual distributions and Taleem sponsorships are separate. Check workload before accepting; this limit is a maximum, not a promise.</li>
+          </ol>
+        </details>
+
         <section className="card">
           <h2>Request details</h2>
           <dl className="details">
@@ -254,9 +324,23 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
             {approvalOpen && canApprove && <button className="button" type="submit" data-review-approval="" disabled formAction={approveRequestAction}>Approve assistance</button>}
           </AdminActionFeedbackForm><ApprovalSummary /></ApprovalCheckAnswers>
 
-          {verification?.decision === "APPROVED_PUBLIC" && <div>
+          {verification?.decision === "APPROVED_PUBLIC" && <div className="public-readiness-panel">
             <h3>Public appeal readiness</h3>
-            {publicAppealReady ? <p className="muted">Verification and disclosure controls are complete for draft-appeal conversion. Public copy and media still require the normal appeal review before publication.</p> : <ul>{publicAppealIssues.map(issue => <li key={issue}>{issue}</li>)}</ul>}
+            {publicAppealReady ? (
+              <p className="muted">Verification and disclosure controls are complete for draft-appeal conversion. Public copy and media still require the normal appeal review before publication.</p>
+            ) : (
+              <>
+                <p className="muted">To approve for public fundraising, the following decisions must be completed:</p>
+                <ul className="readiness-list">
+                  {publicAppealIssues.map(issue => (
+                    <li key={issue}>
+                      <span className="required-badge public">Required</span>
+                      {issue}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
           </div>}
         </section>
 
@@ -310,8 +394,9 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
           </AdminActionFeedbackForm>
         </section>
 
-        {request.status === "APPROVED" && !request.appeal && verification?.decision === "APPROVED_PUBLIC" && publicAppealReady && hasPermission(user, "appeal.create") && hasPermission(user, "assistance.update") && <section className="card">
-          <h2>Create draft appeal</h2>
+        {request.status === "APPROVED" && !request.appeal && verification?.decision === "APPROVED_PUBLIC" && publicAppealReady && hasPermission(user, "appeal.create") && hasPermission(user, "assistance.update") && <section className="card" id="create-draft-appeal">
+          <p className="eyebrow">Step 3</p>
+          <h2>Prepare draft appeal</h2>
           <p className="muted">The target is locked to the approved verification record. Write new privacy-safe public copy; raw intake text is never copied automatically.</p>
           <dl className="details"><div><dt>Approved target</dt><dd>₹{verification.approvedPublicTarget!.toNumber().toLocaleString("en-IN")}</dd></div></dl>
           <form action={convertToAppeal} className="field">

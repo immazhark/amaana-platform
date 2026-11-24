@@ -204,6 +204,35 @@ describe("assistance submission request bounds", () => {
     expect(mocks.assistanceCreate).not.toHaveBeenCalled();
   });
 
+  it("stops an out-of-area beneficiary before any validation, upload or write", async () => {
+    const data = new FormData();
+    data.set("beneficiaryResidence", "OUTSIDE_SERVICE_AREA");
+    data.set("applicantName", "Synthetic Representative");
+    data.append("documents", new File(["x"], "report.pdf", { type: "application/pdf" }));
+
+    const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: data }));
+
+    expect(response.status).toBe(422);
+    expect((await response.json()).code).toBe("outside_service_area");
+    expect(mocks.assistanceSafeParse).not.toHaveBeenCalled();
+    expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+    expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+  });
+
+  it("refuses new requests on the server while intake is paused", async () => {
+    vi.stubEnv("ASSISTANCE_INTAKE_PAUSED", "true");
+    try {
+      const data = new FormData();
+      data.set("beneficiaryResidence", "HYDERABAD_SERVICE_AREA");
+      const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: data }));
+      expect(response.status).toBe(403);
+      expect((await response.json()).code).toBe("intake_paused");
+      expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it.each([
     ["text masquerading as a document", "text" as const],
     ["named empty upload", "empty" as const],

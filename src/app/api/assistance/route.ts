@@ -1,6 +1,7 @@
 import { AppealCategory, NotificationChannel } from "@prisma/client";
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
+import { INTAKE_PAUSED_MESSAGE, OUTSIDE_SERVICE_AREA_MESSAGE, isAssistanceIntakePaused } from "@/lib/assistance-policy";
 import { assistanceSchema, createReferenceNumber, createTrackingToken, hashTrackingToken } from "@/lib/assistance";
 import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
 import { prisma } from "@/lib/prisma";
@@ -33,6 +34,11 @@ export async function POST(request: Request) {
         { error: "Too many assistance requests were submitted from this connection. Please wait before trying again." },
         { status: 429, headers: { ...privateHeaders, "Retry-After": "3600" } },
       );
+    }
+
+    // Server-side intake switch: enforced here so a direct API request cannot bypass a paused intake.
+    if (isAssistanceIntakePaused()) {
+      return NextResponse.json({ error: INTAKE_PAUSED_MESSAGE, code: "intake_paused" }, { status: 403, headers: privateHeaders });
     }
 
     const contentType = request.headers.get("content-type") ?? "";
@@ -79,7 +85,7 @@ export async function POST(request: Request) {
     // unambiguous. FormData -> object conversion otherwise silently keeps the
     // final repeated value, which may override a different identity or consent.
     // Documents are intentionally excluded because multiple files are allowed.
-    const singleValueFields = ["applicantName", "phone", "email", "city", "category", "description", "consent"] as const;
+    const singleValueFields = ["applicantName", "phone", "email", "beneficiaryResidence", "city", "category", "description", "consent"] as const;
     for (const field of singleValueFields) {
       const values = formData.getAll(field);
       if (values.length > 1 || values.some(value => typeof value !== "string")) {
@@ -88,6 +94,12 @@ export async function POST(request: Request) {
           { status: 400, headers: privateHeaders },
         );
       }
+    }
+
+    // Geography is decided from the structured beneficiary answer alone, before any other field is validated and before any
+    // upload or write. A clearly out-of-area request creates no queue entry and stores nothing.
+    if (formData.get("beneficiaryResidence") === "OUTSIDE_SERVICE_AREA") {
+      return NextResponse.json({ error: OUTSIDE_SERVICE_AREA_MESSAGE, code: "outside_service_area" }, { status: 422, headers: privateHeaders });
     }
 
     const parsed = assistanceSchema.safeParse(Object.fromEntries(formData.entries()));

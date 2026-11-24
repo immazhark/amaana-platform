@@ -1,4 +1,4 @@
-export const ASSISTANCE_FIELDS = ["applicantName", "phone", "email", "city", "category", "description", "consent"] as const;
+export const ASSISTANCE_FIELDS = ["applicantName", "phone", "email", "beneficiaryResidence", "city", "category", "description", "consent"] as const;
 export type AssistanceField = typeof ASSISTANCE_FIELDS[number];
 export type AssistanceFieldErrors = Partial<Record<AssistanceField, string[]>>;
 
@@ -6,7 +6,7 @@ export const UNCERTAIN_ASSISTANCE_MESSAGE = "Your request may already be recorde
 
 type AssistanceResult =
   | { kind: "accepted"; referenceNumber: string; trackingToken: string }
-  | { kind: "rejected"; message: string; fields: AssistanceFieldErrors }
+  | { kind: "rejected"; message: string; fields: AssistanceFieldErrors; code?: "outside_service_area" | "intake_paused" }
   | { kind: "uncertain" };
 
 export function classifyAssistanceResponse(status: number, value: unknown): AssistanceResult {
@@ -17,7 +17,7 @@ export function classifyAssistanceResponse(status: number, value: unknown): Assi
       typeof body.trackingToken === "string" && /^[A-Za-z0-9_-]{20,128}$/.test(body.trackingToken)) {
     return { kind: "accepted", referenceNumber: body.referenceNumber, trackingToken: body.trackingToken };
   }
-  if (![400, 403, 413, 429].includes(status) ||
+  if (![400, 403, 413, 422, 429].includes(status) ||
       typeof body.error !== "string" || !body.error.trim()) return { kind: "uncertain" };
   const fields: AssistanceFieldErrors = {};
   if (body.fields && typeof body.fields === "object" && !Array.isArray(body.fields)) {
@@ -28,5 +28,6 @@ export function classifyAssistanceResponse(status: number, value: unknown): Assi
       if (message) fields[field] = [message.trim().slice(0, 300)];
     }
   }
-  return { kind: "rejected", message: body.error.trim().slice(0, 500), fields };
+  const code = body.code === "outside_service_area" || body.code === "intake_paused" ? body.code : null;
+  return code ? { kind: "rejected", message: body.error.trim().slice(0, 500), fields, code } : { kind: "rejected", message: body.error.trim().slice(0, 500), fields };
 }

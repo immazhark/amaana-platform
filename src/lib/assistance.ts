@@ -1,5 +1,6 @@
 import { createHash, randomBytes, randomInt } from "node:crypto";
 import { z } from "zod";
+import { ASSISTANCE_RESIDENCE_VALUES } from "@/lib/assistance-policy";
 
 export const assistanceCategories = ["MEDICAL", "EDUCATION", "LIVELIHOOD", "FOOD_HARDSHIP", "HOUSING", "EMERGENCY", "OTHER"] as const;
 export const MANUAL_ASSISTANCE_STATUSES = ["SUBMITTED", "DOCUMENTS_REQUESTED", "UNDER_VERIFICATION", "APPROVED", "REJECTED", "CLOSED"] as const;
@@ -36,6 +37,7 @@ export const assistanceSchema = z.object({
   applicantName: z.string().trim().min(2).max(120),
   phone: z.string().trim().regex(/^\+?[0-9][0-9\s-]{7,16}$/),
   email: z.union([z.literal(""), z.string().trim().email().max(254)]).optional(),
+  beneficiaryResidence: z.enum(ASSISTANCE_RESIDENCE_VALUES),
   city: z.string().trim().min(2).max(100),
   category: z.enum(assistanceCategories),
   description: z.string().trim().min(40).max(5000),

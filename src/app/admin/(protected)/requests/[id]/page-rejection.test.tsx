@@ -50,7 +50,7 @@ describe("an eligible request, seen by an approver", () => {
   it("sends the verification version when one exists, and still asks only for a reason and a confirmation", async () => {
     const card = rejectCard(await render({ status: "UNDER_VERIFICATION", verification: { decision: "PENDING", confidentialityLevel: "CONFIDENTIAL", completedAt: null, updatedAt: new Date("2026-11-22T04:05:00.000Z"), reviewedBy: null, needConfirmed: false, evidenceReviewed: false, otherFundingChecked: false, verifiedNeedAmount: null, approvedPublicTarget: null, publicNameConsent: "UNCONFIRMED", photoConsent: "UNCONFIRMED", medicalDetailsConsent: "UNCONFIRMED", institutionNameConsent: "UNCONFIRMED", archiveConsent: "UNCONFIRMED", zakatStatus: "UNREVIEWED" } }));
     expect(card).toContain('name="expectedVerificationUpdatedAt" value="2026-11-22T04:05:00.000Z"');
-    expect([...card.matchAll(/\bname="([^"]+)"/g)].map(match => match[1]).sort()).toEqual(["confirmRejection", "expectedRequestUpdatedAt", "expectedVerificationUpdatedAt", "id", "reason"]);
+    expect([...card.matchAll(/\bname="([^"]+)"/g)].map(match => match[1]).sort()).toEqual(["confirmRejection", "expectedRequestUpdatedAt", "expectedVerificationUpdatedAt", "id", "reason", "reasonCode"]);
   });
 
   it.each(["SUBMITTED", "DOCUMENTS_REQUESTED", "UNDER_VERIFICATION", "APPROVED"])("is available from %s", async status => {
