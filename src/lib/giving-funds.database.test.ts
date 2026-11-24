@@ -24,10 +24,10 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("designated giving
   afterAll(async () => { await prisma.$disconnect(); });
 
   // Runs work in a transaction and always rolls back; resolves with whatever the work returned.
-  async function probe<T>(work: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T> {
+  async function probe<T>(work: (tx: Prisma.TransactionClient) => Promise<T>, isolationLevel?: Prisma.TransactionIsolationLevel): Promise<T> {
     let result: T | undefined;
     try {
-      await prisma.$transaction(async tx => { result = await work(tx); throw new Rollback(); });
+      await prisma.$transaction(async tx => { result = await work(tx); throw new Rollback(); }, { isolationLevel });
     } catch (error) { if (!(error instanceof Rollback)) throw error; }
     return result as T;
   }
@@ -188,7 +188,7 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("designated giving
       // Compare to the existing scoped fund ledger, which applies the same per-row rule.
       const ledger = (await loadFundsLedger(tx, { fundId: f.id })).byFund[f.id]?.total;
       return { gross: after.grossCaptured - before.grossCaptured, refunds: after.refunded - before.refunded, retained: after.netRetained - before.netRetained, ledger };
-    });
+    }, Prisma.TransactionIsolationLevel.RepeatableRead);
     expect(result.gross).toBeCloseTo(500, 2);
     expect(result.refunds).toBeCloseTo(130, 2);
     expect(result.retained).toBeCloseTo(370, 2);
