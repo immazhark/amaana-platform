@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   permission: vi.fn(),
   donationCount: vi.fn(),
   donationAggregate: vi.fn(),
+  donationTotalsQuery: vi.fn(),
   donationFind: vi.fn(),
   donationGroups: vi.fn(),
   paymentCount: vi.fn(),
@@ -14,6 +15,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/lib/auth", () => ({ requirePermission: mocks.permission }));
 vi.mock("@/lib/prisma", () => ({
   prisma: {
+    $queryRaw: mocks.donationTotalsQuery,
     donation: {
       count: mocks.donationCount,
       aggregate: mocks.donationAggregate,
@@ -36,6 +38,7 @@ beforeEach(() => {
   mocks.donationAggregate.mockResolvedValue({
     _sum: { amount: money(250), refundedAmount: money(0) },
   });
+  mocks.donationTotalsQuery.mockResolvedValue([{ grossCaptured: money(250), refunded: money(0), netRetained: money(250) }]);
   mocks.donationGroups.mockResolvedValue([]);
   mocks.paymentCount.mockResolvedValue(0);
   mocks.paymentFind.mockResolvedValue([]);
@@ -73,6 +76,7 @@ describe("admin donation list IST dates", () => {
     mocks.permission.mockRejectedValueOnce(new Error("donation.view permission required"));
     await expect(DonationsPage({ searchParams: Promise.resolve({}) })).rejects.toThrow("donation.view permission required");
     expect(mocks.donationCount).not.toHaveBeenCalled();
+    expect(mocks.donationTotalsQuery).not.toHaveBeenCalled();
     expect(mocks.donationFind).not.toHaveBeenCalled();
     expect(mocks.paymentFind).not.toHaveBeenCalled();
   });
@@ -184,5 +188,21 @@ describe("admin donation outcomes card", () => {
   it("says plainly when nothing was started in the period", async () => {
     mocks.donationFind.mockResolvedValue([]);
     expect(await render()).toContain("No donations were started in this period.");
+  });
+});
+
+describe("admin donation summary excludes refunded processing fees", () => {
+  it("reports retained charitable principal, not gross provider refunds", async () => {
+    // Two INR 100 gifts. The first refunds INR 5 of INR 12 covered fee;
+    // the second refunds INR 7 including INR 2 covered fee. Only INR 5
+    // reduces the donations themselves.
+    mocks.donationFind.mockResolvedValue([]);
+    mocks.donationAggregate.mockResolvedValue({ _sum: { amount: money(200), refundedAmount: money(12) } });
+    mocks.donationTotalsQuery.mockResolvedValue([{ grossCaptured: money(200), refunded: money(5), netRetained: money(195) }]);
+    const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({}) }));
+    expect(html).toContain("Gross captured: ₹200");
+    expect(html).toContain("Refunded: ₹5");
+    expect(html).toContain("Net retained: ₹195");
+    expect(html).not.toContain("Net retained: ₹188");
   });
 });
