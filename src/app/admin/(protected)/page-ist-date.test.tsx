@@ -112,9 +112,21 @@ describe("assistance queue triage order", () => {
     expect(html).toContain("Oldest first");
     expect(html).toContain("sort=oldest");
     expect(html).toContain("page=3");
+    expect(html).toContain('href="/admin?view=tests&amp;sort=oldest&amp;status=SUBMITTED&amp;page=3"');
+    expect(html).toContain('href="/admin?view=tests&amp;status=SUBMITTED"');
+    expect(html).toContain('href="/admin?view=tests&amp;status=SUBMITTED&amp;sort=oldest"');
+    expect(html).toContain('href="/admin?view=tests&amp;sort=oldest&amp;status=UNDER_REVIEW"');
+    expect(html).toContain('href="/admin?sort=oldest&amp;view=tests"');
+    expect(html).toMatch(/<a[^>]*aria-current="page"[^>]*>Oldest first<\/a>/);
   });
 
-  it.each([undefined, "invalid", ["oldest"]])("keeps newest-first for invalid or absent sort %s", async sort => {
+  it.each([
+    { sort: undefined },
+    { sort: "invalid" },
+    { sort: ["oldest"] },
+    { sort: ["oldest", "newest"] },
+    { sort: "OLDEST" },
+  ])("keeps newest-first for invalid or absent sort $sort", async ({ sort }) => {
     mocks.findMany.mockResolvedValue([]);
     await AdminQueuePage({ searchParams: Promise.resolve({ sort }) });
     expect(mocks.findMany).toHaveBeenCalledWith(expect.objectContaining({
