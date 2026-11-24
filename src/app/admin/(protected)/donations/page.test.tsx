@@ -203,6 +203,7 @@ describe("admin donation summary excludes refunded processing fees", () => {
     expect(html).toContain("Gross captured: ₹200");
     expect(html).toContain("Refunded: ₹5");
     expect(html).toContain("Net retained: ₹195");
+    expect(html).toContain("Total returned (incl. fees)");
     expect(html).not.toContain("Net retained: ₹188");
   });
 });

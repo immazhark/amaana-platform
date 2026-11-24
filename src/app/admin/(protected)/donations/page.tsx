@@ -3,10 +3,9 @@ import { DonationIntent, DonationStatus, Prisma } from "@prisma/client";
 import { AdminDonationFunnel } from "@/components/admin-donation-funnel";
 import { summariseDonationFunnel } from "@/lib/donation-funnel";
 import { requirePermission } from "@/lib/auth";
-import { formatINR } from "@/lib/appeals";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { donationIntentLabel } from "@/lib/donation-intent";
-import { loadDonationReconciliationTotals } from "@/lib/donation-reconciliation-totals";
+import { formatDonationReportINR, loadDonationReconciliationTotals } from "@/lib/donation-reconciliation-totals";
 import { prisma } from "@/lib/prisma";
 import { donationOperationalState } from "@/lib/operational-signals";
 
@@ -142,7 +141,7 @@ export default async function DonationsPage({ searchParams }: Props) {
         <p className="eyebrow">Reconciliation</p>
         <h1>Donations</h1>
         <p className="lead">
-          Gross captured: {formatINR(grossCaptured)} · Refunded: {formatINR(refunded)} · Net retained: {formatINR(netRetained)}
+          Gross captured: {formatDonationReportINR(grossCaptured)} · Refunded: {formatDonationReportINR(refunded)} · Net retained: {formatDonationReportINR(netRetained)}
           <small className="muted"> (Donation amounts only; returned processing fees excluded.)</small>
         </p>
       </div>
@@ -193,15 +192,15 @@ export default async function DonationsPage({ searchParams }: Props) {
     </div>
     <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Donation records">
       <table>
-        <thead><tr><th>Reference</th><th>Donor</th><th>Appeal</th><th>Intent</th><th>Method</th><th>Amount</th><th>Refunded</th><th>Status</th><th>Date</th></tr></thead>
+        <thead><tr><th>Reference</th><th>Donor</th><th>Appeal</th><th>Intent</th><th>Method</th><th>Amount</th><th>Total returned (incl. fees)</th><th>Status</th><th>Date</th></tr></thead>
         <tbody>{donations.map(donation => <tr key={donation.id}>
           <td><Link href={`/admin/donations/${donation.id}`}><strong>{donation.referenceNumber}</strong></Link></td>
           <td>{donation.donorName}<br/><small>{donation.donorEmail}</small></td>
           <td>{donation.appeal?.title ?? donation.fund?.name ?? "—"}</td>
           <td>{donationIntentLabel(donation.givingIntent)}</td>
           <td>{donation.paymentMethod === "DIRECT_UPI" ? "Direct UPI" : donation.paymentMethod === "BANK_TRANSFER" ? "Bank transfer" : "Razorpay"}</td>
-          <td>{formatINR(donation.amount.toNumber())}</td>
-          <td>{formatINR(donation.refundedAmount.toNumber())}</td>
+          <td>{formatDonationReportINR(donation.amount.toNumber())}</td>
+          <td>{formatDonationReportINR(donation.refundedAmount.toNumber())}</td>
           <td><span className="status-badge">{donation.status}</span></td>
           <td>{donation.createdAt.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })}</td>
         </tr>)}</tbody>

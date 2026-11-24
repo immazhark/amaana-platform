@@ -338,7 +338,7 @@ describe("private donation detail separates charitable principal and provider re
     ["CAPTURED", 100, 0, 25, "25", "75"],
     ["CAPTURED", 100, 2.41, 7.44, "5.03", "94.97"],
     ["REFUNDED", 100, 12, 112, "100", "0"],
-  ])("reports %s gift %s, fee %s and total returned %s", async (status, gift, fee, returned, refunded, retained) => {
+  ] as const)("reports %s gift %s, fee %s and total returned %s", async (status, gift, fee, returned, refunded, retained) => {
     mocks.findDonation.mockResolvedValueOnce(donation({
       status, paymentMethod: "RAZORPAY",
       amount: amount(gift), feeContributionAmount: amount(fee), refundedAmount: amount(returned),
