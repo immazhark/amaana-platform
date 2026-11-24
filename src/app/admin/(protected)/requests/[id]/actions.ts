@@ -81,6 +81,7 @@ export async function saveVerification(formData: FormData) {
     select: { id: true, appealId: true, status: true, verification: true },
   });
   if (request.appealId || request.status === AssistanceStatus.CONVERTED_TO_APPEAL) throw new Error("Verification is locked after conversion to an appeal");
+  if ([AssistanceStatus.APPROVED, AssistanceStatus.REJECTED, AssistanceStatus.CLOSED].includes(request.status as never)) throw new Error("Reopen this request before changing its completed verification.");
 
   const needConfirmed = formData.get("needConfirmed") === "on";
   const evidenceReviewed = formData.get("evidenceReviewed") === "on";
@@ -105,10 +106,17 @@ export async function saveVerification(formData: FormData) {
   if (verificationSummary.length > ASSISTANCE_VERIFICATION_SUMMARY_MAX_LENGTH) throw new Error("Verification summary is too long");
   if (approvedPublicTarget && verifiedNeedAmount && approvedPublicTarget > verifiedNeedAmount) throw new Error("Approved public target cannot exceed the verified need amount");
   if (decision !== AssistanceVerificationDecision.APPROVED_PUBLIC && approvedPublicTarget) throw new Error("A public fundraising target can only be stored for an approved public appeal");
+  // Declining a request is the dedicated Reject request path. An existing declined verification (written by that path) can
+  // still be saved, but no new decline is made here.
+  const alreadyDeclined = request.verification?.decision === AssistanceVerificationDecision.DECLINED;
+  if (decision === AssistanceVerificationDecision.DECLINED && !alreadyDeclined) throw new Error("To decline a request, use Reject request.");
 
   if (markComplete) {
     if (!hasPermission(user, "assistance.approve")) throw new Error("Approval permission is required to complete verification");
-    const generalIssues = getGeneralVerificationIssues({ needConfirmed, evidenceReviewed, verifiedNeedAmount, paymentDestination, otherFundingChecked, verificationSummary, decision, zakatStatus });
+    // A declined decision certifies no positive check, so it is not held to the approval checklist.
+    const generalIssues = decision === AssistanceVerificationDecision.DECLINED
+      ? []
+      : getGeneralVerificationIssues({ needConfirmed, evidenceReviewed, verifiedNeedAmount, paymentDestination, otherFundingChecked, verificationSummary, decision, zakatStatus });
     if (generalIssues.length) throw new Error(generalIssues.join(" "));
     if (decision === AssistanceVerificationDecision.APPROVED_PUBLIC) {
       const publicIssues = getPublicAppealVerificationIssues({
@@ -138,7 +146,7 @@ export async function saveVerification(formData: FormData) {
   const reviewedById = markComplete ? user.id : null;
   await withSerializableTransactionRetry(async tx => {
     const stillEditable = await tx.assistanceRequest.findFirst({
-      where: { id, appealId: null, status: { not: AssistanceStatus.CONVERTED_TO_APPEAL } },
+      where: { id, appealId: null, status: { in: [AssistanceStatus.SUBMITTED, AssistanceStatus.DOCUMENTS_REQUESTED, AssistanceStatus.UNDER_VERIFICATION] } },
       select: { id: true, updatedAt: true, verification: { select: { updatedAt: true } } },
     });
     if (!stillEditable) {
@@ -228,10 +236,11 @@ export async function updateRequest(formData: FormData) {
     select: { id: true, status: true, appealId: true, email: true, referenceNumber: true, updatedAt: true, verification: { select: { decision: true, completedAt: true } } },
   });
   if (!isManualAssistanceStatusAllowed(previous.status, status, Boolean(previous.appealId))) throw new Error("This status can only be changed by the linked appeal workflow");
-  if ((status === AssistanceStatus.APPROVED || status === AssistanceStatus.REJECTED) && previous.status !== status && !hasPermission(user, "assistance.approve")) throw new Error("Approval permission is required");
+  // Rejection has one route: the dedicated Reject request form. A note-only save on an already rejected request is fine.
   if (status === AssistanceStatus.DOCUMENTS_REQUESTED && internalNotes.length < 10) throw new Error("List the specific missing items in internal notes before requesting more information.");
+  if (status === AssistanceStatus.REJECTED && previous.status !== status) throw new Error("Use Reject request to reject this request.");
+  if (status === AssistanceStatus.APPROVED && previous.status !== status && !hasPermission(user, "assistance.approve")) throw new Error("Approval permission is required");
   if (status === AssistanceStatus.APPROVED && previous.status !== status && !canApproveAssistanceRequest(previous.verification)) throw new Error("Complete verification with an approved decision before marking this request approved");
-  if (status === AssistanceStatus.REJECTED && previous.status !== status && (!previous.verification?.completedAt || previous.verification.decision !== AssistanceVerificationDecision.DECLINED)) throw new Error("Complete verification with a declined decision before marking this request rejected");
 
   await withSerializableTransactionRetry(async tx => {
     const current = await tx.assistanceRequest.findUniqueOrThrow({
@@ -252,13 +261,6 @@ export async function updateRequest(formData: FormData) {
     }
     if (status === AssistanceStatus.APPROVED && previous.status !== status && !canApproveAssistanceRequest(current.verification)) {
       throw new Error("Verification changed while you were reviewing it. Refresh and confirm the approved verification before saving.");
-    }
-    if (
-      status === AssistanceStatus.REJECTED &&
-      previous.status !== status &&
-      (!current.verification?.completedAt || current.verification.decision !== AssistanceVerificationDecision.DECLINED)
-    ) {
-      throw new Error("Verification changed while you were reviewing it. Refresh and confirm the declined verification before saving.");
     }
 
     const updated = await tx.assistanceRequest.updateMany({
@@ -399,7 +401,8 @@ export type AdminActionFeedback = {
 // return raw database, network, auth or unexpected exception text to clients.
 const safeReviewFeedbackPrefixes = [
   "Complete verification with an approved decision before marking this request approved",
-  "Complete verification with a declined decision before marking this request rejected",
+  "Use Reject request to reject this request.",
+  "To decline a request, use Reject request.",
   "Verification summary is required.",
   "Need must be confirmed.",
   "Supporting evidence must be reviewed.",
@@ -422,6 +425,7 @@ const safeReviewFeedbackPrefixes = [
   "This request changed while you were reviewing it.",
   "Verification was locked because this request was converted",
   "Verification is locked after conversion to an appeal",
+  "Reopen this request before changing its completed verification.",
   "Approval permission is required to complete verification",
   "Approval permission is required to reopen a completed verification",
   "Approval permission is required",

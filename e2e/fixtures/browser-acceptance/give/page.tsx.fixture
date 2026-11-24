@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { CanonicalArticle } from "@/components/canonical-article";
-import type { GiveFund } from "@/components/fund-giving/fund-copy";
+import { fundDonationFormCopy, type GiveFund } from "@/components/fund-giving/fund-copy";
 import { FundGivingCheckout } from "@/components/fund-giving/fund-giving-checkout";
 import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
 import { GIVE_HERO_ACTIONS } from "@/lib/giving-hero-actions";
@@ -43,7 +43,7 @@ export default function FundGivingAcceptanceFixture() {
       intro="Every contribution is an amaana, a trust. Pick the fund that matches your intention."
       blocks={[{ title: "Domestic donations only", paragraphs: ["Synthetic acceptance copy."] }]}
     >
-      <FundGivingCheckout funds={funds} paymentDetails={paymentDetails} feeBps={236} />
+      <FundGivingCheckout funds={funds} copies={Object.fromEntries(funds.map(fund => [fund.slug, fundDonationFormCopy(fund)]))} paymentDetails={paymentDetails} feeBps={236} />
     </CanonicalArticle>
   );
 }

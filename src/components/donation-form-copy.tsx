@@ -1,10 +1,14 @@
 import type { ReactNode } from "react";
 import { DONATION_INTENT_DESCRIPTIONS, DONATION_INTENT_LABELS, type DonationIntentValue } from "@/lib/donation-intent";
 import styles from "./donation-form.module.css";
+import directStyles from "./direct-transfer-form.module.css";
+import methodStyles from "./donation-methods.module.css";
 
 /** Static, reviewed donor guidance is rendered on the server and passed as
  * React slots into the client checkout. Native inputs remain interactive. */
 export type DonationFormCopy = {
+  classes: Record<string, string>;
+  methodClasses: Record<string, string>;
   heading: ReactNode;
   intentIntroduction: ReactNode;
   intentionOptions: ReactNode;
@@ -13,6 +17,8 @@ export type DonationFormCopy = {
   domesticText: ReactNode;
   readyHelp: ReactNode;
   direct: {
+    classes: Record<string, string>;
+    choiceClass: string | undefined;
     upiHeading: ReactNode;
     bankHeading: ReactNode;
     qrMissing: ReactNode;
@@ -27,6 +33,8 @@ export type DonationFormCopy = {
 export function donationFormCopy(zakatEligible: boolean): DonationFormCopy {
   const intentions: DonationIntentValue[] = ["GENERAL", "SADAQAH", ...(zakatEligible ? ["ZAKAT" as const] : [])];
   return {
+    classes: styles,
+    methodClasses: methodStyles,
     heading: <div className="v2-form-heading"><span>Secure contribution</span><h2 id="donation-form-heading">Choose how you would like to support.</h2><p id="donation-form-description">Only the information needed to process and acknowledge your contribution is requested.</p></div>,
     intentIntroduction: <p className={styles.intentIntro}>Choose how you want this contribution recorded. The selected appeal remains the designated destination in every case.</p>,
     intentionOptions: <>{intentions.map((intent, index) => (
@@ -40,6 +48,8 @@ export function donationFormCopy(zakatEligible: boolean): DonationFormCopy {
     domesticText: <span><strong>Domestic contribution confirmation</strong><small>I confirm this donation is from an Indian source using a domestic payment method.</small></span>,
     readyHelp: <small>Next: Razorpay secure checkout. Your Amaana acknowledgement follows successful payment verification and is not an 80G tax-deduction certificate.</small>,
     direct: {
+      classes: directStyles,
+      choiceClass: styles.choice,
       upiHeading: <div className="v2-form-heading"><span>Direct UPI</span><h2>Pay Amaana directly by UPI.</h2><p>Complete the transfer using the verified details below, then submit the UTR/reference so Amaana can reconcile it. Your appeal total changes only after verification.</p></div>,
       bankHeading: <div className="v2-form-heading"><span>Bank transfer</span><h2>Transfer directly to Amaana Foundation.</h2><p>Complete the transfer using the verified details below, then submit the UTR/reference so Amaana can reconcile it. Your appeal total changes only after verification.</p></div>,
       qrMissing: <p className={styles.status}>A verified QR code is not published yet. Please pay using the UPI ID above.</p>,

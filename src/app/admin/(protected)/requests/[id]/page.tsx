@@ -3,22 +3,47 @@ import { notFound } from "next/navigation";
 import {
   ASSISTANCE_CONFIDENTIALITY_LEVELS,
   ASSISTANCE_CONSENT_DECISIONS,
-  ASSISTANCE_VERIFICATION_DECISIONS,
   ASSISTANCE_ZAKAT_STATUSES,
   MANUAL_ASSISTANCE_STATUSES,
   getPublicAppealVerificationIssues,
 } from "@/lib/assistance";
+import { cookies } from "next/headers";
+import {
+  APPROVAL_ERROR_MESSAGES, APPROVAL_ROUTES, approvalAmountDraftFromCookie, approvalDraftCookieName, approvalProblemField, approvalProblemMessage, parseApprovalNotice, type ApprovalProblem,
+} from "@/lib/assistance-approval";
+import { parseRejectionNotice, rejectionDraftCookieName, rejectionDraftFromCookie, rejectionEligibility } from "@/lib/assistance-rejection";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { assignRequest, convertToAppeal, saveVerificationWithFeedback, updateRequestWithFeedback } from "./actions";
+import { assignRequest, convertToAppeal, updateRequestWithFeedback } from "./actions";
+import { approveRequestAction, approveRequestWithFeedback, saveReviewProgressWithFeedback } from "./approval-actions";
+import { rejectRequestAction } from "./rejection-actions";
 import { AdminActionFeedbackForm } from "@/components/admin-action-feedback-form";
+import { ApprovalSummary } from "./approval-summary";
+import { ApprovalCheckAnswers } from "@/components/approval-check-answers";
+import { RejectRequestForm } from "@/components/reject-request-form";
 
-type Props = { params: Promise<{ id: string }> };
+type Props = { params: Promise<{ id: string }>; searchParams?: Promise<Record<string, string | string[] | undefined>> };
+const REQUIRED_TO_APPROVE = "Required to approve";
+const REQUIRED_FOR_PUBLIC = "Required for public fundraising only; not needed for private or partial support";
+const CONSENT_LABEL: Record<string, string> = { UNCONFIRMED: "Unconfirmed (not decided yet)", ALLOWED: "Allowed", NOT_ALLOWED: "Not allowed (a restriction)", NOT_APPLICABLE: "Not applicable (genuinely irrelevant)" };
+const ROUTE_CHOICE_LABEL: Record<string, string> = {
+  PENDING: "Not decided yet", REFERRED: "Referred elsewhere (saves progress only)", APPROVED_PRIVATE: "Private assistance", APPROVED_PARTIAL: "Partial support",
+  APPROVED_PUBLIC: "Public fundraising", DECLINED: "Declined (set by Reject request)",
+};
 const label = (value: string) => value.replaceAll("_", " ").toLowerCase().replace(/^./, character => character.toUpperCase());
 
-export default async function RequestDetailPage({ params }: Props) {
+export default async function RequestDetailPage({ params, searchParams }: Props) {
   const user = await requirePermission("assistance.view");
   const { id } = await params;
+  const notice = parseRejectionNotice(await (searchParams ?? Promise.resolve({})));
+  // What the reviewer typed before an error, held privately in a short-lived cookie (never in the address), read only then.
+  const draftName = notice?.kind === "error" ? rejectionDraftCookieName(id) : null;
+  const approvalNotice = parseApprovalNotice(await (searchParams ?? Promise.resolve({})));
+  const approvalProblems: ApprovalProblem[] = approvalNotice?.kind === "error" ? approvalNotice.problems : [];
+  // The text of an amount that was not a valid amount cannot be saved, so it is held briefly in a private cookie, read only then.
+  const approvalDraftName = approvalProblems.some(problem => problem.endsWith("_format")) ? approvalDraftCookieName(id) : null;
+  const amountDraft = approvalDraftName ? approvalAmountDraftFromCookie((await cookies()).get(approvalDraftName)?.value) : { verifiedNeedAmount: "", approvedPublicTarget: "" };
+  const draftReason = draftName ? rejectionDraftFromCookie((await cookies()).get(draftName)?.value) : "";
   const [request, staff, history] = await Promise.all([
     prisma.assistanceRequest.findUnique({
       where: { id },
@@ -34,6 +59,8 @@ export default async function RequestDetailPage({ params }: Props) {
         },
         appeal: { select: { id: true, title: true, status: true } },
         verification: { include: { reviewedBy: { select: { name: true } } } },
+        // Only the latest decision, and only its private reason, who made it and when: a bounded read.
+        rejections: { orderBy: [{ rejectedAt: "desc" }, { id: "desc" }], take: 1, select: { reason: true, rejectedAt: true, rejectedBy: { select: { name: true } } } },
       },
     }),
     prisma.user.findMany({
@@ -47,17 +74,31 @@ export default async function RequestDetailPage({ params }: Props) {
 
   const currentAssigneeUnavailable = Boolean(request.assignedToId && !staff.some(member => member.id === request.assignedToId));
   const converted = request.status === "CONVERTED_TO_APPEAL" || Boolean(request.appealId);
-  const manualStatuses = MANUAL_ASSISTANCE_STATUSES.filter(status => status !== "DOCUMENTS_REQUESTED" || request.status === status);
+  // Approving and rejecting are their own actions, so APPROVED and REJECTED are offered here only to show the state a request is already in.
+  const manualStatuses = MANUAL_ASSISTANCE_STATUSES.filter(status => (status !== "REJECTED" || request.status === "REJECTED") && (status !== "APPROVED" || request.status === "APPROVED") && (status !== "DOCUMENTS_REQUESTED" || request.status === "DOCUMENTS_REQUESTED"));
   const visibleStatuses = converted
     ? ["CONVERTED_TO_APPEAL"]
     : hasPermission(user, "assistance.approve")
       ? manualStatuses
-      : manualStatuses.filter(status => status === request.status || !["APPROVED", "REJECTED"].includes(status));
+      : manualStatuses.filter(status => status === request.status || status !== "APPROVED");
+  const rejection = rejectionEligibility(request.status, converted);
+  const latestRejection = request.rejections?.[0] ?? null;
+  const canReject = hasPermission(user, "assistance.update") && hasPermission(user, "assistance.approve");
   const verification = request.verification;
   const publicAppealIssues = getPublicAppealVerificationIssues(verification);
   const publicAppealReady = publicAppealIssues.length === 0;
-  const canCompleteVerification = hasPermission(user, "assistance.approve");
-  const verificationLocked = converted;
+  const canApprove = hasPermission(user, "assistance.update") && hasPermission(user, "assistance.approve");
+  const approvalOpen = !converted && ["SUBMITTED", "DOCUMENTS_REQUESTED", "UNDER_VERIFICATION"].includes(request.status);
+  const routeChoices = ["PENDING", "REFERRED", "APPROVED_PRIVATE", "APPROVED_PARTIAL", "APPROVED_PUBLIC", ...(verification?.decision === "DECLINED" ? ["DECLINED"] : [])];
+  const invalid = (field: string) => approvalProblems.some(problem => approvalProblemField(problem) === field);
+  const fieldAttrs = (field: string, hint?: string) => invalid(field)
+    ? { "aria-invalid": true as const, "aria-describedby": [hint, `${field}-error`].filter(Boolean).join(" ") }
+    : hint ? { "aria-describedby": hint } : {};
+  const fieldError = (field: string) => {
+    const problem = approvalProblems.find(item => approvalProblemField(item) === field);
+    return problem ? <small id={`${field}-error`} className="form-error">{approvalProblemMessage(problem)}</small> : null;
+  };
+  const verificationLocked = !approvalOpen;
 
   return <>
     <div className="admin-heading">
@@ -85,71 +126,133 @@ export default async function RequestDetailPage({ params }: Props) {
           {request.documents.length ? <ul className="document-list">{request.documents.map(document => <li key={document.id}><a href={`/admin/documents/${document.id}`} target="_blank" rel="noreferrer">{document.originalName}<span className="sr-only"> (opens in a new tab)</span></a><small>{document.mimeType} · {(document.sizeBytes / 1048576).toFixed(2)} MB</small></li>)}</ul> : <p className="muted">No documents were submitted.</p>}
         </section>
 
+        {rejection !== "unknown" && <section className="card" aria-labelledby="reject-heading">
+          <h2 id="reject-heading">{rejection === "already_rejected" ? "Request rejected" : "Reject request"}</h2>
+          {rejection === "linked_appeal" && <>
+            <p>This request has a linked appeal. Open the appeal to manage its status.</p>
+            <p className="muted">A request with a linked appeal is not rejected here: pausing or closing a published appeal follows the appeal&apos;s own rules and does not change donations or financial records by itself.</p>
+            {request.appeal && hasPermission(user, "appeal.view") && <Link className="button secondary" href={`/admin/appeals/${request.appeal.id}`}>Open the linked appeal</Link>}
+          </>}
+          {rejection === "closed" && <p>This request is closed. Reopen the review under Review first if it needs to be rejected.</p>}
+          {rejection === "already_rejected" && <>
+            {notice?.kind === "done" && <div role="status">
+              <p><strong>{notice.outcome === "rejected" ? "The request has been rejected." : "This request was already rejected."}</strong> {request.referenceNumber} is now Rejected. Your reason is kept privately with the request and is not sent to the applicant.</p>
+              <Link className="button secondary" href="/admin">Back to the queue</Link>
+            </div>}
+            {latestRejection
+              ? <dl className="details">
+                <div><dt>Recorded by</dt><dd> {latestRejection.rejectedBy.name}</dd></div>
+                <div><dt>Recorded</dt><dd> {latestRejection.rejectedAt.toLocaleString("en-IN", { dateStyle: "long", timeStyle: "short", timeZone: "Asia/Kolkata" })}</dd></div>
+                <div className="full"><dt>Reason (private)</dt><dd> {latestRejection.reason}</dd></div>
+              </dl>
+              : <p>This request was rejected before reasons were recorded. No historical reason, reviewer or time is on file, and none has been invented.</p>}
+            <p className="muted">To review it again, change its status under Review. Nothing is deleted, and an earlier decision stays on record.</p>
+          </>}
+          {rejection === "eligible" && (canReject ? <>
+            <p className="muted">Enter the reason and confirm. You do not need to complete any approval check to reject a request, and nothing you have entered in the verification form is used or required.</p>
+            <RejectRequestForm action={rejectRequestAction} requestId={id} referenceNumber={request.referenceNumber} requestVersion={request.updatedAt.toISOString()} verificationVersion={verification?.updatedAt.toISOString() ?? ""} notice={notice?.kind === "error" ? notice : null} draftReason={draftReason} />
+          </> : <p className="muted">Only an authorised approver can reject a request. You can still save review notes; ask an approver to decide this case.</p>)}
+        </section>}
+
         <section className="card">
-          <h2>Private verification & publication gate</h2>
-          <p className="muted">Record verification, funding checks, disclosure permissions and Zakat review here. This information is internal and is not copied automatically into public appeal text.</p>
-          <p>Save incomplete verification with Verification complete unchecked. Fields marked required apply when completing verification, not when saving progress. Approval does not publish an appeal or transfer funds.</p>
-          <p className="muted">Private assistance and partial support do not create public appeals. For public fundraising, complete the additional target and disclosure checks. A declined or referred decision still requires the existing verification checks before completion.</p>
-          <AdminActionFeedbackForm action={saveVerificationWithFeedback}>
+          <h2 id="review-heading">Review and decision</h2>
+          <p className="muted">Record verification, funding checks, disclosure permissions and Zakat review here. This information is internal and is not copied automatically into public appeal text. <strong>Save review progress</strong> keeps your work without deciding anything. <strong>Approve assistance</strong> completes the verification and approves the request in one step. Approval does not publish an appeal or transfer funds.</p>
+          {approvalNotice?.kind === "done" && request.status === "APPROVED" && <div id="approve-heading" role="status" tabIndex={-1}>
+            <h3>{approvalNotice.outcome === "approved" ? "Request approved" : "This request was already approved"}</h3>
+            <p>{request.referenceNumber} is now <strong>Approved</strong>{approvalNotice.route ? ` as ${APPROVAL_ROUTES.find(route => route.value === approvalNotice.route)?.label.toLowerCase()}` : ""}. {approvalNotice.route === "APPROVED_PUBLIC" ? "Nothing has been published: prepare the public appeal below, then it goes through its own review and a separate publication decision." : "No public appeal is created."} Approved does not mean funds have been paid.</p>
+          </div>}
+          {approvalNotice?.kind === "error" && <div id="approve-errors" className="form-error" role="alert" tabIndex={-1}>
+            <strong>{approvalProblems.length ? "There is a problem" : "This could not be approved"}</strong>
+            {approvalProblems.length
+              ? <ul>{approvalProblems.map(problem => <li key={problem}><a href={`#${approvalProblemField(problem)}`}>{approvalProblemMessage(problem)}</a></li>)}</ul>
+              : <p>{APPROVAL_ERROR_MESSAGES[(approvalNotice.code ?? "form") as keyof typeof APPROVAL_ERROR_MESSAGES] ?? APPROVAL_ERROR_MESSAGES.form}</p>}
+            {approvalProblems.length > 0 && <p className="muted">{approvalNotice.code ? "Review progress was not confirmed saved. Check the current review before trying again. Nothing has been approved." : "What you entered has been saved as review progress. Nothing has been approved."}</p>}
+          </div>}
+          <h3>What each support route means and needs</h3>
+          <dl className="details">
+            {APPROVAL_ROUTES.map(route => <div key={route.value} className="full"><dt>{route.label}</dt><dd>{route.meaning} {route.value === "APPROVED_PUBLIC" ? "Needs the approved public target and every disclosure permission decided, as well as the checks below." : "Needs the checks below only."}</dd></div>)}
+          </dl>
+          <ApprovalCheckAnswers approveAction={approveRequestWithFeedback} saveAction={saveReviewProgressWithFeedback}><AdminActionFeedbackForm action={saveReviewProgressWithFeedback}>
             <input type="hidden" name="id" value={id}/>
             <input type="hidden" name="expectedRequestUpdatedAt" value={request.updatedAt.toISOString()}/>
             <input type="hidden" name="expectedVerificationUpdatedAt" value={verification?.updatedAt.toISOString() ?? ""}/>
 
-            <label htmlFor="confidentialityLevel">Confidentiality level (Required; defaults to confidential)</label>
+            <label htmlFor="confidentialityLevel">Confidentiality level <span className="muted">({REQUIRED_TO_APPROVE})</span></label>
             <select id="confidentialityLevel" name="confidentialityLevel" defaultValue={verification?.confidentialityLevel ?? "CONFIDENTIAL"} disabled={verificationLocked}>
               {ASSISTANCE_CONFIDENTIALITY_LEVELS.map(value => <option key={value} value={value}>{label(value)}</option>)}
             </select>
 
-            <label className="checkbox"><input type="checkbox" name="needConfirmed" defaultChecked={verification?.needConfirmed ?? false} disabled={verificationLocked}/><span><strong>Need confirmed</strong> (Required to complete verification)<small>The underlying charitable need has been verified.</small></span></label>
-            <label className="checkbox"><input type="checkbox" name="evidenceReviewed" defaultChecked={verification?.evidenceReviewed ?? false} disabled={verificationLocked}/><span><strong>Supporting evidence reviewed</strong> (Required to complete verification)<small>Relevant private proof has been reviewed; do not publish the raw documents.</small></span></label>
-            <label className="checkbox"><input type="checkbox" name="otherFundingChecked" defaultChecked={verification?.otherFundingChecked ?? false} disabled={verificationLocked}/><span><strong>Other funding checked</strong> (Required to complete verification)<small>Duplicate fundraising, concessions, insurance, government help or other major support has been considered.</small></span></label>
+            <label className="checkbox"><input id="needConfirmed" type="checkbox" name="needConfirmed" defaultChecked={verification?.needConfirmed ?? false} disabled={verificationLocked} {...fieldAttrs("needConfirmed")}/><span><strong>Need confirmed</strong> <span className="muted">({REQUIRED_TO_APPROVE})</span><small>The underlying charitable need has been verified.</small></span></label>
+            {fieldError("needConfirmed")}
+            <label className="checkbox"><input id="evidenceReviewed" type="checkbox" name="evidenceReviewed" defaultChecked={verification?.evidenceReviewed ?? false} disabled={verificationLocked} {...fieldAttrs("evidenceReviewed")}/><span><strong>Supporting evidence reviewed</strong> <span className="muted">({REQUIRED_TO_APPROVE})</span><small>Relevant private proof has been reviewed; do not publish the raw documents.</small></span></label>
+            {fieldError("evidenceReviewed")}
+            <label className="checkbox"><input id="otherFundingChecked" type="checkbox" name="otherFundingChecked" defaultChecked={verification?.otherFundingChecked ?? false} disabled={verificationLocked} {...fieldAttrs("otherFundingChecked")}/><span><strong>Other funding checked</strong> <span className="muted">({REQUIRED_TO_APPROVE})</span><small>Duplicate fundraising, concessions, insurance, government help or other major support has been considered.</small></span></label>
+            {fieldError("otherFundingChecked")}
 
-            <label htmlFor="verifiedNeedAmount">Verified need amount (₹) (Required to complete verification)</label>
-            <input id="verifiedNeedAmount" name="verifiedNeedAmount" type="text" inputMode="decimal" pattern="(?:0\.(?:0[1-9]|[1-9][0-9]?)|[1-9][0-9]*(?:\.[0-9]{1,2})?)" maxLength={16} defaultValue={verification?.verifiedNeedAmount?.toString() ?? ""} disabled={verificationLocked}/>
+            <label htmlFor="verifiedNeedAmount">Verified need amount (₹) <span className="muted">({REQUIRED_TO_APPROVE})</span></label>
+            <input id="verifiedNeedAmount" name="verifiedNeedAmount" type="text" inputMode="decimal" maxLength={40} pattern="^(?:0\.(?:0[1-9]|[1-9][0-9]?)|[1-9]\d*(?:\.\d{1,2})?)$" defaultValue={amountDraft.verifiedNeedAmount || verification?.verifiedNeedAmount?.toString() || ""} disabled={verificationLocked} {...fieldAttrs("verifiedNeedAmount")}/>
+            {fieldError("verifiedNeedAmount")}
 
-            <label htmlFor="approvedPublicTarget">Approved public fundraising target (₹) (Required for public fundraising only)</label>
-            <input id="approvedPublicTarget" name="approvedPublicTarget" type="text" inputMode="decimal" pattern="(?:0\.(?:0[1-9]|[1-9][0-9]?)|[1-9][0-9]*(?:\.[0-9]{1,2})?)" maxLength={16} defaultValue={verification?.approvedPublicTarget?.toString() ?? ""} disabled={verificationLocked}/>
-            <small className="muted">Positive rupees only; up to two decimal places. Use only when the decision is Approved Public. It cannot exceed the verified need.</small>
+            <label htmlFor="approvedPublicTarget">Approved public fundraising target (₹) <span className="muted">(Required for public fundraising only; not needed for private or partial support)</span></label>
+            <input id="approvedPublicTarget" name="approvedPublicTarget" type="text" inputMode="decimal" maxLength={40} pattern="^(?:0\.(?:0[1-9]|[1-9][0-9]?)|[1-9]\d*(?:\.\d{1,2})?)$" defaultValue={amountDraft.approvedPublicTarget || verification?.approvedPublicTarget?.toString() || ""} disabled={verificationLocked} {...fieldAttrs("approvedPublicTarget", "approvedPublicTarget-hint")}/>
+            <small id="approvedPublicTarget-hint" className="muted">Positive rupees only; up to two decimal places. It cannot exceed the verified need, and must be left empty for private or partial support.</small>
+            {fieldError("approvedPublicTarget")}
 
-            <label htmlFor="paymentDestination">Payment destination (Required to complete verification)</label>
-            <input id="paymentDestination" name="paymentDestination" maxLength={500} defaultValue={verification?.paymentDestination ?? ""} placeholder="Hospital, vendor, beneficiary transfer, asset purchase, verified settlement…" disabled={verificationLocked}/>
+            <label htmlFor="paymentDestination">Payment destination <span className="muted">({REQUIRED_TO_APPROVE})</span></label>
+            <input id="paymentDestination" name="paymentDestination" maxLength={600} defaultValue={verification?.paymentDestination ?? ""} placeholder="Hospital, vendor, beneficiary transfer, asset purchase, verified settlement…" disabled={verificationLocked} {...fieldAttrs("paymentDestination", "paymentDestination-hint")}/>
+            <small id="paymentDestination-hint" className="muted">Where the assistance money goes for this case. This is not Amaana&apos;s own donation receiving account.</small>
+            {fieldError("paymentDestination")}
 
-            <label htmlFor="otherFundingNotes">Other funding / duplication notes (Optional)</label>
-            <textarea id="otherFundingNotes" name="otherFundingNotes" maxLength={2000} defaultValue={verification?.otherFundingNotes ?? ""} disabled={verificationLocked}/>
+            <label htmlFor="otherFundingNotes">Other funding / duplication notes <span className="muted">(Optional)</span></label>
+            <textarea id="otherFundingNotes" name="otherFundingNotes" maxLength={2400} defaultValue={verification?.otherFundingNotes ?? ""} disabled={verificationLocked} {...fieldAttrs("otherFundingNotes")}/>
+            {fieldError("otherFundingNotes")}
 
-            <label htmlFor="verificationSummary">Verification summary (Required to complete verification)</label>
-            <textarea id="verificationSummary" name="verificationSummary" maxLength={5000} defaultValue={verification?.verificationSummary ?? ""} placeholder="Internal factual summary of what was checked and what is approved." disabled={verificationLocked}/>
+            <label htmlFor="verificationSummary">Verification summary <span className="muted">({REQUIRED_TO_APPROVE}; optional while you are only saving progress)</span></label>
+            <textarea id="verificationSummary" name="verificationSummary" maxLength={5400} defaultValue={verification?.verificationSummary ?? ""} placeholder="Internal factual summary of what was checked and what is approved." disabled={verificationLocked} {...fieldAttrs("verificationSummary")}/>
+            {fieldError("verificationSummary")}
 
-            <label htmlFor="decision">Verification decision (Required to complete verification)</label>
-            <select id="decision" name="decision" defaultValue={verification?.decision ?? "PENDING"} disabled={verificationLocked}>
-              {ASSISTANCE_VERIFICATION_DECISIONS.map(value => <option key={value} value={value}>{label(value)}</option>)}
+            <label htmlFor="decision">Support route <span className="muted">(Choose one to approve; Not decided yet or Referred only save progress)</span></label>
+            <select id="decision" name="decision" defaultValue={verification?.decision ?? "PENDING"} disabled={verificationLocked} {...fieldAttrs("decision")}>
+              {routeChoices.map(value => <option key={value} value={value}>{ROUTE_CHOICE_LABEL[value] ?? label(value)}</option>)}
             </select>
+            {fieldError("decision")}
 
-            <label htmlFor="publicNameConsent">Public name permission (Required for public fundraising only)</label>
-            <select id="publicNameConsent" name="publicNameConsent" defaultValue={verification?.publicNameConsent ?? "UNCONFIRMED"} disabled={verificationLocked}>{ASSISTANCE_CONSENT_DECISIONS.map(value => <option key={value} value={value}>{label(value)}</option>)}</select>
+            <label htmlFor="publicNameConsent">Public name permission <span className="muted">({REQUIRED_FOR_PUBLIC})</span></label>
+            <select id="publicNameConsent" name="publicNameConsent" defaultValue={verification?.publicNameConsent ?? "UNCONFIRMED"} disabled={verificationLocked} {...fieldAttrs("publicNameConsent")}>{ASSISTANCE_CONSENT_DECISIONS.map(value => <option key={value} value={value}>{CONSENT_LABEL[value] ?? label(value)}</option>)}</select>
+            {fieldError("publicNameConsent")}
 
-            <label htmlFor="photoConsent">Photo/media permission (Required for public fundraising only)</label>
-            <select id="photoConsent" name="photoConsent" defaultValue={verification?.photoConsent ?? "UNCONFIRMED"} disabled={verificationLocked}>{ASSISTANCE_CONSENT_DECISIONS.map(value => <option key={value} value={value}>{label(value)}</option>)}</select>
+            <label htmlFor="photoConsent">Photo/media permission <span className="muted">({REQUIRED_FOR_PUBLIC})</span></label>
+            <select id="photoConsent" name="photoConsent" defaultValue={verification?.photoConsent ?? "UNCONFIRMED"} disabled={verificationLocked} {...fieldAttrs("photoConsent")}>{ASSISTANCE_CONSENT_DECISIONS.map(value => <option key={value} value={value}>{CONSENT_LABEL[value] ?? label(value)}</option>)}</select>
+            {fieldError("photoConsent")}
 
-            <label htmlFor="medicalDetailsConsent">Medical-detail disclosure permission (Required for public fundraising only)</label>
-            <select id="medicalDetailsConsent" name="medicalDetailsConsent" defaultValue={verification?.medicalDetailsConsent ?? "UNCONFIRMED"} disabled={verificationLocked}>{ASSISTANCE_CONSENT_DECISIONS.map(value => <option key={value} value={value}>{label(value)}</option>)}</select>
+            <label htmlFor="medicalDetailsConsent">Medical-detail disclosure permission <span className="muted">({REQUIRED_FOR_PUBLIC})</span></label>
+            <select id="medicalDetailsConsent" name="medicalDetailsConsent" defaultValue={verification?.medicalDetailsConsent ?? "UNCONFIRMED"} disabled={verificationLocked} {...fieldAttrs("medicalDetailsConsent")}>{ASSISTANCE_CONSENT_DECISIONS.map(value => <option key={value} value={value}>{CONSENT_LABEL[value] ?? label(value)}</option>)}</select>
+            {fieldError("medicalDetailsConsent")}
 
-            <label htmlFor="institutionNameConsent">Hospital / institution naming permission (Required for public fundraising only)</label>
-            <select id="institutionNameConsent" name="institutionNameConsent" defaultValue={verification?.institutionNameConsent ?? "UNCONFIRMED"} disabled={verificationLocked}>{ASSISTANCE_CONSENT_DECISIONS.map(value => <option key={value} value={value}>{label(value)}</option>)}</select>
+            <label htmlFor="institutionNameConsent">Hospital / institution naming permission <span className="muted">({REQUIRED_FOR_PUBLIC})</span></label>
+            <select id="institutionNameConsent" name="institutionNameConsent" defaultValue={verification?.institutionNameConsent ?? "UNCONFIRMED"} disabled={verificationLocked} {...fieldAttrs("institutionNameConsent")}>{ASSISTANCE_CONSENT_DECISIONS.map(value => <option key={value} value={value}>{CONSENT_LABEL[value] ?? label(value)}</option>)}</select>
+            {fieldError("institutionNameConsent")}
 
-            <label htmlFor="archiveConsent">Public archive permission after closure (Required for public fundraising only)</label>
-            <select id="archiveConsent" name="archiveConsent" defaultValue={verification?.archiveConsent ?? "UNCONFIRMED"} disabled={verificationLocked}>{ASSISTANCE_CONSENT_DECISIONS.map(value => <option key={value} value={value}>{label(value)}</option>)}</select>
+            <label htmlFor="archiveConsent">Public archive permission after closure <span className="muted">({REQUIRED_FOR_PUBLIC})</span></label>
+            <select id="archiveConsent" name="archiveConsent" defaultValue={verification?.archiveConsent ?? "UNCONFIRMED"} disabled={verificationLocked} {...fieldAttrs("archiveConsent")}>{ASSISTANCE_CONSENT_DECISIONS.map(value => <option key={value} value={value}>{CONSENT_LABEL[value] ?? label(value)}</option>)}</select>
+            {fieldError("archiveConsent")}
+            <small className="muted">Unconfirmed means the question is not finished. Not allowed is a restriction. Not applicable means genuinely irrelevant. Hiding a field never answers it, and none of these is assumed.</small>
 
-            <label htmlFor="zakatStatus">Zakat review (Required to complete verification)</label>
-            <select id="zakatStatus" name="zakatStatus" defaultValue={verification?.zakatStatus ?? "UNREVIEWED"} disabled={verificationLocked}>{ASSISTANCE_ZAKAT_STATUSES.map(value => <option key={value} value={value}>{label(value)}</option>)}</select>
-            <small className="muted">Never infer Zakat eligibility. Choose Not applicable when the case is not being assessed for Zakat.</small>
+            <label htmlFor="zakatStatus">Zakat review <span className="muted">({REQUIRED_TO_APPROVE})</span></label>
+            <select id="zakatStatus" name="zakatStatus" defaultValue={verification?.zakatStatus ?? "UNREVIEWED"} disabled={verificationLocked} {...fieldAttrs("zakatStatus", "zakatStatus-hint")}>{ASSISTANCE_ZAKAT_STATUSES.map(value => <option key={value} value={value}>{label(value)}</option>)}</select>
+            <small id="zakatStatus-hint" className="muted">Never infer Zakat eligibility. Choose Not applicable when the case is not being assessed for Zakat.</small>
+            {fieldError("zakatStatus")}
 
-            <label className="checkbox"><input type="checkbox" name="markComplete" defaultChecked={Boolean(verification?.completedAt)} disabled={verificationLocked || !canCompleteVerification}/><span><strong>Verification complete</strong><small>Completing verification records the approving reviewer and enables approved workflow transitions. Approval permission is required.</small></span></label>
-            {!canCompleteVerification && !verificationLocked && <small className="muted">You may save verification work, but only an authorised approver can mark it complete.</small>}
+            {approvalOpen && canApprove && <>
+              <label className="checkbox"><input id="confirmApproval" type="checkbox" name="confirmApproval" {...fieldAttrs("confirmApproval")}/><span><strong>I confirm I am approving this request on the support route chosen above</strong> <span className="muted">({REQUIRED_TO_APPROVE})</span><small>This completes the verification and marks the request Approved with your name on it. If the applicant gave an email address, the standard “status updated” message is queued (queued is not delivered). Approval is not payment, and for public fundraising it does not publish anything.</small></span></label>
+              {fieldError("confirmApproval")}
+            </>}
+            {!canApprove && !verificationLocked && <small className="muted">You may save review progress, but only an authorised approver can approve a request.</small>}
             {verification?.completedAt && <small className="muted">Completed {verification.completedAt.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} by {verification.reviewedBy?.name ?? "authorised reviewer"}.</small>}
-            {verificationLocked && <small className="muted">Verification is locked because this request has already been converted into a linked appeal.</small>}
-            <button className="button" disabled={!hasPermission(user, "assistance.update") || verificationLocked}>Save verification</button>
-          </AdminActionFeedbackForm>
+            {verificationLocked && <small className="muted">Verification is locked while this request is approved, rejected, closed or linked to an appeal. Reopen the review through the status workflow before changing it.</small>}
+            <button className="button secondary" data-save-review-progress="" disabled={!hasPermission(user, "assistance.update") || verificationLocked}>Save review progress</button>
+            {approvalOpen && canApprove && <button className="button" type="submit" data-review-approval="" disabled formAction={approveRequestAction}>Approve assistance</button>}
+          </AdminActionFeedbackForm><ApprovalSummary /></ApprovalCheckAnswers>
 
           {verification?.decision === "APPROVED_PUBLIC" && <div>
             <h3>Public appeal readiness</h3>
@@ -235,12 +338,12 @@ export default async function RequestDetailPage({ params }: Props) {
     </div>
     <section className="card" aria-labelledby="assistance-workflow-guide">
       <h2 id="assistance-workflow-guide">Review workflow guide</h2>
+      <p className="muted">Follow these steps for every financial or medical request. Only verified information may be approved; an application does not guarantee funding.</p>
       <ol>
-        <li><strong>Read the request.</strong> Review the contact details, description and any private evidence. An attachment is not automatically approved for public use.</li>
-        <li><strong>Verify the need.</strong> Confirm the facts, relevant amount, payment destination, other funding and applicable eligibility. Assign a reviewer if needed. Do not treat unverified fields as approved.</li>
-        <li><strong>Request missing information.</strong> If the evidence is incomplete, list the specific missing items in the private note, mark awaiting information and contact the applicant through a verified private channel. The standard status email is not the detailed request. After information is received and reviewed, resume verification.</li>
-        <li><strong>Decide and document.</strong> Record the verification decision and required checks before approval or rejection. Internal notes and assignment are optional for a complete case; supporting evidence and the decision must meet the selected support route.</li>
-        <li><strong>Handle any public appeal separately.</strong> A private request does not automatically become fundraising. Public story, target, disclosure, media privacy and publishing need their own review. No decision in this screen transfers funds.</li>
+        <li><strong>1. Read the intake and private evidence.</strong> Confirm the applicant&apos;s contact details, request description and any documents. Assign a reviewer if needed. Submitted files are not automatically approved for public sharing.</li>
+        <li><strong>2. If information is missing, request it privately.</strong> Use Request additional information, list the exact missing items in the private note, change the status to Documents requested, then contact the applicant through a verified private channel. The standard status email is not the detailed request. Once received and verified, resume verification.</li>
+        <li><strong>3. Decide: approve or reject.</strong> Approval requires confirmed need, reviewed evidence, verified amount, payment destination, checked other funding, a verification summary and a Zakat decision. Public fundraising also requires a target and separately resolved disclosure permissions. Internal notes and assignment are optional. To reject, use Reject request with a private reason and explicit confirmation; approval fields are not required.</li>
+        <li><strong>4. Prepare public fundraising only when approved for that route.</strong> Create a draft appeal and separately review the public story, consent, privacy-safe media and payment eligibility. Publishing the appeal is a distinct decision; approval alone never transfers funds or opens fundraising.</li>
       </ol>
     </section>
   </>;
