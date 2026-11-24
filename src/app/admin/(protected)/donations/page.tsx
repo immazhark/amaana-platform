@@ -10,7 +10,10 @@ import { prisma } from "@/lib/prisma";
 import { donationOperationalState } from "@/lib/operational-signals";
 
 const FUNNEL_WINDOW_DAYS = 90;
-const funnelSince = () => new Date(Date.now() - FUNNEL_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+const funnelWindow = () => {
+  const end = new Date(Date.now());
+  return { gte: new Date(end.getTime() - FUNNEL_WINDOW_DAYS * 24 * 60 * 60 * 1000), lte: end };
+};
 
 type Props = { searchParams: Promise<{ status?: string; intent?: string; page?: string }> };
 
@@ -77,7 +80,7 @@ export default async function DonationsPage({ searchParams }: Props) {
     // Aggregate counts only: no donor row, amount, reference or contact detail leaves the database for this card.
     prisma.donation.groupBy({
       by: ["paymentMethod", "status"],
-      where: { createdAt: { gte: funnelSince() } },
+      where: { createdAt: funnelWindow() },
       _count: { _all: true },
     }),
   ]);
