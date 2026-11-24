@@ -7,14 +7,14 @@ import type { DonationPaymentMethod, DonationStatus } from "@prisma/client";
  * name, contact, IP or token ever reaches this module. Outcomes come from recorded payment status, never from client events.
  * There is deliberately no acquisition attribution here: tying a visit to a gift needs a consented event store.
  *
- * Small cells are suppressed so a count of one or two cannot point at a person, and a suppressed cell never leaves a total
- * that would let it be recovered by subtraction.
+ * Small cells and reconstructable totals are suppressed to reduce disclosure risk within one table.
+ * This is not an anonymity guarantee across overlapping reports or repeated snapshots.
  */
 export const MIN_REPORTABLE_CELL = 5;
 
 export type FunnelStage = "started" | "awaiting" | "confirmed" | "unsuccessful";
 export type GroupedDonationCount = { paymentMethod: DonationPaymentMethod; status: DonationStatus; _count: { _all: number } };
-/** A count, or `suppressed` when it is between 1 and the minimum cell size. */
+/** A visible count, or a cell withheld for primary or complementary suppression. */
 export type ReportableCount = { suppressed: false; count: number } | { suppressed: true };
 export type FunnelRow = { method: DonationPaymentMethod | "ALL"; cells: Record<FunnelStage, ReportableCount>; confirmedShare: number | null };
 
@@ -43,7 +43,7 @@ function rowFrom(method: FunnelRow["method"], raw: Record<FunnelStage, number>, 
   }
   if (hidden.size > 0) hidden.add("started");
   const cells = Object.fromEntries(STAGES.map(stage => [stage, hidden.has(stage) ? { suppressed: true } : { suppressed: false, count: raw[stage] }])) as FunnelRow["cells"];
-  // A share is only meaningful, and only safe, when nothing in the row is hidden and the base is large enough.
+  // Do not publish a share when any count is hidden or the denominator is too small.
   const confirmedShare = hidden.size === 0 && raw.started >= minCell ? Math.round((raw.confirmed / raw.started) * 1000) / 10 : null;
   return { method, cells, confirmedShare };
 }

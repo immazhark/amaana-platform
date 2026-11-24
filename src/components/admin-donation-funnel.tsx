@@ -16,7 +16,7 @@ const STAGES: readonly { stage: FunnelStage; label: string }[] = [
 
 function Cell({ value }: { value: ReportableCount }) {
   return value.suppressed
-    ? <td title="Withheld so that a small count in this row cannot be picked out or worked out by subtraction">withheld<span className="sr-only"> to protect small counts</span></td>
+    ? <td title="Withheld to reduce disclosure through small counts or subtraction within this table">withheld<span className="sr-only"> to protect small counts</span></td>
     : <td>{value.count}</td>;
 }
 
@@ -29,7 +29,7 @@ export function AdminDonationFunnel({ rows, windowDays }: { rows: readonly Funne
       <p className="eyebrow">Outcomes</p>
       <h2 id="donation-funnel-heading">Donation outcomes, last {windowDays} days</h2>
       <p className="muted">
-        Counted from recorded payment status, not from browser activity. Counts under {MIN_REPORTABLE_CELL} are withheld so no individual can be picked out; a neighbouring count in the same row is withheld too when showing it would let a hidden one be worked out, so a cell marked withheld is not necessarily small, and a total is left out when it would reveal one.
+        Counted from recorded payment status, not from browser activity. Positive counts below {MIN_REPORTABLE_CELL} are withheld to reduce disclosure risk. Additional counts, totals and percentages may be withheld to limit reconstruction within this table. This does not guarantee anonymity when combined with other reports or changes over time.
         This does not show where donors came from.
       </p>
       {rows.length === 0 ? <p className="muted">No donations were started in this period.</p> : <div className="admin-table-wrap" tabIndex={0} role="region" aria-label={`Donation outcomes by payment method, last ${windowDays} days`}>
