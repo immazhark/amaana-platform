@@ -1,18 +1,19 @@
 # Amaana Foundation — current verified state
 
-**24 November 2026 IST — dated release checkpoint, not a live feed.** Sole implementation writer `CHATGPT_ACTIVE`. Reverify source, CI and Railway before acting.
+**24 November 2026 IST — dated release checkpoint, not a live feed.** Sole writer `CHATGPT_ACTIVE`. Reverify source, PRs, CI, Railway and public runtime before acting.
 
 | Boundary | Verified evidence |
 |---|---|
-| Main | `99ad35ea68aa4044f015a3e2df4ef3a6e3e21d38` after #1134. Full CI 45372083375 (1,707 Chromium, 24 cross-browser, 112 database tests; aggregate JS 815276/819200 bytes), separate ready-state 45377555081 and guarded squash merge passed. |
-| Deployment | Railway website 3ce3b96a-6ff2-4edf-80d3-f94c58c9462e BUILDING at observation. Previous deployment 5487dcf1-4c37-44e2-910a-4dc5ecfcf0d0 SUCCESS for #845. Independent public version/readiness not verified. |
-| Assistance scope | Approved additive private rejection history, save/approve/reject workflow and permission correction. Production migration outcome outstanding. Application rollback retains private history. No backfill or deletion. |
-| Donation successor #1147 | Exact #1145 tests from `6f8f6100ea507d4d27cef5f1a81d8092e772da6b` plus reporting files from `a214f5dee457e2d11c0dba4e7da768cbee785b88`. Previous fast, database and production passed; fresh combined exact-head and ready-state acceptance required. #1145 retirement conditional on byte-for-byte preservation. |
-| Other work | Donor wording and mocked Taleem transfer coverage preserved on `fix/acknowledgement-destination-neutral-copy-20261124` head `bf7cd37a079359b23f836b5c2464f0bd53048561`; reconcile shared checkout copy before submitting. |
-| Canonical 149 | 59 Completed / 7 Implemented / 64 Partial / 17 Not started / 1 Superseded / 1 Not applicable. No promotions. |
-| Next | Verify #1134 deployment; complete #1147 exact-head and ready-state gates, guarded merge; reconcile donor copy against actual main. |
+| Protected main at preparation | `a757f7b61310c7ea5c88a35502d8181f0e996990`, #1149 mobile diagnostics merged after full CI 45387807172 and separate ready-state 45401347738. 1707 Chromium, 24 cross-browser and 122 PostgreSQL passed on the accepted candidate. No actual mobile profiling measurement claimed. |
+| Runtime | Railway website deployment 1d853ee2-45b2-4ae4-9a29-dd78c5ba1a56 SUCCESS for `722cb563e4262e1573afdca2a50de26f3c2b95de` (#1147). Tooling-only #1149 deployment 0264909e-5e13-44ac-bba6-641a11906d46 SKIPPED as expected. Independent public version/readiness unverified in audit environment. |
+| Assistance workflow | #1134 merged and deployed; provider logs confirmed additive private rejection-history migration 20261122040000_assistance_rejection applied successfully. No backfill/deletion. Application rollback retains table. |
+| Financial reporting | #1147 merged after CI 45377960242 and ready 45383349593; 122 database, 1706 Chromium plus one retry on Contact blocking-time budget, 24 cross-browser. Fee-first reporting and Taleem receipt/reissue coverage released, no payment execution change. |
+| Active release #1148 | Current candidate 570e3c12c95d8be56161162c1fe8df36f4beecc9, CI 45401780107 fast/database/production passed, browser outstanding at observation. Eight substantive source/test blobs preserved through reconciliation. |
+| Active #1150 | Assistance queue oldest-first/unassigned filters, exact head 62f6d69f60ec7f9fb2b9f78c90f01c4bf73d8e13, CI 45402530767 fast outstanding. AF-LOCAL remains Partial. No assignment mutation or new access. |
+| Canonical 149 | Current main: 59 Completed / 7 Implemented / 64 Partial / 17 Not started / 1 Superseded / 1 Not applicable. Candidate AF-N13 withdrawal disposition only proposes 59/7/64/16/1/2; 87 actionable, no new Completed. The queue consistency guard detects stale derived rows. |
+| Next | Finish #1148 and #1150 exact-head and ready-state gates, merge serially with current-main parity and independently verify provider/runtime. Release prepared backlog guard only after its own acceptance. Obtain actual isolated mobile metrics; no field performance claims. |
 
-Domestic INR only, no FCRA. 12A/12AB provisional; 80G evidence conflict unresolved. Ordinary acknowledgements are not statutory certificates. Preserve redaction and metadata removal, original assets and official brand. No unapproved production data changes, live financial actions, notification or infrastructure changes.
+Domestic INR only; no FCRA. 12A/12AB provisional, 80G evidence conflict unresolved. Ordinary acknowledgements are not statutory certificates. Preserve redaction/EXIF removal, originals and official brand. No unapproved live payment, production data, schema, notification, provider or infrastructure action.
 
 ## Historical detailed checkpoint — 22 November 2026
 
