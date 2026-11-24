@@ -177,3 +177,18 @@ describe("request to appeal staff navigation", () => {
     expect(html).not.toContain("Open appeal editor");
   });
 });
+
+
+describe("verification field requirements", () => {
+  it("distinguishes completion requirements, public fundraising requirements and optional notes without requiring a complete draft", async () => {
+    const { html } = await statusOptions("SUBMITTED");
+    expect(html).toContain("Required to complete verification");
+    expect(html).toContain("Required for public fundraising only");
+    expect(html).toContain("Other funding / duplication notes (Optional)");
+    expect(html).toContain("Save incomplete verification with Verification complete unchecked");
+    expect(html).toContain("Approval does not publish an appeal or transfer funds");
+    const form = html.match(/<input[^>]*name="verifiedNeedAmount"[^>]*>/)?.[0];
+    expect(form).toBeDefined();
+    expect(form).not.toMatch(/\brequired(?:=|\s|>)/);
+  });
+});
