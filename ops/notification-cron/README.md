@@ -1,14 +1,21 @@
-# Amaana notification cron — safe containment
+# Amaana notification cron
 
 This service has its own Docker build. It does **not** build Next.js, connect to PostgreSQL, or need the website's database secrets.
 
-## Current state: delivery disabled
+## Current state: running, email delivery still gated by the website
 
-As verified on 24 October 2026, Railway's production `amaana-notification-cron` is isolated under `/ops/notification-cron` with a Dockerfile builder, `node --check run.mjs`, NEVER restart, and an annual dormant `0 0 1 1 *` schedule. Its latest GitHub-triggered deployments are skipped; this state does **not** verify successful delivery.
+Owner approval to run the worker was given on 22 November 2026. The service runs `node run.mjs` every five minutes (`*/5 * * * *`), NEVER restart. Each run makes one authenticated POST to the website's `/api/jobs/notifications`.
 
-Both `railway.json` (default) and `railway.contained.json` now deliberately use identical fail-closed settings. Dockerfile's fallback CMD also runs only `node --check run.mjs`. **Neither path can invoke the notification endpoint or drain messages**, even if a future operator resets a Railway start-command override. Do not replace the annual schedule with a null cron field: on Railway, null can mean continuous service execution.
+**What actually runs.** Railway does not read `railway.json` for this service (its config-as-code path does not follow the root directory and cannot be enabled for it), and it did not apply a custom start command to this Dockerfile build: with the start command set to `node run.mjs`, containers started every five minutes but printed nothing and made no request, because the image's own `CMD` ran. The Dockerfile `CMD` is therefore the source of truth for what runs, and the schedule is set on the Railway service itself. `railway.json` and `railway.contained.json` record the intended values and are checked by tests, but changing them does not change the live service.
 
-Source-only changes do not mutate the live Railway environment. Recheck both live and staged worker settings before any worker deployment or infrastructure change. Do not change the production website service.
+What a run does depends on the **website's** variables, not on this service:
+
+- **Delivery off** (the default: `EMAIL_DELIVERY_MODE` not exactly `live`, or `NOTIFICATION_SEND_NOT_BEFORE` missing or malformed): the endpoint answers HTTP 200 `status: "disabled"` and runs only retention maintenance (ephemeral security-ledger pruning and the 90-day aggregates). **No email is sent.**
+- **Delivery on** (both variables set; see `docs/TRANSACTIONAL_EMAIL_RUNBOOK.md`, "Go-live guard"): only notifications created at or after `NOTIFICATION_SEND_NOT_BEFORE` are sent, so the old queue is never drained.
+
+To park the worker again: set the Railway service's cron schedule back to the annual `0 0 1 1 *` (never a null cron field, which on Railway can mean continuous execution) and, if you also want the image to stop calling the endpoint, change the Dockerfile `CMD` back to `["node", "--check", "run.mjs"]` in a reviewed change. `railway.contained.json` holds those parked values.
+
+Source changes here redeploy this service only (watch pattern `ops/notification-cron/**`). Do not change the production website service from this directory.
 
 ## Explicitly separate eventual delivery activation
 

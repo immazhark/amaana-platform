@@ -180,3 +180,36 @@ test("a symbolic link hidden inside a route group or parallel slot fails closed"
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("P0 admin edge inventory rejects a symlinked App Router scan root", () => {
+  const workspace = mkdtempSync(join(tmpdir(), "amaana-admin-edge-root-"));
+  try {
+    const actual = join(workspace, "real-app");
+    mkdirSync(join(actual, "admin"), { recursive: true });
+    writeFileSync(join(actual, "admin", "page.tsx"), "export default function Page() { return null; }\n");
+    const linked = join(workspace, "linked-app");
+    symlinkSync(actual, linked, "dir");
+    assert.throws(() => discoverAdminRoutes(linked), /Symlink in admin route inventory/i);
+  } finally {
+    rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
+for (const candidate of [
+  "ADMIN/team/page.tsx",
+  "(review)/AdMiN/appeals/page.tsx",
+  "api/ADMIN/status/route.ts",
+  "API/admin/status/route.ts",
+]) {
+  test("AF-R013 rejects case-variant administrative route that the edge inventory would omit: " + candidate, () => {
+    const root = mkdtempSync(join(tmpdir(), "amaana-edge-case-variant-"));
+    try {
+      const segments = candidate.split("/");
+      mkdirSync(join(root, ...segments.slice(0, -1)), { recursive: true });
+      writeFileSync(join(root, ...segments), "export default function SyntheticRoute() { return null; }\n");
+      assert.throws(() => discoverAdminRoutes(root), /Case-variant administrative route/i);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+}

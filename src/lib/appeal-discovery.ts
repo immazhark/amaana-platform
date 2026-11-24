@@ -12,7 +12,12 @@ export function selectAppealDiscovery<T extends { title: string; summary: string
     || Boolean(search.page && (typeof search.page !== "string" || !/^[1-9]\d*$/.test(search.page) || !Number.isSafeInteger(Number(search.page))))
     || Array.isArray(search.q) || raw.length > 80 || q.length > 80 || /[\u0000-\u001f\u007f]/.test(raw);
   const normalizedQuery = invalid || !q ? "" : q.toLocaleLowerCase("en");
-  const matching = invalid ? [] : records.filter(record => !q
+  const reviewed = Array.isArray(records) ? records.filter(record =>
+    record !== null && typeof record === "object" && !Array.isArray(record) &&
+    typeof record.title === "string" && !!record.title.trim() &&
+    typeof record.summary === "string",
+  ) : [];
+  const matching = invalid ? [] : reviewed.filter(record => !q
     || `${record.title} ${record.summary}`.replace(/\s+/g, " ").toLocaleLowerCase("en").includes(normalizedQuery));
   const totalPages = Math.max(1, Math.ceil(matching.length / APPEAL_PAGE_SIZE));
   const page = invalid ? 1 : Math.min(Number(search.page || 1), totalPages);

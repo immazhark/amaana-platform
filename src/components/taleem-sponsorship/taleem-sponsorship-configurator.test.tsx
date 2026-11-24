@@ -1,0 +1,75 @@
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("@/components/donation-methods", () => ({ DonationMethods: () => <div>Existing payment methods</div> }));
+
+import { fundDonationFormCopy } from "@/components/fund-giving/fund-copy";
+import { taleemClasses, taleemHead, taleemIntro, taleemPanelNote } from "./taleem-sponsorship-copy";
+import { sponsorshipOffer } from "@/lib/taleem-sponsorship";
+import { TaleemSponsorshipConfigurator } from "./taleem-sponsorship-configurator";
+
+const fund = { slug: "taleem", name: "Taleem Fund", summary: "Qur'an and Islamic education.", zakatPolicy: "ACCEPTED" as const, isGeneral: false };
+const details = { upi: { id: "synthetic@bank", qrImageUrl: null }, bank: null } as never;
+const html = (initialProgrammeId?: "qaida" | "nazira" | "hifdh-day-scholar") => renderToStaticMarkup(<TaleemSponsorshipConfigurator fund={fund} offer={sponsorshipOffer()} classes={taleemClasses} head={taleemHead} intro={taleemIntro} panelNote={taleemPanelNote} copy={fundDonationFormCopy(fund)} paymentDetails={details} feeBps={236} initialProgrammeId={initialProgrammeId} />);
+const text = (initialProgrammeId?: "qaida" | "nazira" | "hifdh-day-scholar") => html(initialProgrammeId).replace(/<!-- -->/g, "").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ");
+
+describe("Taleem sponsorship configurator", () => {
+  it("offers the three approved programmes and the four durations", () => {
+    const markup = html();
+    for (const name of ["Qaida", "Qur&#x27;an Nazira", "Hifdh — Day Scholar"]) expect(markup).toContain(name);
+    for (const months of ["1 month", "3 months", "6 months", "12 months"]) expect(markup).toContain(months);
+    expect(markup.match(/name="sponsorshipProgramme"/g)).toHaveLength(3);
+    expect(markup.match(/name="sponsorshipMonths"/g)).toHaveLength(4);
+  });
+
+  it("starts on the programme the donor came from, with that programme's exact total", () => {
+    expect(text("nazira")).toContain("1 unit × 1 month × ₹1,200 = ₹1,200");
+    expect(text("nazira")).toContain("Give ₹1,200 to Qur&#x27;an Nazira");
+    expect(text("hifdh-day-scholar")).toContain("Give ₹1,500 to Hifdh — Day Scholar");
+    const markup = html("nazira");
+    const checked = [...markup.matchAll(/<input[^>]*name="sponsorshipProgramme"[^>]*>/g)].map(item => item[0]).filter(tag => /checked/.test(tag));
+    expect(checked).toHaveLength(1);
+    expect(checked[0]).toContain("nazira");
+  });
+
+  it("falls back to Qaida when no programme is requested", () => {
+    expect(text(undefined)).toContain("Give ₹1,000 to Qaida");
+  });
+
+  it("starts at one unit of Qaida for one month and shows the exact total", () => {
+    const copy = text();
+    expect(copy).toContain("1 unit × 1 month × ₹1,000 = ₹1,000");
+    expect(copy).toContain("Give ₹1,000 to Qaida");
+  });
+
+  it("says plainly that the gift supports the programme, names no student, and is paid once", () => {
+    const copy = text();
+    expect(copy).toMatch(/does not name or reserve a student/);
+    expect(copy).toMatch(/paid once; it is not a monthly subscription/);
+    expect(copy).toMatch(/Months are a prepaid period, not a recurring mandate/);
+  });
+
+  it("makes no promise of an identified child, a reserved place or a recurring charge", () => {
+    const copy = text();
+    for (const forbidden of [/your child/i, /sponsor a (child|student)/i, /adopt/i, /reserved for you/i, /auto-?renew/i, /every month/i, /cancel anytime/i]) {
+      expect(copy).not.toMatch(forbidden);
+    }
+  });
+
+  it("does not open the payment forms until the donor asks to give", () => {
+    const markup = html();
+    expect(markup).toContain('aria-expanded="false"');
+    expect(markup).not.toContain("Existing payment methods");
+  });
+
+  it("says the donor can choose Zakat, Sadaqah or General charity, and that the acknowledgement is not a tax certificate", () => {
+    const copy = text();
+    expect(copy).toMatch(/give this as Zakat, Sadaqah or General charity; you choose at checkout/);
+    expect(copy).toMatch(/private transaction record and does not certify Section 80G deduction eligibility/);
+    for (const forbidden of [/tax[- ]deductible/i, /tax benefit/i, /80G (approved|registered|exempt)/i, /claim a deduction/i]) expect(copy).not.toMatch(forbidden);
+  });
+
+  it("states the Zakat rule that applies to Taleem gifts", () => {
+    expect(text()).toMatch(/Zakat is never moved to a different purpose without your permission/);
+  });
+});

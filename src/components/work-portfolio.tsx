@@ -2,6 +2,7 @@ import Link from "next/link";
 import { PublicMedia } from "@/components/public-media";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { ActionIcon } from "@/components/action-icon";
+import { TALEEM_FACTS } from "@/content/taleem-facts";
 import { selectIdentityPublicImage } from "@/lib/public-media";
 import { heroTeaser } from "@/lib/public-copy";
 import type { getOurWorkIndexData } from "@/lib/public-page-data";
@@ -74,8 +75,8 @@ export function WorkPortfolio({ causes, expanded = false, yearFiltered = false }
                   {cause.slug === "amaana-taleem" && !yearFiltered && (
                     <div className="v2-taleem-highlights" aria-label="Amaana Taleem documented pathways">
                       <div className="v2-taleem-highlight">
-                        <strong>25 students</strong>
-                        <span>Qur’an Nazira and Hifdh students sponsored combined, as of September 2026.</span>
+                        <strong>{TALEEM_FACTS.sponsoredStudents} students</strong>
+                        <span>Qur’an Nazira and Hifdh students sponsored combined, as of {TALEEM_FACTS.asOf.label}.</span>
                       </div>
                       <div className="v2-taleem-highlight">
                         <strong>50 children</strong>

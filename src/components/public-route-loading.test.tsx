@@ -2,17 +2,32 @@ import { expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { PublicRouteLoading } from "./public-route-loading";
 
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+
+it("AF-R071 streams a dedicated accessible loading fallback for impact comparisons", () => {
+  const path = join(process.cwd(), "src/app/impact/compare/loading.tsx");
+  expect(existsSync(path)).toBe(true);
+  expect(readFileSync(path, "utf8")).toContain('route="impact-compare"');
+  const source = readFileSync(join(process.cwd(), "src/components/public-route-loading.tsx"), "utf8");
+  expect(source).toContain('"impact-compare"');
+  expect(source).toContain("Compare Documented Impact");
+  expect(source).toContain("Loading published initiatives to compare");
+});
+
 const routes = [
   ["stories", "Stories of Amanah", "Loading published stories"],
   ["our-work", "Our Work", "Loading published initiatives"],
   ["impact", "Our Impact", "Loading documented outcomes"],
+  ["impact-compare", "Compare Documented Impact", "Loading published initiatives to compare"],
   ["appeals", "Verified Appeals", "Checking current public appeals"],
   ["faith-and-reflections", "Faith & Reflections", "Loading the reviewed library"],
 ] as const;
 
 it.each(routes)("renders a public-safe loading status for %s", (route, title, message) => {
   const html = renderToStaticMarkup(<PublicRouteLoading route={route} />);
-  expect(html).toContain(`<h1`);
+  // The streamed fallback must never add a second h1 beside the real page heading.
+  expect(html).not.toMatch(/<h1/);
   expect(html).toContain(title.replace("&", "&amp;"));
   expect(html).toContain(message);
   expect(html).toContain('role="status"');
@@ -33,6 +48,8 @@ it("AF-R071 donation loading is accessible, nontransactional, and wired", () => 
   expect(html).toContain('class="page-hero__shell"');
   expect(html).toContain("canonical-body");
   expect(html).toContain('role="status"');
+  // The streamed donate fallback must not add a second h1 beside the real page heading.
+  expect(html).not.toMatch(/<h1/);
   expect(html).toContain('aria-live="polite"');
   expect(html).not.toMatch(/<main\b|<button\b|<a\b|<img\b|<video\b|\b₹\s*\d/i);
 });

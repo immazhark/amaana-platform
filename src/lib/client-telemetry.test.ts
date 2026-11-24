@@ -47,4 +47,18 @@ describe("nonblocking, same-origin telemetry transport", () => {
       { post: () => Promise.reject(new Error("network unavailable")) })).not.toThrow();
     await Promise.resolve();
   });
+
+  it("does not interrupt navigation or send malformed telemetry on serialization failure", () => {
+    const post = vi.fn(() => Promise.resolve());
+    const beacon = vi.fn(() => true);
+    const payload: Record<string, string | number> = {};
+    Object.defineProperty(payload, "path", {
+      enumerable: true,
+      get() { throw new Error("synthetic serialization failure"); },
+    });
+
+    expect(() => sendBestEffortTelemetry("/api/analytics/page-view", payload, { beacon, post })).not.toThrow();
+    expect(beacon).not.toHaveBeenCalled();
+    expect(post).not.toHaveBeenCalled();
+  });
 });

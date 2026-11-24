@@ -195,7 +195,7 @@ export function analyzePublicSchemaHtml(path, html) {
   };
 }
 
-async function readHtmlLimited(response) {
+async function readHtmlLimited(response, expectedIdentityBytes = null) {
   if (!response.body) throw new Error("Public document body missing");
   const reader = response.body.getReader();
   const chunks = [];
@@ -216,6 +216,9 @@ async function readHtmlLimited(response) {
   } finally {
     reader.releaseLock();
   }
+  if (expectedIdentityBytes !== null && bytes !== expectedIdentityBytes) {
+    throw new Error("Declared identity response length differs from streamed bytes");
+  }
   return new TextDecoder("utf-8", { fatal: true }).decode(Buffer.concat(chunks));
 }
 
@@ -226,22 +229,68 @@ export async function auditPublicSchema(fetchImpl = fetch) {
     const response = await fetchImpl(target, { redirect: "manual", signal: AbortSignal.timeout(12_000),
       headers: { accept: "text/html" } });
     if (response.status !== 200 || response.url !== target ||
-        !response.headers.get("content-type")?.toLowerCase().includes("text/html")) {
+        response.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase() !== "text/html") {
       throw new Error("Unexpected HTTP response/redirect/content type on public route: " + path);
     }
-    if (Number(response.headers.get("content-length")) > maxHtmlBytes) {
-      throw new Error("Unexpectedly large public document on route: " + path);
+    const declared = response.headers.get("content-length");
+    let expectedIdentityBytes = null;
+    if (declared !== null) {
+      if (!/^\d+$/.test(declared.trim())) {
+        throw new Error("Invalid declared public document length on route: " + path);
+      }
+      const declaredBytes = Number(declared.trim());
+      if (!Number.isSafeInteger(declaredBytes) || declaredBytes > maxHtmlBytes) {
+        throw new Error("Unexpectedly large public document on route: " + path);
+      }
+      // Fetch may decompress gzip/br content while retaining the wire length header.
+      const encoding = response.headers.get("content-encoding")?.trim().toLowerCase();
+      if (!encoding || encoding === "identity") expectedIdentityBytes = declaredBytes;
     }
-    const result = analyzePublicSchemaHtml(path, await readHtmlLimited(response));
+    const result = analyzePublicSchemaHtml(path, await readHtmlLimited(response, expectedIdentityBytes));
     pages.push({ ...result,
-      httpIndexingDirective: /noindex/i.test(response.headers.get("x-robots-tag") ?? "") ? "NOINDEX" : "UNSPECIFIED" });
+      httpIndexingDirective: /(?:^|[,;:\s])noindex(?=$|[,;\s])/i.test(response.headers.get("x-robots-tag") ?? "") ? "NOINDEX" : "UNSPECIFIED" });
   }
   let runtimeSha = null;
   try {
     const version = await fetchImpl(`${origin}/api/health/version`, { redirect: "manual", signal: AbortSignal.timeout(5_000) });
     if (version.status === 200 && version.url === `${origin}/api/health/version`) {
-      const data = await version.json();
-      if (typeof data.commitSha === "string" && /^[a-f0-9]{40}$/.test(data.commitSha)) runtimeSha = data.commitSha;
+      // Runtime identity is optional evidence; a hostile or broken endpoint
+      // must not allocate an unbounded JSON body during this read-only audit.
+      const maxVersionBytes = 16_384;
+      const declared = version.headers?.get("content-length");
+      if (declared !== null && declared !== undefined &&
+          (!/^\d+$/.test(declared.trim()) || Number(declared) > maxVersionBytes)) {
+        throw new Error("Invalid runtime-version response size");
+      }
+      let data;
+      if (typeof version.body?.getReader === "function") {
+        const reader = version.body.getReader();
+        const chunks = [];
+        let size = 0;
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            if (!(value instanceof Uint8Array)) throw new Error("Invalid runtime-version chunk");
+            size += value.byteLength;
+            if (size > maxVersionBytes) throw new Error("Runtime-version response exceeds limit");
+            chunks.push(value);
+          }
+        } catch (error) {
+          try { void reader.cancel().catch(() => {}); } catch { /* Best effort. */ }
+          throw error;
+        } finally {
+          reader.releaseLock();
+        }
+        data = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(Buffer.concat(chunks)));
+      } else {
+        // Test doubles may expose a JSON method without a streaming body.
+        data = await version.json();
+        if (Buffer.byteLength(JSON.stringify(data), "utf8") > maxVersionBytes) {
+          throw new Error("Runtime-version response exceeds limit");
+        }
+      }
+      if (typeof data?.commitSha === "string" && /^[a-f0-9]{40}$/.test(data.commitSha)) runtimeSha = data.commitSha;
     }
   } catch { /* Runtime identity remains unknown, never inferred. */ }
   return {

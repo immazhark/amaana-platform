@@ -8,10 +8,10 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const projectRoot = fileURLToPath(new URL('../', import.meta.url));
 
-async function fixture({ stripTimestamps = false } = {}) {
+async function fixture({ stripTimestamps = false, initiativeCount = 2 } = {}) {
   const directory = await mkdtemp(path.join(tmpdir(), 'amaana-import-assets-'));
   const suffix = randomUUID().replaceAll('-', '');
-  const slugs = ['synthetic-a-' + suffix, 'synthetic-b-' + suffix];
+  const slugs = Array.from({ length: initiativeCount }, (_, index) => 'synthetic-' + index + '-' + suffix);
   const categorySlug = 'synthetic-category-' + suffix;
   const master = {
     version: suffix,
@@ -19,9 +19,10 @@ async function fixture({ stripTimestamps = false } = {}) {
     initiatives: slugs.map(slug => ({ slug, causeSlug: categorySlug, title: 'Synthetic', summary: 'Synthetic', story: 'Synthetic' })),
   };
   try {
-    await symlink(path.join(projectRoot, 'node_modules'), path.join(directory, 'node_modules'), 'dir');
+    await symlink(path.join(projectRoot, 'node_modules'), path.join(directory, 'node_modules'), 'junction');
     const sourceFile = path.join(projectRoot, 'prisma/apply-master-content.mjs');
     const importerFile = path.join(directory, 'apply-master-content.mjs');
+    await copyFile(path.join(projectRoot, 'prisma/master-content-publication.mjs'), path.join(directory, 'master-content-publication.mjs'));
     if (stripTimestamps) {
       // Controlled counterexample in a temporary copy, never the repo/runtime.
       const source = await readFile(sourceFile, 'utf8');
@@ -214,3 +215,44 @@ for (const fastPath of [false, true]) {
     } finally { await prisma.$disconnect(); }
   });
 }
+
+// AF-R046: read amplification. The importer must batch lookups, so the number of read
+// and bulk-write operations is independent of how many initiatives are imported;
+// only the unavoidable per-row upserts scale with the input.
+function recorder(target, prefix, log) {
+  return new Proxy(target, {
+    get(object, key) {
+      const value = object[key];
+      if (typeof value === 'function') return (...args) => { log.push(prefix + String(key)); return value.apply(object, args); };
+      if (value && typeof value === 'object') return recorder(value, prefix + String(key) + '.', log);
+      return value;
+    },
+  });
+}
+
+async function countOperations(initiativeCount) {
+  const f = await fixture({ initiativeCount });
+  try {
+    const db = model(f.slugs);
+    const log = [];
+    await f.writeAssets(f.slugs.map(slug => f.asset(slug)));
+    await f.applyMasterContent({ $transaction: operation => db.prisma.$transaction(tx => operation(recorder(tx, '', log))) });
+    const count = name => log.filter(entry => entry === name).length;
+    const reads = log.filter(entry => /\.(findUnique|findFirst|findMany|count)$/.test(entry));
+    return { log, reads: reads.length, readNames: reads.sort(), initiativeUpserts: count('initiative.upsert'), causeUpserts: count('cause.upsert'), createMany: count('mediaAsset.createMany'), assets: db.assets.length };
+  } finally { await f.dispose(); }
+}
+
+test('AF-R046 import read and bulk-write operations do not grow with the number of initiatives', async () => {
+  const small = await countOperations(2);
+  const large = await countOperations(40);
+  assert.deepEqual(large.readNames, small.readNames);
+  assert.ok(small.reads <= 8, 'read operations stay a small constant: ' + small.readNames.join(', '));
+  assert.equal(large.createMany, small.createMany);
+  assert.equal(large.createMany, 1);
+  // Only per-row writes scale, and they scale 1:1 with input (no hidden extra queries).
+  assert.equal(small.initiativeUpserts, 2);
+  assert.equal(large.initiativeUpserts, 40);
+  assert.equal(large.causeUpserts, small.causeUpserts);
+  assert.equal(large.assets, 40);
+});

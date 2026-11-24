@@ -10,6 +10,7 @@ import { PublicMedia } from "@/components/public-media";
 import { MobileSupportBar } from "@/components/mobile-support-bar";
 import { AppealShare } from "@/components/appeal-share";
 import { getAppealSearchPrivacy } from "@/lib/appeal-search-privacy";
+import { plainPublicText } from "@/lib/plain-public-text";
 import { publicAppealShareCopy } from "@/lib/public-appeal-share";
 import { normalizeSafePublicMediaUrl } from "@/lib/public-media";
 import { openGraphShareImages, twitterShareImages } from "@/lib/social-share-media";
@@ -25,8 +26,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const [appeal, confidentialityLevel] = await Promise.all([getAppealPageData(slug), getAppealSearchPrivacy(slug)]);
   if (!appeal) return { title: "Appeal not found" };
   const canonical = `/appeals/${appeal.slug}`;
-  const highlySensitive = confidentialityLevel === "HIGHLY_SENSITIVE";
-  const { title: metadataTitle, summary: metadataDescription } = publicAppealShareCopy(appeal.title, appeal.summary, highlySensitive);
+  const highlySensitive = confidentialityLevel === "HIGHLY_SENSITIVE" || confidentialityLevel === "UNVERIFIED";
+  const { title: metadataTitle, summary: metadataDescription } = publicAppealShareCopy(appeal.title, plainPublicText(appeal.summary), highlySensitive);
   return { title: metadataTitle, description: metadataDescription, alternates: { canonical }, robots: highlySensitive ? { index: false, follow: true, nocache: true } : undefined, openGraph: { type: "article", url: canonical, title: `${metadataTitle} | Amaana Foundation`, description: metadataDescription, publishedTime: appeal.publishedAt?.toISOString(), images: openGraphShareImages() }, twitter: { card: "summary_large_image", title: `${metadataTitle} | Amaana Foundation`, description: metadataDescription, images: twitterShareImages() } };
 }
 
@@ -45,18 +46,20 @@ export default async function AppealDetailPage({ params }: Props) {
   const progress = goal > 0 ? Math.min(100, Math.round((raised / goal) * 1_000) / 10) : 0;
   const progressLabel = raised > 0 && progress === 0 ? "Less than 0.1%" : `${progress}%`;
   const isOpen = isAppealOpenForDonations(appeal);
-  const highlySensitive = confidentialityLevel === "HIGHLY_SENSITIVE";
-  const shareCopy = publicAppealShareCopy(appeal.title, appeal.summary, highlySensitive);
+  const highlySensitive = confidentialityLevel === "HIGHLY_SENSITIVE" || confidentialityLevel === "UNVERIFIED";
+  const summary = plainPublicText(appeal.summary);
+  const story = plainPublicText(appeal.story);
+  const shareCopy = publicAppealShareCopy(appeal.title, summary, highlySensitive);
 
   return (
     <div className="v2-home v2-appeal-detail-page">
-      <AppealStructuredData slug={appeal.slug} title={appeal.title} summary={appeal.summary} isOpen={isOpen} highlySensitive={highlySensitive} />
+      <AppealStructuredData slug={appeal.slug} title={appeal.title} summary={summary} isOpen={isOpen} highlySensitive={highlySensitive} />
       <BreadcrumbStructuredData items={[{ name: "Home", path: "/" }, { name: "Verified Appeals", path: "/appeals" }, { name: shareCopy.title, path: `/appeals/${appeal.slug}` }]} />
       <PageHero
         variant="level2"
         eyebrow={`${appeal.category.replaceAll("_", " ")} · ${appeal.beneficiaryLocation || "Location withheld"} · ${isOpen ? "Open appeal" : "Appeal closed"}`}
         title={appeal.title}
-        description={<p>{appeal.summary}</p>}
+        description={<p>{summary}</p>}
         actions={[{ label: "Back to current appeals", href: "/appeals", secondary: true }, ...(isOpen ? [{ label: "Support this appeal", href: `/donate/${appeal.slug}` } as const] : [])]}
         visual={coverMedia ? <PublicMedia asset={coverMedia} priority /> : <WorkVisualPlaceholder label={appeal.title} />}
       />
@@ -93,7 +96,7 @@ export default async function AppealDetailPage({ params }: Props) {
 
       <section className="v2-appeal-context-strip" aria-label="How this appeal is handled"><div className="v2-shell"><div><span>01</span><strong>Reviewed need</strong><small>Information assessed before publication</small></div><div><span>02</span><strong>Public-safe story</strong><small>Private proofs remain private</small></div><div><span>03</span><strong>Tracked support</strong><small>Progress stays attached to this appeal</small></div><div><span>04</span><strong>Known updates</strong><small>Only confirmed outcomes are published</small></div></div></section>
 
-      <section className="v2-section paper"><div className="v2-shell v2-appeal-story-grid"><div><p className="v2-section-label">The need</p><h2>{appeal.beneficiaryDisplayName ?? "A verified request for support"}</h2></div><div className="v2-appeal-story-copy"><div className="v2-appeal-story">{appeal.story}</div><div className="v2-appeal-privacy-note"><span>Privacy boundary</span><p>Only information approved for public sharing appears here. Supporting documents used during review remain private.</p></div></div></div></section>
+      <section className="v2-section paper"><div className="v2-shell v2-appeal-story-grid"><div><p className="v2-section-label">The need</p><h2>{appeal.beneficiaryDisplayName ?? "A verified request for support"}</h2></div><div className="v2-appeal-story-copy"><div className="v2-appeal-story">{story}</div><div className="v2-appeal-privacy-note"><span>Privacy boundary</span><p>Only information approved for public sharing appears here. Supporting documents used during review remain private.</p></div></div></div></section>
 
       {appeal.updates.length > 0 && <section className="v2-section dark v2-appeal-updates"><div className="v2-shell"><SectionHeading eyebrow={<>Field updates</>} title={<>What is known, as it becomes known.</>} subtitle={<>Updates record confirmed developments without filling gaps with assumptions.</>} /><div className="v2-appeal-update-line">{appeal.updates.map((update, index) => <article key={update.id}><span>{String(index + 1).padStart(2, "0")}</span><small>{update.publishedAt?.toLocaleDateString("en-IN", { dateStyle: "long", timeZone: "Asia/Kolkata" })}</small><h3>{update.title}</h3><p>{update.content}</p></article>)}</div></div></section>}
 

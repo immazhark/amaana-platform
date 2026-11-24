@@ -8,6 +8,7 @@ import { canExposePublicAppeal, canExposeSyntheticStagingContent } from "@/lib/p
 import { IDENTITY_MEDIA_SORT_ORDER } from "@/lib/public-media";
 import { programmeCategories, programmes } from "@/lib/master-copy";
 import { programmeCategoryPath } from "@/lib/programme-category-routing";
+import { withCanonicalInitiativeFactsList } from "@/lib/canonical-initiative-facts";
 import {
   getPublishedFaithContentBySlug,
   getPublishedInitiativeBySlug,
@@ -36,6 +37,7 @@ export const PUBLIC_IMAGE_SELECT = {
   altText: true,
   caption: true,
   sourceYear: true,
+  placeholder: true,
   width: true,
   height: true,
   sortOrder: true,
@@ -133,6 +135,7 @@ export const getHomepageHeroMedia = cache(async () => {
       altText: true,
       caption: true,
       sourceYear: true,
+      placeholder: true,
       width: true,
       height: true,
       initiative: { select: { slug: true, title: true } },
@@ -181,7 +184,7 @@ export const getHomepageDiscoveryData = cache(async () => {
       orderBy: [{ displayOrder: "asc" }, { publishedAt: "desc" }],
       take: 5,
       select: homepageInitiativeSelect,
-    }),
+    }).then(withCanonicalInitiativeFactsList),
     prisma.initiative.findMany({
       where: {
         status: "PUBLISHED",
@@ -190,7 +193,7 @@ export const getHomepageDiscoveryData = cache(async () => {
       },
       orderBy: [{ displayOrder: "asc" }, { publishedAt: "desc" }],
       select: homepageInitiativeSelect,
-    }),
+    }).then(withCanonicalInitiativeFactsList),
     prisma.cause.findMany({
       where: { status: "PUBLISHED" },
       orderBy: [{ displayOrder: "asc" }, { publishedAt: "desc" }],
@@ -224,14 +227,39 @@ export const getHomepageDiscoveryData = cache(async () => {
     }),
   ]);
 
+  // A malformed projection must not interrupt the entire public homepage.
+  // The independent SQL publication/cause and identity-media gates stay intact.
+  const publicSlug = (value: unknown): value is string =>
+    typeof value === "string" && value.length <= 200
+    && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value);
   const initiativesBySlug = new Map(
-    [...featuredInitiatives, ...fieldInitiatives].map(record => [record.slug, record] as const),
+    [...(Array.isArray(featuredInitiatives) ? featuredInitiatives : []),
+      ...(Array.isArray(fieldInitiatives) ? fieldInitiatives : [])]
+      .filter(record => record && typeof record === "object"
+        && publicSlug(record.slug)
+        && typeof record.title === "string" && record.title.trim().length > 0
+        && (record.primaryMetric == null || typeof record.primaryMetric === "string")
+        && (record.primaryMetricLabel == null || typeof record.primaryMetricLabel === "string"))
+      .map(record => [record.slug, record] as const),
   );
 
+  // The cause/media projection is a separate database read. A corrupt
+  // relation must not interrupt the homepage's reviewed programme artwork.
+  const visibleCauses = (Array.isArray(causes) ? causes : [])
+    .filter(cause => cause && typeof cause === "object" && !Array.isArray(cause)
+      && publicSlug(cause.slug) && Array.isArray(cause.initiatives))
+    .map(cause => ({
+      slug: cause.slug,
+      initiatives: cause.initiatives.filter(initiative =>
+        initiative && typeof initiative === "object" && !Array.isArray(initiative)
+        && Array.isArray(initiative.mediaAssets)),
+    }));
   return {
     initiatives: Array.from(initiativesBySlug.values()),
-    causes,
-    publishedProgrammeSlugs: publishedProgrammeRecords.map(record => record.slug),
+    causes: visibleCauses,
+    publishedProgrammeSlugs: (Array.isArray(publishedProgrammeRecords) ? publishedProgrammeRecords : [])
+      .filter(record => record && typeof record === "object" && publicSlug(record.slug))
+      .map(record => record.slug),
   };
 });
 
@@ -243,7 +271,7 @@ export const getHomepageDiscoveryData = cache(async () => {
  * stories, appeals, faith content, financial summaries and full media galleries.
  */
 export const getOurWorkIndexData = cache(async () => {
-  return prisma.cause.findMany({
+  const records = await prisma.cause.findMany({
     where: { status: "PUBLISHED" },
     orderBy: [{ displayOrder: "asc" }, { publishedAt: "desc" }],
     select: {
@@ -275,6 +303,32 @@ export const getOurWorkIndexData = cache(async () => {
       },
     },
   });
+  // Reject invalid database projections before public portfolio pages can
+  // dereference cause/initiative fields. Keep publication and media SQL gates.
+  const slugIsSafe = (value: unknown): value is string =>
+    typeof value === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value);
+  return (Array.isArray(records) ? records : [])
+    .filter(cause => cause && typeof cause === "object" && !Array.isArray(cause)
+      && typeof cause.id === "string" && cause.id.length > 0
+      && slugIsSafe(cause.slug)
+      && typeof cause.title === "string" && cause.title.trim().length > 0
+      && typeof cause.summary === "string"
+      && Array.isArray(cause.initiatives))
+    .map(cause => ({
+      ...cause,
+      // Initiatives are nested in this read, so the canonical-facts projection is applied here, after validation.
+      initiatives: withCanonicalInitiativeFactsList(cause.initiatives.filter(item =>
+        item && typeof item === "object" && !Array.isArray(item)
+        && typeof item.id === "string" && item.id.length > 0
+        && slugIsSafe(item.slug)
+        && typeof item.title === "string" && item.title.trim().length > 0
+        && typeof item.summary === "string"
+        && (item.primaryMetric == null || typeof item.primaryMetric === "string")
+        && (item.primaryMetricLabel == null || typeof item.primaryMetricLabel === "string")
+        && [item.year, item.startYear, item.endYear].every(
+          year => year == null || Number.isSafeInteger(year))
+        && Array.isArray(item.mediaAssets))),
+    }));
 });
 
 /**
@@ -303,7 +357,7 @@ export const getImpactPageData = cache(async () => {
         select: PUBLIC_IMAGE_SELECT,
       },
     },
-  });
+  }).then(withCanonicalInitiativeFactsList);
 });
 
 /**
@@ -324,7 +378,7 @@ export const getImpactComparisonPageData = cache(async () => {
       primaryMetricLabel: true,
       cause: { select: { title: true } },
     },
-  });
+  }).then(withCanonicalInitiativeFactsList);
 });
 
 /**
@@ -333,7 +387,7 @@ export const getImpactComparisonPageData = cache(async () => {
  * a bounded set of approved public images per record is used so the card strip can prefer documentary gallery photography.
  */
 export const getCompletedAidShowcaseData = cache(async () => {
-  return prisma.initiative.findMany({
+  const records = await prisma.initiative.findMany({
     where: {
       status: "PUBLISHED",
       cause: { slug: "medical-financial-relief", status: "PUBLISHED" },
@@ -344,6 +398,13 @@ export const getCompletedAidShowcaseData = cache(async () => {
       mediaAssets: PUBLIC_GALLERY_MEDIA_PROJECTION,
     },
   });
+  // A malformed second-read projection must not interrupt public appeals.
+  // Keep the SQL publication and privacy-approved media gates unchanged.
+  return (Array.isArray(records) ? records : []).filter(record =>
+    record && typeof record === "object" && !Array.isArray(record)
+    && typeof record.slug === "string"
+    && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(record.slug)
+    && Array.isArray(record.mediaAssets));
 });
 
 /**
@@ -485,8 +546,16 @@ export const getDonationImpactHighlights = cache(async () => {
     orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }, { id: "asc" }],
     take: 8,
     select: { slug: true, title: true, primaryMetric: true, primaryMetricLabel: true },
-  });
-  return rows.filter(item => item.primaryMetric?.trim() && item.primaryMetricLabel?.trim()).slice(0, 3);
+  }).then(withCanonicalInitiativeFactsList);
+  // SQL publication and cause review gates are necessary, but malformed
+  // projection values must not become public factual claims or hide later rows.
+  return (Array.isArray(rows) ? rows : []).filter(item =>
+    item !== null && typeof item === "object" && !Array.isArray(item)
+    && typeof item.slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item.slug)
+    && typeof item.title === "string" && item.title.trim().length > 0
+    && typeof item.primaryMetric === "string" && item.primaryMetric.trim().length > 0
+    && typeof item.primaryMetricLabel === "string" && item.primaryMetricLabel.trim().length > 0,
+  ).slice(0, 3);
 });
 
 /**
@@ -506,7 +575,7 @@ export const getTransparencyPageData = cache(async () => {
       primaryMetricLabel: true,
       cause: { select: { title: true } },
     },
-  });
+  }).then(withCanonicalInitiativeFactsList);
 });
 
 

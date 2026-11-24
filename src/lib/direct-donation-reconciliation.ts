@@ -45,16 +45,22 @@ export async function reconcileDirectDonation(input: {
       return { status: DonationStatus.REJECTED, referenceNumber: donation.referenceNumber };
     }
 
-    const appealBefore = await tx.appeal.findUnique({ where: { id: donation.appealId }, select: { goalAmount: true, amountRaised: true, status: true } });
-    if (!appealBefore) throw new Error("Appeal not found");
+    const appealBefore = donation.appealId
+      ? await tx.appeal.findUnique({ where: { id: donation.appealId }, select: { goalAmount: true, amountRaised: true, status: true } })
+      : null;
+    if (donation.appealId && !appealBefore) throw new Error("Appeal not found");
     const donationPaise = donation.amount.mul(100).toNumber();
-    const goalPaise = appealBefore.goalAmount.mul(100).toNumber();
-    const raisedPaise = appealBefore.amountRaised.mul(100).toNumber();
-    if (![donationPaise, goalPaise, raisedPaise].every(Number.isSafeInteger) ||
-        donationPaise <= 0 || goalPaise <= 0 || raisedPaise < 0) {
+    if (appealBefore) {
+      const goalPaise = appealBefore.goalAmount.mul(100).toNumber();
+      const raisedPaise = appealBefore.amountRaised.mul(100).toNumber();
+      if (![donationPaise, goalPaise, raisedPaise].every(Number.isSafeInteger) ||
+          donationPaise <= 0 || goalPaise <= 0 || raisedPaise < 0) {
+        throw new Error("Invalid financial amounts for transfer reconciliation");
+      }
+      if (donationPaise > Math.max(0, goalPaise - raisedPaise)) throw new Error("This transfer exceeds the appeal's remaining verified need and requires operator review");
+    } else if (!Number.isSafeInteger(donationPaise) || donationPaise <= 0) {
       throw new Error("Invalid financial amounts for transfer reconciliation");
     }
-    if (donationPaise > Math.max(0, goalPaise - raisedPaise)) throw new Error("This transfer exceeds the appeal's remaining verified need and requires operator review");
 
     const changed = await tx.donation.updateMany({
       where: { id: donation.id, status: DonationStatus.PENDING_VERIFICATION },
@@ -69,13 +75,15 @@ export async function reconcileDirectDonation(input: {
     });
     if (changed.count !== 1) throw new Error("Donation changed during reconciliation");
 
-    const appeal = await tx.appeal.update({
-      where: { id: donation.appealId },
-      data: { amountRaised: { increment: donation.amount } },
-      select: { id: true, status: true, goalAmount: true, amountRaised: true },
-    });
-    if (shouldMarkAppealFunded(appeal.status, appeal.amountRaised, appeal.goalAmount)) {
-      await tx.appeal.updateMany({ where: { id: appeal.id, status: "PUBLISHED" }, data: { status: "FUNDED" } });
+    if (donation.appealId) {
+      const appeal = await tx.appeal.update({
+        where: { id: donation.appealId },
+        data: { amountRaised: { increment: donation.amount } },
+        select: { id: true, status: true, goalAmount: true, amountRaised: true },
+      });
+      if (shouldMarkAppealFunded(appeal.status, appeal.amountRaised, appeal.goalAmount)) {
+        await tx.appeal.updateMany({ where: { id: appeal.id, status: "PUBLISHED" }, data: { status: "FUNDED" } });
+      }
     }
 
     await tx.notification.create({
@@ -83,7 +91,7 @@ export async function reconcileDirectDonation(input: {
         channel: NotificationChannel.EMAIL,
         recipient: donation.donorEmail,
         templateKey: "donation-acknowledgement",
-        subject: "Thank you for supporting an Amaana Foundation appeal",
+        subject: donation.appealId ? "Thank you for supporting an Amaana Foundation appeal" : "Thank you for your contribution to Amaana Foundation",
         payload: { referenceNumber: donation.referenceNumber, givingIntent: donation.givingIntent },
         donationId: donation.id,
       },

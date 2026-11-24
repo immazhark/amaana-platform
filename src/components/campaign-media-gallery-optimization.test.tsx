@@ -1,4 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CampaignMediaGallery } from "./campaign-media-gallery";
 import { toPublicGalleryItems } from "@/lib/public-gallery-projection";
@@ -14,6 +16,16 @@ const reviewedItem = {
 };
 
 describe("campaign gallery managed image optimization", () => {
+
+  it("AF-R062 keeps artwork containment in a higher-specificity normal declaration", () => {
+    const css = readFileSync(join(process.cwd(), "src/components/campaign-media-gallery.module.css"), "utf8");
+    const base = css.match(/\.trigger img\s*\{([^}]+)\}/)?.[1] ?? "";
+    const artwork = css.match(/\.graphicCard \.trigger img\s*\{([^}]+)\}/)?.[1] ?? "";
+    expect(base).toMatch(/(?:^|;)\s*object-fit:cover\s*;/);
+    expect(artwork).toMatch(/(?:^|;)\s*object-fit:contain\s*;/);
+    expect(artwork).not.toContain("!important");
+  });
+
   it("fails closed for unsafe directly supplied gallery URLs and missing descriptive alt text", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
     // Client-side rendering has no server-only PUBLIC_MEDIA_BASE_URL variable.
@@ -72,6 +84,20 @@ describe("campaign gallery managed image optimization", () => {
     }]} />);
     expect(html).toContain("Blurred faces in approved programme documentation");
     expect(html).not.toContain(">Privacy protected</span>");
+  });
+
+  it("rejects malformed public captions before rendering reviewed gallery photographs", () => {
+    const html = renderToStaticMarkup(<CampaignMediaGallery items={[
+      { id: "corrupt-caption", url: "/media/corrupt.webp", alt: "Unreviewed text",
+        caption: { private: "PRIVATE_NOTE" } as unknown as string },
+      { id: "approved", url: "/media/approved.webp", alt: "Reviewed field photograph",
+        caption: "Approved descriptive caption" },
+    ]} />);
+    expect(html).toContain("Reviewed field photograph");
+    expect(html).toContain("Approved descriptive caption");
+    expect(html).not.toContain("PRIVATE_NOTE");
+    expect(html).not.toContain("corrupt.webp");
+    expect(html).toContain("Enlarge image 1 of 1");
   });
 
   it("keeps media selection stable when malformed input repeats an asset ID", () => {
@@ -149,6 +175,34 @@ describe("campaign gallery managed image optimization", () => {
       id: "reviewed", url: "/media/reviewed.webp", alt: "Reviewed gallery photo",
     }]} />);
     expect(valid).toContain("Enlarge image 1 of 1: Reviewed gallery photo");
+  });
+
+  it("rejects prototype-inherited gallery URLs, captions and external-approval flags", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const inheritedItem = Object.assign(
+      Object.create({
+        id: "inherited", url: "/media/unreviewed.webp",
+        alt: "Inherited unreviewed image", caption: "PRIVATE_REVIEW_NOTE",
+      }),
+      {},
+    );
+    const inheritedApproval = Object.assign(
+      Object.create({ serverApprovedExternal: true }),
+      { id: "forged-external", url: "https://untrusted.invalid/private.webp",
+        alt: "Unreviewed external origin" },
+    );
+    const inheritedCaption = Object.assign(
+      Object.create({ caption: "PRIVATE_REVIEW_NOTE" }),
+      { id: "inherited-caption", url: "/media/reviewed.webp", alt: "Reviewed image" },
+    );
+    const html = renderToStaticMarkup(<CampaignMediaGallery items={[
+      inheritedItem, inheritedApproval, inheritedCaption,
+      { id: "normal", url: "/media/allowed.webp", alt: "Reviewed image" },
+    ]} />);
+    expect(html).toContain("Enlarge image 1 of 1: Reviewed image");
+    expect(html).not.toContain("PRIVATE_REVIEW_NOTE");
+    expect(html).not.toContain("untrusted.invalid");
+    expect(html).not.toContain("unreviewed.webp");
   });
 
   it("fails closed for malformed JS gallery items without dropping reviewed entries", () => {

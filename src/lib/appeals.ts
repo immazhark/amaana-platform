@@ -51,12 +51,13 @@ export function isAppealOpenForDonations(
   return getDonationCheckoutRemainingAmount(appeal, now) !== null;
 }
 
-export const formatINR = (amount: number) =>
-  new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(amount);
+const inrDisplayFormatter = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  maximumFractionDigits: 0,
+});
+
+export const formatINR = (amount: number) => inrDisplayFormatter.format(amount);
 
 
 export function appealStatusAfterRefund(

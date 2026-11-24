@@ -52,10 +52,11 @@ it("leaves destination focus management to Next when a mobile link changes the p
 });
 
 it.each([{ ctrlKey: true }, { metaKey: true }, { shiftKey: true }, { altKey: true }, { button: 1 }, { defaultPrevented: true }])(
-  "does not steal focus from a browser-owned current-route activation with %j", modifiers => {
+  "preserves the open menu for a browser-owned current-route activation with %j", modifiers => {
     const link = mobileLinks("/contact").find(item => item.props.href === "/contact");
     if (!link) throw new Error("Expected mobile Contact link");
     click(link, modifiers);
     expect(state.focus).not.toHaveBeenCalled();
+    expect(state.writes).not.toHaveBeenCalled();
   },
 );

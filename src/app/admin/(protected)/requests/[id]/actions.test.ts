@@ -170,6 +170,91 @@ describe("assistance admin concurrency guards", () => {
   });
 });
 
+describe("private follow-up note before requesting missing information", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requirePermission.mockResolvedValue({ id: "synthetic-reviewer" });
+    mocks.hasPermission.mockReturnValue(true);
+    mocks.transaction.mockImplementation(async callback => callback(tx()));
+    mocks.requestUpdateMany.mockResolvedValue({ count: 1 });
+    mocks.auditCreate.mockResolvedValue({ id: "synthetic-audit" });
+  });
+
+  it("rejects an empty or vague follow-up note without changing the request or queuing notice", async () => {
+    mocks.requestFind.mockResolvedValue({
+      id: "synthetic-request", status: AssistanceStatus.SUBMITTED,
+      appealId: null, email: "synthetic@example.test", referenceNumber: "AF-SYNTH-04",
+      updatedAt: new Date("2026-11-23T08:00:00.000Z"), verification: null,
+    });
+    for (const notes of ["", "Need info"]) {
+      const result = await updateRequestWithFeedback({ kind: "idle", message: "" }, form({
+        id: "synthetic-request", expectedUpdatedAt: "2026-11-23T08:00:00.000Z",
+        status: "DOCUMENTS_REQUESTED", internalNotes: notes,
+      }));
+      expect(result.kind).toBe("error");
+      expect(result.message).toMatch(/specific missing items/i);
+    }
+    expect(mocks.requestUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.notificationCreate).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+  });
+
+  it("keeps a specific private note while the request is still awaiting information", async () => {
+    mocks.requestFind.mockResolvedValue({
+      id: "synthetic-request", status: AssistanceStatus.DOCUMENTS_REQUESTED, appealId: null,
+      email: null, referenceNumber: "AF-SYNTH-04", internalNotes: "Supply the missing private verification evidence.",
+      updatedAt: new Date("2026-11-23T08:00:00.000Z"), verification: null,
+    });
+    for (const notes of ["", "Need info"]) {
+      const result = await updateRequestWithFeedback({ kind: "idle", message: "" }, form({
+        id: "synthetic-request", expectedUpdatedAt: "2026-11-23T08:00:00.000Z",
+        status: "DOCUMENTS_REQUESTED", internalNotes: notes,
+      }));
+      expect(result.kind).toBe("error");
+      expect(result.message).toMatch(/specific missing items/i);
+    }
+    expect(mocks.requestUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.notificationCreate).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+  });
+
+  it("allows a revised specific note while the request continues awaiting information", async () => {
+    mocks.requestFind.mockResolvedValue({
+      id: "synthetic-request", status: AssistanceStatus.DOCUMENTS_REQUESTED, appealId: null,
+      email: null, referenceNumber: "AF-SYNTH-04",
+      updatedAt: new Date("2026-11-23T08:00:00.000Z"), verification: null,
+    });
+    const specific = "Please provide the updated private medical quotation.";
+    const result = await updateRequestWithFeedback({ kind: "idle", message: "" }, form({
+      id: "synthetic-request", expectedUpdatedAt: "2026-11-23T08:00:00.000Z",
+      status: "DOCUMENTS_REQUESTED", internalNotes: specific,
+    }));
+    expect(result).toEqual({ kind: "success", message: "Request changes saved." });
+    expect(mocks.requestUpdateMany).toHaveBeenCalledWith(expect.objectContaining({
+      data: { status: "DOCUMENTS_REQUESTED", internalNotes: specific },
+    }));
+  });
+
+  it("queues a generic status only; the staff follow-up question stays private", async () => {
+    mocks.requestFind.mockResolvedValue({
+      id: "synthetic-request", status: AssistanceStatus.SUBMITTED, appealId: null,
+      email: "synthetic@example.test", referenceNumber: "AF-SYNTH-04",
+      updatedAt: new Date("2026-11-23T08:00:00.000Z"), verification: null,
+    });
+    const result = await updateRequestWithFeedback({ kind: "idle", message: "" }, form({
+      id: "synthetic-request", expectedUpdatedAt: "2026-11-23T08:00:00.000Z",
+      status: "DOCUMENTS_REQUESTED", internalNotes: "Verify the updated hospital cost estimate privately.",
+    }));
+    expect(result).toEqual({ kind: "success", message: "Request changes saved." });
+    expect(mocks.requestUpdateMany).toHaveBeenCalledWith(expect.objectContaining({
+      data: { status: "DOCUMENTS_REQUESTED", internalNotes: "Verify the updated hospital cost estimate privately." },
+    }));
+    const notification = mocks.notificationCreate.mock.calls[0]?.[0];
+    expect(notification?.data.payload).toEqual({ referenceNumber: "AF-SYNTH-04", status: "DOCUMENTS_REQUESTED" });
+    expect(JSON.stringify(notification)).not.toContain("hospital");
+  });
+});
+
 describe("reviewer-facing validation feedback (AF-ADMIN-500)", () => {
   beforeEach(() => {
     vi.clearAllMocks();

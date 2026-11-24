@@ -87,6 +87,27 @@ describe("public crawl metadata URLs", () => {
     expect(urls.every(url => { const parsed = new URL(url); return !parsed.search && !parsed.hash; })).toBe(true);
   });
 
+  it("never indexes assistance-linked appeals without reviewed confidentiality", async () => {
+    const updatedAt = new Date("2026-11-13T00:00:00.000Z");
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const appeal = (slug: string, assistanceRequest: unknown) => ({
+      slug, title: "Synthetic public appeal", status: "PUBLISHED", updatedAt, assistanceRequest,
+    });
+    db.appeal.findMany.mockResolvedValue([
+      appeal("public-unlinked", null),
+      appeal("reviewed-linked", { verification: { confidentialityLevel: "STANDARD" } }),
+      appeal("linked-verification-missing", { verification: null }),
+      appeal("linked-classification-missing", { verification: { confidentialityLevel: null } }),
+    ]);
+
+    const { default: sitemap } = await import("./sitemap");
+    const urls = (await sitemap()).map(entry => entry.url);
+    expect(urls).toContain("https://amaanafoundation.org/appeals/public-unlinked");
+    expect(urls).toContain("https://amaanafoundation.org/appeals/reviewed-linked");
+    expect(urls).not.toContain("https://amaanafoundation.org/appeals/linked-verification-missing");
+    expect(urls).not.toContain("https://amaanafoundation.org/appeals/linked-classification-missing");
+  });
+
   it.each([
     ["https://amaanafoundation.org", "staging", "true"],
     ["https://preview.example.org", "production", "true"],

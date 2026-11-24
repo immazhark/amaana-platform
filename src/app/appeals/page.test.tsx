@@ -50,3 +50,9 @@ it("renders only the selected eligible page with search-preserving navigation", 
  expect(html).toContain("q=Food+%26+shelter&amp;page=3#current-appeals");
  expect(html).not.toContain("PRIVATE_TRACKING");
 });
+
+it("does not promote the owner-confirmed closed Mr. Khaja collection as an active family request", async () => {
+  const html = renderToStaticMarkup(await AppealsPage({ searchParams: Promise.resolve({}) }));
+  expect(html).not.toContain("Help Mr. Khaja Continue His Treatment and Recovery");
+  expect(html).not.toContain('href="/medical-support/mr-khaja"');
+});

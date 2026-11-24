@@ -1,12 +1,13 @@
+import { metaDescription } from "@/lib/meta-description";
 import { CanonicalArticle } from '@/components/canonical-article';
 import { governanceCopy } from '@/lib/organization-copy';
 
 export const metadata = {
   title: governanceCopy.title,
-  description: governanceCopy.intro,
+  description: metaDescription(governanceCopy.intro),
   alternates: { canonical: '/governance' },
-  openGraph: { images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }], type: 'website', url: '/governance', title: `${governanceCopy.title} | Amaana Foundation`, description: governanceCopy.intro },
-  twitter: { images: ["/twitter-image"], card: 'summary_large_image', title: `${governanceCopy.title} | Amaana Foundation`, description: governanceCopy.intro },
+  openGraph: { images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }], type: 'website', url: '/governance', title: `${governanceCopy.title} | Amaana Foundation`, description: metaDescription(governanceCopy.intro) },
+  twitter: { images: ["/twitter-image"], card: 'summary_large_image', title: `${governanceCopy.title} | Amaana Foundation`, description: metaDescription(governanceCopy.intro) },
 };
 export default function Page(){
   return <CanonicalArticle eyebrow="Governance" heroVariant="trust" heroVisualTitle="Governance" bodyClassName="canonical-body--governance" bodyId="governance-record" heroActions={[{ label: "Meet the trustees", href: "#governance-record" }, { label: "Compliance position", href: "/compliance", secondary: true }]} pathways={[

@@ -3,9 +3,14 @@ type DatedInitiative = { title?: string; summary?: string; slug?: string; parent
 type Programme = { slug: string; initiatives: DatedInitiative[] };
 export type WorkSearch = { programme?: string | string[]; year?: string | string[] } & Record<string, string | string[] | undefined>;
 
+const isValidYear = (value: unknown): value is number =>
+  typeof value === "number" && Number.isSafeInteger(value) && value > 0;
+
 function yearsFor(item: DatedInitiative): number[] {
-  if (item.year !== null) return [item.year];
-  if (item.startYear === null) return item.endYear === null ? [] : [item.endYear];
+  if (item.year !== null) return isValidYear(item.year) ? [item.year] : [];
+  if (item.startYear === null) return isValidYear(item.endYear) ? [item.endYear] : [];
+  if (!isValidYear(item.startYear) ||
+      (item.endYear !== null && !isValidYear(item.endYear))) return [];
   const end = item.endYear ?? item.startYear;
   // Malformed ranges must not create unbounded allocations or invented dates.
   if (end < item.startYear || end - item.startYear > 100) return [];

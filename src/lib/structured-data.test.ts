@@ -62,6 +62,25 @@ describe("public structured data", () => {
     });
   });
 
+  it("refuses dot-segment route aliases rather than publishing a different canonical page", () => {
+    for (const path of [
+      "/stories/../about",
+      "/stories/%2e%2e/our-work",
+      "/stories/.%2e/impact",
+      "/stories/%252e%252e/about",
+    ]) {
+      expect(normalizeStructuredDataPath(path), path).toBeNull();
+      expect(buildPublicStructuredData({
+        type: "WebPage",
+        title: "Synthetic public story",
+        description: "Synthetic reviewed summary",
+        path,
+      }, "https://amaanafoundation.org"), path).toBeNull();
+    }
+    expect(normalizeStructuredDataPath("/stories/approved-story#context"))
+      .toBe("/stories/approved-story#context");
+  });
+
   it("refuses query-bearing public schema routes without leaking preview or private token parameters", () => {
     for (const path of [
       "/stories/reviewed?preview=synthetic-private-token",

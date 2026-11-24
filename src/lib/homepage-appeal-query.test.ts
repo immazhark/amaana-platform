@@ -70,6 +70,18 @@ describe("homepage appeal SQL projection", () => {
     expect(query.select).not.toHaveProperty("story");
   });
 
+  it("fails closed on malformed top-level appeal query results without enabling checkout", async () => {
+    mocks.findMany.mockResolvedValueOnce({ internal: "PRIVATE_APPEAL_DATA" });
+    const visible = await getHomepageAppeals(20);
+    expect(visible).toEqual([]);
+    expect(JSON.stringify(visible)).not.toContain("PRIVATE_APPEAL_DATA");
+  });
+
+  it("does not disguise database failures as an empty eligible-appeal list", async () => {
+    mocks.findMany.mockRejectedValueOnce(new Error("isolated database unavailable"));
+    await expect(getHomepageAppeals(20)).rejects.toThrow("isolated database unavailable");
+  });
+
   it("retains final public visibility and payable checks even if a query returns stale rows", async () => {
     mocks.findMany.mockResolvedValueOnce([
       { ...payableAppeal, slug: "staging-fixture" },

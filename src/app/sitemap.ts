@@ -8,6 +8,7 @@ import { publishedProgrammeCategoryPaths } from "@/lib/sitemap-programme-categor
 import { shouldAllowIndexing } from "@/lib/site-indexing";
 import { canListAppealInSitemap, isCanonicalSitemapSlug } from "@/lib/sitemap-privacy";
 import { isLegacyOurWorkSlug } from "@/lib/our-work-routing";
+import { isFundGivingEnabled } from "@/lib/fund-giving-flag";
 
 const configuredBase = process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org";
 
@@ -74,11 +75,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       hasAssistanceRequest: Boolean(item.assistanceRequest),
       archiveConsent: item.assistanceRequest?.verification?.archiveConsent,
     })
+    // Null confidentiality is allowed for unlinked appeals only.
+    // A linked assistance request requires a reviewed classification to enter search.
+    && (!item.assistanceRequest || item.assistanceRequest.verification?.confidentialityLevel != null)
     && canListAppealInSitemap(item.assistanceRequest?.verification?.confidentialityLevel),
   );
 
+  // Designated giving pages exist (and are indexable) only while the owner has switched fund giving on. They are kept out of
+  // PUBLIC_STATIC_ROUTES on purpose: other checks treat every entry there as always reachable.
+  const fundGivingPages: MetadataRoute.Sitemap = isFundGivingEnabled()
+    ? [{ url: `${base}/give`, changeFrequency: "weekly", priority: 0.85 }, { url: `${base}/funds`, changeFrequency: "weekly", priority: 0.8 }]
+    : [];
+
   return [
     ...staticPages,
+    ...fundGivingPages,
     ...canonicalInitiatives.map(item => ({ url: `${base}/our-work/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "monthly" as const, priority: 0.8 })),
     ...stories.filter(item => isCanonicalSitemapSlug(item.slug)).map(item => ({ url: `${base}/stories/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "monthly" as const, priority: 0.75 })),
     ...faithContent.filter(item => isCanonicalSitemapSlug(item.slug) && isPublicFaithReviewComplete(item)).map(item => ({ url: `${base}/faith-and-reflections/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "monthly" as const, priority: 0.7 })),

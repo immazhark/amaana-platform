@@ -14,7 +14,7 @@ vi.mock("@/lib/auth", () => ({
 }));
 vi.mock("@/lib/prisma", () => ({ prisma: { donation: { findUnique: mocks.findDonation } } }));
 vi.mock("@/lib/storage", () => ({ getDonationEvidenceUrl: mocks.evidence }));
-vi.mock("../actions", () => ({ reconcileDonationAction: vi.fn() }));
+vi.mock("../actions", () => ({ reconcileDonationAction: vi.fn(), reissueReceiptLinkAction: vi.fn() }));
 vi.mock("next/navigation", () => ({ notFound: () => { throw new Error("Not found"); } }));
 
 import DonationDetailPage from "./page";
@@ -171,7 +171,25 @@ describe("AF-R012 private donation-detail server authorization and reconciliatio
     expect(html).toContain("Payment events");
     expect(html).not.toContain("Verify received transfer");
     expect(html).not.toContain("Reject claim");
-    expect(html).not.toContain('name="donationId"');
+    expect(html).not.toContain('name="decision"');
+  });
+
+  it("offers staff with reconcile permission the private-link reissue form on any record", async () => {
+    for (const [status, paymentMethod] of [["CAPTURED", "RAZORPAY"], ["PENDING_VERIFICATION", "DIRECT_UPI"], ["REFUNDED", "RAZORPAY"]] as const) {
+      mocks.canReconcile.mockReturnValueOnce(true);
+      mocks.findDonation.mockResolvedValueOnce(donation({ status, paymentMethod }));
+      const html = await renderDonation();
+      expect(html).toContain("Reissue private link");
+      expect(html).toContain("The old link stops working immediately");
+      expect(html).toContain('name="reason"');
+    }
+  });
+
+  it("does not show the private-link reissue form to a view-only operator", async () => {
+    mocks.findDonation.mockResolvedValueOnce(donation({ status: "CAPTURED", paymentMethod: "RAZORPAY" }));
+    const html = await renderDonation();
+    expect(html).not.toContain("Reissue private link");
+    expect(html).not.toContain('name="reason"');
   });
 
   it("never offers direct-transfer reconciliation controls to a Razorpay record", async () => {
@@ -275,6 +293,12 @@ it("reads only displayed private Donation detail fields and the existing bounded
       failedAt: true,
       refundedAt: true,
       appeal: { select: { title: true } },
+      sponsorshipProgramme: true,
+      sponsorshipUnits: true,
+      sponsorshipMonths: true,
+      sponsorshipMonthlyRate: true,
+      sponsorshipRateVersion: true,
+      fund: { select: { name: true } },
       events: {
         select: { id: true, eventType: true, providerEventId: true, processedAt: true },
         orderBy: [{ processedAt: "desc" }, { id: "desc" }],
@@ -285,4 +309,22 @@ it("reads only displayed private Donation detail fields and the existing bounded
   expect(html).toContain("SYNTHETIC-IST-001");
   expect(html).toContain("Synthetic approved appeal");
   expect(html).toContain("Public anonymity");
+});
+
+describe("private donation detail shows a Taleem programme sponsorship", () => {
+  const sponsorship = { sponsorshipProgramme: "nazira", sponsorshipUnits: 2, sponsorshipMonths: 6, sponsorshipMonthlyRate: amount(1200), sponsorshipRateVersion: "approved-2026-11" };
+
+  it("shows the programme, units, months, the recorded rate and its version for staff", async () => {
+    mocks.findDonation.mockResolvedValue(donation({ ...sponsorship, appeal: null, fund: { name: "Taleem Fund" } }));
+    const html = await renderDonation();
+    expect(html).toContain("<dt>Programme sponsorship</dt>");
+    expect(html).toMatch(/Qur(?:'|&#x27;)an Nazira: 2 units × 6 months × ₹1,200 a month/);
+    expect(html).toContain("rate version approved-2026-11");
+  });
+
+  it("shows nothing extra for an ordinary gift", async () => {
+    const html = await renderDonation();
+    expect(html).not.toContain("Programme sponsorship");
+    expect(html).not.toContain("rate version");
+  });
 });

@@ -1,0 +1,28 @@
+/* The generic two-column .form-grid stretched the submit button to the height of
+   the label block, producing a button as wide as the field and about 85px tall. */
+form.form {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: .75rem 1rem;
+  max-width: 46rem;
+}
+
+form.form > :global(.v2-text-link) {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+form.form > :global(.v2-button) {
+  min-height: 3.3rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 620px) {
+  form.form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  form.form > :global(.v2-button) {
+    width: 100%;
+  }
+}

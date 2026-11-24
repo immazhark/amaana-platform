@@ -85,3 +85,69 @@ describe("participation card destination semantics", () => {
     expect(external).toContain('rel="noopener noreferrer"');
   });
 });
+
+it("fails closed for invalid participation collections without hiding reviewed destinations", () => {
+  for (const malformed of [null, undefined, "invalid-collection", { 0: paths[0], length: 1 }]) {
+    expect(renderToStaticMarkup(
+      <ParticipationCards paths={malformed as unknown as ParticipationPath[]} />,
+    )).toBe("");
+  }
+
+  const broken = [
+    null,
+    undefined,
+    { ...paths[0], title: { dangerously: "object" } },
+    { ...paths[0], copy: 777 },
+    { ...paths[0], action: null },
+    { ...paths[0], marker: { nested: "object" } },
+    { ...paths[0], icon: "unknown-icon" },
+  ] as unknown as ParticipationPath[];
+  const html = renderToStaticMarkup(<ParticipationCards paths={[...broken, paths[2]!]} />);
+  expect(html).toContain('href="/request-assistance"');
+  expect(html).toContain("Request support");
+  expect(html).not.toContain("dangerously");
+  expect(html).not.toContain("unknown-icon");
+});
+
+
+it("rejects malformed mail and phone actions without hiding normal contact links", () => {
+  const unsafeContact = [
+    { ...paths[0]!, marker: "bad-mail-empty", title: "Missing email address", href: "mailto:" },
+    { ...paths[0]!, marker: "bad-mail-no-at", title: "Unaddressed email", href: "mailto:wrong-address" },
+    { ...paths[0]!, marker: "bad-mail-crlf", title: "Encoded email header injection", href: "mailto:team@example.invalid%0d%0abcc:intruder@example.invalid" },
+    { ...paths[0]!, marker: "bad-mail-body", title: "Injected email body break", href: "mailto:team@example.invalid?subject=Hi%0AHidden" },
+    { ...paths[1]!, marker: "bad-phone-words", title: "Unusable telephone", href: "tel:not-a-number" },
+    { ...paths[1]!, marker: "bad-phone-punctuation", title: "Punctuation telephone", href: "tel:+++" },
+    { ...paths[1]!, marker: "bad-phone-fragment", title: "Fragment telephone", href: "tel:+919908002694#data" },
+  ];
+  const html = renderToStaticMarkup(<ParticipationCards paths={[...paths, ...unsafeContact]} />);
+  expect(html).toContain('href="mailto:amaanafoundation24@gmail.com?subject=Hello"');
+  expect(html).toContain('href="tel:+919908002694"');
+  expect(html).toContain('href="/request-assistance"');
+  for (const item of unsafeContact) expect(html).not.toContain(item.title);
+  expect(html).not.toContain("%0d%0a");
+  expect(html).not.toContain("not-a-number");
+});
+
+it("AF-R034 rejects prototype-inherited participation destinations and public labels", () => {
+  const entirelyInherited = Object.create(paths[0]!) as ParticipationPath;
+  const inheritedHref = Object.assign(
+    Object.create({ href: "mailto:amaanafoundation24@gmail.com" }),
+    { marker: "inherited-href", title: "Unreviewed inherited address",
+      copy: "Unreviewed description", action: "Email unreviewed contact" },
+  ) as ParticipationPath;
+  const inheritedOptionalIcon = Object.assign(
+    Object.create({ icon: "message" }),
+    { ...paths[2]!, marker: "inherited-icon", title: "Unreviewed icon" },
+  ) as ParticipationPath;
+
+  const html = renderToStaticMarkup(<ParticipationCards paths={[
+    entirelyInherited, inheritedHref, inheritedOptionalIcon, paths[2]!,
+  ]} />);
+  expect(html).toContain('href="/request-assistance"');
+  expect(html).toContain("Request support");
+  expect(html).not.toContain("Unreviewed inherited address");
+  expect(html).not.toContain("Unreviewed icon");
+  expect(html).not.toContain('mailto:amaanafoundation24@gmail.com');
+  expect(html).not.toContain("Email Amaana");
+});

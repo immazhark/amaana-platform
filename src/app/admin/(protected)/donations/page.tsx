@@ -1,11 +1,16 @@
 import Link from "next/link";
 import { DonationIntent, DonationStatus, Prisma } from "@prisma/client";
+import { AdminDonationFunnel } from "@/components/admin-donation-funnel";
+import { summariseDonationFunnel } from "@/lib/donation-funnel";
 import { requirePermission } from "@/lib/auth";
 import { formatINR } from "@/lib/appeals";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { donationIntentLabel } from "@/lib/donation-intent";
 import { prisma } from "@/lib/prisma";
 import { donationOperationalState } from "@/lib/operational-signals";
+
+const FUNNEL_WINDOW_DAYS = 90;
+const funnelSince = () => new Date(Date.now() - FUNNEL_WINDOW_DAYS * 24 * 60 * 60 * 1000);
 
 type Props = { searchParams: Promise<{ status?: string; intent?: string; page?: string }> };
 
@@ -23,7 +28,7 @@ export default async function DonationsPage({ searchParams }: Props) {
     ...(selectedIntent ? { givingIntent: selectedIntent } : {}),
   };
 
-  const [totalItems, reconciliation, pendingDirectTransfers, unmatchedCriticalEventCount, unmatchedCriticalEvents, missingAcknowledgements, refundedWithoutCompletionTime, statusGroups, intentGroups] = await Promise.all([
+  const [totalItems, reconciliation, pendingDirectTransfers, unmatchedCriticalEventCount, unmatchedCriticalEvents, missingAcknowledgements, refundedWithoutCompletionTime, statusGroups, intentGroups, funnelGroups] = await Promise.all([
     prisma.donation.count({ where }),
     prisma.donation.aggregate({
       where: { status: { in: ["CAPTURED", "REFUNDED"] } },
@@ -72,7 +77,14 @@ export default async function DonationsPage({ searchParams }: Props) {
       where: selected ? { status: selected } : undefined,
       _count: { _all: true },
     }),
+    // Aggregate counts only: no donor row, amount, reference or contact detail leaves the database for this card.
+    prisma.donation.groupBy({
+      by: ["paymentMethod", "status"],
+      where: { createdAt: { gte: funnelSince() } },
+      _count: { _all: true },
+    }),
   ]);
+  const funnel = summariseDonationFunnel(funnelGroups);
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
   const donations = await prisma.donation.findMany({
     where,
@@ -88,6 +100,7 @@ export default async function DonationsPage({ searchParams }: Props) {
       status: true,
       createdAt: true,
       appeal: { select: { title: true } },
+      fund: { select: { name: true } },
     },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     skip: pagination.skip,
@@ -153,6 +166,7 @@ export default async function DonationsPage({ searchParams }: Props) {
         <article className="card"><strong>{operational.refundedWithoutCompletionTime}</strong><p>Refunded donations missing completion time</p></article>
       </div>
     </section>
+    <AdminDonationFunnel rows={funnel} windowDays={FUNNEL_WINDOW_DAYS} />
     {unmatchedCriticalEvents.length > 0 && <section className="admin-card" style={{ marginBottom: "1.25rem" }}>
       <div className="admin-heading">
         <div>
@@ -186,7 +200,7 @@ export default async function DonationsPage({ searchParams }: Props) {
         <tbody>{donations.map(donation => <tr key={donation.id}>
           <td><Link href={`/admin/donations/${donation.id}`}><strong>{donation.referenceNumber}</strong></Link></td>
           <td>{donation.donorName}<br/><small>{donation.donorEmail}</small></td>
-          <td>{donation.appeal.title}</td>
+          <td>{donation.appeal?.title ?? donation.fund?.name ?? "—"}</td>
           <td>{donationIntentLabel(donation.givingIntent)}</td>
           <td>{donation.paymentMethod === "DIRECT_UPI" ? "Direct UPI" : donation.paymentMethod === "BANK_TRANSFER" ? "Bank transfer" : "Razorpay"}</td>
           <td>{formatINR(donation.amount.toNumber())}</td>

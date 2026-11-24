@@ -18,5 +18,10 @@ export const getAppealSearchPrivacy = cache(async (slug: string) => {
     },
   });
 
+  // An assistance-linked appeal needs its own reviewed confidentiality level.
+  // Missing verification is not a public STANDARD classification.
+  if (appeal?.assistanceRequest && !appeal.assistanceRequest.verification?.confidentialityLevel) {
+    return "UNVERIFIED";
+  }
   return appeal?.assistanceRequest?.verification?.confidentialityLevel ?? "STANDARD";
 });

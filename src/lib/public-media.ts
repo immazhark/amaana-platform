@@ -161,6 +161,13 @@ export function isCspCompatiblePublicImageUrl(value: string | null | undefined) 
 }
 
 export function canRenderPublicMedia(asset: PublicMediaCandidate) {
+  // Stored metadata crosses a runtime boundary despite the TypeScript type.
+  if (!asset || typeof asset !== "object" || Array.isArray(asset) ||
+      !["IMAGE", "VIDEO", "DOCUMENT", "EXTERNAL_VIDEO"].includes(asset.kind) ||
+      [asset.publicUrl, asset.externalUrl, asset.altText, asset.title, asset.caption].some(
+        field => field != null && typeof field !== "string",
+      ) ||
+      (asset.sortOrder != null && !Number.isSafeInteger(asset.sortOrder))) return false;
   const url = resolvePublicMediaUrl(asset);
   if (!url) return false;
 
@@ -177,24 +184,47 @@ export function canRenderPublicMedia(asset: PublicMediaCandidate) {
 
 
 /**
+ * Keep only public-renderable media, preserving the first record for each
+ * normalized URL. This is a render guard, not editorial publication approval;
+ * callers must retain their existing database publication/consent filters.
+ * One Set lookup per item avoids quadratic URL comparisons.
+ */
+export function dedupeRenderablePublicMediaByUrl<T extends PublicMediaCandidate>(
+  assets: readonly T[],
+): T[] {
+  if (!Array.isArray(assets)) return [];
+
+  const seenUrls = new Set<string>();
+  const distinct: T[] = [];
+  for (const asset of assets) {
+    if (!canRenderPublicMedia(asset)) continue;
+    const url = resolvePublicMediaUrl(asset);
+    if (!url || seenUrls.has(url)) continue;
+    seenUrls.add(url);
+    distinct.push(asset);
+  }
+  return distinct;
+}
+
+/**
  * Prefer documentary photography for high-prominence covers when a reviewed
  * photo and a campaign graphic are both available. This never changes the
  * publication/privacy gate; it only ranks already-public-safe IMAGE assets.
  */
 /** Share reviewed artwork labels across public discovery and gallery presentation. */
 export function isDocumentaryPublicImage(asset: PublicMediaCandidate) {
-  return asset.kind === "IMAGE" && canRenderPublicMedia(asset) && !isCampaignGraphicDescriptor(asset);
+  return canRenderPublicMedia(asset) && asset.kind === "IMAGE" && !isCampaignGraphicDescriptor(asset);
 }
 
 export function isIdentityPublicImage(asset: PublicMediaCandidate) {
-  return asset.kind === "IMAGE"
-    && asset.sortOrder === IDENTITY_MEDIA_SORT_ORDER
-    && canRenderPublicMedia(asset);
+  return canRenderPublicMedia(asset)
+    && asset.kind === "IMAGE"
+    && asset.sortOrder === IDENTITY_MEDIA_SORT_ORDER;
 }
 
 export function selectIdentityPublicImage<T extends PublicMediaCandidate>(assets: readonly T[]) {
   // Supporting-gallery approval is not approval for hero/discovery placement.
-  return assets.find(asset => isIdentityPublicImage(asset));
+  return Array.isArray(assets) ? assets.find(isIdentityPublicImage) : undefined;
 }
 
 /**
@@ -202,8 +232,9 @@ export function selectIdentityPublicImage<T extends PublicMediaCandidate>(assets
  * Identity artwork remains the fallback when a record has no separate approved gallery image.
  */
 export function selectGalleryPublicImage<T extends PublicMediaCandidate>(assets: readonly T[]) {
+  if (!Array.isArray(assets)) return null;
   return assets.find(asset => isDocumentaryPublicImage(asset) && !isIdentityPublicImage(asset))
-    ?? assets.find(asset => asset.kind === "IMAGE" && canRenderPublicMedia(asset) && !isIdentityPublicImage(asset))
+    ?? assets.find(asset => canRenderPublicMedia(asset) && asset.kind === "IMAGE" && !isIdentityPublicImage(asset))
     ?? selectIdentityPublicImage(assets)
     ?? null;
 }

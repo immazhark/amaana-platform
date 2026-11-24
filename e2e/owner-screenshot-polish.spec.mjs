@@ -125,3 +125,19 @@ test('corrected dark Home surfaces and expanded portfolio have no serious access
   const portfolio = await new AxeBuilder({ page }).include('.v2-cause-stack').analyze();
   expect(portfolio.violations.filter(issue => ['serious', 'critical'].includes(issue.impact))).toEqual([]);
 });
+
+
+test('AF-FIXTURE nullable preview never renders a public image or leaks private media metadata', async ({ page }) => {
+  await fixture(page, 'portfolio');
+  const response = await page.goto('/browser-acceptance/portfolio?scenario=nullable-preview');
+  expect(response?.ok()).toBe(true);
+  const preview = page.locator('#synthetic-null-preview');
+  await expect(preview).toHaveCount(1);
+  await expect(preview.locator('.work-visual-placeholder')).toHaveCount(1);
+  // An approved decorative logo is safe; nullable private media must not render.
+  const placeholderLogo = preview.locator('.work-visual-placeholder img');
+  await expect(preview.locator('img')).toHaveCount(1);
+  await expect(placeholderLogo).toHaveAttribute('src', /amaana-mark[.]svg(?:[?]|$)/);
+  await expect(placeholderLogo).toHaveAttribute('alt', '');
+  await expect(page.locator('body')).not.toContainText('PRIVATE_PREVIEW_FIELD');
+});

@@ -18,8 +18,8 @@
   text-align:center;text-decoration:none;line-height:1.35;
   cursor:pointer;
 }
-.action:hover{border-color:#466faa;background:#eef3fa}
-.action:focus-visible{outline:3px solid #466faa!important;outline-offset:2px!important}
+.action:hover{border-color:var(--af-color-blue-600);background:#eef3fa}
+.action:focus-visible{outline:3px solid var(--af-color-blue-600)!important;outline-offset:2px!important}
 .action svg{flex:0 0 auto;width:1.2rem;height:1.2rem}
 .action span{min-width:0}
 .status{margin:0;color:#274c79;font-size:.88rem;line-height:1.5}

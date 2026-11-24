@@ -2,6 +2,7 @@ import { NotificationStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { renderNotificationEmail } from "@/lib/notification-templates";
+import { emailSendNotBefore, hasOfficialEmailSender } from "@/lib/env";
 
 const MAX_BATCH_SIZE = 20;
 const MAX_ATTEMPTS = 5;
@@ -136,6 +137,9 @@ async function recoverStaleProcessingNotifications() {
 }
 
 export async function processPendingEmailNotifications() {
+  // Defence in depth: the job route already requires a go-live instant. Without one, nothing is selected or claimed.
+  const notBefore = emailSendNotBefore();
+  if (!notBefore || !hasOfficialEmailSender()) return { selected: 0, sent: 0, failed: 0 };
   await recoverStaleProcessingNotifications();
 
   const pending = await prisma.notification.findMany({
@@ -144,6 +148,8 @@ export async function processPendingEmailNotifications() {
       status: { in: [NotificationStatus.PENDING, NotificationStatus.FAILED] },
       attempts: { lt: MAX_ATTEMPTS },
       scheduledFor: { lte: new Date() },
+      // Only messages created at or after the declared go-live instant are ever sent.
+      createdAt: { gte: notBefore },
     },
     orderBy: { createdAt: "asc" },
     take: MAX_BATCH_SIZE,
@@ -162,6 +168,7 @@ export async function processPendingEmailNotifications() {
         // Recheck eligibility atomically: another worker may have deferred this row
         // after our findMany snapshot, but before we can claim it.
         scheduledFor: { lte: new Date() },
+        createdAt: { gte: notBefore },
       },
       data: {
         status: NotificationStatus.PROCESSING,

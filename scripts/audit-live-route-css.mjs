@@ -50,9 +50,27 @@ export function stylesheetsInHtml(html, origin = ORIGIN) {
     if (match[1].toLowerCase() !== "link") continue;
     const rel = attr(match[2], "rel");
     const raw = attr(match[2], "href");
-    if (!rel?.toLowerCase().split(/\s+/).includes("stylesheet") || !raw) continue;
+    if (!rel?.toLowerCase().split(/[\t\n\f\r ]+/).includes("stylesheet") || !raw) continue;
+    // URL() removes dot segments before inspection. Check the supplied path
+    // first so a malformed reference cannot be attributed to a different asset.
+    const href = raw.replaceAll("&amp;", "&");
+    const pathMatch = /^(?:https?:\/\/[^/?#]+)?(\/[^?#]*)/i.exec(href);
+    if (!pathMatch) continue;
+    const originalPath = pathMatch[1];
+    if (originalPath.includes("//")) continue;
+    let canonicalPath = true;
+    for (const segment of originalPath.split("/")) {
+      let decoded;
+      try { decoded = decodeURIComponent(segment); }
+      catch { canonicalPath = false; break; }
+      if (decoded === "." || decoded === ".." || decoded.includes("/") || decoded.includes("\\")) {
+        canonicalPath = false;
+        break;
+      }
+    }
+    if (!canonicalPath) continue;
     let asset;
-    try { asset = new URL(raw.replaceAll("&amp;", "&"), site); }
+    try { asset = new URL(href, site); }
     catch { continue; }
     if (asset.origin !== site.origin || asset.username || asset.password) continue;
     if (!/^\/_next\/static\/[A-Za-z0-9_./-]+\.css$/.test(asset.pathname)) continue;
@@ -87,6 +105,57 @@ export function summarizeRouteCssBytes(entries, sizes) {
     uniqueStylesheets: unique.size,
     decodedCssBytes: [...unique].reduce((total, asset) => addCssBytes(total, sizes.get(asset), "shared"), 0),
   } };
+}
+
+const MAX_HTML_BYTES = 2 * 1024 * 1024;
+const MAX_CSS_BYTES = 1024 * 1024;
+
+/** Limit decompressed response bytes, including when Content-Length is absent.
+ * Real fetch streams are stopped as soon as the next chunk exceeds the cap.
+ */
+async function readResponseBytes(response, limit, kind) {
+  const declared = response.headers?.get("content-length");
+  if (typeof declared === "string" && /^\d+$/.test(declared.trim()) && Number(declared) > limit) {
+    try { await response.body?.cancel?.(); } catch { /* Refusal must still fail closed. */ }
+    throw new Error(kind + " response exceeds the audit size limit");
+  }
+  if (typeof response.body?.getReader === "function") {
+    const reader = response.body.getReader();
+    const chunks = [];
+    let total = 0;
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        if (!(value instanceof Uint8Array)) throw new Error("Invalid streamed " + kind + " response");
+        total += value.byteLength;
+        if (total > limit) throw new Error(kind + " response exceeds the audit size limit");
+        chunks.push(value);
+      }
+    } catch (error) {
+      // A broken stream producer can leave cancellation pending indefinitely.
+      // Preserve the primary size/read failure without waiting on cleanup.
+      try { void reader.cancel().catch(() => {}); } catch { /* Preserve the read error. */ }
+      throw error;
+    } finally {
+      reader.releaseLock();
+    }
+    return Buffer.concat(chunks, total);
+  }
+  // Synthetic fetch fixtures may provide text/arrayBuffer but no stream.
+  // The actual network fetch above always uses its bounded response stream.
+  if (kind === "HTML") {
+    const value = await response.text();
+    if (typeof value !== "string" || Buffer.byteLength(value, "utf8") > limit) {
+      throw new Error(kind + " response exceeds the audit size limit");
+    }
+    return Buffer.from(value, "utf8");
+  }
+  const value = await response.arrayBuffer();
+  if (!(value instanceof ArrayBuffer) || value.byteLength > limit) {
+    throw new Error(kind + " response exceeds the audit size limit");
+  }
+  return Buffer.from(value);
 }
 
 /** Read-only, unauthenticated measurement against fixed public paths. */
@@ -128,7 +197,7 @@ export async function auditPublicRouteCss({ fetchImpl = fetch, routes = PUBLIC_R
     if (!contentType || !/^text\/html(?:\s*;|$)/i.test(contentType)) {
       throw new Error("Route response is not HTML: " + pageUrl.href);
     }
-    const html = await response.text();
+    const html = (await readResponseBytes(response, MAX_HTML_BYTES, "HTML")).toString("utf8");
     const stylesheets = stylesheetsInHtml(html, site.href);
     entries.push({ route, stylesheets });
     for (const asset of stylesheets) {
@@ -136,7 +205,7 @@ export async function auditPublicRouteCss({ fetchImpl = fetch, routes = PUBLIC_R
       const response = await request(asset);
       const contentType = response.headers?.get("content-type") ?? null;
       if (!contentType || !/^text\/css(?:\s*;|$)/i.test(contentType)) throw new Error("Stylesheet response is not CSS: " + asset);
-      const body = await response.arrayBuffer();
+      const body = await readResponseBytes(response, MAX_CSS_BYTES, "CSS");
       sizes.set(asset, body.byteLength);
     }
   }

@@ -22,6 +22,7 @@ import {
   getImpactComparisonPageData,
   getImpactPageData,
   getHomepageDiscoveryData,
+  getOurWorkIndexData,
   getProgrammeChildMedia,
 } from "./public-page-data";
 import { getPublishedInitiativeBySlug } from "./public-content";
@@ -70,6 +71,26 @@ describe("public page gallery media query contracts", () => {
     expect(query.select).not.toHaveProperty("mediaAssets");
   });
 
+  it("rejects malformed published metric projections before the public outcomes strip", async () => {
+    const reviewed = { slug: "reviewed-later", title: "Reviewed relief", primaryMetric: "32", primaryMetricLabel: "kits" };
+    mocks.initiativeFindMany.mockResolvedValueOnce([
+      null, undefined,
+      { ...reviewed, slug: "../admin" },
+      { ...reviewed, title: { private: "PRIVATE_TITLE" } },
+      { ...reviewed, primaryMetric: { internal: "PRIVATE_METRIC" } },
+      { ...reviewed, primaryMetricLabel: ["PRIVATE_LABEL"] },
+      { ...reviewed, title: "   " },
+      reviewed,
+    ]);
+    const { getDonationImpactHighlights } = await import("./public-page-data");
+    const items = await getDonationImpactHighlights();
+    expect(items).toEqual([reviewed]);
+    expect(JSON.stringify(items)).not.toContain("PRIVATE_");
+    expect(mocks.initiativeFindMany.mock.calls.at(-1)?.[0].where).toMatchObject({
+      status: "PUBLISHED", cause: { status: "PUBLISHED" },
+    });
+  });
+
   it("shows no donor proof on an empty reviewed metric projection", async () => {
     const { getDonationImpactHighlights } = await import("./public-page-data");
     await expect(getDonationImpactHighlights()).resolves.toEqual([]);
@@ -103,6 +124,84 @@ describe("public page gallery media query contracts", () => {
     }
     expect(mocks.initiativeFindMany.mock.calls[0]?.[0].where)
       .toHaveProperty("mediaAssets.some");
+  });
+
+  it("ignores malformed homepage projection rows without losing reviewed programmes", async () => {
+    const reviewed = { slug: "reviewed-relief", title: "Reviewed relief", primaryMetric: "30", primaryMetricLabel: "kits" };
+    const withoutMetrics = { slug: "field-support", title: "Reviewed field support", primaryMetric: null, primaryMetricLabel: null };
+    mocks.initiativeFindMany
+      .mockResolvedValueOnce([
+        null, undefined,
+        { ...reviewed, slug: "../admin" },
+        { ...reviewed, slug: "invalid-title", title: { private: "PRIVATE_TITLE" } },
+        { ...reviewed, slug: "invalid-metric", primaryMetric: { private: "PRIVATE_METRIC" } },
+        reviewed,
+      ])
+      .mockResolvedValueOnce([withoutMetrics])
+      .mockResolvedValueOnce([
+        null, { slug: "reviewed-relief" },
+        { slug: "../admin" }, { slug: { private: "PRIVATE_SLUG" } },
+        { slug: "field-support" },
+      ]);
+    const data = await getHomepageDiscoveryData();
+    expect(data.initiatives).toEqual([reviewed, withoutMetrics]);
+    expect(data.publishedProgrammeSlugs).toEqual(["reviewed-relief", "field-support"]);
+    expect(JSON.stringify(data)).not.toContain("PRIVATE_");
+    for (const call of mocks.initiativeFindMany.mock.calls) {
+      expect(call[0].where).toMatchObject({
+        status: "PUBLISHED", cause: { status: "PUBLISHED" },
+      });
+    }
+  });
+
+  it("fails closed on malformed homepage query arrays while keeping reviewed records", async () => {
+    const reviewed = { slug: "reviewed-support", title: "Reviewed support", primaryMetric: "24", primaryMetricLabel: "kits" };
+    mocks.initiativeFindMany
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce([reviewed])
+      .mockResolvedValueOnce({ private: "PRIVATE_MEMBERSHIP" });
+    const data = await getHomepageDiscoveryData();
+    expect(data.initiatives).toEqual([reviewed]);
+    expect(data.causes).toEqual([]);
+    expect(data.publishedProgrammeSlugs).toEqual([]);
+    expect(JSON.stringify(data)).not.toContain("PRIVATE_");
+
+    mocks.initiativeFindMany.mockReset().mockResolvedValue([])
+      .mockResolvedValueOnce([reviewed])
+      .mockResolvedValueOnce({ private: "PRIVATE_FIELD" })
+      .mockResolvedValueOnce([{ slug: "eid-gift-kits" }]);
+    const second = await getHomepageDiscoveryData();
+    expect(second.initiatives).toEqual([reviewed]);
+    expect(second.publishedProgrammeSlugs).toEqual(["eid-gift-kits"]);
+    expect(JSON.stringify(second)).not.toContain("PRIVATE_");
+  });
+
+  it("omits malformed homepage cause/media relations without losing approved candidate artwork", async () => {
+    const visible = { slug: "ramadan-eid", initiatives: [{ mediaAssets: [] }] };
+    mocks.causeFindMany.mockResolvedValueOnce([
+      null, undefined,
+      { slug: "../private", initiatives: [{ mediaAssets: [] }] },
+      { slug: "bad-relation", initiatives: { internal: "PRIVATE_RELATION" } },
+      { slug: "ramadan-eid", initiatives: [
+        null,
+        { mediaAssets: { internal: "PRIVATE_MEDIA" } },
+        { mediaAssets: [] },
+      ] },
+    ]);
+    const result = await getHomepageDiscoveryData();
+    expect(result.causes).toEqual([visible]);
+    expect(JSON.stringify(result)).not.toContain("PRIVATE_");
+    const query = mocks.causeFindMany.mock.calls[0]?.[0];
+    expect(query?.where).toEqual({ status: "PUBLISHED" });
+    expect(query?.select?.initiatives?.where).toMatchObject({
+      status: "PUBLISHED",
+      mediaAssets: { some: expect.objectContaining({
+        kind: "IMAGE", isPublic: true, privacyApprovedAt: { not: null },
+      }) },
+    });
+    expect(query?.select?.initiatives?.select?.mediaAssets?.where).toMatchObject({
+      kind: "IMAGE", isPublic: true, privacyApprovedAt: { not: null }, sortOrder: -1000,
+    });
   });
 
   it("bounds homepage publication checks to every consulted programme destination", async () => {
@@ -251,6 +350,65 @@ describe("public page gallery media query contracts", () => {
     expect(query.select.mediaAssets.where).toHaveProperty("sortOrder", -1000);
     expect(query.select).not.toHaveProperty("financialSummary");
     expect(query.select).not.toHaveProperty("assistanceRequest");
+  });
+
+  it("drops malformed portfolio records while retaining reviewed published initiatives", async () => {
+    const good = {
+      id: "initiative-safe", slug: "reviewed-relief", title: "Reviewed relief",
+      summary: "Reviewed public summary", year: 2026, startYear: null, endYear: null,
+      primaryMetric: "25", primaryMetricLabel: "kits", isFeatured: false,
+      mediaAssets: [],
+    };
+    const cause = {
+      id: "cause-reviewed", slug: "relief", title: "Relief",
+      summary: "Reviewed public cause",
+      initiatives: [
+        null,
+        { ...good, id: "wrong-route", slug: "../internal" },
+        { ...good, id: "wrong-title", title: { private: "PRIVATE_TITLE" } },
+        { ...good, id: "bad-number", year: { private: "PRIVATE_YEAR" } },
+        { ...good, id: "wrong-media", mediaAssets: { private: "PRIVATE_MEDIA" } },
+        good,
+      ],
+    };
+    mocks.causeFindMany.mockResolvedValueOnce([
+      null, undefined,
+      { ...cause, id: "bad-cause", slug: "../internal" },
+      { ...cause, id: "bad-relation", initiatives: { private: "PRIVATE_RELATION" } },
+      cause,
+    ]);
+    const data = await getOurWorkIndexData();
+    expect(data).toEqual([{ ...cause, initiatives: [good] }]);
+    expect(JSON.stringify(data)).not.toContain("PRIVATE_");
+    expect(mocks.causeFindMany.mock.calls[0]?.[0].where).toEqual({ status: "PUBLISHED" });
+    expect(mocks.causeFindMany.mock.calls[0]?.[0].select.initiatives.where)
+      .toEqual({ status: "PUBLISHED" });
+    expect(mocks.causeFindMany.mock.calls[0]?.[0].select.initiatives.select.mediaAssets.where)
+      .toMatchObject({ kind: "IMAGE", isPublic: true, privacyApprovedAt: { not: null }, sortOrder: -1000 });
+  });
+
+  it("fails closed for malformed completed-support showcase projections", async () => {
+    const safe = { slug: "reviewed-relief", mediaAssets: [] };
+    mocks.initiativeFindMany.mockResolvedValueOnce([
+      null, undefined,
+      { slug: "../internal", mediaAssets: [] },
+      { slug: { private: "PRIVATE_SLUG" }, mediaAssets: [] },
+      { slug: "invalid-media", mediaAssets: { private: "PRIVATE_MEDIA" } },
+      safe,
+    ]);
+    const records = await getCompletedAidShowcaseData();
+    expect(records).toEqual([safe]);
+    expect(JSON.stringify(records)).not.toContain("PRIVATE_");
+    expect(mocks.initiativeFindMany.mock.calls[0]?.[0]).toMatchObject({
+      where: {
+        status: "PUBLISHED",
+        cause: { slug: "medical-financial-relief", status: "PUBLISHED" },
+      },
+      select: { slug: true },
+    });
+    expect(mocks.initiativeFindMany.mock.calls[0]?.[0].select.mediaAssets.where).toMatchObject({
+      kind: "IMAGE", isPublic: true, privacyApprovedAt: { not: null },
+    });
   });
 
   it("uses bounded approved image sets for completed support and programme child cards", async () => {

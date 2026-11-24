@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { getPublicImageDimensions } from "@/lib/public-image-dimensions";
+import { isValidPlaceholder } from "@/lib/image-placeholder-validate";
 import { canRenderPublicMedia, getPublicImageOptimizationUrl, resolvePublicMediaUrl } from "@/lib/public-media";
 
 type PublicMediaAsset = {
@@ -13,6 +14,7 @@ type PublicMediaAsset = {
   sourceYear: number | null;
   width?: number | null;
   height?: number | null;
+  placeholder?: string | null;
 };
 
 type PublicMediaProps = {
@@ -27,6 +29,8 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
   // Runtime records can be malformed even when TypeScript callers are correct.
   // Reject them before reading public URLs, optional labels or media-kind branches.
   if (!asset ||
+      !["id", "kind", "title", "publicUrl", "externalUrl", "altText", "caption", "sourceYear"]
+        .every(key => Object.hasOwn(asset, key)) ||
       typeof asset.id !== "string" || !asset.id.trim() ||
       !["IMAGE", "VIDEO", "DOCUMENT", "EXTERNAL_VIDEO"].includes(asset.kind) ||
       [asset.title, asset.publicUrl, asset.externalUrl, asset.altText, asset.caption].some(
@@ -42,6 +46,8 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
   if (asset.kind === "IMAGE") {
     const { width, height } = getPublicImageDimensions(asset);
     const optimizedUrl = getPublicImageOptimizationUrl(url);
+    // Only reached after canRenderPublicMedia, so the preview never outlives publication.
+    const blurDataURL = asset.placeholder && isValidPlaceholder(asset.placeholder) ? asset.placeholder : undefined;
     const image = optimizedUrl ? (
       <Image
         src={optimizedUrl}
@@ -52,6 +58,8 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
         preload={priority}
         loading={priority ? undefined : "lazy"}
         decoding="async"
+        placeholder={blurDataURL ? "blur" : "empty"}
+        blurDataURL={blurDataURL}
       />
     ) : (
       // External approved assets may live on multiple S3-compatible/CDN hosts; keep this direct until hosts are explicitly allowlisted for Next's optimizer.

@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest";
-import {
-  parsePrivateDonationAcknowledgementLocation,
-  privateDonationAcknowledgementPath,
-} from "./private-donation-ack";
+import { privateDonationAcknowledgementPath } from "./private-donation-ack";
+import { parsePrivateDonationAcknowledgementLocation } from "./private-donation-ack-location";
 
 describe("private donation acknowledgement links", () => {
   it("keeps the receipt token in the browser fragment", () => {

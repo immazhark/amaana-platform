@@ -4,6 +4,7 @@ import { createReceiptNumber } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 import { fetchRazorpayPayment } from "@/lib/razorpay";
+import { donationChargePaise } from "@/lib/donation-charge";
 
 /**
  * Marks a verified Razorpay payment as captured exactly once.
@@ -52,6 +53,7 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
         paymentMethod: true,
         provider: true,
         amount: true,
+        feeContributionAmount: true,
         referenceNumber: true,
         appealId: true,
         donorEmail: true,
@@ -61,7 +63,7 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
         providerPaymentId: true,
       },
     });
-    const expectedAmountPaise = donation ? donation.amount.mul(100).toNumber() : null;
+    const expectedAmountPaise = donation ? donationChargePaise(donation) : null;
     if (
       !donation ||
       donation.currency !== "INR" ||
@@ -90,22 +92,25 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
     });
 
     if (changed.count === 1) {
-      const appeal = await tx.appeal.update({
-        where: { id: donation.appealId },
-        data: { amountRaised: { increment: donation.amount } },
-        select: {
-          id: true,
-          status: true,
-          goalAmount: true,
-          amountRaised: true,
-        },
-      });
-
-      if (shouldMarkAppealFunded(appeal.status, appeal.amountRaised, appeal.goalAmount)) {
-        await tx.appeal.updateMany({
-          where: { id: appeal.id, status: "PUBLISHED" },
-          data: { status: "FUNDED" },
+      // Only appeal donations move an appeal's raised total; other streams are accounted by stream.
+      if (donation.appealId) {
+        const appeal = await tx.appeal.update({
+          where: { id: donation.appealId },
+          data: { amountRaised: { increment: donation.amount } },
+          select: {
+            id: true,
+            status: true,
+            goalAmount: true,
+            amountRaised: true,
+          },
         });
+
+        if (shouldMarkAppealFunded(appeal.status, appeal.amountRaised, appeal.goalAmount)) {
+          await tx.appeal.updateMany({
+            where: { id: appeal.id, status: "PUBLISHED" },
+            data: { status: "FUNDED" },
+          });
+        }
       }
 
       await tx.notification.create({
@@ -113,7 +118,7 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
           channel: NotificationChannel.EMAIL,
           recipient: donation.donorEmail,
           templateKey: "donation-acknowledgement",
-          subject: "Thank you for supporting an Amaana Foundation appeal",
+          subject: donation.appealId ? "Thank you for supporting an Amaana Foundation appeal" : "Thank you for your contribution to Amaana Foundation",
           payload: { referenceNumber: donation.referenceNumber, givingIntent: donation.givingIntent },
           donationId: donation.id,
         },
@@ -169,7 +174,7 @@ export async function ensureCapturedDonationForRefund(paymentId: string) {
 
   const donationByOrder = await prisma.donation.findUnique({
     where: { providerOrderId: providerPayment.order_id },
-    select: { id: true, amount: true, paymentMethod: true, provider: true },
+    select: { id: true, amount: true, feeContributionAmount: true, paymentMethod: true, provider: true },
   });
 
   if (!donationByOrder) {
@@ -180,7 +185,7 @@ export async function ensureCapturedDonationForRefund(paymentId: string) {
     throw new Error("Refund payment order belongs to another donation method");
   }
 
-  const expectedAmountPaise = donationByOrder.amount.mul(100).toNumber();
+  const expectedAmountPaise = donationChargePaise(donationByOrder);
   if (!Number.isSafeInteger(expectedAmountPaise) || expectedAmountPaise < 0 || providerPayment.amount !== expectedAmountPaise) {
     throw new Error("Refund payment amount does not match the local donation order");
   }

@@ -1,6 +1,6 @@
 # Amaana Platform — Agent Working Agreement
 
-This repository may be implemented alternately by Codex and ChatGPT. Only **one implementation agent may write to the repository at a time**.
+This repository may be implemented alternately by Codex, ChatGPT and Claude Code. Only **one implementation agent may write to the repository at a time**.
 
 Before making any repo change, every agent MUST read:
 
@@ -15,7 +15,8 @@ Before making any repo change, every agent MUST read:
 
 - Do not begin repo writes if another agent is marked `ACTIVE` in `docs/AI_ACTIVE_WORK.md` unless the user has explicitly handed implementation ownership over.
 - ChatGPT and Codex may work in parallel on research, copy, planning, QA, or analysis, but **not on repository implementation**.
-- The integration branch is `phase-public-site-rebuild` unless the active-work file says otherwise.
+- Protected `main` is the current integration and release trunk. `phase-public-site-rebuild` is retained historical source, not the active implementation base. Use a short-lived task branch from verified current `main`; a staging environment does not require a second permanent Git branch.
+- Once an eligible task PR is tested, promoted and SHA-guarded merged, retire its source branch through the guarded branch-lifecycle workflow. Preserve active PR heads, protected/release/history refs and explicit `retain-branch` exceptions; never delete a branch from name or age alone.
 - Do not make direct implementation commits to `main`.
 - Prefer a small task branch + PR for each atomic change.
 - Before coding, inspect open PRs and the latest integration-branch commit so you do not duplicate or overwrite work.
@@ -25,11 +26,21 @@ Before making any repo change, every agent MUST read:
 - When older durable logs conflict with `CURRENT_SOURCE_RECONCILIATION_2026-09-15.md`, treat the reconciliation file as the newer project-state authority until the old section is rewritten.
 - Do not restart or redesign the project from scratch. Continue the current architecture unless a verified requirement demands a change.
 
+## Documentation lifecycle and evidence hygiene
+
+- Maintain a **single current source** for each operational concern. Use `docs/AI_ACTIVE_WORK.md` for active writer/current task, `docs/AI_HANDOFF_LEDGER.md` only for necessary handoffs, `docs/07_CURRENT_STATE.md` for compact startup context, and the 149-item register for master backlog classifications. Do not recreate the same status in a new dated Markdown file for every test, fix, merge or CI poll.
+- Put reproducible regressions in tests, implementation details and rollback in the **existing task PR**, and release evidence in its checks and merge history. Amend that PR for follow-up tests within the same scoped root cause.
+- Do not generate a new audit note or coordination-only PR unless it is a genuinely reusable runbook, durable factual/architectural decision, legal/privacy requirement, or source evidence not adequately preserved elsewhere. Prefer updating the existing canonical document.
+- Before removing a superseded document, inspect its content, check for links and source/CI consumers, verify that its work is merged or otherwise dispositioned, and retain unique financial, beneficiary, legal, historical/incident, media-provenance, migration and recovery evidence. Remove only proven duplicates/obsolete snapshots. Git history and merged PR reviews preserve the deleted file's historical version.
+- Never remove a document solely because its filename is old. Document counts and branch counts are maintenance metrics, not evidence of product completion.
+
 ## Ownership states
 
 `IDLE` — no implementation agent is writing.
 
 `CODEX_ACTIVE` — Codex owns all repo implementation.
+
+`CLAUDE_CODE_ACTIVE` — Claude Code owns all repo implementation after explicit owner handoff and a fresh repo/PR claim.
 
 `CHATGPT_ACTIVE` — ChatGPT owns all repo implementation.
 

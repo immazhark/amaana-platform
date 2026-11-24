@@ -3,6 +3,7 @@ import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 import AxeBuilder from '@axe-core/playwright';
 import {test,expect} from '@playwright/test';
+import {waitForPublicOverview} from './helpers/public-overview-ready.mjs';
 
 const workspace = process.env.AMAANA_APP_WORKSPACE ?? process.cwd();
 const seed = JSON.parse(execFileSync(process.execPath,['scripts/seed-ui-route-audit.mjs'],{cwd:workspace,env:{...process.env,AMAANA_UI_AUDIT_TARGET:'isolated-ci'},encoding:'utf8'}));
@@ -12,7 +13,9 @@ const normalize = file=>'/'+path.relative(path.join(workspace,'src/app'),path.di
 const sourceRoutes = sourcePages.map(file=>({file:path.relative(workspace,file),route:normalize(file)}));
 const staticRoutes = sourceRoutes.filter(r=>!r.route.includes('[')).map(r=>r.route);
 const adminDetail = [`/admin/requests/${seed.requestId}`,`/admin/appeals/${seed.appealId}`,`/admin/appeals/${seed.draftId}`,`/admin/donations/${seed.donationId}`];
-const routes = [...new Set([...staticRoutes,...seed.publicRoutes,...adminDetail,'/programmes/medical-financial-relief','/programmes/emergency-relief','/programmes/ramadan-eid','/programmes/seasonal-relief','/donations/invalid/acknowledgement'])].sort();
+// Closed (a real 404) until the owner sets FUND_GIVING_ENABLED; covered meanwhile by e2e/fund-giving.spec.mjs via synthetic fixture routes.
+const gatedRoutes = new Set(process.env.FUND_GIVING_ENABLED === 'true' ? [] : ['/give','/funds']);
+const routes = [...new Set([...staticRoutes,...seed.publicRoutes,...adminDetail,'/programmes/medical-financial-relief','/programmes/emergency-relief','/programmes/ramadan-eid','/programmes/seasonal-relief','/donations/invalid/acknowledgement'])].filter(route=>!gatedRoutes.has(route)).sort();
 test.describe.configure({retries:0});
 function renderErrorSource(sourceFile) {
  return execFileSync(process.execPath,['--input-type=module','-'],{
@@ -75,6 +78,7 @@ for(const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]])fo
  if(route.startsWith('/admin')&&route!=='/admin/login'&&route!=='/admin/forbidden')await context.addCookies([{name:'amaana_admin_session',value:seed.token,url:'http://127.0.0.1:3000',httpOnly:true,sameSite:'Strict'}]);
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const response=await page.goto(route,{waitUntil:'load'});
+ await waitForPublicOverview(page,route);
  await page.evaluate(async()=>{await document.fonts.ready;});
  if (route.startsWith('/admin/requests/') && route.split('/').length===4) {
   // The synthetic authenticated request must keep checkbox titles and helper
@@ -122,7 +126,7 @@ for(const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]])fo
  fs.writeFileSync(path.join(directory,slug+'.json'),JSON.stringify({route,sourceRoutes,status:response?.status(),finalPath:new URL(page.url()).pathname,width,height,metrics,overflowDetails,textResizeOverflow,textResizeDetails,violations,incomplete:audit.incomplete.map(i=>({id:i.id,targets:i.nodes.map(n=>n.target)})),errors},null,2));
  const expectedStatus=route==='/donate/synthetic-ui-audit'?404:200;
  expect(response?.status(),route).toBe(expectedStatus);
- expect(new URL(page.url()).pathname,route).toBe(route==='/admin/requests'?'/admin':route==='/our-work/medical-financial-assistance'?'/programmes/medical-financial-relief':route);
+ expect(new URL(page.url()).pathname,route).toBe(route==='/admin/requests'?'/admin':route==='/taleem'?'/our-work/taleem':route==='/our-work/medical-financial-assistance'?'/programmes/medical-financial-relief':route);
  if(!route.startsWith('/browser-acceptance/')){expect(metrics.headings,route).toHaveLength(1);expect(metrics.headings.join(' ')).not.toMatch(/platform is temporarily unavailable|page could not complete/i);}
  expect(metrics.overflow,`${route}: ${JSON.stringify(overflowDetails)}`).toBe(false);expect(textResizeOverflow,`200% text resizing: ${route}: ${JSON.stringify(textResizeDetails)}`).toBe(false);expect(metrics.oversizedH2,route).toEqual([]);expect(metrics.brokenAnchors,route).toEqual([]);expect(errors,route).toEqual([]);
  expect(violations.filter(v=>['serious','critical'].includes(v.impact)),route).toEqual([]);
@@ -163,7 +167,7 @@ for (const [device,width,height] of [['compact-mobile',320,844],['mobile',390,84
     expect(resized.overflow,'200% text resizing on isolated global error').toBe(false);
     expect(resized.bodyFont).toContain('Arial');
     expect(resized.headingFont).toContain('Georgia');
-    expect(resized.lineHeight).toBeGreaterThanOrEqual(resized.fontSize);
+    expect(resized.lineHeight).toBeGreaterThanOrEqual(resized.fontSize * 1.14);
     await page.getByRole('button',{name:'Try again →',exact:true}).scrollIntoViewIfNeeded();
     await expect(page.getByRole('button',{name:'Try again →',exact:true})).toBeInViewport();
   });
@@ -181,6 +185,11 @@ for (const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]]) 
     await page.screenshot({path:path.join(directory,'complete-route-error.jpg'),type:'jpeg',quality:65,fullPage:true});
     fs.writeFileSync(path.join(directory,'complete-route-error.json'),JSON.stringify({route:'error.tsx',evidence:'Source-rendered isolated layout; recovery callback is reviewed in source, not exercised by this static render.',width,height,geometry,violations:audit.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}))},null,2));
     expect(geometry.overflow).toBe(false);
+    const headingLeading = await page.locator('.v2-error-page h1').evaluate(node => {
+      const style = getComputedStyle(node);
+      return parseFloat(style.lineHeight) / parseFloat(style.fontSize);
+    });
+    expect(headingLeading,'AF-R025 route error heading wraps with readable leading').toBeGreaterThanOrEqual(1.14);
     await expect(page.getByRole('button',{name:'Try again',exact:true})).toBeVisible();
     expect(audit.violations.filter(v=>['serious','critical'].includes(v.impact))).toEqual([]);
   });
@@ -215,7 +224,8 @@ for(const status of [429,503])test(`temporary acknowledgement failure ${status} 
   return r.fulfill({status:200,json:{found:true,presentation:acknowledgementStates[0],donation:{referenceNumber:credentials.reference,receiptNumber:'ACK-SYNTHETIC',donorName:'Synthetic donor',givingIntent:'GENERAL',amount:100,refundedAmount:0,recordDate:'2026-10-01T00:00:00.000Z',providerPaymentId:null,appeal:{title:'Synthetic UI audit appeal',slug:'synthetic-ui-audit'}}}});
  });
  await page.goto(`/donations/${credentials.reference}/acknowledgement#token=${credentials.token}`);
- await expect(page.getByRole('heading',{name:'Unable to open your acknowledgement.',exact:true})).toBeVisible();
+ // A rate limit gets its own wait-and-retry heading; any other temporary failure keeps the generic one.
+ await expect(page.getByRole('heading',{name:status===429?'Too many attempts.':'Unable to open your acknowledgement.',exact:true})).toBeVisible();
  expect(await page.evaluate(()=>location.search+location.hash)).toBe('');
  await page.getByRole('button',{name:'Try again',exact:true}).click();
  await expect(page.getByRole('heading',{name:'JazakAllahu Khairan.',exact:true})).toBeVisible();

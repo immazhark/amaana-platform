@@ -71,7 +71,8 @@ async function requestRazorpay(path: string, init?: RequestInit) {
 export async function createRazorpayOrder(input: {
   amountPaise: number;
   receipt: string;
-  appealId: string;
+  appealId?: string;
+  fundSlug?: string;
   givingIntent: string;
 }) {
   return requestRazorpay("/orders", {
@@ -81,7 +82,8 @@ export async function createRazorpayOrder(input: {
       currency: "INR",
       receipt: input.receipt,
       notes: {
-        appealId: input.appealId,
+        ...(input.appealId ? { appealId: input.appealId } : {}),
+        ...(input.fundSlug ? { fundSlug: input.fundSlug } : {}),
         givingIntent: input.givingIntent,
       },
     }),

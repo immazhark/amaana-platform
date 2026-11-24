@@ -9,12 +9,14 @@ function normalizePublicCopy(value: string) {
 
 export function heroTeaser(summary: string) {
   const clean = summary.replace(/\s+/g, " ").trim();
-  const sentences = clean.match(/[^.!?]+[.!?]+|[^.!?]+$/g)?.map(sentence => sentence.trim()).filter(Boolean) ?? [];
-  if (sentences.length === 0) return clean;
-  const first = sentences[0];
-  if (!first) return clean;
+  // A decimal dot is not a sentence boundary. Only terminate before space
+  // or end of text, so published values such as 2.5 are not truncated to 2.
+  const first = clean.match(/^.*?[.!?](?=\s|$)/)?.[0]?.trim() || clean;
   if (first.length <= 180) return first;
-  const clipped = first.slice(0, 177).replace(/\s+\S*$/, "").trim();
+  // Do not emit an orphan high surrogate when the UTF-16 cap cuts an emoji.
+  const prefix = first.slice(0, 177);
+  const clipped = (/[\uD800-\uDBFF]$/.test(prefix) ? prefix.slice(0, -1) : prefix)
+    .replace(/\s+\S*$/, "").trim();
   return `${clipped}…`;
 }
 
@@ -45,8 +47,10 @@ export function buildPublicRecordFallback({
   metric?: string | null;
   metricLabel?: string | null;
 }) {
-  const metricSentence = metric
-    ? `The documented outcome for this work is ${metric}${metricLabel ? ` ${metricLabel}` : ""}.`
+  const reviewedMetric = typeof metric === "string" ? metric.trim() : "";
+  const reviewedLabel = typeof metricLabel === "string" ? metricLabel.trim() : "";
+  const metricSentence = reviewedMetric
+    ? `The documented outcome for this work is ${reviewedMetric}${reviewedLabel ? ` ${reviewedLabel}` : ""}.`
     : "";
   const privacySentence = `Only information suitable for public sharing is included here; personal documents and sensitive details remain private.`;
   return [metricSentence, privacySentence].filter(Boolean).join(" ");

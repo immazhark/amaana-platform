@@ -116,6 +116,40 @@ for (const path of clsRoutes) {
 }
 
 
+// AF-R044: a streamed route fallback shorter than the viewport lets the footer
+// paint above the fold and then jump when the real page arrives. The default
+// 720px-tall project viewport hides that, so measure tall desktop and phone.
+for (const path of ['/impact', '/donate']) {
+  for (const viewport of [{ width: 1440, height: 1200 }, { width: 390, height: 844 }]) {
+    test(`${path} streamed fallback keeps the footer below the fold at ${viewport.width}x${viewport.height}`, async ({ page }) => {
+      await page.setViewportSize(viewport);
+      await page.addInitScript(() => {
+        window.__amaanaFooterShift = 0;
+        new PerformanceObserver(list => {
+          for (const entry of list.getEntries()) {
+            if (entry.hadRecentInput) continue;
+            const movedFooter = (entry.sources ?? []).some(source =>
+              source.node instanceof Element && source.node.closest('.site-footer'));
+            if (movedFooter) window.__amaanaFooterShift += entry.value;
+          }
+        }).observe({ type: 'layout-shift', buffered: true });
+      });
+      await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+      let worst = 0;
+      // Streaming order varies between loads; every load must be stable.
+      for (let attempt = 0; attempt < 4; attempt += 1) {
+        const response = await page.goto(path, { waitUntil: 'load' });
+        expect(response?.ok(), `Expected ${path} to render successfully`).toBeTruthy();
+        await page.waitForTimeout(500);
+        worst = Math.max(worst, await page.evaluate(() => window.__amaanaFooterShift ?? 0));
+      }
+      console.log(`Footer layout shift ${path} ${viewport.width}x${viewport.height}: ${worst.toFixed(4)}`);
+      expect(worst, `${path} footer moved after first paint`).toBeLessThanOrEqual(0.02);
+    });
+  }
+}
+
+
 const criticalPublicRoutes = ['/', '/about', '/our-work', '/appeals', '/donate', '/request-assistance'];
 
 for (const path of criticalPublicRoutes) {

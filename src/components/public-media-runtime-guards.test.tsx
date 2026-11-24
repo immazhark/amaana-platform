@@ -35,6 +35,38 @@ describe("AF-R052 PublicMedia untrusted runtime props", () => {
     expect(forged.trim).not.toHaveBeenCalled();
   });
 
+  it("rejects prototype-inherited media identity, URL and editorial metadata", () => {
+    const inheritedAll = Object.create(approved) as Parameters<typeof PublicMedia>[0]["asset"];
+    expect(renderToStaticMarkup(<PublicMedia asset={inheritedAll} />)).toBe("");
+
+    const withoutPublicUrl = Object.fromEntries(Object.entries(approved).filter(([key]) => key !== "publicUrl"));
+    const inheritedUrl = Object.assign(
+      Object.create({ publicUrl: "/media/inherited-unreviewed.webp" }),
+      withoutPublicUrl,
+    ) as Parameters<typeof PublicMedia>[0]["asset"];
+    expect(renderToStaticMarkup(<PublicMedia asset={inheritedUrl} />)).toBe("");
+
+    const withoutCaption = Object.fromEntries(Object.entries(approved).filter(([key]) => key !== "caption"));
+    const inheritedCaption = Object.assign(
+      Object.create({ caption: "PRIVATE_EDITORIAL_NOTE" }),
+      withoutCaption,
+    ) as Parameters<typeof PublicMedia>[0]["asset"];
+    expect(renderToStaticMarkup(<PublicMedia asset={inheritedCaption} />)).toBe("");
+
+    expect(renderToStaticMarkup(<PublicMedia asset={approved} />)).toContain("Reviewed programme materials");
+  });
+
+  it("uses safe fallback geometry instead of inherited image dimensions", () => {
+    const forgedDimensions = Object.assign(
+      Object.create({ width: 1, height: 1 }),
+      approved,
+    ) as Parameters<typeof PublicMedia>[0]["asset"];
+    const html = renderToStaticMarkup(<PublicMedia asset={forgedDimensions} />);
+    expect(html).toContain('width="1600"');
+    expect(html).toContain('height="1200"');
+    expect(html).toContain('alt="Reviewed programme materials"');
+  });
+
   it("preserves an ordinary reviewed image with valid metadata", () => {
     const html = renderToStaticMarkup(<PublicMedia asset={approved} />);
     expect(html).toContain('alt="Reviewed programme materials"');

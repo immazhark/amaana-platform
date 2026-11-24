@@ -78,6 +78,18 @@ test("client bundle guard catches inlined configured server secrets", () => {
   assert.doesNotMatch(result.stderr, new RegExp(value));
 });
 
+test("AF-R005 rejects configured 12–15 character server secrets in public assets", () => {
+  for (const value of ["short-key-12", "short-key-123", "short-key-1234", "short-key-12345"]) {
+    const result = runScanner(JSON.stringify({ leakedFixture: value }), {
+      RAZORPAY_WEBHOOK_SECRET: value,
+    });
+    assert.equal(result.status, 1, "Configured 12–15 character server credentials must be scanned");
+    assert.match(result.stderr, /REDACTED SECRET VALUE/);
+    assert.equal((result.stderr + result.stdout).includes(value), false,
+      "The scanner must never print a matched credential");
+  }
+});
+
 test("client bundle scanner checks public JSON and other textual static assets", () => {
   for (const filename of [
     "data/config.json", "brand/mark.svg", "metadata.txt", "index.html",
@@ -199,4 +211,25 @@ test("AF-R007 accepts clean binary assets and catches embedded canary bytes", ()
   assert.equal(leaked.status, 1);
   assert.match(leaked.stderr, /REDACTED SECRET VALUE/);
   assert.equal((leaked.stderr + leaked.stdout).includes(canary), false);
+});
+
+
+test("AF-R005 rejects a symlinked .next parent even when static files appear clean", () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "amaana-client-build-parent-"));
+  try {
+    const external = path.join(root, "outside-build");
+    mkdirSync(path.join(external, "static"), { recursive: true });
+    writeFileSync(path.join(external, "static", "bundle.js"), "console.log('synthetic clean build')");
+    symlinkSync(external, path.join(root, ".next"), "dir");
+    const result = spawnSync(process.execPath, [scanner], {
+      cwd: root,
+      encoding: "utf8",
+      env: { ...process.env, AMAANA_CLIENT_SECRET_CANARY: canary },
+    });
+    assert.equal(result.status, 1, "Scanner must not accept a linked Next.js build parent");
+    assert.match(result.stderr, /Symbolic link in public client bundle/);
+    assert.equal(result.stderr.includes(canary), false);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
 });

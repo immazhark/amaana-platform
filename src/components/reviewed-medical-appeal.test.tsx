@@ -4,7 +4,7 @@ import { Prisma } from "@prisma/client";
 
 const methods = vi.hoisted(() => vi.fn());
 vi.mock("@/components/donation-methods", () => ({ DonationMethods: (props: unknown) => { methods(props); return <div>Existing payment methods</div>; } }));
-vi.mock("@/components/page-hero", () => ({ PageHero: ({ title, visual }: { title: string; visual: import("react").ReactNode }) => <header><h1>{title}</h1>{visual}</header> }));
+vi.mock("@/components/page-hero", () => ({ PageHero: ({ title, visual, description }: { title: string; visual: import("react").ReactNode; description?: import("react").ReactNode }) => <header><h1>{title}</h1>{description}{visual}</header> }));
 vi.mock("@/components/public-media", () => ({ PublicMedia: () => <div>Reviewed case photograph</div> }));
 vi.mock("@/components/appeal-share", () => ({ AppealShare: () => <div>Share appeal</div> }));
 vi.mock("next/link", () => ({ default: ({ children, ...props }: import("react").ComponentProps<"a">) => <a {...props}>{children}</a> }));
@@ -47,9 +47,26 @@ it.each([
   expect(html).not.toContain("Existing payment methods");
 });
 
+it("keeps a deliberately CLOSED reviewed appeal in read-only funding status with no payment form", () => {
+  const closedAppeal = { ...appeal, status: "CLOSED" as const };
+  const closedDonation = { ...donation, status: "CLOSED" as const };
+  const html = renderToStaticMarkup(<ReviewedMedicalAppeal highlySensitive={true} appeal={closedAppeal} donation={closedDonation} coverMedia={null} paymentDetails={paymentDetails} />);
+  expect(html).toContain("Funding status");
+  expect(html).not.toContain("Existing payment methods");
+  expect(methods).not.toHaveBeenCalled();
+});
+
 it("renders only a supplied reviewed cover and public update copy", () => {
   const cover = { id: "synthetic-reviewed-image", kind: "IMAGE" as const, title: "Reviewed redacted photo", publicUrl: "/media/synthetic.webp", externalUrl: null, altText: "Reviewed redacted photo", caption: null, sourceYear: 2026, sortOrder: 0, width: 800, height: 600 };
   const html = renderToStaticMarkup(<ReviewedMedicalAppeal highlySensitive={true} appeal={{ ...appeal, updates: [{ id: "synthetic-update", title: "Confirmed update", content: "Approved public update", publishedAt: new Date("2026-11-07T00:00:00Z") }] }} donation={donation} coverMedia={cover} paymentDetails={paymentDetails} />);
   expect(html).toContain("Reviewed case photograph");
   expect(html).toContain("Approved public update");
+});
+
+it("prints editor Markdown emphasis as plain words, never literal asterisks", () => {
+  const marked = { ...appeal, summary: "Treatment for **oral cancer** needs **₹8 lakh**.", story: "A *reviewed* need.\nCosts **₹8 lakh** in total." };
+  const html = renderToStaticMarkup(<ReviewedMedicalAppeal highlySensitive={true} appeal={marked} donation={donation} coverMedia={null} paymentDetails={paymentDetails} />);
+  expect(html).toContain("Treatment for oral cancer needs ₹8 lakh.");
+  expect(html).toContain("A reviewed need.");
+  expect(html).not.toContain("*");
 });

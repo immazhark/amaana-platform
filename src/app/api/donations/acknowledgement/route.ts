@@ -1,3 +1,4 @@
+import { TALEEM_CATALOGUE } from "@/content/taleem-catalogue";
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -68,6 +69,7 @@ export async function POST(request: Request) {
         status: true,
         amount: true,
         refundedAmount: true,
+        feeContributionAmount: true,
         receiptNumber: true,
         referenceNumber: true,
         donorName: true,
@@ -77,6 +79,14 @@ export async function POST(request: Request) {
         createdAt: true,
         providerPaymentId: true,
         appeal: { select: { title: true, slug: true } },
+        fund: { select: { name: true, slug: true } },
+        units: true,
+        unitPrice: true,
+        campaign: { select: { title: true, unitLabel: true, unitLabelPlural: true } },
+        sponsorshipProgramme: true,
+        sponsorshipUnits: true,
+        sponsorshipMonths: true,
+        sponsorshipMonthlyRate: true,
       },
     });
 
@@ -88,8 +98,31 @@ export async function POST(request: Request) {
 
     const amount = donation.amount.toNumber();
     const refundedAmount = donation.refundedAmount.toNumber();
-    const presentation = getDonationAcknowledgementPresentation(donation.status, amount, refundedAmount);
+    // A refund returns any covered gateway fee first; only the excess is a refund of the donation itself.
+    const feeContribution = donation.feeContributionAmount.toNumber();
+    const donationRefunded = Math.max(0, Math.round((refundedAmount - feeContribution) * 100) / 100);
+    const presentation = getDonationAcknowledgementPresentation(donation.status, amount, donationRefunded);
     const recordDate = donation.refundedAt ?? donation.capturedAt ?? donation.createdAt;
+    // The units and price recorded on the donation itself, never the campaign's current price, so a later price
+    // change cannot rewrite what this donor bought.
+    const campaign = donation.campaign && donation.units && donation.unitPrice
+      ? {
+        title: donation.campaign.title,
+        units: donation.units,
+        unitLabel: donation.units === 1 ? donation.campaign.unitLabel : donation.campaign.unitLabelPlural,
+        unitPrice: donation.unitPrice.toNumber(),
+      }
+      : null;
+    // The programme, units, months and rate recorded on the donation itself, never the live catalogue rate. Only the
+    // display name comes from the catalogue; the rate version stays internal.
+    const sponsorship = donation.sponsorshipProgramme && donation.sponsorshipUnits && donation.sponsorshipMonths && donation.sponsorshipMonthlyRate
+      ? {
+        programme: TALEEM_CATALOGUE.programmes.find(item => item.id === donation.sponsorshipProgramme)?.name ?? donation.sponsorshipProgramme,
+        units: donation.sponsorshipUnits,
+        months: donation.sponsorshipMonths,
+        monthlyRate: donation.sponsorshipMonthlyRate.toNumber(),
+      }
+      : null;
 
     return NextResponse.json(
       {
@@ -101,10 +134,15 @@ export async function POST(request: Request) {
           donorName: donation.donorName,
           givingIntent: donation.givingIntent,
           amount,
-          refundedAmount,
+          // The donation's own refunded share; the covered gateway fee is returned first and shown separately.
+          refundedAmount: donationRefunded,
+          feeContributionAmount: feeContribution,
           recordDate: recordDate.toISOString(),
           providerPaymentId: donation.providerPaymentId,
           appeal: donation.appeal,
+          fund: donation.fund,
+          campaign,
+          sponsorship,
         },
       },
       { headers: privateHeaders },

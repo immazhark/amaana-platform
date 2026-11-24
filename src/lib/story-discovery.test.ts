@@ -107,3 +107,27 @@ it("finds approved stories with irregular internal whitespace without exposing p
   expect(result.programmes).toEqual([]);
   expect(result.results).toEqual([story]);
 });
+
+it("rejects malformed story and programme metadata without publishing private context", () => {
+  const reviewed = { title: "Reviewed school story", summary: "Public account", cause: { status: "PUBLISHED", title: "Education" } };
+  const invalidContext = { title: "Unusable programme", summary: "Public account",
+    cause: { status: "PUBLISHED", title: { internal: "PRIVATE_PROGRAMME" } } };
+  const badInitiative = { title: "Unusable initiative", summary: "Public account",
+    initiative: { status: "PUBLISHED", cause: { status: "PUBLISHED", title: { internal: "PRIVATE_PROGRAMME" } } },
+    cause: { status: "PUBLISHED", title: "Relief" } };
+  expect(publishedStoryProgrammeContext(invalidContext as unknown as Parameters<typeof publishedStoryProgrammeContext>[0])).toBeNull();
+  expect(publishedStoryProgrammeContext(badInitiative as unknown as Parameters<typeof publishedStoryProgrammeContext>[0])).toBe("Relief");
+  const broken = [
+    null, undefined,
+    { title: 12, summary: "Wrong title" },
+    { title: "", summary: "Blank title" },
+    { title: "Private", summary: { telephone: "PRIVATE_PHONE" } },
+  ] as unknown as Array<typeof reviewed>;
+  const result = selectStoryDiscovery([...broken, reviewed], {});
+  expect(result.results).toEqual([reviewed]);
+  expect(result.programmes).toEqual(["Education"]);
+  expect(JSON.stringify(result)).not.toContain("PRIVATE_PHONE");
+  expect(selectStoryDiscovery(null as unknown as Array<typeof reviewed>, {})).toMatchObject({
+    results: [], programmes: [], count: 0,
+  });
+});

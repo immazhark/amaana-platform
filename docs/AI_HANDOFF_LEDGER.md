@@ -1,4 +1,503 @@
+## 24 November 2026 IST — owner-approved ChatGPT release takeover (#1143 then #1141)
+
+The owner explicitly assigned this ChatGPT Work session sole implementation responsibility and approved the existing two-PR release batch. Source at preparation: main `d85acb54791c6b5c78accc7ec332b3775f4b971d`. #1143 source helper was independently checked against the original unsafe predicate and the six established cases. Candidate `ccc51c64917756670ace320d60165e3a3ace1a40`: local Vitest 3,971 passed/73 skipped, TypeScript passed, native publication tests 2/2 and CI/CSP/branch-safety tests 51/51 passed; hosted 45311977595 fast/production/isolated database passed, browser acceptance still running at preparation. Production build JS819169/819200 B, CSS344774/364544 B. Skipped local DB cases are not claimed as passed; hosted DB acceptance is separate.
+
+#1141 is prepared as a non-force two-parent reconciliation of its preserved `6208667b` head and the exact #1143 candidate, carrying its four reviewed assistance blobs unchanged and resolving only coordination records. CI may run concurrently; there is one writer and merges remain sequential. Before #1141 release, verify #1143 actually merged, its main tree equals the reviewed candidate, the PR diff contains only intended assistance/coordination scope, exact-head full CI and separate ready-state pass, and merge uses expected_head_sha. Do not infer either PR merged/deployed from this preparation note; canonical evidence is their checks/merge history and Railway exact-SHA status.
+
+Railway last independently read SUCCESS/online for main `d85acb54`, deployment `0977bf61-b9c6-45ee-87f8-40ae2a77097c`. Fresh health requests in this environment return403; no bypass or forced rollout. No schema/RBAC/payment/webhook/media publication/live data/infra/notification action. Hold #1134 additive migration, overlapping #1132 and #845 separately; 149 classifications unchanged. Return at a safe boundary with exact source/runtime/check evidence; do not treat generic draft readiness as enforced promotion acceptance.
+
+## 21 November 2026 IST (later) — Claude Code: donate journey polish, shadow-page defect
+
+Sole writer Claude Code, starting at main `bd6534a5`. **Method:** drove the live `/donate` checkout, `/give`, `/funds`, the receipt and the main public pages at 1440px and 390px (read-only, nothing submitted), then fixed what was wrong and pinned each fix with a geometry or contract test instead of a screenshot. **Merged:** #1092 `c3f68388`, #1093 `6a8a0681`. **Defect with production effect:** `/appeals`, `/stories`, `/our-work` and `/faith-and-reflections` each had two pages resolving to one URL; Next.js did not fail the build and the stale root copy served (it alone carried the live Mr. Khaja section), so the streaming boundaries and, for `/stories`, the #886 fail-closed handling were not live while unit tests passed on the other file. Evidence: build manifest listed both entries; the guard in `scripts/test-public-route-loading.mjs` was red on main with exactly those four; after the merge the live pages each serve one h1 with the loading fallback and unknown child slugs still 404. **CI lesson:** the previous heads of #1091 and #1094 failed on guards I had not run locally (a spec that expected two explanatory blocks after one was removed; the appeal-card CSS ordering guard). Run the whole `scripts/test-*.mjs` sweep before pushing; only the Windows symlink, URL and CRLF failures differ from main. **Open:** #1091, #1094 in CI; drafts #1089, #1090 need owner schema approval; owner asset action for the baked-in "Blur-Face.com" caption band on the `/get-involved` hero photo. No payment, webhook, auth, schema, CSP, flag or infrastructure change in any merged or open task PR. Holds #684/#845 unchanged. Register unchanged (54/12/64/17/1/1): bounded UI polish closes no whole item; AF-R060 stays Partial (#1091, once merged, removes 16 dead declarations and forbids new ones in the governed stylelint list; the rest of the layered override CSS remains).
+
+## 21 November 2026 IST — Claude Code continuation: main-CI red root cause, #1081/#1084 review, receipts
+
+Sole writer Claude Code, starting at main `17c73c14`. **Main CI:** red from the #1060 merge onward. A census of the last 70 runs found 10 failed main pushes (first `44301015730`, 18 Nov 12:08Z) and every one failed in `launch-review-capture` for `/impact` and `/donate` (latest `44521205739`: 3 failed, 7 flaky). Sprint records that said "all exact-head checks green" were true for PR runs, which never run this spec. Failure screenshot (CI artifact) shows the streamed "Loading documented outcomes…" fallback at HTTP 200, not an error page. Root cause is test synchronisation: the spec read `main h1` at `domcontentloaded`; the fallback has had no h1 since #1060/#1066. It runs only when `AMAANA_FULL_VISUAL_REVIEW=true` (main pushes, manual releases), which is why green PR runs (#1083) did not exercise it. Fix #1085 uses the shared `waitForPublicOverview` helper; no assertion weakened. Evidence: manual full-release run `44805878435`, 1842 passed, 16 of 16 impact/donate captures once each, no retries. Same PR corrects `scripts/test-public-route-loading.mjs` (orphaned from CI, required an h1, contradicted the vitest contract; reintroducing the h1 now fails it).
+
+**#1081:** the red was real. Enhanced axe audit rejected the non-Zakat badge on the public ledger at 6.17:1 (needs 7:1); fixed with the existing `--af-color-gold-ink` token (7.74:1) on the ledger and `/give`, with a committed guard that failed at 6.178 first. **#1084:** CI evidence confirmed the suite really ran (8 of 8, `AMAANA_DATABASE_TESTS=true`); review found the one-General and fund-delete refusals would commit synthetic rows if wrongly accepted, a delete test that claimed spending but covered only gifts, and no partial fee-first refund case; fixed as added coverage, not a production fix. **AF-FUNDING-MATH finding:** the webhook records a full refund of a fee-covered donation as gift plus fee, `Donation_refundedAmount_lte_amount_check` caps it at the gift, mocked tests cannot see it; unreachable today because fee cover is only on `/give` (closed). Owner scope needed for an additive relaxing migration plus real-database webhook acceptance. **#1086:** receipt shows covered fee, total charged and seasonal-initiative units; AF-RECEIPTS stays Partial (PDF, expiring recovery open).
+
+**Merges:** #1085 `220ff3d9`, #1081 `239f6191`, #1084 `74558ffa`, #1088 `01cccf62`, #1086 `332925ae`, each squash with expected head SHA after full exact-head CI and the promotion-readiness check (#1086: first attempt missed the homepage synthetic blocking-time budget, 213 ms vs 200 ms, with every route's measurement inflated that run and no homepage code touched; the rerun of the same head passed). **Runtime (separate facts):** Railway website `0a0fb065-9f25-402e-987c-e4dc279177da` SUCCESS for `332925ae`, worker SKIPPED; public `/api/health/version` returned `332925ae…`, `/api/health/ready` returned `ready`, `/give`, `/funds` and `/browser-acceptance/*` 404. Main-CI confirmation: first post-merge main run `44812343696` on `220ff3d9` all green including `browser` and `verify`. **Taleem:** owner directive (section 22 gates) recovered from the 19 November session; missing: rate approval and the schema decision, prepared as draft #1089 (additive `Donation` columns, named CHECKs, DB tests; not merged). AF-FUNDING-MATH fix prepared as draft #1090 (needs the same owner approval); the gap itself is proven on real PostgreSQL by #1088. Register recounted 54/12/64/17/1/1, no reclassification. Residual unverified risk: other overview-route specs that measure at `domcontentloaded` were not audited one by one; none failed across three main runs.
+
+## 18 November 2026 IST — Claude Code sprint checkpoint
+
+**Addendum 4:** AF-N23 and AF-FUNDS reclassified Completed (evidence in the tracker); register now 54 Completed / 12 Implemented / 64 Partial / 17 Not started / 1 Superseded / 1 Not applicable. Designated giving merged: #1072, #1073, #1076; fund giving closed by FUND_GIVING_ENABLED until the owner activates it. AF-ALLOCATION, AF-RECEIPTS and AF-R085 (recurring) stay Partial.
+
+**Addendum 3:** AF-R024 reclassified Completed on PR #1067 evidence (31-route e2e plus extended font-floor guard, green in CI); register now 52 Completed / 13 Implemented / 65 Partial / 17 Not started / 1 Superseded / 1 Not applicable. Merged since: #1060, #1066 (single h1 on loading fallbacks, verified live), #1064, #1065, #1067, #1068 (copy guard), #1069 (AF-N22 guard; AF-N22 stays Partial). AF-R005 stays Partial.
+
+**Addendum 2:** register then 51 Completed / 13 Implemented / 66 Partial / 17 Not started / 1 Superseded / 1 Not applicable: AF-R012, R047, R052, R056 and N14 reclassified Completed on named test evidence (R056 migration already applied in production). Kept Partial: AF-R005 (owner audit of past deployments) and AF-R024 (e2e route coverage unconfirmed). #1060 and #1064 still in CI.
+
+**Addendum (main after #1059 `c66e8bb5`):** merges #1053-#1059 listed in `docs/AI_ACTIVE_WORK.md`. Register now 46 Completed / 13 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 Not applicable: eleven rows (AF-N03-N07, N11, N12, N19, N21, N24, R050) reclassified Completed on named test evidence; AF-R046 deliberately kept Implemented (proxy operation count, not real SQL). Production serves `a56ef626` (blur-up render) with key routes 200; no payment, auth or CSP change. #1060 and #1061 open in CI.
+
+**Addendum (main `abe433a3`):** further merges #1047-#1052 with SHAs in `docs/AI_ACTIVE_WORK.md`; all exact-head checks green; task branches retired. No tracker reclassification (35/24/71/17/1/1); no runtime/Railway verification performed.
+
+Sole writer CLAUDE_CODE_ACTIVE on protected main `26f4931e`. Seven bounded PRs merged (#1040-#1046, SHAs in `docs/AI_ACTIVE_WORK.md`), all with passing fast, database, production, browser and ready-state checks and expected-head guards; task branches removed. #1047 and #1048 in CI. Railway/public runtime not re-checked for these merges. Register unchanged at 35/24/71/17/1/1: no row has live acceptance. Holds unchanged: #684, #845, notification worker, schema migrations, payment/webhook routes. Rollback: revert the individual squash commit.
+
+## 17 November 2026 IST — Claude Code writer reclaim and operating setup
+
+**Owner re-confirmed** Claude Code as sole implementation writer after GitHub access and git identity were fixed; other writers stopped. Main `3a04803b0906b134877ae6cf6b676fca8798a3a2`. Added root `CLAUDE.md` (references AGENTS.md, no imports) and ignored `.claude/settings.local.json`. No product, financial, privacy or release-gate change. Holds #684/#845 unchanged.
+
+---
+
+## 17 November 2026 IST — Claude Code usage exhaustion; ChatGPT reconstructed owner-authorized takeover
+
+**Outgoing:** Claude Code (usage limit reported by owner, no final handoff entry). **Incoming:** ChatGPT (single implementation writer, `CHATGPT_ACTIVE`). Source main `8b2bed92ef2649fc0d25f0e87b0099de69b11247`, still protected. Claimed via existing #1016 branch so no redundant handoff-only PR.
+
+**Claude Code completed:** #1017 merge/continuity handoff `2e222d876e62c0d196bb55562258ae1ce5877e98`; #1015 AF-R024 scanner guarded merge `8b2bed92ef2649fc0d25f0e87b0099de69b11247` after exact-head CI `43937946004` and independent ready `43943227518`; subsequent Railway website SKIPPED and public remains ready at runtime `edcaf99ff21733c37937e8c326624e8e41a14267`. This is source-delivered, not whole AF-R024 UX acceptance.
+
+**Reconstructed open scopes:** #1016 AF-R012 static async guard audit old head `ca12fd8155e46b9585c694c6c68631255f509999`, full exact-head CI `43943641280`, separate ready `43947721233` SUCCESS. This claim commit changes head and mandates fresh full+ready checks before merge. #1018 Highlights alignment `ac3a7f4d92b0cc75463b9b5fce4574d50d45bda6` full+ready green on previous base; #1019 header-logo `f106d591ed2eff320255c3304d45c75fe8dc644c` browser in progress; #1020 streamed fallback/footer CLS `badd5b193d81eadc6472da0a7e043f9ef94e7272` full green but draft. Keep separate task branches; reconcile each to latest main. No unresolved reviews at latest inspection.
+
+**Financial holds** #684/#845 and all safety/privacy/provider controls unchanged. The original 149-item totals remain 35/24/71/17/1/1. No forced rollout. Exact next: finish existing #1016 head checks/ready-state merge then focused UI PRs in independent bounded sequence.
+
+---
+
+## 17 November 2026 IST — explicit ChatGPT → Claude Code single-writer handoff
+
+**Outgoing:** ChatGPT. **Incoming:** Claude Code for one owner-authorized implementation session. **State:** `HANDOFF_PENDING` until Claude Code verifies the live repo, updates `docs/AI_ACTIVE_WORK.md` to `CLAUDE_CODE_ACTIVE`, and begins its task. ChatGPT stops repository writes once this coordination PR is safely merged.
+
+**Protected main:** `eab2d44d5ce1b83f60476aa3dbe142156e4cac3b`; **public runtime:** `edcaf99ff21733c37937e8c326624e8e41a14267`/main/production, readiness ready. Railway website deployment `81f2dc93-0477-44d5-9f0a-287876d49926` SKIPPED (docs). #1014 AF-R079 wave 13 guarded merge and 25/25 historical branch retirements were independently verified; no unrelated history/retained refs purged.
+
+**Ready to finish, not yet merged:** #1015 (`fix/af-r024-clamp-additive-font-floor-20261116`, head `e55183c3bfead98e7373a1edfc9bba5f85ce8c32`, full CI `43915060143` all seven SUCCESS); #1016 (`test/af-r012-unawaited-permission-guard-20261116`, head `74ce306c42be20cacc45778138e9dd3d9ffd196f`, full CI `43915598906` all seven SUCCESS). Both draft and lack distinct ready-state release acceptance. #1015 RED proof `43910992881`; #1016 RED proofs `43914072957` and `43914588767`; the latter changes only static audit logic, not production RBAC. After #1015 guarded merge, reconcile same #1016 branch against new main non-force, rerun full CI and separate ready gate.
+
+**Preserve:** financial held #684/#845; parked cron, live financial/provider/data/secret/infrastructure locks; statutory uncertainty; face redaction/media provenance. **149 unchanged:** 35/24/71/17/1/1. **Return:** Claude Code must leave an exact-head branch/PR/CI handoff or, upon abrupt limit, owner explicitly invites ChatGPT to reconstruct current GitHub and resume. No automatic background resumption.
+
+---
+
+## 15 November 2026 IST — AF-R079 verified guarded cleanup and next handoff
+
+Sole writer `CHATGPT_ACTIVE`. Protected source `b68936e012641976605e3ce74f338ad0f0e32008`. PR #980 merged `ee7d90fb1687b6bd73b711f6751dfaf84872ad4c` after full + ready checks; guarded workflow independently retired 20 historical task heads and its source branch. PR #979 merged `ee7f6361f9a4f99d2d2f5b204b92ed06aa0e9f5e`, head absent; PR #981 merged `b68936e012641976605e3ce74f338ad0f0e32008`, historical wave 25/25 retired and head absent. Branch census **957** before new task branch. Railway latest SUCCESS/public-ready runtime `83072e44e74c785f51f2b9213a3820fee7a34d8e`; later out-of-watch source `SKIPPED`. Current one-writer task: PR #982, `chore/af-r079-reviewed-history-wave3-20261115`, replacing only the existing manifest with 25 additional SHA-pinned merged heads and refreshing canonical active/state files; full CI/ready/merge pending. Finance-held #684/#845 and historic sensitive refs protected. No change to 149-item counts. Next: full CI, separate ready check, guarded merge, then verify actual deletion outcomes and branch census; preserve failed/mismatched refs.
+
+---
+
+## 15 November 2026 IST — AF-R079 branch lifecycle and first verified cleanup pilot
+
+**Single implementation writer:** CHATGPT_ACTIVE; task branch `chore/af-r079-merged-branch-lifecycle-20261115`, draft PR #980. Protected base at branch creation `4b2f8640a8ede388d041f87a4bd5f30c21ded9c0`. Live branch inventory counted 1,003 names before this branch; branch-name inventory does not classify merge/retention safety. The task adds guarded future post-merge retirement plus a first pinned historical candidate manifest of twenty independently verified merged task heads (each enumerated in the pinned manifest). For each, the exact retained branch head matched its original merged PR SHA and the merge commit was verified contained in main. **No deletion, live workflow activation, or branch-count reduction has occurred before PR acceptance.** Runtime website is not modified. Required tests: local synthetic RED/GREEN, 11 standalone tests GREEN; hosted exact-head, ready-state promotion/verify and protected SHA-guarded merge are pending. Post-merge GitHub workflow must independently check protected heads, open PR source/base dependencies, exact SHA, approved manifest and ancestry; any uncertainty preserves refs. Historical unreviewed refs, `phase-public-site-rebuild`, finance-held #684/#845 and Railway IaC remain protected. The 149-item totals remain unchanged.
+
+**Next:** accept and merge #980 only after required gates, verify actual post-merge retirement (not merely workflow launch), inventory the remaining refs and classify the next bounded batch. If GitHub token/ref deletion capability blocks, log exact failure and keep refs; never bypass branch protection or rewrite history.
+
+---
+
+## 15 November 2026 IST — guarded #970–#973 batch merged; #974/#975/#977 isolated
+
+**Sole implementation writer:** CHATGPT_ACTIVE. Protected main source `820578baef7103304394bcaa034eec9371bba4d7` after sequential SHA-guarded merges: #970 `26a956f07cc732aecaa2f8c7cd57c2271224db49`, #971 `eafd6714b10bed21d47fdf09f4a96d30085feaf9`, #972 `a0086e9c22ed55be44b142ec19569301b1f675eb`, #973 `820578baef7103304394bcaa034eec9371bba4d7`. Each had full exact-head CI SUCCESS, separate ready-state SUCCESS, zero unresolved reviews and protected expected-head merge. Railway website `3748f777-dd1c-45ee-b8ba-1767bb06f5d6` SUCCESS; fresh external public `/api/health/version` returned exact main/production SHA and `/api/health/ready` ready. This establishes public identity/readiness, not field CWV or donor/provider acceptance.
+
+**Isolated draft engineering:** #974 `f1c848cd2fb5142a06f10bfa7a7d1e3b21315bfe` CSS audit source-URL identity: fast/database/production success, browser pending; #975 `e4d273e8c0d4bc8b13160f3f46b28f213a1f20df` public schema version-body bound: exact-head CI underway; #977 `af6252ccba9be8d9c89c027458279739940e70bd` public INR display formatter reuse: exact-head CI underway. Draft #976 was closed unmerged (duplicate existing symlink guard) and branch retained. No other implementation writers launched; parallel investigation and hosted CI are coordinated under one writer. Finance-held #684 and #845 remain isolated; #446 Railway IaC requires separately scoped live approval. No historical branch deletion, production infra apply, live payment or donor communication. **149-row classification unchanged** (35 Completed, 24 Implemented, 71 Partial, 17 Not started, 1 Superseded, 1 N/A).
+
+**Next:** verify full exact-head checks for #974/#975/#977, promote only green heads, run distinct ready-state verify, resolve reviews, guarded merge, independently check Railway and public exact runtime. Do not falsely count skipped jobs as full-pass or force deployment. Preserve `phase-public-site-rebuild` and historical refs pending retention certification.
+
+---
+
+## 15 November 2026 IST — two live-verified guarded fixes, branch inventory, isolated code PRs
+
+**Sole implementation writer:** CHATGPT_ACTIVE; task branches and hosted CI run independently, repository writes remain coordinated. **Protected main:** `85ea2e57f59d035bdb3d4ae034fb21e3c7cf1a12`. **Merge #964:** participation-card rejects malformed `mailto:`/`tel:` actions, corrected head `6cc311d3965f0d4ad5f5d42885fd48eabeafa329`, exact-head full CI `43689340495` SUCCESS, separate ready-state `43689884229` SUCCESS, SHA-guarded merge `b8f36e0eb4d4563ffb792794e2ee3ecfa5f27e7c`, Railway `a9e2a667-6533-44a1-9e50-f557e6e48281` SUCCESS and exact public runtime independently verified. **Merge #960:** canonical-article rejects protected/encoded/malformed pathways and malformed projection rows, head `12cd05ce500f2d9fc3ac494b16730afce428a618`, full CI `43688087748` SUCCESS, separate ready-state `43690445003` SUCCESS, guarded merge `85ea2e57f59d035bdb3d4ae034fb21e3c7cf1a12`. Railway `2789ee7d-be16-4535-966b-5e29743e813b` SUCCESS; independent public `/api/health/version` returned exact main/production SHA and `/api/health/ready` returned `ready`. Health proves identity/basic readiness, not full browser/manual acceptance.
+
+**Current isolated draft heads (no invented green):** #959 PageHero public action guard `886866f78d4b7e524c8653e2132b157e1f4893ad` (additional encoded mail and official-host private-link regressions, new full run `43690632029`); #962 AF-R069 explicit no-autofocus ESLint `a83fe438252b0082a3b77e3172cae77521c385cf` (browser acceptance pending); #966 canonical FAQ JSON-LD origin `3612a5f8562cd771b23e63a86855a946b8a68dc7` (browser pending); #967 public team stored-link validation `6b7be0beefe40587b86c544d4a63eb47e95de9a4` (RED test-only `6d9310b94bad3a3123b2dee2822b9e5116adf19e`, `43690150169` fast failed exactly one new synthetic unsafe-link test; corrected candidate `43690387213` in acceptance). None is merged or deployed. All require full exact-head impact-selected checks, separate ready-state promotion/verify, resolved reviews and SHA-guarded merge.
+
+**Read-only branch inventory:** 990 unique GitHub branch names enumerated across 11 pages; 664 `fix/`, 83 `docs/`, 64 `test/`, 49 `feat/`. `phase-public-site-rebuild` is 2616 commits behind protected main with zero ahead, but retained as preserved history. Squash-merged task branches can appear divergent and require ancestry/reference certification before any deletion. **No branches, data, secrets or resources were deleted.** Finance-held PRs #684 and #845 remain isolated pending independently scoped finance/privacy approval; #446 live Railway IaC remains separately held.
+
+**Canonical 149-row counts unchanged:** 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A = 149; scoped fixes do not certify entire backlog items. **Next:** review pending exact-head browser/production acceptance independently, promote green heads to ready, perform separate verify, guarded merge, and check Railway + public SHA. Do not bypass checks, force a deployment, activate payment/notification jobs or infer user impact from source-only evidence.
+
+---
+
+## 15 November 2026 IST — coordinated source execution and guarded PR #957/#958 releases
+
+**Sole implementation writer:** CHATGPT_ACTIVE. User delegated implementation for this session; parallel read-only source/Graphify and hosted CI are permitted, not uncoordinated GitHub writers. **Protected main source:** `7c549fd06bfb0829b0e680be3169828ae0f43d59`. New releases: #957 AF-R024 constant CSS shorthand calc font-floor scan corrected head `f89aa746cb55dd44f1d00a93cb6317d7ec112991`, full exact-head run `43687488669` SUCCESS, separate ready-state `43689096095` SUCCESS, no unresolved review threads, expected-head merged `f138fb3d4238092e18f37dabb9f8df9ab7cba769`. #958 AF-R066 three reviewed Stylelint CSS modules + synthetic governance test head `72ad9768fc1aa376ecf00fbce6731379d447c172`, full run `43687334787` SUCCESS, separate ready-state `43689191095` SUCCESS, guarded merge `7c549fd06bfb0829b0e680be3169828ae0f43d59`.
+
+**Pending isolated code branches:** #959 PageHero destination validation and legitimate private status entry exception head `0c2bb52438a1d0a58fc1b5128f5fa9e20230dab7` (new corrected full run `43689054506` pending browser); #960 canonical public article pathway fail-closed head `12cd05ce500f2d9fc3ac494b16730afce428a618` (run `43688087748` pending browser); #962 AF-R069 explicit no-autofocus lint + synthetic fixtures head `a83fe438252b0082a3b77e3172cae77521c385cf` (run `43689001702` pending browser); #964 participation-card malformed mailto/tel guard head `6cc311d3965f0d4ad5f5d42885fd48eabeafa329` (run `43689340495` pending CI). All remain draft/unmerged; full exact-head and a distinct ready-state promotion/verify must pass before protected merge. No automated checks skipped under a false PASS claim.
+
+**Retired:** Draft #963 AF-R025 CSS leading attempt was **closed unmerged** at `611c88d4b79374feab83b672df82a30445d96fe5` because the CSS file/target selectors have no current runtime import/JSX consumers. Preserve its branch; do not count as rendered improvement.
+
+**Deployment boundary:** Railway website #957 `a9f96a35-4443-4b61-ae3e-36fd0ef18f17` SKIPPED. #958 `9ba3d48d-fad1-4969-91d8-3fad7efc9ba7` was BUILDING at last read. Last independently verified public /api/health/version showed earlier `911fbccf8bc81e18d9d13d58775a5ff8d9aadeb1` on main/production; /api/health/ready ready. Do not infer newer live identity from merge or build in progress; re-verify after successful rollout.
+
+**Scope/facts:** Original 149 ledger remains 35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 N/A; no whole-item reclassification for these bounded corrections. #684 QR/recipient financial attestation, #845 finance/privacy eligibility and #446 Railway IaC activation remain separately held. No live payment, provider notification, face/media publication, production data/secret or infrastructure activation was performed.
+
+**Next executable action:** resolve browser CI on #959/#960/#962 and exact-head checks on #964 independently; promote only fully green unchanged heads to ready and verify separate promotion run before guarded merge. Inspect Railway #958 completion and independently compare public runtime SHA/readiness; never force deployment solely to match latest source. Coordinate a single writer for any further source edits.
+
+---
+
+## 15 November 2026 IST — two further guarded releases, four bounded candidates in CI
+
+**Coordinated implementation writer:** CHATGPT_ACTIVE (one GitHub writer, parallel independent read-only audit/hosted checks). **Latest protected source `main` at this checkpoint:** `fc7be4f3fd64d7c1da0fc898bb4c27e0a201736d`. Routine guarded release #952 AF-N11 synthetic authentic weak-work-factor scrypt regression head `51a8ba2b53f4e33aa5320ed38dd70622ee1a0faf`, full exact-head seven-job CI `43676188524` SUCCESS including browser rerun, separate ready-state `43688122614` SUCCESS, merged `911fbccf8bc81e18d9d13d58775a5ff8d9aadeb1`; no production auth logic change. Railway website `0e70c4b7-caaf-4d51-b3b6-00243b9d3d52` SUCCESS. Independent public `/api/health/version` reported that exact commit on production `main`, and `/api/health/ready` returned `ready`.
+
+**Second source merge:** #955 AF-R071 impact-comparison browser fixture option readiness, head `e35db428aa450ca56fdb8638ce4b96ea9ab03bf8`, full exact-head CI `43686184241` SUCCESS including browser/verify, separate ready-state `43688391253` SUCCESS, no unresolved reviews, guarded merge `fc7be4f3fd64d7c1da0fc898bb4c27e0a201736d`. Website Railway `a7562314-0c36-477c-ad7c-cc94f8358fc3` SKIPPED (test-only); deployed site need not equal latest source SHA.
+
+**Separate unmerged draft heads, no inflated acceptance:** #957 AF-R024 `f89aa746cb55dd44f1d00a93cb6317d7ec112991` (CSS shorthand font `calc` RED-first scanner correction, full CI `43687488669` fast/database/production green, browser pending); #958 AF-R066 `72ad9768fc1aa376ecf00fbce6731379d447c172` (three additional Stylelint-governed CSS modules, full CI `43687334787` fast/database/production green, browser pending); #959 public PageHero reviewed destinations `6745b5949e38512aa3b459bfdf864aecd4856cd1` (RED `43687829933`, corrected full CI `43688047102` fast/database/production green, browser pending); #960 canonical article public-pathway validation `12cd05ce500f2d9fc3ac494b16730afce428a618` (RED `43687884808`, corrected full CI `43688087748` fast/database/production green, browser pending). None of these draft changes may be merged before complete green exact-head CI, distinct ready-state promotion/verify, review and SHA guard. They are not yet deployed or live-verified.
+
+**Standing holds:** #684 UPI QR fallback and #845 synthetic staging eligibility are financial activation scopes; #446 Railway IaC apply requires separately reviewed operator authorization. No live payment, donor records, secret access, production schema changes, notification activation, external identity-media publication, branch deletion, or rollout bypass in this batch. Canonical 149-row register remains **35 Completed + 24 Implemented + 71 Partial + 17 Not started + 1 Superseded + 1 Not applicable = 149**. Next execute the four hosted browser gate outcomes independently and release only eligible unchanged heads; verify each resulting Railway status/source and public readiness without forcing SKIPPED paths.
+
+---
+
+## 15 November 2026 IST — four guarded releases, fifth isolated test in review
+
+**Coordinated implementation writer:** CHATGPT_ACTIVE. No independent implementation writer was authorized; read-only investigations and hosted checks ran concurrently. **Protected main:** `841dbc7831349b242d5b64abf246e897f6b04e1c` (guarded #954). **Merge results:** #950 AF-R034 source-link new-tab accessibility `77314a94a7e59501b0925092735f25cb3f3885dc`; #953 AF-N24 synthetic browser unmount regression `ded92c8484f440367d8a790ba54940d03da38543`; #951 AF-N21 post-generation artwork build gate test `e01f03cff49e21a6f7c19e493a60a94e173e0bb6`; #954 AF-R034 reminder source accessible new-tab context `841dbc7831349b242d5b64abf246e897f6b04e1c`. All four had successful seven-job exact-head CI, distinct ready-state plan/promotion/verify, no unresolved review threads and expected-head guarded squash merges.
+
+**Runtime boundary at last independent GET:** `/api/health/version` returned `77314a94a7e59501b0925092735f25cb3f3885dc`, main/production, and `/api/health/ready` ready; Railway #950 website `bef0eef9-bba6-40f2-8fa1-f923ac7c96b0` SUCCESS. Later #953/#951 test-only website deploys SKIPPED. #954 Railway website `ac0ad326-d064-42aa-98e8-d435e1f69c53` was DEPLOYING; no exact #954 public identity verification yet. Do not infer runtime SHA from main, restart, or force a rollout.
+
+**Open bounded code tasks:** #952 authentic low-cost scrypt regression (test only), browser CI `43676188524` failed on unrelated impact-comparison option race, selective browser rerun in progress; retain draft until the whole run is green and the separate ready-state gate passes. New draft #955 `test/af-r071-await-published-compare-options-20261115` test-only head `e35db428aa450ca56fdb8638ce4b96ea9ab03bf8`: both comparison tests poll for two published options for at most 15s before reading; original assertion still fails closed if empty; full selected CI `43686184241` was in progress. No claim of completed testing or merge for #955. Separate finance #684/#845 and Railway IaC #446 remain held; no live payment, recipient delivery, secret, production schema, infrastructure, media publication, branch deletion or donor messaging action.
+
+**Canonical current main ledger:** 149 = 35 Completed + 24 Implemented + 71 Partial + 17 Not started + 1 Superseded + 1 Not applicable. No whole-item reclassification from the four scoped releases. Read-only current GitHub inventory found 979 unique branch names; no ancestry-based deletion decision and no branch deletion. Next: finish #955/#952 exact-head browser and ready-state checks without broadening scope; inspect #954 Railway outcome and fresh public SHA/readiness; merge only qualifying unchanged heads.
+
+---
+
+## 15 November 2026 IST — fourth reconciliation pass: accepted home SEO
+
+**Coordinated repo writer:** CHATGPT_ACTIVE. Latest PR #944 analysis head follows, proposed 35 Completed / 24 Implemented / 70 Partial / 18 Not started / 1 Superseded / 1 N/A = 149; 112 active. Source merged PR #945 guarded SHA `33cb6ff5906832047858b2570ff9c2c361bb19ef` after full CI 43644260354, separate ready-state 43646744273, Railway SUCCESS deployment 5163f1d2-80c3-4dd0-9c8e-fdb20fa315d7 and independent live /api/health/version exact SHA, /api/health/ready ready, original SSR HTML homepage metadata description 155 characters; AF-R072 narrowly Completed. Other Partial scope AF-R043 remains open. Draft #946 AF-R078 is synthetic red-first code candidate, unaccepted/unmerged and not counted. Historic snapshots and 112 per-item blocker/next-step rows remain preserved. Release #944 only after exact-head full checks, distinct ready-state, no review issues, guarded merge.
+
+## 15 November 2026 IST — third reconciliation pass and 113 exact work items
+
+**Active implementation writer CHATGPT_ACTIVE.** Open PR #944 (docs/analysis) proposes 34 Completed / 24 Implemented / 71 Partial / 18 Not started / 1 Superseded / 1 N/A = 149, pending exact-head checks and separate ready-state promotion. All 113 active items have named blocker/next action in dated current CSV and three itemwise execution matrices. AF-R018 HSTS header/source and AF-ATTESTATION synthetic SHA256 draft exist in deployed source, but live domain/CA/rich-results and actual signer/approved report data remain unverified. Do not equate a hash with tamper-evident signing. Separate #942 programme projection safeguard merged at 1a113f474d171054803728f7b728bd7911b5d26a after full gates; #945 home description fix remains separate draft pending acceptance. Other risk holds and one writer preserved.
+
+## 15 November 2026 IST — second-pass issue acceptance and per-ID blockers
+
+**Owner/delegated writer:** CHATGPT_ACTIVE. **PR #944** head is superseded by this new evidence commit; no other writer active. Proposed latest **34 Completed / 24 Implemented / 69 Partial / 20 Not started / 1 Superseded / 1 Not applicable = 149**, with **113 active**. The original November 12 register is preserved. Evidence-backed closure by exact source/tests and last independently verified runtime remains separate from full-field/device/provider acceptance. All 113 remaining original IDs now have a focused missing condition and next executable action in docs/mission-control/2026-11-15-{implemented-acceptance,partial-blockers,not-started-action-plan}.md. Four Not started records (AF-R048/R068/R079/R080) moved Partial only because partial instrumentation/work was already committed; not accepted as full. Narrow closures do not alter financial/tax/consent/provider requirements.
+
+**Concurrent source PRs:** #942 merged after full/ready-state checks at `1a113f474d171054803728f7b728bd7911b5d26a`; #945 AF-R072 description still unaccepted and must not be counted completed before independent live verification. Release #944 only after full exact-head checks, separate ready-state, zero open review issues, expected-head protected merge; docs-only Railway SKIPPED is correct.
+
+## 15 November 2026 IST — 149-item per-ID evidence reconciliation
+
+**Coordinated writer:** CHATGPT_ACTIVE. **Protected main at reconciliation:** `e4076e9b8a9985b6a8fb937ef08891535234c5d1` (#939). **Independently deployed website source:** `b2166d9a0a35f67a8e930cbc7f33f431172bf8f6` (#938), Railway website SUCCESS and public /api/health/version exact and /api/health/ready ready; #939 tests-only correctly Railway SKIPPED. **In-review backlog PR #944:** branch `audit/149-item-evidence-reconciliation-20261115`, first head `248aa5a5455e975bf1571050b838d5775a3f09c0`, updated coordination head follows. Proposed **149=27 Completed+31 Implemented+65 Partial+24 Not started+1 Superseded+1 N/A** with per-item evidence; unchanged 12 November file retained. Exact current snapshot: `docs/mission-control/149-item-status-2026-11-15.csv`, active 120 in companion file, individual evidence notes. The counts remain proposed until #944 full exact-head checks, separate ready-state, review and guarded merge.
+
+**Other independent candidates:** #940 (a11y follow-up new-tab announcement), #941 (linear reviewed-impact slug scan), #942 (malformed programme child media projection) remain separate draft/CI; no unaccepted fix is counted as completed. **Protected holds:** #684 QR, #845 donor eligibility, #446 Railway IaC apply and privacy/tax/provider/physical a11y/field CWV; no production finance/infrastructure change. **Next:** finish #944 evidence gate and protected release, then use 120-row queue to audit remaining Implemented by exact defect and real acceptance. Do not merge #940-#942 without their own protected gates.
+
+## 15 November 2026 IST — session release checkpoint (verified, after previous 15 November notes)
+ 
+**Writer:** CHATGPT_ACTIVE; one coordinated repository implementation writer, with parallel read-only investigations. There is no connected authorized multi-writer coding-agent dispatcher. **Protected source main:** `8960e61efa257ccdf64a579cf7a3bcad1e71a703` (#935). **Public runtime:** `2e1e48bfbe30c511819f73c5dda129b62bea97bc` (#933), branch main, production, live Razorpay mode, independent public version and readiness=ready checks after Railway SUCCESS. The later scripts-only #935 correctly caused website and parked-worker Railway SKIPPED; do not deploy merely to match source SHA.
+
+**Accepted public-code release #933 / AF-R071:** accessible nontransactional /impact/compare loading boundary, existing approved component. RED-first `a03115656ae6384529c1594bfd21f142afc622c7` / hosted `43630516609`; implementation head `d8348c8736104e458c985264d3f37e0cbcdac068`; full exact-head seven-job SUCCESS `43630863369`; distinct ready-state `43633788851` plan/promotion/verify SUCCESS; zero unresolved review threads; guarded squash `2e1e48bfbe30c511819f73c5dda129b62bea97bc`. Railway `a2d09c92-72ed-4ef6-ba3f-58d144944d77` SUCCESS; independent public HTTPS version exact SHA and /api/health/ready ready. Physical accessibility and field Web Vitals not certified.
+
+**Accepted static-security fix #935 / AF-R076:** contact-link audit now detects whitespace/mixed-case javascript: href; existing contact/mailto/donation URLs unchanged. RED-first `02b672dd7a733e1151574066bc4357fa1f98e38b` / `43631966804`; corrected head `9037b4054584fb77af8b169e8ee9c19a7eea8925`; full seven-job exact-head `43632087037` SUCCESS; separate ready-state plan/promotion/verify `43634657409` SUCCESS; zero unresolved review threads; guarded squash `8960e61efa257ccdf64a579cf7a3bcad1e71a703`. Railway website `fa048300-8761-4ad6-83e5-15fe6e77fd06` SKIPPED and worker `c2f50ebb-e9e5-430c-b3ea-440bd1f3ee7f` SKIPPED as expected for scripts-only files. Wider AF-R076 acceptance remains Partial.
+
+**Parked #934 / AF-R071:** draft head `a74bec920d5478498bd6e86b3d98a7783b3304c7`, exact-head workflow `43631461153`: browser FAILURE, verify FAILURE; plan/fast/database/production successful. Browser observed six failed and 1,481 passed: initiative-detail geometry at 390/1440/1920px, public SEO prototype/alias redirects, section headings at 390/768px. The added unknown-slug true HTTP 404 assertion was not listed as failing; do not misattribute it. Do not promote/merge this streaming boundary until behavior is corrected and full fresh gates pass. Preserve the branch and tests.
+
+**Protected holds:** #684 QR fallback requires independently confirmed account/payee/credited-transfer/UTR reconciliation and scoped activation; #845 staging-fixture donor eligibility requires reviewed high-risk payment plan; #446 production Railway IaC requires authenticated read-only effective-state migrate/pull/plan and separately authorized apply before provider deadline 1 December 2026. No live funds, donor communication, production data/schema, cron activation, resource deletion, secret export or public face release performed. Railway inventory: three services, three buckets, zero volumes and staged changes. Prior #932 merged/deployed before this session; do not repeat it.
+
+**Canonical denominator unchanged:** 149 = 12 Completed + 48 Implemented + 63 Partial + 24 Not started + 1 Superseded + 1 N/A. Next executable source work: investigate #934 fallback-induced geometry/navigation timing without weakening HTTP404 or redirect contracts; if still blocked, retain draft and pursue a disjoint P1 item with RED-first evidence. Maintain exact-head + ready-state + guarded merge discipline.
+ 
+
+---
+
+## 15 November 2026 IST — script audit merges and four isolated source candidates
+
+**Coordinated implementation owner:** CHATGPT_ACTIVE under AGENTS.md. One repository writer; independent read-only inspection and hosted CI run concurrently. No connected coding-agent dispatcher with authorized GitHub write isolation is available. **Protected source main:** `3e0cdad7e41221666f21bcfb7cce52737d2c095e`.
+
+**Accepted protected merge #929:** CSS public font-floor static audit now detects sub-12px constant `calc()` limits in any of three or more `min()` operands. Tested head `8273568b31bb5fe6ed09f2518238040551d5ea67`, full exact-head run `43619540426`, separate ready-state `43629049256`, protected squash `3ed3869c824ee4391106a6b8a176bfd06d9aace9`. Railway SKIPPED; no website CSS or runtime change.
+
+**Accepted protected merge #931:** AF-R047 route-build bundle report rejects non-string page and inherited-layout manifest entries rather than silently undercounting. RED test-only `0ec6628ecd6eb5133abb5acef35a9f901910743e` CI `43629635113`; GREEN `4d01ea739416bbda7cdc0336bd4c8eb6260d0fe9` full seven-job `43629884577`, distinct ready-state `43632144163`, guarded squash `3e0cdad7e41221666f21bcfb7cce52737d2c095e`. Railway SKIPPED, correct for scripts-only changes. No field Web Vitals certification.
+
+**Four independently implemented, not merged or deployed at checkpoint (all have confirmed RED-first source regressions; browser/final verification pending):**
+- #932 Faith visible-media selected-ID runtime validation. RED `4a2d26ab956efdf2fcc1d3227ddd148310664c5f` fast CI `43629817056`; corrected `c74fedf80a1b8e16feb396f56b254518d51b1c30`; `43630235535` fast/database/production SUCCESS, browser still in progress.
+- #933 AF-R071 comparison dynamic loading fallback. RED `a03115656ae6384529c1594bfd21f142afc622c7` `43630516609`; corrected `d8348c8736104e458c985264d3f37e0cbcdac068`; `43630863369` fast/database/production SUCCESS, browser in progress.
+- #934 AF-R071 story, programme, Faith detail loading fallbacks. RED `9d706ce98806ef41bf3c473550258a01b075c530` `43631203382`; corrected `263b7d87935477ee99a120cbbe73377b2ef4684e`; `43631461153` fast/database/production SUCCESS, first browser attempt cancelled, one browser-job retry submitted and in progress. A cancelled gate is not a pass.
+- #935 AF-R076 static contact-link scanner detects leading-whitespace mixed-case JavaScript protocol. RED `02b672dd7a733e1151574066bc4357fa1f98e38b` `43631966804`; corrected `9037b4054584fb77af8b169e8ee9c19a7eea8925`; `43632087037` fast/database/production SUCCESS, browser in progress. Real mailto links remain unchanged. AF-R076 full original broken-link acceptance still Partial.
+
+**Runtime is a distinct boundary:** latest independently verified public website deployment remains `cc2c7837073dde5d6244681496ab7176b9d1f9e9` (Railway SUCCESS `8f57a956-794c-4511-8367-b3bcfd4f070b`, version and readiness previously independently checked). #929/#931 are scripts-only; do not force rollout to equal main SHA. Later source PRs remain non-live until guarded merges/deployments and independent HTTPS SHA verification.
+
+**Risk holds unchanged:** #684 official UPI destination verification/reconciliation and scoped activation; #845 donor eligibility scoped finance decision; #446 Railway IaC effective-state plan and distinct consequential apply authority; no secrets, live payments, schema, provider notification, public face release or branch deletion. **149 original IDs unchanged:** 12 Completed, 48 Implemented, 63 Partial, 24 Not started, 1 Superseded, 1 N/A. Small source fixes do not close whole-item acceptance. **Next:** while CI runs, independent read-only discovery; promote each green PR separately, verify distinct ready-state, guarded expected-head merge, then Railway and public SHA/readiness. Preserve older chronology below.
+
+---
+
+## 14 November 2026 IST — four protected public-code merges, current runtime verified
+
+**Implementation owner:** CHATGPT_ACTIVE, sole coordinated writer under AGENTS.md. Read-only investigation and hosted CI run concurrently. No connected autonomous coding-agent dispatcher can launch independent repository writers. **Protected code main at checkpoint:** `cc2c7837073dde5d6244681496ab7176b9d1f9e9`.
+
+**Four accepted atomic merges (each with completed fail-first regression, full exact-head seven-job CI, separate ready-state and zero unresolved review threads):**
+- #925 story index identity filter before pagination / second DB query: corrected head `6a3f7c0c2f08069c64f5e6aed5a277d9adb98107`; full `43616605925`; ready `43619452459`; guarded merge `3a1bf4641162db4256bcedc93d5bcc0ff2908a84`.
+- #927 reviewed Faith formats restricted to ARTICLE/REMINDER/VIDEO without changing religious review: corrected `e7c5fab9bc5fed8e227e71237c373c5534edcc1e`; full `43617957546`; ready `43620373177`; merge `dd03b9d6508f8b57dea3fb39e371d900ad9b0dbe`.
+- #928 malformed top-level homepage appeal query fails closed, original public and domestic-donation eligibility unchanged: corrected `a77954de48ac2701edc4ecbead764a5fa5907855`; full `43618537459`; ready `43620841639`; merge `f7c1c51a49eab8fe46eecaf5c45b43ef5f3dafe2`.
+- #926 published story cause/initiative and nested-cause render guards: corrected `6a290e19dac7f36d5e6450037d476a3aa1dba03a`; full `43618076001`; ready `43620903709`; merge `cc2c7837073dde5d6244681496ab7176b9d1f9e9`.
+
+**Exact production identity:** Railway website deployment `8f57a956-794c-4511-8367-b3bcfd4f070b` SUCCESS on merge `cc2c7837073dde5d6244681496ab7176b9d1f9e9`; independent public HTTPS /api/health/version returned this exact SHA on main/production and /api/health/ready returned ready. Also checked public home, stories and Faith URLs through read-only fetch without errors. Source identity and basic readiness LIVE_VERIFIED, not field Web Vitals or physical accessibility acceptance.
+
+**Release incident, not concealed:** intermediate #927 Railway deployment `4089aff9-9604-4386-8b12-16049272d957` FAILED at pre-deploy: Prisma `P1002` timeout acquiring PostgreSQL migration advisory lock `72707369` on five retries. Subsequent #928 deployment succeeded on retry attempt two, reporting 18 migrations and **no pending migrations**. The latest #926 deploy succeeded. No migration bypass, live DB intervention, manual redeploy, secret or infrastructure mutation was made. Concurrent deploy contention is plausible but not independently proven as the root cause.
+
+**Independent source candidate not yet merged:** draft #929 `fix/a11y-font-floor-min-multiple-arguments-20261114`, tested head `8273568b31bb5fe6ed09f2518238040551d5ea67`. Test-only `ea16c8f9c669fcc97393e1868d53ec72071e9eb5` failed in `43619362214`; corrected `43619540426` fast/database/production successful; browser/final verify pending at checkpoint. It tightens the static CSS 12px floor audit for min() with multiple calc operands, no runtime UI change. Required distinct ready-state after full CI.
+
+**Held:** #684 UPI source finance verification / approved activation and #845 donor eligibility high-risk plan; #446 Railway IaC effective-state read-only plan / scoped apply remains a P0 operational dependency. Runtime inventory: three live services, three live buckets, zero volumes or staged changes; do not disclose secrets. No live payments/refunds, donor outreach, media identity release, schema migration, cron, branch pruning or destructive cleanup.
+
+**149-item ledger preserved:** 12 Completed, 48 Implemented, 63 Partial, 24 Not started, 1 Superseded, 1 N/A. Narrow source fixes do not certify full backlog items. Next: finish #929 gates and protected merge if green, separately inspect Railway outcome and public readiness; pursue independently measured P1 source work, keep remaining gate-bound scopes isolated. Historical notes preserved below.
+
+---
+
+## 14 November 2026 IST — two protected application merges, independent public verification pending latest runtime
+
+**Writer:** CHATGPT_ACTIVE, sole coordinated implementation writer under AGENTS.md; one implementation writer, concurrent read-only review and hosted CI. **Protected source main at checkpoint:** `a89df617e2babeffdd6f1b3e1d4c29c7c63c7262`. No authenticated autonomous repository coding agent dispatcher is connected.
+
+**#922 accepted impact figure accessibility:** test-only head `ffd5c05bd5707c39306e58c2dabec79ff59d6b12`, negative fast test `43612119738` asserted 1.08 below >=1.14. Corrected head `5b79025f4120d0993d57dd75ff9ab9163f2ba1ab`, full seven-job exact-head `43612375511` SUCCESS, separate ready-state `43615259173` SUCCESS, no unresolved threads; expected-head protected squash `eeb77b2e418117b266e53b6d811ef33f4e531c09`. Only `src/app/impact/impact-refinement.module.css` metric strong line-height 1.08→1.16, plus test. Railway website deployment `13e2da20-2947-4e2f-b686-9d44b554c36b` SUCCESS at exact code SHA; independently fetched public /api/health/version `eeb77b2e418117b266e53b6d811ef33f4e531c09` and /api/health/ready `ready`. This is LIVE_VERIFIED for source identity/basic readiness, not physical accessibility FULLY_ACCEPTED.
+
+**#921 accepted invalid persisted carousel public fallback:** test-only head `3be04aa1fcc62148659af4a9d28157d7ee264dea`, negative fast test `43611901115` failed with expected `HomeCarouselValidationError` from malformed synthetic stored config. Corrected head `3ef1ee2e4995dc4b2ff4ef3c6ce76e551bea3cc0`, full exact-head `43613318881` SUCCESS, separate ready-state `43615373468` SUCCESS, no unresolved threads; expected-head protected squash `a89df617e2babeffdd6f1b3e1d4c29c7c63c7262`. Public read catches ONLY `HomeCarouselValidationError`, uses cloned canonical fallback and retains stored revision; unrelated DB errors propagate. This **does not** change database contents or allow the protected admin editor to fix corrupt saved rows. Any persisted-row repair needs separately reviewed recovery scope. Railway website deployment `b2278c92-6ffc-466f-88d0-ecf8a917a660` subsequently reached SUCCESS at exact SHA `a89df617e2babeffdd6f1b3e1d4c29c7c63c7262`. Independent public HTTPS /api/health/version reported exact SHA, main, production, and /api/health/ready returned `ready`. This confirms basic runtime identity/readiness, not repair of persisted carousel data.
+
+**Risk and accounting:** Finance PR #684 payee/UTR verification and approved activation still blocked; #845 donation eligibility high-risk change still blocked; #446 Railway IaC migration needs authenticated exact-target read-only plan and separate apply authority. No live transactions, donor contact, secret/schema/CSP/RBAC changes, media release or destructive branch cleanup. Canonical 149 unique items and latest ledger classifications unchanged: 12 Completed / 48 Implemented / 63 Partial / 24 Not started / 1 Superseded / 1 N/A. AF-R025 still Partial pending wider physical a11y/zoom evidence.
+
+**Next:** Continue next distinct unblocked P1 source task; investigate any real stored carousel corruption only through a separately reviewed operator recovery plan. Preserve historical records below.
+
+---
+
+## 14 November 2026 IST — #919 merged and publicly verified; two independent RED/GREEN candidates
+
+**Implementation owner:** CHATGPT_ACTIVE, sole coordinated repository writer under AGENTS.md. No connected authenticated autonomous repository coding-agent dispatcher; GitHub investigations and hosted CI run concurrently but code branches are written in one coordinated stream. **Protected code main:** `879028173c074e84615b3b68da5e85b2e430bb4f` at this checkpoint.
+
+**#919 AF-R025 appeal funding amount line-height accepted:** test-only `bf5d64bd7238b62a0847df3fb8685208ce6e9a9c`, hosted RED `43609762795` assertion 1.08 < 1.14; tested GREEN head `7b4fb8685c0435bb68a2b596e7a38f058ddca9eb`, full exact-head seven-job CI `43610066733` SUCCESS, distinct ready-state `43612040151` SUCCESS, zero unresolved threads, SHA-guarded squash `879028173c074e84615b3b68da5e85b2e430bb4f`. CSS only line-height 1.08→1.16 for the large INR funding amount; no amount, donation eligibility, private data or checkout behavior changed. Railway website deployment `347917a7-8c64-4b8f-880d-be80f49abfa0` SUCCESS. Independent public HTTPS /api/health/version returned exact `879028173c074e84615b3b68da5e85b2e430bb4f`, `main`, `production`; /api/health/ready returned `ready`. Thus MERGED/DEPLOYED/LIVE_VERIFIED for basic identity and readiness, not globally FULLY_ACCEPTED accessibility.
+
+**#921 independent unmerged public-homepage stored-config safety:** draft `fix/home-carousel-invalid-stored-config-fallback-20261114`; hosted test-only head `3be04aa1fcc62148659af4a9d28157d7ee264dea`, RED CI `43611901115` fast job `132498607849` failed on invalid stored config; current corrected head `3ef1ee2e4995dc4b2ff4ef3c6ce76e551bea3cc0`. Only catch `HomeCarouselValidationError` in public getter, clone canonical fallback and preserve stored revision, allow unexpected/database failures to surface. **No persisted-row repair:** existing authorized editor save action separately validates the stored row and still rejects corruption; operator recovery requires scoped plan. Earlier corrected head `15b604b6` had fast/db/production success but was superseded by comment-only scope clarification; current full exact-head CI `43613318881` fast/db/production successful, browser/final pending at checkpoint. Do not promote/merge early.
+
+**#922 independent unmerged impact metric typography:** draft `fix/af-r025-impact-metric-leading-20261114`; hosted test-only `ffd5c05bd5707c39306e58c2dabec79ff59d6b12`, RED `43612119738` fast job `132499298011` assertion 1.08 < 1.14. Corrected source head `5b79025f4120d0993d57dd75ff9ab9163f2ba1ab` changes only .v2-impact-tile-copy strong line-height 1.08→1.16, synthetic source regression; full `43612375511` fast/db/production successful, browser/final pending. No impact metrics, images, public claims or financial code changed. AF-R025 remains Partial.
+
+**Protected holds:** PR #684 UPI fallback payee/UTR/finance activation, #845 payment eligibility high-risk source activation, #446 Railway IaC read-only import/plan then separately approved apply. No live payment/refund, donor contact, notification activation, secret rotation, schema migration, identity/media release or destructive branch pruning. Original canonical 149 ID classification remains 12 Completed / 48 Implemented / 63 Partial / 24 Not started / 1 Superseded / 1 N/A.
+
+**Next:** complete #921/#922 exact-head browser/verify, independent scoped review, separate ready-state CI and protected expected-head merges; inspect each Railway outcome and independently verify final public SHA and readiness. If a browser gate stalls/fails, leave that PR draft and continue only disjoint safe work. Preserve all earlier notes below.
+
+---
+
+## 14 November 2026 IST — homepage array boundary merged; appeal amount accessibility RED/GREEN candidate
+
+**One implementation writer:** CHATGPT_ACTIVE. **Protected main:** `e1d0e9cb88e299f572197dca890fa0835f128c7f` after #917, not an archived integration branch. Independent read-only investigations and hosted CI may overlap; no autonomous repository coding-agent dispatcher is connected.
+
+**#917 completed protected source merge:** Test-only `7845fda2c4be0698a1147e8ec29f635d2c5da192` hosted RED was re-run as `43607751387` attempt 2, fast job `132494680119`: exact TypeError `featuredInitiatives is not iterable` in synthetic public homepage query-array regression. GREEN head `c6be3568c501616f008b2715a01699b52302a1ab`, full seven-job exact-head `43607941362` SUCCESS, separate ready-state `43610846302` SUCCESS, zero unresolved review threads; SHA-guarded squash merge `e1d0e9cb88e299f572197dca890fa0835f128c7f`. Only malformed top-level homepage projection arrays are normalized, no relaxation of published/privacy SQL gates.
+
+**#919 isolated unmerged source candidate:** `fix/af-r025-appeal-funding-metric-leading-20261114`, test-only head `bf5d64bd7238b62a0847df3fb8685208ce6e9a9c`, RED CI `43609762795` fast job `132492058484` failed exactly on 1.08 vs required >=1.14; correction head `7b4fb8685c0435bb68a2b596e7a38f058ddca9eb` changes only appeal metric line-height to 1.16. GREEN `43610066733` fast/database/production succeeded, browser/final verify pending at checkpoint. No payment logic, figures or donation destinations altered. Require complete exact-head CI, review, separate ready-state promotion and guarded merge; original AF-R025 remains Partial.
+
+**Railway/source distinction:** earlier successful website runtime SHA `f1da173534a613eb3fa8b790b8a97c3608f664bb` deployment `09a4d7fc-c947-4aea-87fe-dfa9d1058caf`; #917 deployment `eade9243-5e11-4498-aa34-4e483d41fcb4` was BUILDING when checked. Independent public HTTP health/version remains UNVERIFIED. A later read-only Railway state can supersede this checkpoint. 24-hour read-only HTTP observation: 5,578 requests, 0 5xx, 4,175 4xx; this is not field CWV or attacker attribution.
+
+**Protected holds:** #684 UPI QR source/finance activation, #845 donation eligibility, #446 Railway IaC plan/apply; no real funds, donor messages, medical/media disclosures, schema, secrets, cron or destructive branch actions. Canonical 149 unique IDs unchanged; last verified classifications 12 Completed, 48 Implemented, 63 Partial, 24 Not started, 1 Superseded, 1 N/A.
+
+**Next executable action:** finish #919 exact-head browser/final result, independent review, distinct ready-state and SHA-guarded merge if green; inspect exact Railway deploy SHA/public readiness. Otherwise park that release and continue independent source work. Preserve historical checkpoint text beneath this note.
+
+---
+
+## 14 November 2026 IST — three protected public-code merges; new isolated homepage contract candidate
+
+**Writer:** CHATGPT_ACTIVE, one coordinated implementation writer. No autonomous coding-agent dispatcher is connected. Protected main at this checkpoint: `f1da173534a613eb3fa8b790b8a97c3608f664bb`. Routine implementation authority applies; high-risk finance/schema/auth and consequential infrastructure actions remain separately gated.
+
+**Accepted exact-head merges:**
+- #914 private assistance/acknowledgement heading leading, tested head `f370994508729f4e118c31ed7eece6fac4b4131a`; full CI `43601870792`, separate ready-state `43605013157` successful; SHA-guarded squash `b1704ddac155c79d4e309776758c31fd6d9e0e56`.
+- #915 homepage reviewed programme artwork malformed relation guard, tested head `6f8c79374f31b4ef9aa5dd2f7f96e1884280e11a`; full `43602093134`, separate ready-state `43605030966` successful; guarded squash `ea0d5470d080f8d4898da421c3d0ac3d760ea832`.
+- #911 published completed-support showcase malformed record guard, tested head `0b31d300e55169abc5c1b5e439e74bd35dfa2dbf`; full `43602517724`, separate ready-state `43605126741` successful; guarded squash `f1da173534a613eb3fa8b790b8a97c3608f664bb`.
+- Railway website deployment `09a4d7fc-c947-4aea-87fe-dfa9d1058caf` SUCCESS for exact final code merge SHA `f1da173534a613eb3fa8b790b8a97c3608f664bb`. Independent public GET of /api/health/version and /api/health/ready remains UNVERIFIED through available web reader. No forced redeploy.
+
+**New isolated source candidate:** draft #917 `fix/home-discovery-array-contract-20261114`, RED-first test commit `7845fda2c4be0698a1147e8ec29f635d2c5da192`, correction commit `c6be3568c501616f008b2715a01699b52302a1ab`. The first test-only CI run was cancelled on superseding commit; baseline null-spread TypeError was separately reproduced in Node, not represented as a passing completed hosted RED. Corrected-head CI `43607941362`: fast/database/production succeeded; browser and final verify pending at this checkpoint. Validate full exact-head evidence, independent review, distinct ready-state CI before protected SHA-guarded merge. Scope changes only top-level homepage discovery array normalization and synthetic tests.
+
+**Holds preserved:** draft #684 UPI fallback lacks independently verified payee/UTR and separately approved finance activation; #845 changes donation eligibility and requires scoped high-risk authorization. No donor communication, live payment/refund, schema, secret, auth/CSP, media release, cron, branch deletion or infrastructure apply. Master 149 unique-item denominator unchanged; previous verified classification overlay 12 Completed, 48 Implemented, 63 Partial, 24 Not started, 1 Superseded, 1 N/A. None of these narrow fixes closes an entire item.
+
+**Next:** complete #917 exact-head browser/verify; obtain genuine failing regression evidence or record its bounded limitation; review and promote only after all gates; independently verify final Railway/public identity. Continue disjoint P1 source work without duplicate PRs or concurrent repository writers.
+
+---
+
+## 14 November 2026 IST — one protected code merge; non-force PR conflict reconciliation; independent accessibility candidate
+
+**Implementation ownership:** CHATGPT_ACTIVE, sole coordinated repository writer under AGENTS.md. Read-only research and hosted CI can run concurrently. No connected autonomous repository coding-agent dispatcher exists. **Protected main at checkpoint:** `0200f3e7e48348b92b161503e45c16d89228f8e3`.
+
+**Production-code release accepted:** #912 (Our Work public portfolio cause/initiative runtime projection safety), tested head `a353e2d9e1af7f71569f61d732a71a6e9d1ae3c9`, full exact-head CI `43599917688` SUCCESS, separate ready-state CI `43602042730` SUCCESS, review threads clear, protected squash merge `0200f3e7e48348b92b161503e45c16d89228f8e3`. Railway website deployment `838ae7c4-b457-4522-bc46-836b419a95d6` reports SUCCESS at matching SHA, environment online 1/1 replicas with no reported warnings or critical issues. Independent public GET `/api/health/version` and `/api/health/ready` remains UNVERIFIED (web reader inaccessible). No forced rollout.
+
+**Independent code PRs not merged or deployed:**
+- #911 `fix/appeals-completed-showcase-records-20261114`: first head `98ec7f4f6ddfd88447b5807866a54f7d9563ca70` passed full `43599818528` but was **not mergeable** after #912 because they touched the same files. Resolved **without force-push** via a true merge commit retaining both original PR head and current main as parents. Exact updated head `0b31d300e55169abc5c1b5e439e74bd35dfa2dbf`, full CI `43602517724`: plan/fast/database/production success; browser in progress. Combined source and regressions preserve both #911 and accepted #912. Recheck exact-head CI and distinct ready-state run before protected merge.
+- #914 `fix/af-r025-private-status-heading-leading-20261114`, head `f370994508729f4e118c31ed7eece6fac4b4131a`, full CI `43601870792`: plan/fast/database/production success; browser in progress. Changes only private state and acknowledgement heading line-height to 1.16 with synthetic 390/1280px and 200% text scaling browser assertions. No payment/private tracking behavior change. No ready-state promotion yet.
+
+**Continued holds:** #684 official UPI QR fallback (provider payee and UTR proof) and #845 staging donation eligibility (approved reviewed high-risk plan) not merged. No live payment, refund, donor communication, media publication, secret, schema or infrastructure changes. Canonical 149 IDs unchanged: 12 Completed, 48 Implemented, 63 Partial, 24 Not started, 1 Superseded, 1 N/A; AF-R025 remains Partial.
+
+**Next safe release:** for each PR, verify exact-head seven required CI jobs and zero unresolved review threads, promote to ready, verify distinct ready-state workflow and protected SHA-guarded squash merge; separately inspect Railway and public readiness. Keep any unfinished candidate isolated. This docs-only checkpoint does not warrant a website deployment.
+
+---
+
+## 14 November 2026 IST — three accepted public-site releases, two independent draft fixes
+
+**Writer:** CHATGPT_ACTIVE, only one coordinated implementation writer as required by AGENTS.md. Independent task branches and hosted CI can overlap. No connected autonomous repository coding-agent dispatcher. **Protected main at this checkpoint:** `5eda0912dc268f7e6fa8a89bb8c8842a8f88bd7e`.
+
+**Accepted source merges (full exact-head 7/7, distinct ready-for-review CI SUCCESS, zero unresolved reviews, SHA-guarded squash):**
+- #907 AF-R025 404 display heading leading, source head `27d9a74c264a74cdb9c6057237ceb0a9cec4ce66`, full `43594172260`, ready `43599419728`, merge `331a711d89b0a6bcd9464ca11a1b1766c83edee4`.
+- #908 homepage published discovery malformed record guard, head `43141d8aa2654a8443d7e90e725fde25c5c3d55b`, full `43594550416`, ready `43599427795`, merge `bd913ccd9d14f731fc7ecd42f303328720238d04`.
+- #909 AF-R019 Privacy matrix small label AA contrast, **corrected** head `8388cd7529e634b4e6085a11aa3dc533523777d1`, full `43595222863`, ready `43599432381`, merge `5eda0912dc268f7e6fa8a89bb8c8842a8f88bd7e`.
+
+**Runtime separately verified:** Railway website SHA `5eda0912dc268f7e6fa8a89bb8c8842a8f88bd7e` SUCCESS, deployment `2e3b32ed-597b-43cb-bcbd-66a5fb74f50e`; 1/1 replicas online and zero reported warnings or critical issues. Independent public GET `/api/health/version` and `/api/health/ready` remains **UNVERIFIED**: available web reader reports inaccessible, and local container DNS cannot resolve site. Do not claim LIVE_VERIFIED.
+
+**Independent new draft production candidates, NOT MERGED/DEPLOYED:**
+- #911 completed medical-support showcase projection fail-closed, head `98ec7f4f6ddfd88447b5807866a54f7d9563ca70`, full `43599818528`, fast/database/production success; browser in progress on responsive/a11y/journeys. Preserves reviewed-media and published initiative/cause query.
+- #912 Our Work portfolio causes/initiative projection fail-closed, head `a353e2d9e1af7f71569f61d732a71a6e9d1ae3c9`, full `43599917688`, fast/database/production success; browser in progress. Preserves nested published initiative query and approved image filter. #911/#912 modify disjoint sections of the same getter and test file; recheck mergeability against updated main, never force merge.
+
+**Finance and legal holds unchanged:** #684 official UPI fallback and #845 staging donation eligibility require separately scoped authorization; no payment, provider, checkout, auth, secrets, schema, medical disclosure, media approval or live donor action was activated. Original canonical 149 classes unchanged (12 Completed, 48 Implemented, 63 Partial, 24 Not started, 1 Superseded, 1 N/A). A narrow AF-R019/AF-R025 change does not close full items.
+
+**Next executable:** Check exact tested heads and all seven full CI jobs; promote each after success, verify its independent ready-state run, complete review and protected merge with expected_head_sha; inspect Railway SHA/status and public HTTP identity independently. Other blocked tasks remain isolated.
+
+---
+
+## 14 November 2026 IST — four accepted protected merges; three isolated new code branches
+
+**Active owner:** CHATGPT_ACTIVE, one coordinated GitHub implementation writer as required by AGENTS.md; no connected autonomous GitHub coding-agent dispatcher. Parallel task branches/CI remain separate. **Protected main checkpoint:** `608a2d216278341c4c85fa03f6712bf63f15ef2e`.
+
+**Full exact-head + distinct ready-state CI SUCCESS, SHA-guarded squash merges:**
+- #902 Faith public review predicate, head `275c6558a3b93b63794d89d235f921e26df834ff`; full `43561957064`, ready `43593693325`, merge `12ee5df6f563c86b48cd700263cc6b2cc763852a`.
+- #903 global-error multiline heading, head `2c6b04294b6e15d81d2979f1025153acf9bcc829`; full `43562231177`, ready `43593699502`, merge `72eeee9cbbf3589116f5de2dcd2ea7691a44ab46`.
+- #904 Faith public index topic projection, head `8caa4442337f2785dc388042ab0fca8e1c33ecc5`; full `43562491331`, ready `43593709252`, merge `8ee23ef9a83482379536a0154e775ee479a7cd4d`.
+- #905 route-error multiline heading, head `f947999172588f38e652f9df3c216dc453da1166`; full `43562992011`, ready `43593717173`, merge `608a2d216278341c4c85fa03f6712bf63f15ef2e`.
+
+**Website runtime:** Railway website SUCCESS at SHA `608a2d216278341c4c85fa03f6712bf63f15ef2e`, deployment `f8295b54-c35a-4611-942a-322c88248494`, online 1/1 replicas. Independent public HTTP version/readiness not established. Do not equate an intentionally skipped docs-only rollout with a code failure.
+
+**Independent draft code PRs, NOT merged or deployed at checkpoint:**
+- #907 AF-R025 not-found 404 leading, head `27d9a74c264a74cdb9c6057237ceb0a9cec4ce66`, full `43594172260`: fast/production/database success; browser unfinished.
+- #908 homepage public metadata projection validation, head `43141d8aa2654a8443d7e90e725fde25c5c3d55b`, full `43594550416`: fast/production/database success; browser unfinished.
+- #909 AF-R019 Privacy category small-text contrast, **corrected head** `8388cd7529e634b4e6085a11aa3dc533523777d1`, full `43595222863`: fast success; database/production/browser unfinished. Superseded initial branch head has no release authority.
+
+**Held finance PRs:** #684 reviewed UPI fallback and #845 staging donation eligibility remain unmerged pending separate scoped approval. No live donor communication, payments, secrets, schema or provider activation. Original 149 ledger remains 12 Completed, 48 Implemented, 63 Partial, 24 Not started, 1 Superseded, 1 N/A; AF-R019 and AF-R025 remain Partial.
+
+**Next release:** exact-head full CI, review, ready-state separate CI, SHA-guarded merge per candidate; verify Railway SHA and public HTTP independently when accessible. For anything blocked, advance independent authorized tasks rather than waiving browser or security checks.
+
+---
+
+## 14 November 2026 IST — protected merges #899/#898/#900, four isolated code candidates
+
+**Single coordinated writer:** CHATGPT_ACTIVE under `AGENTS.md`; independent task branches and GitHub CI run concurrently, but no autonomous repository coding sub-agent dispatcher is connected. **Protected main at this checkpoint:** `83941ec33e10cb802defbfe7150c7305907617f0`.
+
+**Three production-code changes completed after full exact-head CI, separate ready-state CI and SHA-guarded protected squash:**
+- #899 public published-outcome metric render guard, head `c1d8e98d2fc07fc62ba795de5030937cbdc99a7b`, full `43560468146`, ready `43562362889`, merge `c3d2802487ea4954cba99b2eb7d0f639b1cbf0f0`. Published initiative/cause SQL and downstream finance behavior preserved.
+- #898 second-read Stories card public metadata guard, head `5a3abfe1c6728ec68f00023de4a01bfff5134410`, full `43560238560`, ready `43562608691`, merge `62b08b3cb604808a766d0b2a6b468291a3a90ca8`. Stories publication/identity privacy gates retained.
+- #900 Faith visible-media second-read guard, head `7263827d03e5789608427ddf32f3aea1b0cb1cb6`, full `43560684518`, ready `43563130769`, merge `83941ec33e10cb802defbfe7150c7305907617f0`. Published, religious-verification, cited-source and media privacy gates retained.
+
+**Next four independent code candidates, implemented but DRAFT/NOT MERGED:**
+- #902 public Faith review predicate rejects malformed projections, head `275c6558a3b93b63794d89d235f921e26df834ff`, full CI `43561957064`, browser pending after fast/database/production success.
+- #903 AF-R025 global-error multiline heading leading, head `2c6b04294b6e15d81d2979f1025153acf9bcc829`, full CI `43562231177`, browser pending after fast/database/production success.
+- #904 reviewed Faith index taxonomy projection guard, head `8caa4442337f2785dc388042ab0fca8e1c33ecc5`, full CI `43562491331`, browser pending after fast/database/production success.
+- #905 AF-R025 route-error headline leading, head `f947999172588f38e652f9df3c216dc453da1166`, full CI `43562992011`, browser and production pending.
+
+**Railway at this checkpoint:** website SHA `62b08b3cb604808a766d0b2a6b468291a3a90ca8` at deployment `3935a4ff-22fd-43e1-a89a-0cebf4495098` reported SUCCESS, online 1/1. New #900 deployment `05331db8-b243-427f-b6be-484d1e4954e0` was BUILDING. Distinguish source merge from production deployment and external HTTP live readiness (UNVERIFIED). Do not force deployment.
+
+**Release next:** recheck exact heads and no unresolved review threads, promote each only after full success, verify distinct ready-state CI, merge with expected_head_sha. #904 touches existing `public-discovery-data.ts` and `faith-discovery-data.test.ts` after #900; #903/#905 touch distinct lines of `e2e/all-page-audit.spec.mjs`. Recheck mergeability against current main after every merge; do not force update.
+
+**Held separately:** #684 official UPI fallback and #845 staging donation-eligibility; no high-risk financial activation. Canonical original 149 classes unchanged: 12 Completed, 48 Implemented, 63 Partial, 24 Not started, 1 Superseded, 1 N/A. No new public claims, donor communication, schema, secret or live infrastructure changes.
+
+---
+
+## 14 November 2026 IST — three isolated code candidates awaiting browser acceptance
+
+**Writer remains CHATGPT_ACTIVE**, single coordinated implementation writer under AGENTS.md. Main baseline `2d4e161752e5bd809a960c3ffe368d8125e8a2f9`; Railway's last confirmed website SUCCESS was source `484eeed931b8a221389658c2f1d9ea416474dbb1` (#894), with docs-only #897 SKIPPED. No autonomous repository coding agent dispatcher is exposed by connected tools.
+
+**Implemented, draft, NOT merged or deployed:**
+- **#898** Stories second public read projection safety; head `5a3abfe1c6728ec68f00023de4a01bfff5134410`, full CI run `43560238560`. Synthetic null Prisma record threw before fix; code now checks canonical identity, title, summary and media array. SQL story status/privacy gate retained.
+- **#899** Public published-outcome metric projection safety; head `c1d8e98d2fc07fc62ba795de5030937cbdc99a7b`, full CI run `43560468146`. Rejects malformed slug/title/metric/label before slicing three published programme outcomes; source SQL publication and cause gates retained, no payment/checkout behavior.
+- **#900** Faith media second-read shape safety; head `7263827d03e5789608427ddf32f3aea1b0cb1cb6`, full CI run `43560684518`. Rejects malformed IDs/media/citation records before the existing religion-verification predicate; no relaxation of PUBLISHED, VERIFIED, citation/date or image privacy controls.
+
+**Verification checkpoint:** all three heads have fast, production and database jobs SUCCESS; all three browser jobs still IN_PROGRESS (responsive, accessibility and journey acceptance), with final verify pending. Drafts stay parked rather than treating pending acceptance as a pass. No unresolved PR review threads at last review. #898 and #900 modify separate sections of `src/lib/public-discovery-data.ts`; recheck mergeability against updated main after the first merge.
+
+**Existing finance holds:** #684 official UPI QR fallback and #845 synthetic staging donation eligibility remain separately gated; no activation, no donor communication, no financial migration. Canonical 149-item classes unchanged (12 Completed, 48 Implemented, 63 Partial, 24 Not started, 1 Superseded, 1 N/A).
+
+**Next safe executable release:** check all seven exact-head CI jobs, independent code review, promote each individually only after green, verify separate ready-state runs, expected-head-SHA guarded merges; then inspect Railway SHA and independent public HTTP health/readiness if accessible. If CI remains incomplete, continue unrelated authorized work. No forced deployment to equalize source/runtime.
+
+---
+
+## 14 November 2026 IST — release checkpoint after three independent protected merges
+
+**Active writer:** CHATGPT_ACTIVE, one coordinated GitHub implementation writer. Independent source/CI branches are permitted; no autonomous code-agent dispatch capability exists in the current connected toolset. **Protected main:** `484eeed931b8a221389658c2f1d9ea416474dbb1`.
+
+**Merged after full exact-head CI and distinct ready-state verification:**
+- #895 AF-R012 admin static-audit shadowed guards, tested `c2e0749fae44b6e99d91f491e6d3b6177a044b73`, full `43555217486`, ready `43559142491`, merged `b2d472337ac44cc73c5d4974a7c7c6dd3f2ab515`. Audit test code only, no production auth/RBAC change.
+- #896 AF-R024 CSS additive calc font-floor audit, tested `09912dc3bbc70480a050b6acd4311a0750c163a7`, full `43555533583`, ready `43559147019`, merged `aaae17b5fd6789032806a7e7d87d28d8702b9f80`. Audit scripts only, no production stylesheet change.
+- #894 Impact witness-media malformed projection guard, tested `74b631336ac0f3c5c7b507c7a455adb7b2cdec04`, full `43554213885`, ready `43559134683`, merged `484eeed931b8a221389658c2f1d9ea416474dbb1`. Existing media-publication/privacy gate retained.
+
+**Railway at checkpoint:** #895/#896 website deployments SKIPPED as scripts-only. #894 website deployment `0f7114ba-3aab-4610-9de6-dd3e7c311457` at `484eeed931b8a221389658c2f1d9ea416474dbb1` was BUILDING when checked; last SUCCESS was #893 at `1eb5543353b1359b2dce98f8afaad0a054ca8dcc`. This does NOT establish live public HTTP identity or readiness.
+
+**Outstanding GitHub drafts:** #684 verified official UPI QR and #845 synthetic staging donation eligibility, held by payment/provider and exact scoped plan conditions. Do not activate high-risk financial behavior. No other open PRs at checkpoint. Canonical 149 classifications unchanged (12 completed, 48 implemented, 63 partial, 24 not started, 1 superseded, 1 N/A).
+
+**Next executable work:** verify #894 Railway deployment SHA; seek independent public HTTP version/readiness where accessible. Continue separately scoped unblocked engineering work; preserve one-writer ownership and required exact-head release checks. Rollback: revert individual code merge, no protected branch rewrite.
+
+---
+
+## 14 November 2026 IST — owner-directed repository takeover and independent release streams
+
+Owner explicitly delegated implementation ownership to this ChatGPT session. Source base `1d4f187d753ae52076c6aa05ac8a28d72c253a17` after #889 and #890 protected merges; Railway latest website SUCCESS at that merge SHA, but independent public HTTP not yet verified. This records a single coordinated repository writer, not independent competing GitHub writers. Existing task branches #886 (Stories identity) and #888 (Impact rendering boundary) contain new test-first fixes pending full current-head CI and protected release. Financial #684 and staging #845 remain held. Current 149 classification total stays unchanged. Rollback: revert each narrow merge independently, not protected-main history.
+
+---
+
+## 14 November 2026 IST — portfolio release and three new RED-first branches
+
+**Protected main at this checkpoint:** `ad50c06d145c28fa4327703368ddff9823d5703d`. **Authorized implementation writer:** `CHATGPT_ACTIVE`; independent branches and GitHub CI, no dispatched autonomous coding agents. Source and deployed runtime SHAs are separate.
+
+**Protected merge:** #884 invalid public portfolio year filtering, tested head `ed2c4d701f8164130995abf8531d98f7ad82b367`, RED `43547097150`, full GREEN `43547396352`, separate ready-state `43549451113`, guarded merge `ad50c06d145c28fa4327703368ddff9823d5703d`. Railway website deployment `e90e590a-4c39-492a-a31c-3b7ed4283da7` SUCCESS at that SHA; worker SKIPPED. Independent HTTP health/version UNVERIFIED via web inspection.
+
+**Existing isolated drafts:** #885 public appeal search head `9b9c777aaee5b0711dcf5a41881d79a9dc6a4f3b`, RED `43547241093`, GREEN `43547516955`; #886 public Stories head `422da6be40592d0700e97991838b2d7178642cb1`, RED `43547936025`, GREEN `43548233097`. Fast/database/build passed, browser acceptance pending; neither merged.
+
+**New independent RED-first code branches:** #888 public Impact classification guard, RED `43549032832` failed exactly one targeted test, GREEN `09020662de0682d8e8f0f070ce3bd451a94ee360`, full `43549359892` fast/database/build passed, browser pending; #889 public factual fallback metric guard, RED `43549040635` failed two targeted tests, GREEN `8649449892a774fc1c21d3d7828982013cd41c2b`, full `43549366300` fast/database/build passed, browser pending; #890 public gallery invalid caption guard, RED `43549270919` failed exactly one targeted test, GREEN `9304314e98871d5345ab523a126c9c0f7d0efe4a`, full `43549574531` fast passed, browser/build/database ongoing. Do not promote drafts without all exact-head selected jobs, independent review, separate ready-state and expected-head merge.
+
+**Holds:** #684 verified payee/credited UTR and scoped finance release; #845 staging eligibility. No payments, donor data, unreviewed faces, secret/cron/notification/schema/auth/CSP/infrastructure activation. Canonical **149 classifications unchanged** (12 Completed/48 Implemented/63 Partial/24 Not started/1 Superseded/1 N/A). No full backlog-item closure from these bounded changes. Roll back narrow PRs atomically. Next: finish pending PR release gates; monitor Railway by SHA; continue independent unblocked source changes.
+
+
+---
+
+## 14 November 2026 IST — four guarded merges, three RED-first follow-ups
+
+Protected main at checkpoint: `571025532f8004a528ad8b26484b7fa3271bad75`; active implementation writer `CHATGPT_ACTIVE`. One coordinated repository writer, no autonomous detached coding-agent dispatcher. Main is the release integration target under current owner standing authority and protected exact-head/ready-state policy.
+
+**Four distinct protected code merges this continuation:**
+- #878 linked App Router admin audit root guard: full CI `43544072544`, ready `43546984006`, merge `1b2e5a2ddc39d9d0f5c81af4983b03449fa0036d`. Local read-only audit only; Cloudflare/AF-R013 activation remains unverified and unapproved.
+- #880 malformed media identity/gallery selector guard: full `43545197351`, ready `43547336338`, merge `8d4c367d1055f6e602f9265a58518294e625848e`. Existing public media review/consent/redaction gate retained.
+- #881 malformed gallery keyboard ID guard: full `43545479680`, ready `43547659300`, merge `a50e5d98116e1518fbdcfcce5132090c04beb3ff`. Valid selection and wrap preserved.
+- #882 AF-R047 aggregate bundle asset label validator: RED `43545410695`; initial GREEN `43545568393` failed due over-escaped regex, corrected exact-head full `43545757371`, separate ready-state `43547976197`, merge `571025532f8004a528ad8b26484b7fa3271bad75`. Build uncompressed bytes are not network bytes or field CWV; AF-R047 still Partial.
+
+**Three isolated unmerged RED-first candidate code PRs (status at checkpoint):**
+- #884 work portfolio invalid stored years head `ed2c4d701f8164130995abf8531d98f7ad82b367`, RED CI `43547097150`, GREEN full `43547396352` fast/database/build passed, browser pending.
+- #885 public appeal discovery malformed records head `9b9c777aaee5b0711dcf5a41881d79a9dc6a4f3b`, RED `43547241093`, GREEN `43547516955` fast/database/build passed, browser pending.
+- #886 public stories discovery malformed metadata head `422da6be40592d0700e97991838b2d7178642cb1`, RED `43547936025`, GREEN `43548233097` fast passed, full acceptance pending.
+
+**Railway:** latest successful website deployment `bb06b26f-0b9c-414a-948f-ee2c4af786a9`, exact source `a50e5d98116e1518fbdcfcce5132090c04beb3ff`, online 1/1. #882 website and worker `SKIPPED` for scripts-only. No force-deploy; independent public HTTP version/readiness not yet accessible/verified. Source SHA and runtime SHA distinct.
+
+**Financial holds:** #684 receiving-payee/credited UTR proof plus independently scoped financial production approval; #845 staging eligibility approval. No live payments, notifications/cron, secrets, donor records, irreversible infrastructure changes, schema, auth/RBAC, checkout CSP, or unreviewed media publication. Canonical 149 status remains 12 Completed / 48 Implemented / 63 Partial / 24 Not started / 1 Superseded / 1 N/A. No full item closure inferred from bounded fixes.
+
+**Next executable boundary:** independently check each exact-head full run, review and open threads, promote ready, verify separate ready-state run, protected SHA-guard merge, inspect Railway service watch and website SHA. Leave blocked finance scopes held. Narrow atomic PR revert if rollback needed.
+
+
+## 14 November 2026 IST — protected merges and pending code workstreams
+
+Protected main at this checkpoint: `a4d3c00a65deb48ec37f28451037832444d83a80`. Implementation writer `CHATGPT_ACTIVE`; one authorized GitHub implementation writer, no autonomous detached coding agents. Scope limited to Amaana Foundation.
+
+**Merged with exact-head CI, separate ready-state and SHA guard:** #874 public asset inventory symlinks (full `43541827125`, ready `43544957355`, merge `d92f243c75a00231feb97cea99a5737e1306b882`, Railway SKIPPED); #876 public gallery metadata fail-closed (full `43543147308`, ready `43545149079`, merge `d0f3ce008e622773b5d193040ee78002c81c864a`); #877 homepage no-open-appeals Contact route (full `43543477188`, ready `43545930565`, merge `a4d3c00a65deb48ec37f28451037832444d83a80`).
+
+**Isolated draft code PRs, all unmerged:** #878 local admin-edge scan-root symlink guard head `6162996484adc75c69980699dc6e45f9ddb1b45f` (RED `43543768667`, GREEN full run `43544072544` pending browser); #880 public media identity/gallery selectors guard head `0c6bfb426fa947e98b5209f4469664676e6e1c58` (RED `43544896987`, GREEN `43545197351` pending browser); #881 gallery keyboard selection invalid IDs head `b719eab9c357f981715c0c8ac8266d7c816644ed` (RED `43545040907`, GREEN `43545479680` pending browser); #882 AF-R047 bundle reporter aggregate path labels head `5d801be7cec2cc62ea04d3d8df607f209f4646a3` (RED `43545410695`, first GREEN `43545568393` failed an over-escaped regex; corrected GREEN `43545757371` pending browser). The draft status and required checks must be reverified before promotion and merge.
+
+**Railway:** website deployment `990f4c08-7413-4925-bc80-dd5c97b710da` is SUCCESS for #877 source `a4d3c00a65deb48ec37f28451037832444d83a80`, site online 1/1 replica; notification worker SKIPPED. Later scripts/docs merges may show SKIPPED correctly. Independent public HTTP version/readiness inaccessible from available web fetch, so LIVE_HTTP_UNVERIFIED. Do not force redeploy.
+
+**Holds:** #684 independent bank payee and credited UTR attestation plus scoped production finance authorization; #845 donation staging eligibility plan. No payment, schema, auth/RBAC, checkout CSP, donor identities, public media approvals, secret, cron, notification or live infrastructure activation. 149-item classification unchanged: 12 Completed / 48 Implemented / 63 Partial / 24 Not started / 1 Superseded / 1 N/A. AF-R047 is still Partial. Next: continue disjoint coding while CI runs; for each qualifying PR inspect exact-head full verify and review, promote ready, verify separate run, SHA-guard merge, and inspect Railway result. Narrow atomic PR revert is rollback.
+
+
+## 14 November 2026 IST — continued CHATGPT_ACTIVE branch/release handoff
+
+Protected main `2c9230cd9797e28e77a1a962c002805946a15441`; source merges #871 `1f31c7e109d5a2fe5b9d1d2cd1aedca6d4f4d3a9` with GREEN `43539874379`/ready `43542853239`, #873 `2c9230cd9797e28e77a1a962c002805946a15441` with RED `43540988337`, GREEN `43541312803`/ready `43543927252`. Four isolated draft PRs remain: #874 `236b76ec137145ac81c5067b0141a3b2bcf30d1b` (GREEN `43541827125`), #876 `0f05ad93d1ddff332972cf9fa0fb36b9d2dd95f6` (GREEN `43543147308`), #877 `8e7a29d19cdf433892caf775b6f1ff09da6d8fdc` (GREEN `43543477188`), #878 `6162996484adc75c69980699dc6e45f9ddb1b45f` (GREEN `43544072544`). Each GREEN still awaiting full acceptance at checkpoint; never count queued/browser-in-progress as success.
+
+CHATGPT_ACTIVE remains sole repository writer; no autonomous detached agents. Railway last settled #871 site SHA success/online, #873 website BUILDING at checkpoint, public HTTP readiness unverified. #684 and #845 finance-held. No payment/schema/CSP/auth deployment/cron/media publication approvals or secret changes; canonical 149 unchanged. Next executor: inspect exact-head CI/reviews, ready promotion, protected SHA-guard merges, and Railway source versus runtime; leave blocked items isolated. Restore through atomic PR revert if needed.
+
+## 14 November 2026 IST — CHATGPT_ACTIVE protected UI merges and four isolated RED-first follow-ups
+
+Implementation writer CHATGPT_ACTIVE, protected main `350b8cca959ca122176d6513be80bfdbd1815280` at checkpoint. Merged #868 (full `43538398199`, ready `43540498812`, merge `e2bb6ec17607394a1506314c0b42c60c6afb2eca`), #870 (full `43539647661`, ready `43540502893`, merge `10c7be255684af541f8c5bb8bd1b58b0bdea4873`), #869 (full `43538811800`, ready `43541875785`, merge `350b8cca959ca122176d6513be80bfdbd1815280`). Independent source diff/review-thread inspection performed; no unresolved review threads.
+
+Unmerged drafts, RED-first evidence and candidate heads: #871 decimal text `831e81dd4a88b9f72c92786ad1bf15a2d2fb4998` (RED `43539577674`, GREEN `43539874379` pending); #872 CSS linked root `ffc47452bd90f3fa8e73674eada7ef341bdee1d5` (RED `43540106733`, GREEN `43540249694` pending); #873 AF-R025 heading leading `70367735cd99017bd5854769fce677f0afbb0501` (RED `43540988337`, GREEN `43541312803` pending); #874 asset inventory symlinks `236b76ec137145ac81c5067b0141a3b2bcf30d1b` (RED `43541686637`, GREEN `43541827125` pending). Do not conflate pending/partial checks with completed acceptance; mark ready only after full success and verify separate ready-state CI. One authorized repository writer, no autonomous subagent dispatcher.
+
+Railway site last successful deployment `744ef045-038b-4e7e-bdca-761076bb137e` for #870; #869 site `c94f4052-5c51-48d7-84f7-c3424b116de9` building at checkpoint. Worker SKIPPED. Public HTTP identity/ready UNVERIFIED. #684 independent bank verification and finance approval and #845 donation eligibility plan remain holds. No live payments, secrets, donor data, activation or infrastructure modifications; 149 canonical statuses unchanged. Next code task: qualifying PR checks/promotions/merges and independent Railway runtime verification. Rollback narrow changes only.
+
+## 14 November 2026 IST — protected #855 merge and three independent RED-first audit workstreams
+
+CHATGPT_ACTIVE writer from owner-approved #862 handoff. Main source `3bc7b085c008c3037edd53b71459df614085b58c` after #855 full CI `43528573595`, promotion `43532663380`, SHA-guarded merge, with Railway site and worker SKIPPED (scripts-only). Production last site runtime `fe6249e380c6e00c52af874a51caf41a7ed01119` SUCCESS/online at last check, public HTTP version/readiness unverified.
+
+Three disjoint draft code PRs open, not accepted or merged at checkpoint: #864 artwork scan-root symlink guard, head `0c5e8a8a3cd741ed8aa067bc168d743b4b9254f8` with hosted RED and fast/db/production GREEN; #865 HTTP robots noindex token boundary, head `a13e132e94b08e3dcb4d72fcc22a256636456b3e` with hosted RED and fast/db/production GREEN; #866 private synthetic mobile profiling HTTP reads, head `dc6cc8ddf978a125afcba0c2abbf1322538c0974` after two hosted RED reproductions and focused correction, pending new exact-head CI. #864/#865 browser jobs pending. Only one repository implementation writer; no independent coding agent dispatcher is connected. Other research tracks may remain independent without writes.
+
+#684 external payee/UTR attestation and separately scoped finance activation blocked; #845 donation staging-eligibility policy blocked. Original 149 ledger (12/48/63/24/1/1) unchanged, active 135. No real payments, private donor data, infra, secrets, notification activation, or worker changes. Next: review full exact-head CI and review threads; promote separately, SHA-guard merge qualifying drafts, inspect Railway outcomes and update current checkpoint at safe boundary. Roll back individual source PRs if necessary.
+
+
+## 14 November 2026 IST — ChatGPT serialized protected merges
+
+CHATGPT_ACTIVE writer (owner takeover in #862) merged #858 `3df2c58e96292f03fdf1fbffdf127c4c60568dee`, #859 `7b00012f60f136d6bb211098979505354d0a9133`, #861 `be78644b7d4de39350193bc5f3940d1eec2efe6d`, and #853 `fe6249e380c6e00c52af874a51caf41a7ed01119` through SHA-guarded protected GitHub PRs; all respective full exact-head and separate ready-state CI checks passed. Earlier #856 tooling and #862 coordination were merged in this continuation. Latest observed Railway #861 SUCCESS; #853 BUILDING, public HTTP version/readiness unverified. #855 held in draft until browser/final CI, independent review and promotion; #684/#845 remain protected finance holds. No original 149 classification changed; verified 12/48/63/24/1/1 and active 135. No live funds, secrets, cron, infrastructure or private donor writes. Safe next: complete #855 acceptance and #853 production identity, then independent source tasks. Historical handoff content below retained.
+
+## 14 November 2026 IST — owner-directed Codex → ChatGPT implementation handoff
+
+Owner instructed ChatGPT to take over from prior CODEX_ACTIVE coordination. Main at transfer: `63c87af59606278edbe97cbdaf8b2678665f05db`; production website Railway deployment `7c3a51e7-d0a1-448f-bfdb-efde0d0f9af8` SUCCESS/online 1 of 1; independent public HTTP still unavailable. Active implementation ownership becomes **CHATGPT_ACTIVE**. Non-overlapping read-only contributors can audit in parallel; one implementation writer and serialized release merges remain mandatory. Open #861/#859/#858/#856/#855/#853 and held finance #845/#684 inspected; #856 exact-head full CI `43524198123` and separate ready-state `43527442581` success, no review threads; no source change from this claim. Current 149 ledger 12/48/63/24/1/1; active 135. Payment activation, real donor movement, secrets, production infra and outbound delivery remain unapproved. Source and runtime states tracked independently. Next: review qualifying non-financial PRs and merge only after protection/SHA-guard checks.
+
+## 14 November 2026 IST — coordinated audit corrections and protected font audit merge
+
+Coordinator CODEX_ACTIVE under explicit owner-directed parallel coding. Base a936835dd58c210e21dc3bed52a122b1d657c3fc; #854 protected merge dd0fa90d2d367cdaf8909c2fa5e2c9d4ff4e4d15 after full CI 43522240927 and separate promotion 43526227816. Independent review found no blocker. Railway d21709b4-6a0e-48ff-9cbd-abc321427315 SKIPPED; previous a936835 deployment SLEEPING. Public Cloudflare 403 blocks independent runtime certification.
+
+Two isolated agents reproduced and corrected audit-only defects: #858 CSS rel ASCII whitespace, head 4b7ada43a0a9eb5ffc1b8dfddbb7bc12294abe5f, RED vertical-tab case then 92/92 native GREEN; #859 exact HTML MIME essence, head d704b2ff3a8cfa88a5728eda44261bd6e30e0322, RED 29 pass/1 fail then 30/30 GREEN. Both independently reviewed/rerun, published drafts; hosted exact-head acceptance and separate promotion pending. Local full Vitest unavailable without dependencies. Connector publication used after Git HTTPS push lacked credentials; remote heads differ from local commits but preserve exact trees.
+
+#853 held for review of next/link versus native full-document fatal recovery. Preserve #855–857 in-flight candidates. #684 financial activation remains held for independent payee attestation, credited UTR matching and scoped approval; #845 retained RED finance evidence. No payments, secrets, donor data, auth, schema, infrastructure or worker activation. Canonical repository ledger verified 149 unique IDs: 12 Completed / 48 Implemented / 63 Partial / 24 Not started / 1 Superseded / 1 Not applicable; 135 active. Uploaded October CSV is stale. No new full-item closure. Next: finish draft exact-head gates; correct fatal recovery after regression; preserve provider/manual holds. Rollback each narrow two-file correction independently.
+
 # Amaana handoff ledger
+
+## 13 November 2026 IST — three exact-head source merges and honest AF-N14 progression
+
+ChatGPT-active writer: PR #839 (merge `c6a183d6f82a9a364611d4a8a503111502dc0206`), #840 (merge `86b4192bde8dc100e17b9ef5bba2b3d0a35e18ae`), #841 (merge `a2e71e3fd8d62ea73e2330d76a7684373220082d`) each passed a reproduced RED, correction, all-seven-job GREEN full CI and separate ready-state promotion; protected expected-head merges, no review blockers. Railway website `c7549d83-8d05-45e4-a4db-d14ba57d0510` SUCCESS at `a2e71e3fd8d62ea73e2330d76a7684373220082d`, direct public HTTP readiness/version unverified. Only AF-N14 ledger state changes in this checkpoint: `Not started → Partial`, because #835 fixed one synthetic stream-cancellation hang, not every closed-stream root cause. Canonical 149 preserved (12/48/63/24/1/1), active 135. #684 remains finance-held; no payment, worker, schema, secret, infrastructure or donor data changes. Next coding task must be independent and test-first.
 
 ## 13 November 2026 IST — feedback native-label semantics regression
 
@@ -135,3 +634,8 @@ Sole implementation writer CHATGPT_ACTIVE. #786 docs-only AF-R010/AF-N09 149-row
 ## 12 November 2026 IST — AF-R024 Team inline CSS audit-source correction candidate
 
 Protected main `6e5dbf1bbdb353ecbac88c71d91df833d94d0b2c` following #788 successful full CI `43137396702`, separate ready-state `43141026663` and SHA-guarded merge. Single writer CHATGPT_ACTIVE. Main Team page embeds 3,406 bytes of scoped CSS in a JSX `<style>` element, outside `scripts/public-font-floor.mjs` which scans only `src/**/*.css`. Distinct TDD RED test expects direct CSS import/no inline element; fails on existing source. Proposed GREEN route-level external `team.css` with identical declarations, no palette/layout change, Vitest boundary regression, full selected head checks pending. Rollback narrow route page/CSS/test/coordination PR. #684 QR remains held; #785 media derivative review open; no secrets/payments/data/notifications/cron/infra operations.
+
+**Receipt recovery scope (AF-RECEIPTS, prepared for owner approval, nothing built).** Today the private acknowledgement is reachable only with the URL fragment token whose hash is `Donation.receiptTokenHash` (required column, no expiry, no revocation); a donor who loses the link has copy-private-link and contact guidance (#1103) but no recovery. Two stages, in this order:
+1. *Staff reissue (no schema change).* An admin action on `/admin/donations/[id]` generates a new random token, overwrites `receiptTokenHash` (the old link stops working at once, which is the revocation), and shows the new link once to staff to relay over a channel staff have verified (the donor's known phone or email on the donation). It needs a named admin permission in the existing RBAC matrix, an audit entry with actor and time (never the token), the same CSRF/origin and rate-limit controls as other admin actions, and a test that the old token is refused and the new one accepted. Needs owner approval because it touches admin RBAC and credential handling. Rollback: remove the action; stored hashes are unchanged in shape.
+2. *Self-service lost-link request (needs schema and notification activation).* A public form takes reference plus the donor email on record and always returns the same neutral response ("if the details match, a link has been sent"), so receipts cannot be enumerated or confirmed. Delivery is by email only, never on screen, so it depends on activating donor email (`TRANSACTIONAL_EMAIL_RUNBOOK.md`), which is a separate owner decision. A new link replaces the hash and an additive nullable `receiptTokenExpiresAt` bounds validity (suggest 30 days from issue; original links stay non-expiring until the owner decides otherwise). Abuse controls: a stricter per-client and per-reference rate limit than the 30-a-window acknowledgement lookup, constant-time comparison, no tokens or email addresses in logs or analytics. Error states: lost-link service error says "try again or contact us" and never suggests paying again.
+Acceptance: unit tests for both flows and the neutral-response equivalence between a matching and a non-matching pair; a real-PostgreSQL test that reissue invalidates the old hash; a browser test of the lost-link states. Browser print or save-as-PDF remains the download path, not a PDF service. Ordinary acknowledgements are not statutory tax certificates.

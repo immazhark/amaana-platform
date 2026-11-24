@@ -29,7 +29,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: { absolute: "Amaana Foundation | Charity & Relief in Hyderabad" },
-  description: "Amaana Foundation supports verified needs in Hyderabad through education, seasonal relief, emergency response and community assistance with dignity and transparency.",
+  description: "Amaana Foundation supports verified needs in Hyderabad through education, seasonal relief, emergency response and assistance with dignity and transparency.",
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
@@ -151,7 +151,7 @@ export default async function HomePage() {
           <SectionHeading eyebrow={<>Current verified appeals</>} title={<>When there is a need, we share it responsibly.</>} subtitle={<>Active public appeals appear here after review. Completed work remains available even when there is no current fundraising appeal.</>} id="appeals-title" className="v3-section-head" titleClassName="v3-heading" />
 
           {appeals.length ? (
-            <div className="grid appeal-grid">
+            <div className={`grid appeal-grid${appeals.length === 1 ? " appeal-feature" : ""}`}>
               {appeals.map(appeal => <AppealCard key={appeal.slug} appeal={appeal} />)}
             </div>
           ) : (
@@ -162,6 +162,7 @@ export default async function HomePage() {
               </div>
               <div className="v3-actions">
                 <Link className="v3-btn" href="/our-work">Explore our work</Link>
+                <Link className="v2-text-link" href="/contact">Contact Amaana →</Link>
               </div>
             </div>
           )}

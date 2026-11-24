@@ -11,8 +11,10 @@ import { documentedImpactMetric } from "@/lib/documented-impact-metric";
 import { programmeBySlug, programmeCategories } from "@/lib/master-copy";
 import { filterImpactByProgramme, type ImpactProgrammeSearch } from "@/lib/impact-programme-filter";
 import { getImpactPageData } from "@/lib/public-page-data";
+import { retainRenderableImpactRecords } from "@/lib/impact-public-records";
 import { selectIdentityPublicImage } from "@/lib/public-media";
 import { selectImpactWitnessMedia } from "@/lib/impact-witness-media";
+import filterStyles from "@/components/filter-form.module.css";
 import "../impact-refinement.module.css";
 
 export const dynamic = "force-dynamic";
@@ -36,7 +38,8 @@ export const metadata: Metadata = {
 
 export default async function ImpactPage({ searchParams }: { searchParams: Promise<ImpactProgrammeSearch> }) {
   const [rawInitiatives, search] = await Promise.all([getImpactPageData(), searchParams]);
-  const initiatives = rawInitiatives.filter(item => {
+  const publicInitiatives = retainRenderableImpactRecords(rawInitiatives);
+  const initiatives = publicInitiatives.filter(item => {
     const canonical = programmeBySlug(item.slug);
     return Boolean(canonical) && !(canonical && "parentSlug" in canonical && canonical.parentSlug);
   });
@@ -72,14 +75,14 @@ export default async function ImpactPage({ searchParams }: { searchParams: Promi
         )}
       />
 
-      <div className="v2-shell"><VerifiedImpactStrip headingId="impact-published-outcomes" items={rawInitiatives.flatMap(item =>
+      <div className="v2-shell"><VerifiedImpactStrip headingId="impact-published-outcomes" items={publicInitiatives.flatMap(item =>
         item.primaryMetric && item.primaryMetricLabel ? [{ slug: item.slug, title: item.title, value: item.primaryMetric, label: item.primaryMetricLabel }] : [],
       )} /></div>
       <section className="v2-section paper v2-impact-wall-section" id="evidence" aria-labelledby="impact-wall-title">
         <div className="v2-shell">
           <TrustEvidenceBoundary context="impact" className={evidenceStyles.boundary} />
           <SectionHeading eyebrow={<>Wall of impact</>} title={<>See what each initiative achieved.</>} subtitle={<>Explore an outcome, then open the initiative to understand the work behind it.</>} id="impact-wall-title" />
-          <form key={filtered.programme} action="/impact#evidence" method="get" aria-label="Filter documented impact by programme" className="v2-hero-actions">
+          <form key={filtered.programme} action="/impact#evidence" method="get" aria-label="Filter documented impact by programme" className={`v2-hero-actions ${filterStyles.form}`}>
             <label htmlFor="impact-programme">Programme
               <select id="impact-programme" name="programme" defaultValue={filtered.programme} aria-invalid={filtered.invalid || undefined} aria-describedby={filtered.invalid ? "impact-filter-error" : undefined}>
                 <option value="">All programmes</option>
@@ -97,10 +100,10 @@ export default async function ImpactPage({ searchParams }: { searchParams: Promi
           {filtered.results.length > 0 ? <div className="v2-impact-wall">{filtered.results.map((item, index) => {
             const thumbnail = selectIdentityPublicImage(item.mediaAssets) ?? null;
             const outcome = documentedImpactMetric(item.primaryMetric, item.primaryMetricLabel);
-            return <Link href={`/our-work/${item.slug}`} className={`v2-impact-tile ${thumbnail ? "has-media" : ""}`} key={item.id} aria-label={`Explore impact: ${item.title}`}>
+            return <Link href={`/our-work/${item.slug}`} className={`v2-impact-tile ${thumbnail ? "has-media" : ""}`} key={item.id} aria-label={`Explore impact: ${[item.cause.title, outcome?.value, outcome?.label, item.title].filter(Boolean).join(", ")}`}>
               {thumbnail ? <div className="v2-impact-tile-media" aria-hidden="true"><PublicMedia asset={thumbnail} /></div> : null}
               <div className="v2-impact-tile-shade" aria-hidden="true" />
-              <span className="v2-impact-tile-index">{String(index + 1).padStart(2, "0")}</span>
+              <span className="v2-impact-tile-index" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
               <div className="v2-impact-tile-copy"><small>{item.cause.title}</small>{outcome ? <strong>{outcome.value}</strong> : null}<span>{outcome?.label ?? item.title}</span><h3>{item.title}</h3></div>
               <span className="v2-impact-tile-action" aria-hidden="true">Explore impact ↗</span>
             </Link>;
@@ -108,7 +111,7 @@ export default async function ImpactPage({ searchParams }: { searchParams: Promi
         </div>
       </section>
 
-      {visibleMedia.length > 0 && <section className="v2-section dark v2-impact-witness" aria-labelledby="witness-title"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Witness the work</p></div><p className="v2-section-intro">Only photographs suitable for public sharing appear here. Personal documents and sensitive verification material remain private.</p></div><BodyCarousel heading={<h2 className="v2-section-title" id="witness-title">Evidence can be seen, not just counted.</h2>} label="Documented impact photographs" className="v2-impact-witness-carousel">{visibleMedia.map(({ record: item, media }) => <Link href={`/our-work/${item.slug}`} className="v2-impact-witness-item" key={item.id} aria-label={`Open ${item.title}`}><PublicMedia asset={media} /><div><small>{item.cause.title}</small><h3>{item.title}</h3><span>Explore this work →</span></div></Link>)}</BodyCarousel></div></section>}
+      {visibleMedia.length > 0 && <section className="v2-section dark v2-impact-witness" aria-labelledby="witness-title"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Witness the work</p></div><p className="v2-section-intro">Only photographs suitable for public sharing appear here. Personal documents and sensitive verification material remain private.</p></div><BodyCarousel heading={<h2 className="v2-section-title" id="witness-title">Evidence can be seen, not just counted.</h2>} label="Documented impact photographs" className="v2-impact-witness-carousel">{visibleMedia.map(({ record: item, media }) => <Link href={`/our-work/${item.slug}`} className="v2-impact-witness-item" key={item.id}><PublicMedia asset={media} /><div><small>{item.cause.title}</small><h3>{item.title}</h3><span>Explore this work →</span></div></Link>)}</BodyCarousel></div></section>}
 
       <section className="v2-section v2-impact-philosophy">
         <div className="v2-shell v2-impact-philosophy-grid">

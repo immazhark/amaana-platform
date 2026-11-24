@@ -1,3 +1,23 @@
+## Updated original 149-row classification — 15 November 2026 IST
+
+**35 Completed / 24 Implemented / 71 Partial / 17 Not started / 1 Superseded / 1 Not applicable = 149 (112 actionable).** Supersedes older historical counts below. [Complete tracker](mission-control/149-item-status-2026-11-15.csv), [current active queue](mission-control/active-backlog-2026-11-15.csv), [source evidence](mission-control/2026-11-15-itemwise-reconciliation.md). AF-R078 now Partial due shipped read-only inventory but original archive/deletion remains unresolved.
+
+## Latest verified 149-item classification proposal — 15 November 2026 IST
+
+**PR #944 latest:** 35 Completed / 24 Implemented / 70 Partial / 18 Not started / 1 Superseded / 1 Not applicable = 149, **112 actionable**. Supersedes earlier dated counts below without removing their evidence. AF-R072's home meta-description length moved Partial → Completed after PR #945 merged `33cb6ff5906832047858b2570ff9c2c361bb19ef`, Railway SUCCESS, public version/readiness exact and fresh original home HTML `meta name=description` measured 155 characters. See [149-item updated ledger](mission-control/149-item-status-2026-11-15.csv), [112-item active queue](mission-control/active-backlog-2026-11-15.csv), [24 Implemented acceptance gaps](mission-control/2026-11-15-implemented-acceptance.md), [70 Partial blockers](mission-control/2026-11-15-partial-blockers.md), [18 Not started first actions](mission-control/2026-11-15-not-started-action-plan.md). No general W3C/field CWV/payment/statutory/beneficiary-photo approval is implied.
+
+## Latest evidence-backed 149-item state — 15 November 2026 IST
+
+**Third reconciliation pass proposed in PR #944:** 34 Completed / 24 Implemented / 71 Partial / 18 Not started / 1 Superseded / 1 Not applicable = 149; **113 actionable**. Two extra Not started entries (AF-R018 HSTS header in source and AF-ATTESTATION private synthetic digest module) were found partly built but remain incomplete. 149-row [current register](mission-control/149-item-status-2026-11-15.csv), [active 113-row queue](mission-control/active-backlog-2026-11-15.csv), [71 Partial exact blockers](mission-control/2026-11-15-partial-blockers.md), [18 Not started tasks](mission-control/2026-11-15-not-started-action-plan.md), [24 Implemented completion checks](mission-control/2026-11-15-implemented-acceptance.md). Historical counts below preserved but superseded. No tax/legal/financial/provider, identity-media, live-core-vitals or DNS/preload certification implied.
+
+## Latest operational 149-item status — 15 November 2026 IST, evidence pass two
+
+**Latest proposed #944 classification:** 34 Completed, 24 Implemented, 69 Partial, 20 Not started, 1 Superseded, 1 Not applicable = **149**; 113 actionable. This supersedes older dated count summaries below, which are retained as historical evidence. Evidence-backed [149-row register](mission-control/149-item-status-2026-11-15.csv), [active queue](mission-control/active-backlog-2026-11-15.csv), [first and second pass proof](mission-control/2026-11-15-itemwise-reconciliation.md), [24 Implemented acceptance gaps](mission-control/2026-11-15-implemented-acceptance.md), [69 Partial blockers](mission-control/2026-11-15-partial-blockers.md) and [20 Not started next actions](mission-control/2026-11-15-not-started-action-plan.md). All current classifications remain pending protected PR merge. No full tax, finance/provider, assistive-tech, field CWV or personal-media certification is implied.
+
+## Latest 149-item classification — 15 November 2026 IST
+
+**Supersedes dated classification snapshots below, preserves earlier evidence.** The [current complete 149-item register](mission-control/149-item-status-2026-11-15.csv), [current active 120-item queue](mission-control/active-backlog-2026-11-15.csv) and [individual evidence/limits](mission-control/2026-11-15-itemwise-reconciliation.md) establish **27 Completed / 31 Implemented / 65 Partial / 24 Not started / 1 Superseded / 1 Not applicable = 149**. This reconciles 15 narrowly scoped defects to completion and downgrades two source-contradicted end states. Other items were not silently promoted; full provider, payments, physical accessibility, field CWV and 80G legal acceptance remain separate.
+
 # Amaana Master Reconciled Execution Plan — War-Footing Revision
 
 ## Current verified 149-item status overlay — 12 November 2026 IST

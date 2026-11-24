@@ -6,7 +6,7 @@
  * Run: node scripts/audit-public-assets.mjs
  * Optional: node scripts/audit-public-assets.mjs --json
  */
-import { readdir, readFile, stat } from "node:fs/promises";
+import { lstat, readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 
 const root = process.cwd();
@@ -20,12 +20,19 @@ const omitDirs = new Set(["node_modules", ".next", ".git", "coverage", "out", ".
 
 async function walk(directory) {
   let entries;
-  try { entries = await readdir(directory, { withFileTypes: true }); }
-  catch (error) { if (error.code === "ENOENT") return []; throw error; }
+  try {
+    if ((await lstat(directory)).isSymbolicLink()) {
+      throw new Error(`Symbolic link is not permitted in public asset inventory: ${directory}`);
+    }
+    entries = await readdir(directory, { withFileTypes: true });
+  } catch (error) { if (error.code === "ENOENT") return []; throw error; }
   const files = [];
   for (const entry of entries) {
     if (omitDirs.has(entry.name)) continue;
     const full = path.join(directory, entry.name);
+    if (entry.isSymbolicLink()) {
+      throw new Error(`Symbolic link is not permitted in public asset inventory: ${full}`);
+    }
     if (entry.isDirectory()) files.push(...await walk(full));
     else if (entry.isFile()) files.push(full);
   }

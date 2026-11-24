@@ -27,7 +27,7 @@
       "title": "Amaana Taleem Initiative",
       "displayOrder": 3,
       "summary": "Helping learners continue with dignity through educational essentials, Qur'anic learning and verified sponsorship pathways.",
-      "description": "Amaana Taleem Initiative brings together practical educational assistance and faith-based learning sponsorship for children and young people whose families may struggle to meet the cost of learning. The initiative began with identifiable, verifiable needs — including stationery kits for 50 orphan children in Borabanda, Hyderabad, in 2025 — and now also facilitates continuing sponsorship for Qur'an Nazira and Hifdh day scholars. As of September 2026, 25 students across Nazira and Hifdh were being sponsored through Amaana by multiple donors. As the initiative develops, Amaana also aims to extend verified support to school and college students whose education may otherwise be disrupted by financial hardship."
+      "description": "Amaana Taleem Initiative brings together practical educational assistance and faith-based learning sponsorship for children and young people whose families may struggle to meet the cost of learning. The initiative began with identifiable, verifiable needs — including stationery kits for 50 orphan children in Borabanda, Hyderabad, in 2025 — and now also facilitates continuing sponsorship for Qur'an Nazira and Hifdh day scholars. As of November 2026, 26 students across Nazira and Hifdh are being sponsored through Amaana by multiple donors. As the initiative develops, Amaana also aims to extend verified support to school and college students whose education may otherwise be disrupted by financial hardship."
     },
     {
       "slug": "seasonal-relief",
@@ -98,6 +98,30 @@
       "primaryMetric": "₹138,300",
       "primaryMetricLabel": "privately pooled · debt cleared",
       "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "accident-recovery-support-2026",
+      "title": "A Journey of Recovery, Supported Together",
+      "summary": "After a serious accident, the beneficiary required surgery and continued medical care while the family faced mounting financial pressure. Amaana Foundation has provided ₹82,000 in assistance to date for treatment-related costs and family needs. Support remains ongoing, with additional care and final reconciliation still pending.",
+      "story": "A serious accident left the beneficiary and family facing a difficult recovery and unexpected expenses. Amaana Foundation helped with pre-operative and operation-related costs, care after surgery, follow-up consultations, tests and medicines, alongside direct assistance for immediate family needs. The Foundation reports that ₹82,000 has been provided to date. Further medical assessment and continuing care may result in additional support. The case remains ongoing, and this figure is assistance already provided, not a final treatment cost or a total of donations raised. This public summary intentionally excludes identifying details and medical evidence while the relevant privacy and financial reviews remain pending.",
+      "causeSlug": "medical-financial-relief",
+      "primaryMetric": "₹82,000",
+      "primaryMetricLabel": "assistance provided to date · ongoing",
+      "programmeStatus": "ONGOING",
+      "year": 2026,
+      "publicationReviewStatus": "PENDING"
+    },
+    {
+      "slug": "medical-recovery-relief-2026",
+      "title": "Standing Together Through a Difficult Recovery",
+      "summary": "Following major surgery and an interruption to regular work, a family faced considerable financial strain. A dedicated medical assistance appeal raised ₹1,26,000, which Amaana Foundation reports was handed over to the beneficiary. The collection is closed, and no further contributions are being requested for this case.",
+      "story": "A period of recovery after major surgery placed financial pressure on a family already managing treatment-related expenses and an interruption to income. Amaana Foundation organised a dedicated collection, and supporters contributed ₹1,26,000. The Foundation reports that the full collected amount was handed over to the beneficiary. The collection is closed, and no further contributions are requested for this case. Closure of the fundraising appeal does not establish that medical recovery has concluded. The reported financial amount must still be reconciled against private records; no personal medical documents or identifying photographs are included in this public summary.",
+      "causeSlug": "medical-financial-relief",
+      "primaryMetric": "₹1,26,000",
+      "primaryMetricLabel": "collected and handed over · collection closed",
+      "programmeStatus": "COMPLETED",
+      "year": 2026,
+      "publicationReviewStatus": "PENDING"
     },
     {
       "slug": "hyderabad-flood-relief-2020",
@@ -323,11 +347,11 @@
     {
       "slug": "taleem",
       "title": "Amaana Taleem Initiative — Education Support With Purpose and Accountability",
-      "summary": "Amaana Taleem Initiative brings together practical educational assistance and faith-based learning sponsorship for children and young people whose families may struggle to meet the cost of learning. The initiative began with identifiable, verifiable needs — including stationery kits for 50 orphan children in Borabanda, Hyderabad, in 2025 — and now also facilitates continuing sponsorship for Qur'an Nazira and Hifdh day scholars. As of September 2026, 25 students across Nazira and Hifdh were being sponsored through Amaana by multiple donors. As the initiative develops, Amaana also aims to extend verified support to school and college students whose education may otherwise be disrupted by financial hardship.",
-      "story": "Amaana Taleem Initiative brings together practical educational assistance and faith-based learning sponsorship for children and young people whose families may struggle to meet the cost of learning. The initiative began with identifiable, verifiable needs — including stationery kits for 50 orphan children in Borabanda, Hyderabad, in 2025 — and now also facilitates continuing sponsorship for Qur'an Nazira and Hifdh day scholars. As of September 2026, 25 students across Nazira and Hifdh were being sponsored through Amaana by multiple donors. As the initiative develops, Amaana also aims to extend verified support to school and college students whose education may otherwise be disrupted by financial hardship.",
+      "summary": "Amaana Taleem Initiative brings together practical educational assistance and faith-based learning sponsorship for children and young people whose families may struggle to meet the cost of learning. The initiative began with identifiable, verifiable needs — including stationery kits for 50 orphan children in Borabanda, Hyderabad, in 2025 — and now also facilitates continuing sponsorship for Qur'an Nazira and Hifdh day scholars. As of November 2026, 26 students across Nazira and Hifdh are being sponsored through Amaana by multiple donors. As the initiative develops, Amaana also aims to extend verified support to school and college students whose education may otherwise be disrupted by financial hardship.",
+      "story": "Amaana Taleem Initiative brings together practical educational assistance and faith-based learning sponsorship for children and young people whose families may struggle to meet the cost of learning. The initiative began with identifiable, verifiable needs — including stationery kits for 50 orphan children in Borabanda, Hyderabad, in 2025 — and now also facilitates continuing sponsorship for Qur'an Nazira and Hifdh day scholars. As of November 2026, 26 students across Nazira and Hifdh are being sponsored through Amaana by multiple donors. As the initiative develops, Amaana also aims to extend verified support to school and college students whose education may otherwise be disrupted by financial hardship.",
       "causeSlug": "amaana-taleem",
-      "primaryMetric": "25",
-      "primaryMetricLabel": "Nazira / Hifdh students combined · September 2026",
+      "primaryMetric": "26",
+      "primaryMetricLabel": "Nazira / Hifdh students combined · November 2026",
       "programmeStatus": "RECURRING"
     },
     {
@@ -345,8 +369,8 @@
     {
       "slug": "taleem-hifdh-sponsorship",
       "title": "Sponsor a Hifdh Student",
-      "summary": "Through Amaana Taleem Initiative, donors can support day scholars engaged in Hifdh — the memorisation of the Qur'an — at Al Madarsatul Islamia Lithafizil Quranil Kareem. The sponsorship pathway is intended to help students continue their Qur'anic education while easing part of the financial pressure on families that may otherwise struggle to sustain it. As of September 2026, 25 students across Amaana's Qur'an Nazira and Hifdh sponsorships were being supported by multiple donors.",
-      "story": "Through Amaana Taleem Initiative, donors can support day scholars engaged in Hifdh — the memorisation of the Qur'an — at Al Madarsatul Islamia Lithafizil Quranil Kareem. The sponsorship pathway is intended to help students continue their Qur'anic education while easing part of the financial pressure on families that may otherwise struggle to sustain it. As of September 2026, 25 students across Amaana's Qur'an Nazira and Hifdh sponsorships were being supported by multiple donors.",
+      "summary": "Through Amaana Taleem Initiative, donors can support day scholars engaged in Hifdh — the memorisation of the Qur'an — at Al Madarsatul Islamia Lithafizil Quranil Kareem. The sponsorship pathway is intended to help students continue their Qur'anic education while easing part of the financial pressure on families that may otherwise struggle to sustain it. As of November 2026, 26 students across Amaana's Qur'an Nazira and Hifdh sponsorships are being supported by multiple donors.",
+      "story": "Through Amaana Taleem Initiative, donors can support day scholars engaged in Hifdh — the memorisation of the Qur'an — at Al Madarsatul Islamia Lithafizil Quranil Kareem. The sponsorship pathway is intended to help students continue their Qur'anic education while easing part of the financial pressure on families that may otherwise struggle to sustain it. As of November 2026, 26 students across Amaana's Qur'an Nazira and Hifdh sponsorships are being supported by multiple donors.",
       "causeSlug": "amaana-taleem",
       "primaryMetric": null,
       "primaryMetricLabel": null,
@@ -356,8 +380,8 @@
     {
       "slug": "taleem-nazira-sponsorship",
       "title": "Sponsor Qur’an Nazira Education",
-      "summary": "Amaana Taleem Initiative facilitates sponsorship for students learning Qur'an Nazira — the guided reading of the Qur'an with regular instruction and practice — at Al Madarsatul Islamia Lithafizil Quranil Kareem. Donor support helps students continue their Qur'anic learning where household finances may otherwise make regular education difficult. As of September 2026, 25 students across Amaana's Nazira and Hifdh sponsorships were being supported through multiple donors.",
-      "story": "Amaana Taleem Initiative facilitates sponsorship for students learning Qur'an Nazira — the guided reading of the Qur'an with regular instruction and practice — at Al Madarsatul Islamia Lithafizil Quranil Kareem. Donor support helps students continue their Qur'anic learning where household finances may otherwise make regular education difficult. As of September 2026, 25 students across Amaana's Nazira and Hifdh sponsorships were being supported through multiple donors.",
+      "summary": "Amaana Taleem Initiative facilitates sponsorship for students learning Qur'an Nazira — the guided reading of the Qur'an with regular instruction and practice — at Al Madarsatul Islamia Lithafizil Quranil Kareem. Donor support helps students continue their Qur'anic learning where household finances may otherwise make regular education difficult. As of November 2026, 26 students across Amaana's Nazira and Hifdh sponsorships are being supported through multiple donors.",
+      "story": "Amaana Taleem Initiative facilitates sponsorship for students learning Qur'an Nazira — the guided reading of the Qur'an with regular instruction and practice — at Al Madarsatul Islamia Lithafizil Quranil Kareem. Donor support helps students continue their Qur'anic learning where household finances may otherwise make regular education difficult. As of November 2026, 26 students across Amaana's Nazira and Hifdh sponsorships are being supported through multiple donors.",
       "causeSlug": "amaana-taleem",
       "primaryMetric": null,
       "primaryMetricLabel": null,

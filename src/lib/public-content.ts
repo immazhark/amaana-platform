@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { isAppealOpenForDonations } from "@/lib/appeals";
 import { isPublicFaithReviewComplete, publicFaithWhere } from "@/lib/faith-publication";
 import { canExposePublicAppeal, isSyntheticStagingAppeal } from "@/lib/public-environment";
+import { withCanonicalInitiativeFacts, withCanonicalInitiativeFactsList } from "@/lib/canonical-initiative-facts";
 
 const publishedWhere = {
   status: "PUBLISHED" as const,
@@ -38,6 +39,7 @@ export const PUBLIC_DETAIL_MEDIA_PROJECTION = {
     altText: true,
     caption: true,
     sourceYear: true,
+    placeholder: true,
     sortOrder: true,
     width: true,
     height: true,
@@ -72,7 +74,7 @@ export async function getPublishedInitiatives() {
       },
     },
     orderBy: [{ isFeatured: "desc" }, { displayOrder: "asc" }, { publishedAt: "desc" }],
-  });
+  }).then(withCanonicalInitiativeFactsList);
 }
 
 export const getPublishedInitiativeBySlug = cache(async (slug: string) => {
@@ -102,7 +104,7 @@ export const getPublishedInitiativeBySlug = cache(async (slug: string) => {
         select: { id: true, slug: true, title: true, excerpt: true, status: true, religiousReviewStatus: true, verifiedAt: true, sourceCitation: true },
       },
     },
-  });
+  }).then(withCanonicalInitiativeFacts);
   if (!result) return null;
   return { ...result, faithContent: result.faithContent.filter(isPublicFaithReviewComplete)
     .map(({ id, slug, title, excerpt }) => ({ id, slug, title, excerpt })) };
@@ -240,7 +242,7 @@ const getHomepageAppealsCached = unstable_cache(async () => {
     },
   });
 
-  return appeals.filter(appeal => canExposePublicAppeal(appeal) && !isSyntheticStagingAppeal(appeal));
+  return (Array.isArray(appeals) ? appeals : []).filter(appeal => canExposePublicAppeal(appeal) && !isSyntheticStagingAppeal(appeal));
 }, ["homepage-appeals"], { revalidate: 300, tags: ["appeals"] });
 
 export async function getHomepageAppeals(limit = 3) {
@@ -268,7 +270,7 @@ export async function getHomepagePublicContent() {
         primaryMetricLabel: true,
         cause: { select: { title: true } },
       },
-    }),
+    }).then(withCanonicalInitiativeFactsList),
     prisma.faithContent.findFirst({
       where: {
         ...publicFaithWhere,

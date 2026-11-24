@@ -44,6 +44,40 @@ async function statusOptions(status: string) {
   return { html, select: select[0], options };
 }
 
+describe("reviewer guidance when information is missing", () => {
+  it("presents a separate, clear action to request additional information and explains private follow-up", async () => {
+    const { html } = await statusOptions("SUBMITTED");
+    expect(html).toContain("Request additional information");
+    expect(html).toContain("List the specific missing items");
+    expect(html).toContain("contact the applicant through a verified private channel");
+    expect(html).toContain("No applicant upload or reply portal is available");
+    expect(html).toContain('name="status" value="DOCUMENTS_REQUESTED"');
+    expect(html).toContain("Mark awaiting information");
+    expect(html).toContain("Review workflow guide");
+  });
+
+  it("explains how to resume verification when an application awaits documents", async () => {
+    const { html } = await statusOptions("DOCUMENTS_REQUESTED");
+    expect(html).toContain("Awaiting information from applicant");
+    expect(html).toContain("resume verification");
+  });
+});
+
+describe("one path for requesting additional information", () => {
+  it.each(["SUBMITTED", "UNDER_VERIFICATION"])("does not offer DOCUMENTS_REQUESTED in the generic %s status editor", async status => {
+    const { html, options } = await statusOptions(status);
+    expect(options.some(option => option.value === "DOCUMENTS_REQUESTED")).toBe(false);
+    expect(html).toContain('name="status" value="DOCUMENTS_REQUESTED"');
+    expect(html).toContain("Request additional information");
+  });
+
+  it("preserves the existing DOCUMENTS_REQUESTED state for note-only saves and allows verification to resume", async () => {
+    const { options } = await statusOptions("DOCUMENTS_REQUESTED");
+    expect(options.filter(option => option.selected).map(option => option.value)).toEqual(["DOCUMENTS_REQUESTED"]);
+    expect(options.some(option => option.value === "UNDER_VERIFICATION")).toBe(true);
+  });
+});
+
 describe("request review current-status preservation", () => {
   it.each(["APPROVED", "REJECTED"])("retains %s for a note-only editor without granting the other restricted transition", async status => {
     const { options } = await statusOptions(status);

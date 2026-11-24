@@ -124,3 +124,64 @@ test("permits approved public identifiers and ignores case-changed public prefix
     next_public_media_s3_secret_access_key: "not-public-prefix",
   }), []);
 });
+
+test("AF-R005 rejects concatenated private credential aliases in publicly bundled variable names", async () => {
+  const { rejectPublicCredentialNames } = await import("./check-public-env-secret-names.mjs");
+  const aliases = [
+    "NEXT_PUBLIC_RAZORPAY_SECRETKEY",
+    "NEXT_PUBLIC_MAIL_APIKEY",
+    "NEXT_PUBLIC_MEDIA_ACCESSTOKEN",
+    "NEXT_PUBLIC_ADMIN_AUTHTOKEN",
+    "NEXT_PUBLIC_STORAGE_PRIVATEKEY",
+    "NEXT_PUBLIC_MEDIA_ACCESSKEY",
+  ];
+  const violations = rejectPublicCredentialNames(Object.fromEntries(
+    aliases.map(name => [name, "synthetic-never-a-real-key-value"]),
+  ));
+  assert.deepEqual(violations.map(problem => problem.split(" must not")[0]).sort(), aliases.sort());
+  assert.doesNotMatch(violations.join("\n"), /synthetic-never-a-real-key-value/);
+  assert.deepEqual(rejectPublicCredentialNames({
+    NEXT_PUBLIC_RAZORPAY_KEY_ID: "rzp_test_synthetic",
+    NEXT_PUBLIC_APP_URL: "https://amaanafoundation.org",
+  }), []);
+});
+
+test("AF-R005 dotenv preflight fails closed on a concatenated public secret alias", async () => {
+  const workspace = await mkdtemp(path.join(tmpdir(), "amaana-public-alias-"));
+  try {
+    await writeFile(path.join(workspace, ".env.production.local"),
+      "NEXT_PUBLIC_RAZORPAY_SECRETKEY=synthetic-private-credential-value\n");
+    const result = spawnSync(process.execPath, [preflightScript], {
+      cwd: workspace, encoding: "utf8", env: { PATH: process.env.PATH },
+    });
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /NEXT_PUBLIC_RAZORPAY_SECRETKEY/);
+    assert.doesNotMatch(result.stderr + result.stdout, /synthetic-private-credential-value/);
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
+});
+
+test("AF-R005 rejects compact secret and credential-name suffixes without blocking public identifiers", async () => {
+  const { rejectPublicCredentialNames } = await import("./check-public-env-secret-names.mjs");
+  const privateAliases = [
+    "NEXT_PUBLIC_RAZORPAYWEBHOOKSECRET",
+    "NEXT_PUBLIC_ADMINPASSWORD",
+    "NEXT_PUBLIC_SERVICEAPITOKEN",
+    "NEXT_PUBLIC_MEDIAACCESSKEY",
+    "NEXT_PUBLIC_PROVIDERPRIVATEKEY",
+  ];
+  const issues = rejectPublicCredentialNames(Object.fromEntries(
+    privateAliases.map(name => [name, "synthetic-private-only-fixture"]),
+  ));
+  assert.deepEqual(
+    issues.map(item => item.split(" must not")[0]).sort(),
+    privateAliases.sort(),
+  );
+  assert.equal(issues.join("\n").includes("synthetic-private-only-fixture"), false);
+  assert.deepEqual(rejectPublicCredentialNames({
+    NEXT_PUBLIC_APP_URL: "https://amaanafoundation.org",
+    NEXT_PUBLIC_RAZORPAY_KEY_ID: "rzp_test_public_identifier",
+    NEXT_PUBLIC_ALLOW_INDEXING: "false",
+  }), []);
+});

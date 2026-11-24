@@ -94,3 +94,22 @@ The `transactional-email-delivery` gate in `docs/launch-readiness.json` remains 
 On 19 September 2026 the staging cron was observed firing on its five-minute schedule repeatedly and receiving HTTP 200 with `status:"disabled"`, confirming the authenticated scheduler/job path while external delivery remained intentionally off.
 
 A healthy disabled staging cron is infrastructure evidence, not production email-delivery evidence.
+
+## Go-live guard (`NOTIFICATION_SEND_NOT_BEFORE`)
+
+Live delivery needs **two** production variables, never one:
+
+- `EMAIL_DELIVERY_MODE=live` (exactly `live`), and
+- `NOTIFICATION_SEND_NOT_BEFORE=<ISO 8601 instant with an offset>`, for example `2026-11-22T06:00:00Z`.
+- `EMAIL_FROM` on the verified `amaanafoundation.org` domain, for example `Amaana Foundation <notifications@amaanafoundation.org>`. Delivery stays off for any other sender: Resend's test sender (`onboarding@resend.dev`) only delivers to the account owner, so every other donor would be refused with HTTP 403, which the worker treats as permanent (the message is parked until staff requeue it). This was found on 22 Nov 2026 by the first test gift to a second address.
+
+With the second one missing or malformed, `isEmailDeliveryEnabled()` is false, the job route answers `status: "disabled"` (retention maintenance still runs), and `processPendingEmailNotifications()` itself selects and claims nothing, so a switch flipped alone can never drain the queue. When both are set, the worker selects **and claims** only notifications whose `createdAt` is at or after that instant. Anything queued earlier (months of acknowledgements created while delivery was off) stays `PENDING` and is never sent. The guard is a filter on `createdAt`, not a deletion: nothing is modified or lost.
+
+Go-live steps, in order:
+
+1. Confirm the cron has been running in email-disabled mode (HTTP 200, `status: "disabled"`, `retention` counts).
+2. Set `NOTIFICATION_SEND_NOT_BEFORE` to the current instant (UTC) **first**, then set `EMAIL_DELIVERY_MODE=live`. Never the other way round.
+3. Make one small real donation with your own address **and a second with a different address** (the owner's own address works even with a wrong sender, which hides the fault), and confirm each acknowledgement arrives once, reads correctly and carries the "not an 80G tax certificate" sentence.
+4. Rollback: set `EMAIL_DELIVERY_MODE` to `disabled` (or remove it). The job returns to `disabled` on the next run; nothing already sent can be recalled.
+
+The acknowledgement email carries the donation reference but not the private acknowledgement link: the token is stored only as a hash. A donor who lost the link is helped by staff reissue (`/admin/donations/[id]`).

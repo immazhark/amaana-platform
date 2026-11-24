@@ -1,6 +1,7 @@
 import { isPublicFaithReviewComplete, publicFaithWhere } from "@/lib/faith-publication";
 import { prisma } from "@/lib/prisma";
 import { STORY_PAGE_SIZE } from "@/lib/story-discovery";
+import { retainRoutableStoryRecords } from "@/lib/story-index-records";
 
 const DISCOVERY_MEDIA_CANDIDATE_LIMIT = 3;
 
@@ -13,6 +14,7 @@ const publicMediaSelect = {
   altText: true,
   caption: true,
   sourceYear: true,
+  placeholder: true,
   sortOrder: true,
 } as const;
 
@@ -40,11 +42,13 @@ const storyMediaCandidates = {
 } as const;
 
 export async function getStoriesDiscoveryIndexData() {
-  return prisma.story.findMany({
+  const records = await prisma.story.findMany({
     where: publicStoryWhere,
     orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }, { id: "asc" }],
     select: storyIndexSelect,
   });
+  // Malformed index identities must not reach pagination or a second public query.
+  return retainRoutableStoryRecords(records);
 }
 
 export async function getVisibleStoryCards(ids: readonly string[]) {
@@ -55,7 +59,13 @@ export async function getVisibleStoryCards(ids: readonly string[]) {
     where: { ...publicStoryWhere, id: { in: [...ids] } },
     select: { ...storyIndexSelect, mediaAssets: storyMediaCandidates },
   });
-  const byId = new Map(cards.map(card => [card.id, card]));
+  // Revalidate the second public read: records may change after index selection.
+  // The database publication gate remains mandatory; malformed render fields
+  // must not interrupt the page or expose an unusable destination.
+  const visible = retainRoutableStoryRecords(cards).filter(card =>
+    typeof card.title === "string" && card.title.trim().length > 0
+    && typeof card.summary === "string" && Array.isArray(card.mediaAssets));
+  const byId = new Map(visible.map(card => [card.id, card]));
   return ids.flatMap(id => {
     const card = byId.get(id);
     return card ? [card] : [];
@@ -84,10 +94,28 @@ export async function getFaithDiscoveryData() {
     },
   });
   // Review status is needed only for the final eligibility check; do not serialize it.
-  return records.filter(isPublicFaithReviewComplete).map(record => ({
+  // Reject malformed public identity/text projections before the page renders.
+  const reviewed = (Array.isArray(records) ? records : []).filter(record =>
+    record && typeof record === "object" && !Array.isArray(record)
+    && typeof record.id === "string" && record.id.trim().length > 0
+    && typeof record.slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(record.slug)
+    && (record.type === "ARTICLE" || record.type === "REMINDER" || record.type === "VIDEO")
+    && typeof record.title === "string" && record.title.trim().length > 0
+    && typeof record.excerpt === "string"
+    && typeof record.sourceCitation === "string"
+    && isPublicFaithReviewComplete(record));
+  return reviewed.map(record => ({
     id: record.id, slug: record.slug, type: record.type, title: record.title,
     excerpt: record.excerpt, sourceCitation: record.sourceCitation,
-    verifiedAt: record.verifiedAt, topics: record.topics,
+    verifiedAt: record.verifiedAt,
+    // A corrupt topic relation cannot authorize or disclose public editorial text.
+    // Keep the independently reviewed item and omit only unusable taxonomy links.
+    topics: (Array.isArray(record.topics) ? record.topics : []).filter(link =>
+      link && typeof link === "object" && !Array.isArray(link)
+      && link.topic && typeof link.topic === "object" && !Array.isArray(link.topic)
+      && typeof link.topic.slug === "string"
+      && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(link.topic.slug)
+      && typeof link.topic.name === "string" && link.topic.name.trim().length > 0),
   }));
 }
 
@@ -97,7 +125,11 @@ export async function getFaithDiscoveryData() {
  * This protects against a withdrawal between the index and media reads.
  */
 export async function getVisibleFaithMedia(ids: readonly string[]) {
-  const uniqueIds = [...new Set(ids)];
+  // A malformed selected ID is not an additional public media candidate.
+  // Validate before deduplication and the two-record second-read limit.
+  const uniqueIds = [...new Set((Array.isArray(ids) ? ids : []).filter(
+    id => typeof id === "string" && id.trim().length > 0,
+  ))];
   if (uniqueIds.length > 2) throw new RangeError("At most two Faith media records can be loaded");
   if (uniqueIds.length === 0) return [];
 
@@ -113,6 +145,14 @@ export async function getVisibleFaithMedia(ids: readonly string[]) {
     },
   });
   const allowed = new Set(uniqueIds);
-  return records.filter(record => allowed.has(record.id) && isPublicFaithReviewComplete(record))
+  // Only separately approved media reaches the public library. Invalid
+  // projection shapes must not bypass the verified religious review recheck
+  // or interrupt text-only fallback if a relation is malformed.
+  return (Array.isArray(records) ? records : []).filter(record =>
+    record !== null && typeof record === "object" && !Array.isArray(record)
+    && typeof record.id === "string" && allowed.has(record.id)
+    && Array.isArray(record.mediaAssets)
+    && typeof record.sourceCitation === "string"
+    && isPublicFaithReviewComplete(record))
     .map(({ id, mediaAssets }) => ({ id, mediaAssets }));
 }

@@ -1,12 +1,22 @@
 import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
-import { defaultHomeConfig, readStoredHomeConfig } from '@/lib/home-carousel';
+import { defaultHomeConfig, HomeCarouselValidationError, readStoredHomeConfig } from '@/lib/home-carousel';
 import { getAppealCoverMediaBatch, type ApprovedAppealCoverMedia } from '@/lib/public-page-data';
 
 const getHomeCarouselConfigCached = unstable_cache(async () => {
   const row = await prisma.homeCarousel.findUnique({ where: { id: 'homepage' } });
-  return { config: row ? readStoredHomeConfig(row.config) : structuredClone(defaultHomeConfig), revision: row?.revision ?? 0 };
+  let config = structuredClone(defaultHomeConfig);
+  if (row) {
+    try {
+      config = readStoredHomeConfig(row.config);
+    } catch (error) {
+      // Invalid stored editorial configuration must not take down the public homepage.
+      // Keep the revision accurate; the invalid persisted row needs separate operator recovery.
+      if (!(error instanceof HomeCarouselValidationError)) throw error;
+    }
+  }
+  return { config, revision: row?.revision ?? 0 };
 }, ['home-carousel-config'], { revalidate: 300, tags: ['home-carousel'] });
 
 export const getHomeCarouselConfig = cache(getHomeCarouselConfigCached);

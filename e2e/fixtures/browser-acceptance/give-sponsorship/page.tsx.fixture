@@ -1,0 +1,33 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { fundDonationFormCopy, type GiveFund } from "@/components/fund-giving/fund-copy";
+import { TaleemSponsorshipConfigurator } from "@/components/taleem-sponsorship/taleem-sponsorship-configurator";
+import { taleemClasses, taleemHead, taleemIntro, taleemPanelNote } from "@/components/taleem-sponsorship/taleem-sponsorship-copy";
+import { sponsorshipOffer } from "@/lib/taleem-sponsorship";
+import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
+import "../../get-involved/sponsor-education/sponsor-education.css";
+
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Browser Acceptance Fixture",
+  robots: { index: false, follow: false },
+  referrer: "no-referrer",
+};
+
+// Synthetic fund and payment details only. This route exists only while the isolated browser-acceptance server is running
+// and never creates a payment or donation record.
+const fund: GiveFund = { slug: "taleem", name: "Taleem Fund", summary: "Qur'an and Islamic education sponsorship for children facing hardship.", zakatPolicy: "ACCEPTED", isGeneral: false };
+const paymentDetails = { upi: { id: "synthetic@bank", qrImageUrl: null }, bank: null } as unknown as DonationPaymentDetails;
+
+export default function TaleemSponsorshipAcceptanceFixture() {
+  if (process.env.AMAANA_BROWSER_ACCEPTANCE !== "true") notFound();
+  return (
+    <div className="v2-home taleem-sponsor">
+      <h1 className="sr-only">Taleem programme sponsorship fixture</h1>
+      <div className="taleem-paths">
+        <TaleemSponsorshipConfigurator fund={fund} offer={sponsorshipOffer()} classes={taleemClasses} head={taleemHead} intro={taleemIntro} panelNote={taleemPanelNote} copy={fundDonationFormCopy(fund)} paymentDetails={paymentDetails} feeBps={236} />
+      </div>
+    </div>
+  );
+}

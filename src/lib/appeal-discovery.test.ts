@@ -37,3 +37,20 @@ it("bounds pages after search while preserving total count and source order", ()
 it.each(["0","01","-1","1.5","1e3","9007199254740993",["1","2"]])("rejects malformed page %j", page => {
  expect(selectAppealDiscovery(records,{page})).toMatchObject({invalid:true,results:[],q:"",page:1});
 });
+
+it("keeps public appeal search and pagination safe with malformed projected records", () => {
+  const reviewed = { title: "Reviewed education support", summary: "Approved public context" };
+  const corrupt = [
+    null, undefined,
+    { title: 42, summary: "Invalid" },
+    { title: "", summary: "Missing public title" },
+    { title: "Private unreviewed", summary: { contact: "PRIVATE_PHONE" } },
+  ] as unknown as typeof records;
+  const mixed = [...corrupt, reviewed];
+  expect(selectAppealDiscovery(mixed, {})).toMatchObject({ count: 1, results: [reviewed], totalPages: 1 });
+  expect(selectAppealDiscovery(mixed, { q: "education" }).results).toEqual([reviewed]);
+  expect(JSON.stringify(selectAppealDiscovery(mixed, {}))).not.toContain("PRIVATE_PHONE");
+  expect(selectAppealDiscovery(null as unknown as typeof records, {})).toMatchObject({
+    count: 0, results: [], totalPages: 1,
+  });
+});

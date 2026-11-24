@@ -111,6 +111,12 @@ test('state and shared participation CSS retain their presentation and journey r
   for (const name of ['ui-consistency.spec.mjs', 'page-banner-standardization.spec.mjs', 'donation-assistance-journeys.spec.mjs', 'participation-contact.spec.mjs', 'body-carousel-new.spec.mjs']) assert.ok(p.tests.includes(name));
   assert.ok(planChanges(['src/app/home-documentary.css']).tests.includes('ui-consistency.spec.mjs'));
   assert.ok(planChanges(['src/app/faith-and-reflections/page.tsx']).tests.includes('ui-consistency.spec.mjs'));
+  // The real overview pages live in a route group; they must map to the same focused specs, not fail closed to full.
+  for (const route of ['faith-and-reflections', 'impact', 'our-work', 'appeals', 'stories']) {
+    const plan = planChanges([`src/app/${route}/(overview)/page.tsx`]);
+    assert.equal(plan.mode, 'focused', `${route} overview page should map to focused specs`);
+    assert.ok(plan.tests.includes('public-seo.spec.mjs'), `${route} overview page should run the SEO spec`);
+  }
   assert.equal(planChanges(['src/components/evidence-pathway.module.css']).mode, 'focused');
   assert.equal(planChanges(['src/components/donation-acknowledgement-client.tsx']).mode, 'full');
 });

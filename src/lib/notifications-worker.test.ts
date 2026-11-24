@@ -75,7 +75,8 @@ describe("notification worker flow", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env.RESEND_API_KEY = "re_test_key";
-    process.env.EMAIL_FROM = "Amaana Foundation <notifications@example.test>";
+    process.env.EMAIL_FROM = "Amaana Foundation <notifications@amaanafoundation.org>";
+    process.env.NOTIFICATION_SEND_NOT_BEFORE = "2026-01-01T00:00:00Z";
 
     mocks.findMany.mockResolvedValue([pendingNotification()]);
     mocks.updateMany.mockResolvedValue({ count: 1 });
@@ -90,6 +91,7 @@ describe("notification worker flow", () => {
   afterEach(() => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
+    delete process.env.NOTIFICATION_SEND_NOT_BEFORE;
     if (originalApiKey === undefined) delete process.env.RESEND_API_KEY;
     else process.env.RESEND_API_KEY = originalApiKey;
     if (originalFrom === undefined) delete process.env.EMAIL_FROM;
@@ -142,6 +144,7 @@ describe("notification worker flow", () => {
         status: { in: [NotificationStatus.PENDING, NotificationStatus.FAILED] },
         attempts: { equals: 0, lt: 5 },
         scheduledFor: { lte: expect.any(Date) },
+        createdAt: { gte: new Date("2026-01-01T00:00:00.000Z") },
       },
       data: {
         status: NotificationStatus.PROCESSING,
@@ -281,5 +284,25 @@ describe("notification worker flow", () => {
     expect(result).toEqual({ selected: 1, sent: 0, failed: 0 });
     expect(fetchMock).not.toHaveBeenCalled();
     expect(mocks.update).not.toHaveBeenCalled();
+  });
+
+  it("selects and claims only messages created at or after the go-live instant", async () => {
+    process.env.NOTIFICATION_SEND_NOT_BEFORE = "2026-11-22T06:00:00Z";
+    stubProvider(vi.fn().mockResolvedValue({ ok: true, json: async () => ({ id: "provider_receipt" }) }));
+    await processPendingEmailNotifications();
+    const notBefore = new Date("2026-11-22T06:00:00.000Z");
+    expect(mocks.findMany.mock.calls[0]?.[0].where.createdAt).toEqual({ gte: notBefore });
+    const claim = mocks.updateMany.mock.calls.find(call => call[0].data?.status === NotificationStatus.PROCESSING);
+    expect(claim?.[0].where.createdAt).toEqual({ gte: notBefore });
+  });
+
+  it("selects nothing, claims nothing and contacts no provider without a go-live instant", async () => {
+    delete process.env.NOTIFICATION_SEND_NOT_BEFORE;
+    const provider = vi.fn();
+    stubProvider(provider);
+    await expect(processPendingEmailNotifications()).resolves.toEqual({ selected: 0, sent: 0, failed: 0 });
+    expect(mocks.findMany).not.toHaveBeenCalled();
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(provider).not.toHaveBeenCalled();
   });
 });

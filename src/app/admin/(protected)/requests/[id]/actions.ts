@@ -229,6 +229,7 @@ export async function updateRequest(formData: FormData) {
   });
   if (!isManualAssistanceStatusAllowed(previous.status, status, Boolean(previous.appealId))) throw new Error("This status can only be changed by the linked appeal workflow");
   if ((status === AssistanceStatus.APPROVED || status === AssistanceStatus.REJECTED) && previous.status !== status && !hasPermission(user, "assistance.approve")) throw new Error("Approval permission is required");
+  if (status === AssistanceStatus.DOCUMENTS_REQUESTED && internalNotes.length < 10) throw new Error("List the specific missing items in internal notes before requesting more information.");
   if (status === AssistanceStatus.APPROVED && previous.status !== status && !canApproveAssistanceRequest(previous.verification)) throw new Error("Complete verification with an approved decision before marking this request approved");
   if (status === AssistanceStatus.REJECTED && previous.status !== status && (!previous.verification?.completedAt || previous.verification.decision !== AssistanceVerificationDecision.DECLINED)) throw new Error("Complete verification with a declined decision before marking this request rejected");
 
@@ -436,6 +437,7 @@ const safeReviewFeedbackPrefixes = [
   "Invalid Zakat review status",
   "Invalid status",
   "Internal notes are too long",
+  "List the specific missing items in internal notes before requesting more information.",
   "Verification summary is too long",
   "Other-funding notes are too long",
   "Payment destination is too long",

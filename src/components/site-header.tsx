@@ -48,9 +48,9 @@ export function SiteHeader() {
   };
 
   const closeMobileMenu = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (event.defaultPrevented || event.button !== 0 || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
     closeMenu();
-    if (event.currentTarget.pathname === pathname && !event.defaultPrevented && event.button === 0 &&
-        !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) toggleRef.current?.focus();
+    if (event.currentTarget.pathname === pathname) toggleRef.current?.focus();
   };
 
   useEffect(() => {

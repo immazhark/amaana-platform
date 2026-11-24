@@ -6,6 +6,10 @@ const protectedAdminSurfaces = [
   "/admin/appeals/not-a-real-id",
   "/admin/audit",
   "/admin/donations",
+  "/admin/funds",
+  "/admin/funds/campaigns",
+  "/admin/funds/manage",
+  "/admin/funds/spending",
   "/admin/donations/not-a-real-id",
   "/admin/home-carousel",
   "/admin/media",
@@ -14,6 +18,7 @@ const protectedAdminSurfaces = [
   "/admin/requests",
   "/admin/requests/not-a-real-id",
   "/admin/retention",
+  "/admin/taleem",
   "/admin/documents/not-a-real-id",
 ];
 

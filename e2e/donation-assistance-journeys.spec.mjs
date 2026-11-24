@@ -89,6 +89,33 @@ async function openAssistance(page) {
   await expect(page.getByRole('heading', { name: 'Tell us about the request.' })).toBeVisible();
 }
 
+test('assistance intake visibly marks all required fields and distinguishes the optional inputs', async ({ page }) => {
+  await openAssistance(page);
+  for (const id of ['name', 'phone', 'city', 'category', 'description']) {
+    const label = page.locator(`label[for="${id}"]`);
+    expect(await label.evaluate(el => getComputedStyle(el, '::after').content)).toContain('Required');
+    await expect(page.locator(`#${id}`)).toHaveAttribute('required', '');
+  }
+  await expect(page.locator('label[for="email"]')).toContainText('optional');
+  expect(await page.locator('label[for="email"]').evaluate(el => getComputedStyle(el, '::after').content)).not.toContain('Required');
+  await expect(page.locator('#email')).not.toHaveAttribute('required');
+  await expect(page.locator('#assistance-step-3 legend')).toContainText('optional');
+  await expect(page.locator('#documents')).not.toHaveAttribute('required');
+
+  await fillAssistanceForm(page);
+  expect(await page.locator('#assistance-step-4 label.checkbox strong').evaluate(el => getComputedStyle(el, '::after').content)).toContain('Required');
+  await expect(page.locator('input[name="consent"]')).toHaveAttribute('required', '');
+  // The visual markers must not change accessible field labels used by keyboard/screen-reader users.
+  await page.getByRole('button', { name: /Contact/ }).click();
+  for (const name of ['Applicant name', 'Phone number', 'City']) {
+    await expect(page.getByLabel(name, { exact: true })).toBeVisible();
+  }
+  await page.getByRole('button', { name: /Need/ }).click();
+  for (const name of ['Type of assistance', 'Describe the need']) {
+    await expect(page.getByLabel(name, { exact: true })).toBeVisible();
+  }
+});
+
 test('assistance errors are linked before keyboard focus reaches invalid input', async ({ page }) => {
   await openAssistance(page);
   await page.evaluate(() => {
@@ -550,7 +577,7 @@ test.describe('direct donation browser journey without real transfer', () => {
 
     await page.getByRole('button', { name: 'Direct UPI / QR' }).click();
     await expect(page.getByText('mab.037347029220157@axisbank')).toBeVisible();
-    await expect(page.getByText(/Verified QR image is not configured yet/)).toBeVisible();
+    await expect(page.getByText('A verified QR code is not published yet.')).toBeVisible();
 
     await page.getByLabel('Full name').fill('Acceptance Donor');
     await page.getByLabel('Email').fill('acceptance@example.test');

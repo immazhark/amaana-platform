@@ -122,6 +122,74 @@ test("chained constant CSS calc scalar operations must use the final font size",
   assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
 });
 
+test("same-unit additive calc chains use the resulting size, not each operand", () => {
+  const unsafe = [
+    ".chainedRem{font-size:calc(2rem - 1rem - 1rem)}",
+    ".chainedPx{font-size:calc(28px - 14px - 13px)}",
+    ".mixedSigns{font-size:calc(1rem + 1rem - 1.5rem)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(unsafe, "fixture.css").map(item => item.value), [
+    "calc(2rem - 1rem - 1rem)",
+    "calc(28px - 14px - 13px)",
+    "calc(1rem + 1rem - 1.5rem)",
+  ]);
+
+  const safe = [
+    ".restoredRem{font-size:calc(2rem - 1rem + .25rem)}",
+    ".restoredPx{font-size:calc(22px + 4px - 13px)}",
+    ".large{font-size:calc(2rem + 1rem - 1rem)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
+});
+
+test("nested min(calc()) must not hide a constant sub-12px font size", () => {
+  const unsafe = [
+    ".tooSmall{font-size:min(calc(1rem * .5), 1rem)}",
+    ".alsoTooSmall{font-size:min(calc(1rem / 2), 14px)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(unsafe, "fixture.css").map(({ value }) => value), [
+    "min(calc(1rem * .5), 1rem)",
+    "min(calc(1rem / 2), 14px)",
+  ]);
+  const safe = [
+    ".allowed{font-size:min(calc(1rem * 2), 14px)}",
+    ".allowedPx{font-size:min(calc(16px / 1), 1rem)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
+});
+
+test("min() rejects a smaller constant calc in its second position", () => {
+  const css = [
+    ".rem{font-size:min(1rem, calc(1rem * .5))}",
+    ".px{font-size:min(1rem,calc(20px / 2))}",
+    ".nested{font-size:min(1rem, calc(1rem / 0))}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(css, "fixture.css").map(({ value }) => value), [
+    "min(1rem, calc(1rem * .5))",
+    "min(1rem,calc(20px / 2))",
+    "min(1rem, calc(1rem / 0))",
+  ]);
+  assert.deepEqual(auditFontSizes(
+    ".safe{font-size:min(1rem, calc(20px * 1.5))}", "fixture.css"
+  ), []);
+});
+
+test("min() with three arguments cannot hide a sub-12px constant calc bound", () => {
+  const unsafe = [
+    ".third{font-size:min(2rem,1.2rem,calc(1rem * .5))}",
+    ".middle{font-size:min(1rem,calc(1rem / 2),1.5rem)}",
+    ".thirdPx{font-size:min(20px,18px,calc(24px / 3))}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(unsafe, "fixture.css").map(item => item.value), [
+    "min(2rem,1.2rem,calc(1rem * .5))",
+    "min(1rem,calc(1rem / 2),1.5rem)",
+    "min(20px,18px,calc(24px / 3))",
+  ]);
+  assert.deepEqual(auditFontSizes(
+    ".safe{font-size:min(1rem,calc(1rem * 2),1.3rem)}", "fixture.css"
+  ), []);
+});
+
 test("public CSS audit rejects linked stylesheet files instead of silently ignoring them", async () => {
   const root = await mkdtemp(join(tmpdir(), "amaana-css-audit-file-"));
   try {
@@ -170,4 +238,117 @@ test("public CSS audit still scans ordinary nested CSS and rejects literal small
   } finally {
     await rm(root, { recursive: true, force: true });
   }
+});
+
+test("public CSS audit rejects an aliased repository root before scanning external CSS", async () => {
+  const workspace = await mkdtemp(join(tmpdir(), "amaana-css-audit-repository-"));
+  try {
+    const realRoot = join(workspace, "real-project");
+    await mkdir(join(realRoot, "src"), { recursive: true });
+    await writeFile(join(realRoot, "src", "safe.css"), ".safe{font-size:16px}");
+    const alias = join(workspace, "linked-project");
+    await symlink(realRoot, alias, "dir");
+    await assert.rejects(auditPublicStyles(alias), /symbolic link/i);
+  } finally {
+    await rm(workspace, { recursive: true, force: true });
+  }
+});
+
+test("AF-R024 catches sub-floor constant addition and subtraction inside min(calc())", () => {
+  const unsafe = [
+    ".badRem{font-size:min(calc(2rem - 1.5rem),1rem)}",
+    ".badPx{font-size:min(20px,calc(28px - 18px))}",
+    ".badPlus{font-size:min(calc(-1rem + 1.5rem),1rem)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(unsafe, "fixture.css").map(({ value }) => value), [
+    "min(calc(2rem - 1.5rem),1rem)",
+    "min(20px,calc(28px - 18px))",
+    "min(calc(-1rem + 1.5rem),1rem)",
+  ]);
+
+  const safe = [
+    ".safeRem{font-size:min(calc(2rem - .75rem),1rem)}",
+    ".safePx{font-size:min(20px,calc(30px - 14px))}",
+    ".safePlus{font-size:min(calc(1rem + 1rem),2rem)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
+});
+
+test("AF-R024 checks computed constant calc font sizes in font shorthands, not line-height", () => {
+  const unsafe = [
+    ".smallRem{font:600 calc(1rem * .5)/1.4 system-ui}",
+    ".smallPx{font:italic calc(24px / 3) serif}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(unsafe, "fixture.css").map(item => item.value), [
+    "600 calc(1rem * .5)/1.4 system-ui",
+    "italic calc(24px / 3) serif",
+  ]);
+
+  const safe = [
+    ".large{font:700 calc(8px * 2)/1.4 system-ui}",
+    ".lineHeight{font:400 1rem / calc(.5rem * 2) system-ui}",
+    ".regular{font:600 1rem/1.2 system-ui}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
+});
+
+test("AF-R024 nested min(calc()) additive chains use the computed final size", () => {
+  const unsafe = [
+    ".rem{font-size:min(1rem,calc(2rem - 1rem - .75rem))}",
+    ".px{font-size:min(16px,calc(32px - 12px - 10px))}",
+    ".mixed{font-size:min(calc(1rem + .75rem - 1.5rem),2rem)}",
+    ".divide{font-size:min(calc(1rem + 1rem - 2rem),3rem)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(unsafe, "fixture.css").map(issue => issue.value), [
+    "min(1rem,calc(2rem - 1rem - .75rem))",
+    "min(16px,calc(32px - 12px - 10px))",
+    "min(calc(1rem + .75rem - 1.5rem),2rem)",
+    "min(calc(1rem + 1rem - 2rem),3rem)",
+  ]);
+
+  const safe = [
+    ".rem{font-size:min(1rem,calc(2rem - 1rem + .75rem))}",
+    ".px{font-size:min(16px,calc(32px - 12px + 12px))}",
+    ".multiple{font-size:min(1rem,calc(2rem - 1rem - .75rem + .75rem))}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
+});
+
+
+test("AF-R024 evaluates literal calc() lower bounds inside clamp() instead of inspecting operands", () => {
+  const unsafe = [
+    ".smallRem{font-size:clamp(calc(1rem / 2), 2vw, 1rem)}",
+    ".smallPx{font-size:clamp(calc(20px * .5), 2vw, 2rem)}",
+    ".invalid{font-size:clamp(calc(1rem / 0), 2vw, 2rem)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(unsafe, "fixture.css").map(issue => issue.value), [
+    "clamp(calc(1rem / 2), 2vw, 1rem)",
+    "clamp(calc(20px * .5), 2vw, 2rem)",
+    "clamp(calc(1rem / 0), 2vw, 2rem)",
+  ]);
+
+  const safe = [
+    ".restored{font-size:clamp(calc(.5rem * 2), 2vw, 2rem)}",
+    ".px{font-size:clamp(calc(10px * 2), 2vw, 2rem)}",
+    ".literal{font-size:clamp(.75rem, 2vw, 2rem)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
+});
+
+
+test("AF-R024 clamp additive calc minimum uses the computed lower bound", () => {
+  const unsafe = [
+    ".smallRem{font-size:clamp(calc(2rem - 1.5rem),1vw,3rem)}",
+    ".smallPx{font-size:clamp(calc(24px - 16px),2vw,32px)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(unsafe, "fixture.css").map(issue => issue.value), [
+    "clamp(calc(2rem - 1.5rem),1vw,3rem)",
+    "clamp(calc(24px - 16px),2vw,32px)",
+  ]);
+
+  const safe = [
+    ".safeRem{font-size:clamp(calc(.5rem + .25rem),2vw,1rem)}",
+    ".safePx{font-size:clamp(calc(10px + 2px),2vw,24px)}",
+  ].join("");
+  assert.deepEqual(auditFontSizes(safe, "fixture.css"), []);
 });

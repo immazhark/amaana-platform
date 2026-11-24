@@ -20,6 +20,23 @@ export function auditFontSizes(source, path) {
     // A clamp's first argument is the lower bound. Its middle calc() may
     // legitimately subtract a small length without reducing that bound.
     const clampFloor = !shorthand && /^clamp\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*,/i.exec(value);
+    // A constant calc() in clamp's lower-bound position must be evaluated,
+    // not judged by a single operand (which could be falsely below 12px).
+    const clampCalcFloor = !shorthand &&
+      /^clamp\(\s*calc\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*([*/])\s*(-?\d*\.?\d+)\s*\)\s*,/i.exec(value);
+    const clampCalcValue = clampCalcFloor
+      ? (clampCalcFloor[3] === "*"
+        ? Number(clampCalcFloor[1]) * Number(clampCalcFloor[4])
+        : Number(clampCalcFloor[1]) / Number(clampCalcFloor[4]))
+      : null;
+    // A constant additive calc() is the actual clamp minimum; inspecting
+    // its operands individually can miss a small result or reject a safe one.
+    const clampAdditiveFloor = !shorthand &&
+      /^clamp\(\s*calc\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*([+-])\s*(-?\d*\.?\d+)\s*\2\s*\)\s*,/i.exec(value);
+    const clampAdditiveValue = clampAdditiveFloor
+      ? Number(clampAdditiveFloor[1]) + (clampAdditiveFloor[3] === "+"
+        ? Number(clampAdditiveFloor[4]) : -Number(clampAdditiveFloor[4]))
+      : null;
     // Fold only standalone constant calc products, quotients, and same-unit sums/differences in font-size.
     // Operand-only scanning misses calc(1rem * .5), while it rejects
     // calc(11px * 2) despite the computed size being above the floor.
@@ -27,6 +44,15 @@ export function auditFontSizes(source, path) {
     const directCalc = !shorthand && /^calc\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*([*/])\s*(-?\d*\.?\d+)\s*\)$/i.exec(value);
     const reverseCalc = !shorthand && /^calc\(\s*(-?\d*\.?\d+)\s*\*\s*(-?\d*\.?\d+)\s*(rem|px)\s*\)$/i.exec(value);
     const additiveCalc = !shorthand && /^calc\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*([+-])\s*(-?\d*\.?\d+)\s*\2\s*\)$/i.exec(value);
+    // Three or more constant same-unit terms can hide a sub-floor result
+    // even when each individual operand is at or above the minimum.
+    const additiveChainCalc = !shorthand &&
+      /^calc\(\s*(-?\d*\.?\d+)\s*(rem|px)((?:\s*[+-]\s*-?\d*\.?\d+\s*\2){2,})\s*\)$/i.exec(value);
+    const additiveChainValue = additiveChainCalc
+      ? Array.from(additiveChainCalc[3].matchAll(/([+-])\s*(-?\d*\.?\d+)\s*(?:rem|px)/gi))
+        .reduce((result, [, op, number]) => op === "+"
+          ? result + Number(number) : result - Number(number), Number(additiveChainCalc[1]))
+      : null;
     // Fold only literal length-first scalar product chains. Unsupported
     // nested, mixed-unit and dynamic expressions use the old fallback.
     const scalarChainCalc = !shorthand &&
@@ -43,18 +69,20 @@ export function auditFontSizes(source, path) {
       : additiveCalc ? Number(additiveCalc[1]) + (additiveCalc[3] === "+"
         ? Number(additiveCalc[4]) : -Number(additiveCalc[4]))
       : scalarChainCalc ? scalarChainValue
+      : additiveChainCalc ? additiveChainValue
       : null;
     if (computed !== null && !Number.isFinite(computed)) {
       violations.push({ path, value });
       continue;
     }
-    const computedUnit = directCalc?.[2] ?? reverseCalc?.[3] ?? additiveCalc?.[2] ?? scalarChainCalc?.[2];
+    const computedUnit = directCalc?.[2] ?? reverseCalc?.[3] ?? additiveCalc?.[2] ?? scalarChainCalc?.[2] ?? additiveChainCalc?.[2];
     const folded = computed !== null && computedUnit
       ? [[value, String(computed), computedUnit]]
       : null;
     const measurements = folded
       ? folded
       : clampFloor ? [clampFloor]
+      : (clampCalcFloor || clampAdditiveFloor) ? [] // The computed clamp floor is checked below.
       : [...value.matchAll(/(?:^|[^\w.])(-?\d*\.?\d+)\s*(rem|px)\b/gi)];
     // A font shorthand contains a size followed by an optional /line-height.
     // Check its first literal px/rem size only; a smaller line-height is not
@@ -64,8 +92,62 @@ export function auditFontSizes(source, path) {
       const minimum = unit.toLowerCase() === "px" ? MIN_FONT_PX : MIN_FONT_REM;
       return Number(number) < minimum;
     });
-
-    if (tooSmall) violations.push({ path, value });
+    // Any constant calc() argument below the floor caps min(), even with
+    // three or more arguments. Ignore other CSS expressions for browser review.
+    const minCalcOperands = !shorthand && /^min\(/i.test(value)
+      ? Array.from(value.matchAll(/(?:\(|,)\s*calc\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*([*/])\s*(-?\d*\.?\d+)\s*\)\s*(?=,|\))/gi))
+      : [];
+    const nestedMinTooSmall = minCalcOperands.some(([, number, unit, operation, scalar]) => {
+      const amount = operation === "*"
+        ? Number(number) * Number(scalar) : Number(number) / Number(scalar);
+      return !Number.isFinite(amount) ||
+        amount < (unit.toLowerCase() === "px" ? MIN_FONT_PX : MIN_FONT_REM);
+    });
+    // min() selects the smallest argument, including a nested same-unit
+    // additive calc. Every literal operand can exceed 12px while the
+    // evaluated subtraction still drops the selected size below the floor.
+    const minAdditiveOperands = !shorthand && /^min\(/i.test(value)
+      ? Array.from(value.matchAll(/(?:\(|,)\s*calc\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*([+-])\s*(-?\d*\.?\d+)\s*\2\s*\)\s*(?=,|\))/gi))
+      : [];
+    const nestedMinAdditiveTooSmall = minAdditiveOperands.some(([, start, unit, operation, adjustment]) => {
+      const finalSize = Number(start) + (operation === "+" ? Number(adjustment) : -Number(adjustment));
+      return !Number.isFinite(finalSize) ||
+        finalSize < (unit.toLowerCase() === "px" ? MIN_FONT_PX : MIN_FONT_REM);
+    });
+    // A nested calc() with three or more same-unit terms can fall below the
+    // minimum even when each literal operand is large enough on its own.
+    const minAdditiveChains = !shorthand && /^min\(/i.test(value)
+      ? Array.from(value.matchAll(/(?:\(|,)\s*calc\(\s*(-?\d*\.?\d+)\s*(rem|px)((?:\s*[+-]\s*-?\d*\.?\d+\s*\2){2,})\s*\)\s*(?=,|\))/gi))
+      : [];
+    const nestedMinAdditiveChainTooSmall = minAdditiveChains.some(([, start, unit, chain]) => {
+      const finalSize = Array.from(chain.matchAll(/([+-])\s*(-?\d*\.?\d+)\s*(?:rem|px)/gi))
+        .reduce((amount, [, operation, adjustment]) => operation === "+"
+          ? amount + Number(adjustment) : amount - Number(adjustment), Number(start));
+      return !Number.isFinite(finalSize) ||
+        finalSize < (unit.toLowerCase() === "px" ? MIN_FONT_PX : MIN_FONT_REM);
+    });
+    // In font shorthands the size may itself be a constant calc(). Check
+    // its evaluated value, not its operands; do not treat a later calc()
+    // after the size/line-height slash as the font-size.
+    const shorthandCalcSize = shorthand
+      ? /(?:^|\s)calc\(\s*(-?\d*\.?\d+)\s*(rem|px)\s*([*/])\s*(-?\d*\.?\d+)\s*\)(?=\s*(?:\/|\s|$))/i.exec(value)
+      : null;
+    const shorthandCalcIsSize = shorthandCalcSize &&
+      !value.slice(0, shorthandCalcSize.index).includes("/");
+    const shorthandSize = shorthandCalcIsSize
+      ? shorthandCalcSize[3] === "*"
+        ? Number(shorthandCalcSize[1]) * Number(shorthandCalcSize[4])
+        : Number(shorthandCalcSize[1]) / Number(shorthandCalcSize[4])
+      : null;
+    const shorthandCalcTooSmall = shorthandSize !== null &&
+      (!Number.isFinite(shorthandSize) ||
+        shorthandSize < (shorthandCalcSize[2].toLowerCase() === "px" ? MIN_FONT_PX : MIN_FONT_REM));
+    if ((shorthandCalcIsSize ? shorthandCalcTooSmall : tooSmall) ||
+      (clampCalcValue !== null && (!Number.isFinite(clampCalcValue) ||
+        clampCalcValue < (clampCalcFloor[2].toLowerCase() === "px" ? MIN_FONT_PX : MIN_FONT_REM))) ||
+      (clampAdditiveValue !== null && (!Number.isFinite(clampAdditiveValue) ||
+        clampAdditiveValue < (clampAdditiveFloor[2].toLowerCase() === "px" ? MIN_FONT_PX : MIN_FONT_REM))) ||
+      nestedMinTooSmall || nestedMinAdditiveTooSmall || nestedMinAdditiveChainTooSmall) violations.push({ path, value });
   }
 
   return violations;
@@ -93,6 +175,9 @@ async function* cssFiles(directory) {
 }
 
 export async function auditPublicStyles(root = process.cwd()) {
+  if ((await lstat(resolve(root))).isSymbolicLink()) {
+    throw new Error(`Symbolic link is not permitted in public CSS audit: ${root}`);
+  }
   const violations = [];
   for await (const path of cssFiles(join(root, "src"))) {
     const displayPath = relative(root, path).split(sep).join("/");

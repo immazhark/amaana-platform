@@ -51,21 +51,24 @@ jobs:
             assert.equal(process.getuid(), 1000);
             console.log("Built worker success, failure, credential and non-root checks passed.");
           '
-      - name: Verify default entrypoint never delivers with or without credentials
+      - name: Verify the default entrypoint runs the job, fails closed offline and never prints the credential
         run: |
-          # The production CMD is deliberately a syntax check. A future Railway
-          # start-command reset must not send queued notifications, even when a
-          # credential has been configured on the worker.
+          # The image CMD runs the job (Railway does not apply a custom start command to this Dockerfile build).
+          # With networking disabled it must fail closed with the generic message and a non-zero exit, with or
+          # without a credential, and must never echo the credential. What the job then does is decided by the
+          # website: it sends nothing unless the website declares EMAIL_DELIVERY_MODE=live and
+          # NOTIFICATION_SEND_NOT_BEFORE.
           set +e
           OUTPUT=$(docker run --rm --network none amaana-notification-worker:ci 2>&1)
           STATUS=$?
           set -e
-          test "$STATUS" -eq 0
-          test -z "$OUTPUT"
+          test "$STATUS" -eq 1
+          echo "$OUTPUT" | grep -q "Notification job failed; inspect the application's notification operations."
 
           set +e
           OUTPUT=$(docker run --rm --network none -e CRON_SECRET=synthetic-image-credential amaana-notification-worker:ci 2>&1)
           STATUS=$?
           set -e
-          test "$STATUS" -eq 0
-          test -z "$OUTPUT"
+          test "$STATUS" -eq 1
+          echo "$OUTPUT" | grep -q "Notification job failed; inspect the application's notification operations."
+          if echo "$OUTPUT" | grep -q "synthetic-image-credential"; then echo "credential leaked into output"; exit 1; fi

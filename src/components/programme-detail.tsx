@@ -5,6 +5,8 @@ import { ProgrammeArtwork, hasProgrammeArtwork } from "@/components/programme-ar
 import { selectInitiativeBannerImage } from "@/lib/initiative-banner-media";
 import { SectionHeading } from "@/components/section-heading";
 import { BodyCarousel } from "@/components/body-carousel";
+import { TaleemFees } from "@/components/taleem-fees";
+import { TaleemMilestone } from "@/components/taleem-milestone";
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { BreadcrumbStructuredData } from '@/components/breadcrumb-structured-data';
@@ -14,11 +16,14 @@ import { WorkVisualPlaceholder } from '@/components/work-visual-placeholder';
 import { getPublishedInitiativeBySlug, PUBLIC_DETAIL_MEDIA_LIMIT } from '@/lib/public-content';
 import { getProgrammeChildMedia } from '@/lib/public-page-data';
 import { programmeBySlug, programmeChildren } from '@/lib/master-copy';
+import { programmeStatusLabel } from '@/lib/programme-status-label';
 import { PublicMedia } from '@/components/public-media';
-import { canRenderPublicMedia, resolvePublicMediaUrl, selectGalleryPublicImage, selectIdentityPublicImage } from '@/lib/public-media';
+import { canRenderPublicMedia, dedupeRenderablePublicMediaByUrl, resolvePublicMediaUrl, selectGalleryPublicImage, selectIdentityPublicImage } from '@/lib/public-media';
 import { buildPublicRecordFallback, programmeStoryParagraphs, heroTeaser } from '@/lib/public-copy';
 import { CampaignMediaGallery } from '@/components/campaign-media-gallery';
 import { toPublicGalleryItems } from '@/lib/public-gallery-projection';
+import { isTaleemSponsorshipEnabled } from '@/lib/taleem-sponsorship-flag';
+import { sponsorshipHrefForSlug } from '@/lib/taleem-sponsorship-link';
 import '@/app/our-work/[slug]/campaign.css';
 import '@/app/canonical-content.css';
 
@@ -30,7 +35,8 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
  const summary=canonical?.summary??record.summary;
  const children=programmeChildren(slug);
  const childMediaRecords=await getProgrammeChildMedia(children.map(child=>child.slug));
- const publishedChildSlugs=new Set(childMediaRecords.map(item=>item.slug));
+ const validChildMediaRecords=(Array.isArray(childMediaRecords)?childMediaRecords:[]).filter(item=>item!=null&&typeof item==="object"&&typeof item.slug==="string"&&Array.isArray(item.mediaAssets));
+ const publishedChildSlugs=new Set(validChildMediaRecords.map(item=>item.slug));
  const publishedChildren=children.filter(child=>publishedChildSlugs.has(child.slug));
 
  // The published-child projection already passed the server publication gate.
@@ -49,8 +55,8 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
   }];
  });
 
- const childMedia=new Map(childMediaRecords.map(item=>[item.slug,selectGalleryPublicImage(item.mediaAssets)]));
- const media=record.mediaAssets.filter(canRenderPublicMedia).filter((asset,index,list)=>list.findIndex(other=>resolvePublicMediaUrl(other)===resolvePublicMediaUrl(asset))===index);
+ const childMedia=new Map(validChildMediaRecords.map(item=>[item.slug,selectGalleryPublicImage(item.mediaAssets)]));
+ const media=dedupeRenderablePublicMediaByUrl(record.mediaAssets);
  const umbrella=children.length>0;
  const collage=umbrella&&hasProgrammeArtwork(slug);
  const lead=umbrella?selectIdentityPublicImage(media):selectInitiativeBannerImage(media);
@@ -59,11 +65,13 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
  const status=canonical?.programmeStatus??'RECURRING';
  const primaryMetric=record.primaryMetric;
  const primaryMetricLabel=record.primaryMetricLabel;
- const statusLabel=canonical?.causeSlug==='medical-financial-relief'?(slug==='jewellery-loan-intervention'?'Assistance completed':'Fundraising completed'):status==='EXPANDING'?'Developing pathway':status==='ONGOING'?'Ongoing sponsorship':status==='HISTORICAL'?'Historical response':status==='COMPLETED'?'Completed work':'Recurring programme';
+ const statusLabel=programmeStatusLabel(canonical?.causeSlug,slug,status);
  const parentCandidate=canonical?.parentSlug?programmeBySlug(canonical.parentSlug):undefined;
  const parentRecord=parentCandidate?await getPublishedInitiativeBySlug(parentCandidate.slug):null;
  const parent=parentRecord?parentCandidate:undefined;
  const facts=canonical&&'facts' in canonical?canonical.facts:[];
+ const schoolCollegeEnquiry=slug==='taleem-school-college-sponsorship';
+ const sponsorOpen=(slug==='taleem'||slug.startsWith('taleem-'))&&isTaleemSponsorshipEnabled();
  const storyParagraphs=programmeStoryParagraphs(summary,story);
  const historicalGrassroots=['hyderabad-flood-relief-2020','covid-essential-support-2020'].includes(slug);
  const fallbackStory=buildPublicRecordFallback({metric:primaryMetric,metricLabel:primaryMetricLabel});
@@ -101,6 +109,8 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
   />
   {(primaryMetric||primaryMetricLabel)&&<section className="campaign-impact-strip" aria-label="Programme impact summary"><div className="v2-shell"><div><span>Documented impact</span><strong>{primaryMetric??"Published record"}</strong><p>{primaryMetricLabel??statusLabel}</p></div><div><span>Status</span><strong>{statusLabel}</strong></div></div></section>}
   <section className="campaign-story" id="programme-story"><div className="v2-shell campaign-story-layout"><div><p className="v2-section-label">The work</p><h2>How the programme took shape</h2></div><div className="campaign-story-copy">{storyParagraphs.length>0?storyParagraphs.map((paragraph,index)=><p key={index}>{paragraph}</p>):<p>{fallbackStory}</p>}</div></div></section>
+  <TaleemFees slug={slug} />
+  <TaleemMilestone slug={slug} />
   {historicalGrassroots&&<section className="campaign-history-note"><div className="v2-shell"><span>Historical grassroots record</span><p>This work predates Amaana Foundation&apos;s later formal registration and is presented as part of the community effort that preceded the registered trust.</p></div></section>}
 
   {facts&&facts.length>0&&<section className="v2-section paper"><div className="v2-shell"><h2>Programme details</h2><ol className={factsClass}>{facts.map(f=><li key={f}>{f}</li>)}</ol></div></section>}
@@ -108,7 +118,7 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
   {highlightMedia&&<section className="campaign-data-visual"><div className="v2-shell"><div><span className="v2-section-label">Beneficiary breakdown</span><h2>Who the 2026 Eid Gift Kits reached</h2><p>{highlightMedia.caption}</p></div><PublicMedia asset={highlightMedia}/></div></section>}
   {gallery.length>0&&<section className="campaign-gallery" id="campaign-gallery"><div className="v2-shell"><SectionHeading className="campaign-section-heading" eyebrow="Programme photographs" title="Real Work. Shared Responsibly." subtitle="Original photographs from this programme. Personal documents remain private." /><CampaignMediaGallery items={toPublicGalleryItems(gallery)}/><div className="campaign-gallery-grid">{gallery.filter(asset=>asset.kind!=='IMAGE').map(asset=><PublicMedia asset={asset} key={asset.id}/>)}</div></div></section>}
   {record.mediaAssets.length >= PUBLIC_DETAIL_MEDIA_LIMIT && <div className="v2-shell"><Link className="v2-text-link" prefetch={false} href={`/media-archive/initiative/${encodeURIComponent(record.slug)}`}>Browse the complete approved media archive</Link></div>}
-  {(slug==='taleem'||slug.startsWith('taleem-'))&&<section className="v2-section"><div className="v2-shell"><SectionHeading eyebrow="Education sponsorship" title="Knowledge should open doors — financial hardship should not close them." subtitle="Identify a genuine educational barrier, verify the need, and respond responsibly." /><Link className="v2-button" href="/get-involved/sponsor-education">Sponsor a Learner</Link></div></section>}
+  {(slug==='taleem'||slug.startsWith('taleem-'))&&<section className="v2-section"><div className="v2-shell"><SectionHeading eyebrow="Education sponsorship" title="Knowledge should open doors — financial hardship should not close them." subtitle="Identify a genuine educational barrier, verify the need, and respond responsibly." /><Link className="v2-button" href={schoolCollegeEnquiry||sponsorOpen?sponsorshipHrefForSlug(slug):"/get-involved/sponsor-education"}>{schoolCollegeEnquiry?"Ask about school or college sponsorship":sponsorOpen?"Give to a Taleem programme":"Sponsor a Learner"}</Link></div></section>}
   <ProgrammeNext />
  </div>;
 }

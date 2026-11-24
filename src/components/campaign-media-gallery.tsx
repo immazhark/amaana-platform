@@ -28,8 +28,12 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
     const seenUrls = new Set<string>();
     const seenIds = new Set<string>();
     return items.flatMap(item => {
-      if (!item || typeof item.id !== "string" || !item.id.trim() ||
-          typeof item.alt !== "string" || !item.alt.trim()) return [];
+      if (!item || !["id", "url", "alt"].every(key => Object.hasOwn(item, key)) ||
+          ["caption", "graphicArtwork", "serverApprovedExternal", "width", "height"]
+            .some(key => key in item && !Object.hasOwn(item, key)) ||
+          typeof item.id !== "string" || !item.id.trim() ||
+          typeof item.alt !== "string" || !item.alt.trim() ||
+          (item.caption != null && typeof item.caption !== "string")) return [];
       const url = normalizeSafePublicMediaUrl(item.url);
       // Browser code cannot read server-only PUBLIC_MEDIA_BASE_URL. Retain reviewed
       // external images explicitly approved by the server projection, not raw props.

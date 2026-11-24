@@ -25,6 +25,7 @@ export const getGetInvolvedHeroMedia = cache(async () => {
       altText: true,
       caption: true,
       sourceYear: true,
+      placeholder: true,
     } as const;
 
     const preferredCandidates = await prisma.mediaAsset.findMany({
