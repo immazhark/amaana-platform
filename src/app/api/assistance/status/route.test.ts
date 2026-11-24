@@ -156,3 +156,35 @@ describe("assistance tracking privacy and request bounds", () => {
     expect(mocks.findUnique).not.toHaveBeenCalled();
   });
 });
+
+describe("applicant tracking never carries a rejection reason or any internal review detail (assistance queue brief, section 11)", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    mocks.isSameOrigin.mockReturnValue(true);
+    mocks.enforceTrackingRateLimit.mockResolvedValue(true);
+    mocks.readTextBodyWithLimit.mockResolvedValue(JSON.stringify({ reference: "AF-2026-123456", token: "t".repeat(30) }));
+  });
+
+  const rejectedRecord = {
+    trackingTokenHash: "a".repeat(64), status: "REJECTED", createdAt: new Date("2026-11-20T00:00:00Z"), updatedAt: new Date("2026-11-22T04:10:00Z"),
+    // Everything below must never reach the applicant, even if the database were asked for it.
+    internalNotes: "PRIVATE-NOTE", rejections: [{ reason: "PRIVATE-REJECTION-REASON", rejectedBy: { name: "Reviewer" } }],
+    verification: { verificationSummary: "PRIVATE-SUMMARY", decision: "DECLINED" },
+  };
+
+  it("asks the database for the tracking fields only, never the rejections, notes or verification", async () => {
+    mocks.findUnique.mockResolvedValue(rejectedRecord);
+    await POST(new Request("https://amaana.example/api/assistance/status", { method: "POST", body: "{}" }));
+    const query = mocks.findUnique.mock.calls[0]![0];
+    expect(Object.keys(query.select).sort()).toEqual(["createdAt", "status", "trackingTokenHash", "updatedAt"]);
+    expect(query.include).toBeUndefined();
+  });
+
+  it("tells a rejected applicant the status and the timestamps and nothing else", async () => {
+    mocks.findUnique.mockResolvedValue(rejectedRecord);
+    const response = await POST(new Request("https://amaana.example/api/assistance/status", { method: "POST", body: "{}" }));
+    const text = await response.text();
+    expect(JSON.parse(text)).toEqual({ found: true, status: "REJECTED", createdAt: "2026-11-20T00:00:00.000Z", updatedAt: "2026-11-22T04:10:00.000Z" });
+    for (const secret of ["PRIVATE-NOTE", "PRIVATE-REJECTION-REASON", "PRIVATE-SUMMARY", "Reviewer", "DECLINED"]) expect(text).not.toContain(secret);
+  });
+});

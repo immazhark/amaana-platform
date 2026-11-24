@@ -179,6 +179,7 @@ model User {
   reviewedAppeals         Appeal[]                 @relation("AppealReviewer")
   assistanceAssignments   AssistanceRequest[]      @relation("AssistanceAssignee")
   assistanceVerifications AssistanceVerification[] @relation("AssistanceVerifier")
+  assistanceRejections    AssistanceRejection[]    @relation("AssistanceRejecter")
   notifications           Notification[]
   credential              PasswordCredential?
   sessions                Session[]
@@ -678,6 +679,7 @@ model AssistanceRequest {
   assignedTo        User?                   @relation("AssistanceAssignee", fields: [assignedToId], references: [id])
   appeal             Appeal?                 @relation(fields: [appealId], references: [id])
   verification       AssistanceVerification?
+  rejections        AssistanceRejection[]
   notifications     Notification[]
   documents         AssistanceDocument[]
   createdAt         DateTime                 @default(now())
@@ -896,4 +898,20 @@ model TaleemMilestone {
 
   @@unique([learnerId, kind])
   @@index([kind, completedOn])
+}
+
+// The reason a reviewer rejected an assistance request, kept apart from the general internal notes and from the
+// verification record. Append-only: a request that is rejected, reopened and rejected again keeps every decision. The
+// reason is private: it is never copied into an email, the applicant tracking response, a public page, analytics or a log.
+model AssistanceRejection {
+  id                  String            @id @default(cuid())
+  assistanceRequestId String
+  reason              String
+  rejectedById        String
+  previousStatus      AssistanceStatus
+  rejectedAt          DateTime          @default(now())
+  assistanceRequest   AssistanceRequest @relation(fields: [assistanceRequestId], references: [id], onDelete: Cascade)
+  rejectedBy          User              @relation("AssistanceRejecter", fields: [rejectedById], references: [id], onDelete: Restrict)
+  @@index([assistanceRequestId, rejectedAt])
+  @@index([rejectedById])
 }

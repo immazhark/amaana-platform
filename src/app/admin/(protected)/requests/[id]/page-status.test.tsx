@@ -91,11 +91,13 @@ describe("request review current-status preservation", () => {
     expect(options.some(option => ["APPROVED", "REJECTED"].includes(option.value ?? ""))).toBe(false);
   });
 
-  it("preserves both approval choices for an approver", async () => {
+  it("keeps approval and rejection out of the generic editor even for approvers", async () => {
     mocks.permission.mockReturnValue(true);
-    const { options } = await statusOptions("APPROVED");
-    expect(options.filter(option => option.selected).map(option => option.value)).toEqual(["APPROVED"]);
-    expect(options.map(option => option.value)).toEqual(expect.arrayContaining(["APPROVED", "REJECTED"]));
+    for (const status of ["SUBMITTED", "UNDER_VERIFICATION", "APPROVED", "REJECTED"]) {
+      const { options } = await statusOptions(status);
+      expect(options.filter(option => option.selected).map(option => option.value)).toEqual([status]);
+      expect(options.filter(option => ["APPROVED", "REJECTED"].includes(option.value ?? "")).map(option => option.value)).toEqual(["APPROVED", "REJECTED"].includes(status) ? [status] : []);
+    }
   });
 
   it("keeps converted status locked with its hidden form value", async () => {
@@ -182,10 +184,11 @@ describe("request to appeal staff navigation", () => {
 describe("verification field requirements", () => {
   it("distinguishes completion requirements, public fundraising requirements and optional notes without requiring a complete draft", async () => {
     const { html } = await statusOptions("SUBMITTED");
-    expect(html).toContain("Required to complete verification");
+    expect(html).toContain("Required to approve");
     expect(html).toContain("Required for public fundraising only");
-    expect(html).toContain("Other funding / duplication notes (Optional)");
-    expect(html).toContain("Save incomplete verification with Verification complete unchecked");
+    expect(html).toMatch(/Other funding \/ duplication notes[\s\S]{0,60}Optional/);
+    expect(html).toContain("Save review progress");
+    expect(html).not.toContain('name="markComplete"');
     expect(html).toContain("Approval does not publish an appeal or transfer funds");
     const form = html.match(/<input[^>]*name="verifiedNeedAmount"[^>]*>/)?.[0];
     expect(form).toBeDefined();

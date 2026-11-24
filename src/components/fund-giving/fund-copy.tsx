@@ -14,7 +14,7 @@ const INTENT_NOTE: Record<GivingIntentId, string> = {
   ZAKAT: "Recorded as Zakat and kept in Amaana's separate Zakat account, to be used only for eligible recipients.",
 };
 
-export const ZAKAT_TAG: Record<FundZakatPolicyId, string> = { ACCEPTED: "Zakat accepted", NOT_ACCEPTED: "Non-Zakat only", UNDER_REVIEW: "Non-Zakat only" };
+export { ZAKAT_TAG } from "./fund-labels";
 
 // Same shape as an appeal's copy so the existing, hardened checkout forms are reused unchanged.
 export function fundDonationFormCopy(fund: GiveFund): DonationFormCopy {
