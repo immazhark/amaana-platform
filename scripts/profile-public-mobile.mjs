@@ -9,9 +9,10 @@ import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import {
-  MOBILE_PROFILE, MOBILE_ROUTES, assertLocalProfileTarget,
+  MOBILE_PROFILE, MOBILE_ROUTES, assertLocalProfileTarget, assertSyntheticProfileRuntime,
   calculateClsSessionWindows, isAllowedProfileRequest,
   profileTraceName, reportBuildIdentity, summarizeMobileSamples,
+  RESOURCE_TIMING_LIMIT, summarizeResourceTimings, summarizeResourceTimingSamples,
 } from "./mobile-profile-core.mjs";
 
 const localOrigin = assertLocalProfileTarget("http://127.0.0.1:3000");
@@ -61,8 +62,13 @@ async function profileOne(chromium, route, run, artifactDirectory) {
       }
       await intercepted.continue();
     });
-    await page.addInitScript(() => {
-      const captured = { lcpMs: null, layoutShifts: null, observedLongTaskBlockingMs: null };
+    await page.addInitScript(resourceTimingLimit => {
+      const captured = { lcpMs: null, layoutShifts: null, observedLongTaskBlockingMs: null, resourceTimingAvailable: false };
+      try {
+        performance.setResourceTimingBufferSize(resourceTimingLimit);
+        performance.addEventListener("resourcetimingbufferfull", () => { captured.resourceTimingAvailable = false; });
+        captured.resourceTimingAvailable = true;
+      } catch { /* No reliable resource timing buffer: report unmeasured. */ }
       Object.defineProperty(window, "__amaanaMobileProfile", { value: captured });
       try {
         new PerformanceObserver(list => {
@@ -88,7 +94,7 @@ async function profileOne(chromium, route, run, artifactDirectory) {
           }
         }).observe({ type: "longtask", buffered: true });
       } catch { captured.observedLongTaskBlockingMs = null; }
-    });
+    }, RESOURCE_TIMING_LIMIT);
     // No screenshots or DOM snapshots: trace references remain private and local.
     await context.tracing.start({ screenshots: false, snapshots: false });
     tracingStarted = true;
@@ -102,10 +108,26 @@ async function profileOne(chromium, route, run, artifactDirectory) {
     if (blockedRequests.size > 0) {
       throw new Error("Local profile refused an unapproved origin or non-read-only HTTP method; use reviewed isolated synthetic fixtures");
     }
-    const metrics = await page.evaluate(() => window.__amaanaMobileProfile);
+    const { metrics, resourceEntries } = await page.evaluate(resourceTimingLimit => {
+      const metrics = window.__amaanaMobileProfile;
+      let resourceEntries = null;
+      if (metrics.resourceTimingAvailable) {
+        try {
+          const entries = performance.getEntriesByType("resource");
+          if (entries.length < resourceTimingLimit) {
+            resourceEntries = entries.map(({ initiatorType, transferSize, encodedBodySize }) =>
+              ({ initiatorType, transferSize, encodedBodySize }));
+          }
+        } catch { /* Unavailable measurements remain null. */ }
+      }
+      return { metrics, resourceEntries };
+    }, RESOURCE_TIMING_LIMIT);
     const cls = metrics.layoutShifts === null ? null : calculateClsSessionWindows(metrics.layoutShifts);
-    return { run, lcpMs: metrics.lcpMs, cls,
-      observedLongTaskBlockingMs: metrics.observedLongTaskBlockingMs, trace };
+    return {
+      sample: { run, lcpMs: metrics.lcpMs, cls,
+        observedLongTaskBlockingMs: metrics.observedLongTaskBlockingMs, trace },
+      resourceTiming: summarizeResourceTimings(resourceEntries),
+    };
   } finally {
     try {
       if (tracingStarted) {
@@ -133,10 +155,7 @@ export async function collectMobileProfile() {
     throw new Error("Local runtime identity endpoint did not return the expected response");
   }
   const runtime = await versionResponse.json();
-  if (runtime.status !== "ok" || !["staging", "development", "test"].includes(runtime.environment) ||
-      runtime.paymentMode === "live") {
-    throw new Error("Local runtime is not a verified non-production synthetic profile target");
-  }
+  assertSyntheticProfileRuntime(runtime);
   const sourceSha = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8", timeout: 5_000 }).trim();
   const identity = reportBuildIdentity(sourceSha, runtime.commitSha);
   let localBuildId = null;
@@ -152,10 +171,13 @@ export async function collectMobileProfile() {
   const routes = [];
   for (const route of MOBILE_ROUTES) {
     const samples = [];
+    const resourceTimingSamples = [];
     for (let run = 1; run <= MOBILE_PROFILE.runs; run++) {
-      samples.push(await profileOne(chromium, route, run, artifactDirectory));
+      const { sample, resourceTiming } = await profileOne(chromium, route, run, artifactDirectory);
+      samples.push(sample);
+      resourceTimingSamples.push({ run, totals: resourceTiming });
     }
-    routes.push(summarizeMobileSamples(route, samples));
+    routes.push({ ...summarizeMobileSamples(route, samples), resourceTiming: summarizeResourceTimingSamples(resourceTimingSamples) });
   }
   const report = {
     methodology: "Isolated synthetic Chromium emulation; intercepts HTTP requests but is not a universal network firewall, CPU flamegraph or real Android/field data",
@@ -166,6 +188,7 @@ export async function collectMobileProfile() {
     profile: MOBILE_PROFILE,
     generatedAt: new Date().toISOString(),
     noTTIorStandardTBT: true,
+    resourceTimingMethod: "Observed Resource Timing entries, excluding document navigation; transferSize and encodedBodySize are browser-reported values, not total network bytes. Zero transfer does not establish cache hits. Image initiator means img only, not all image resources. Unsupported or full buffers are unmeasured (null). No resource URLs in aggregates.",
     routes,
   };
   writeFileSync(join(artifactDirectory, "report.json"), JSON.stringify(report, null, 2) + "\n", { flag: "wx" });
