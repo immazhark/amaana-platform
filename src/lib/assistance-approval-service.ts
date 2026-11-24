@@ -6,7 +6,7 @@ import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 import { approvalIssues, type ApprovalFieldErrors, type ApprovalFields, type ApprovalRoute } from "@/lib/assistance-approval";
 
 export type AssistanceApprovalErrorCode =
-  | "not_found" | "linked_appeal" | "rejected" | "closed" | "not_eligible" | "stale_request" | "stale_verification" | "incomplete";
+  | "not_found" | "linked_appeal" | "rejected" | "closed" | "not_eligible" | "stale_request" | "stale_verification" | "reopen_forbidden" | "incomplete";
 
 /** A refusal whose message is safe to show the reviewer. Anything else stays server-side. */
 export class AssistanceApprovalError extends Error {
@@ -23,6 +23,7 @@ export const APPROVAL_MESSAGES: Record<Exclude<AssistanceApprovalErrorCode, "inc
   not_eligible: "This request cannot be approved from its current state.",
   stale_request: "This request changed while you were reviewing it. Refresh the page and check it before approving.",
   stale_verification: "The review changed while you were reviewing it. Refresh the page and check it before approving.",
+  reopen_forbidden: "Approval permission is required to reopen a completed verification.",
 };
 
 export type ApprovalInput = {
@@ -145,6 +146,8 @@ export type ApprovalDraftInput = Omit<ApprovalInput, "route"> & {
   /** A route the reviewer is leaning towards, or null while undecided. Saved as progress; it decides nothing. */
   route: ApprovalRoute | null;
   draftDecision?: "PENDING" | "REFERRED";
+  /** Server-derived permission. Missing authority fails closed for previously completed reviews. */
+  canReopenCompletedVerification?: boolean;
 };
 
 /**
@@ -158,7 +161,7 @@ export async function saveApprovalDraft(input: ApprovalDraftInput): Promise<"sav
   return withSerializableTransactionRetry(async tx => {
     const current = await tx.assistanceRequest.findUnique({
       where: { id: input.requestId },
-      select: { id: true, status: true, appealId: true, updatedAt: true, verification: { select: { updatedAt: true, decision: true } } },
+      select: { id: true, status: true, appealId: true, updatedAt: true, verification: { select: { updatedAt: true, decision: true, completedAt: true } } },
     });
     if (!current) throw new AssistanceApprovalError("not_found", APPROVAL_MESSAGES.not_found);
     const open = [AssistanceStatus.SUBMITTED, AssistanceStatus.DOCUMENTS_REQUESTED, AssistanceStatus.UNDER_VERIFICATION] as string[];
@@ -171,6 +174,10 @@ export async function saveApprovalDraft(input: ApprovalDraftInput): Promise<"sav
       (version && input.expectedVerificationUpdatedAt && version.getTime() !== input.expectedVerificationUpdatedAt.getTime())
     ) {
       throw new AssistanceApprovalError("stale_verification", APPROVAL_MESSAGES.stale_verification);
+    }
+
+    if (current.verification?.completedAt && input.canReopenCompletedVerification !== true) {
+      throw new AssistanceApprovalError("reopen_forbidden", APPROVAL_MESSAGES.reopen_forbidden);
     }
 
     const f = input.fields;

@@ -82,7 +82,8 @@ async function processReview(formData: FormData, intent: "save" | "approve", inl
   if (!id) redirect("/admin");
   const back = (notice: ApprovalNotice): never => redirect(approvalRedirect(id, notice));
 
-  if (intent === "approve" && !hasPermission(user, "assistance.approve")) back({ kind: "error", problems: [], code: "forbidden" });
+  const canReopenCompletedVerification = hasPermission(user, "assistance.approve");
+  if (intent === "approve" && !canReopenCompletedVerification) back({ kind: "error", problems: [], code: "forbidden" });
 
   const raw = Object.fromEntries(
     ["decision", "needConfirmed", "evidenceReviewed", "otherFundingChecked", "verifiedNeedAmount", "approvedPublicTarget", "paymentDestination", "otherFundingNotes",
@@ -127,7 +128,7 @@ async function processReview(formData: FormData, intent: "save" | "approve", inl
   if (intent === "save") {
     if (problems.length) return { kind: "error", message: "Correct the amount format or field length before saving. Nothing has been saved." };
     try {
-      const result = await saveApprovalDraft({ requestId: id, route, draftDecision, fields, expectedRequestUpdatedAt: requestVersion as Date, expectedVerificationUpdatedAt: verificationVersion as Date | null, actorId: user.id });
+      const result = await saveApprovalDraft({ requestId: id, route, draftDecision, canReopenCompletedVerification, fields, expectedRequestUpdatedAt: requestVersion as Date, expectedVerificationUpdatedAt: verificationVersion as Date | null, actorId: user.id });
       if (result !== "saved") return { kind: "error", message: "This request is no longer open to review. Refresh the page before making changes. Nothing has been saved." };
     } catch (error) {
       return { kind: "error", message: error instanceof AssistanceApprovalError ? APPROVAL_ERROR_MESSAGES[error.code] : "Review progress could not be saved. Keep your work and try again." };
@@ -142,7 +143,7 @@ async function processReview(formData: FormData, intent: "save" | "approve", inl
     // Not ready: keep what was entered as review progress so nothing is lost. This is best effort and never stops the redirect.
     let saveCode: string | null = null;
     try {
-      const saved = await saveApprovalDraft({ requestId: id, route, draftDecision, fields, expectedRequestUpdatedAt: requestVersion as Date, expectedVerificationUpdatedAt: verificationVersion as Date | null, actorId: user.id });
+      const saved = await saveApprovalDraft({ requestId: id, route, draftDecision, canReopenCompletedVerification, fields, expectedRequestUpdatedAt: requestVersion as Date, expectedVerificationUpdatedAt: verificationVersion as Date | null, actorId: user.id });
       if (saved !== "saved") saveCode = "draft_save_failed";
     } catch (error) {
       saveCode = error instanceof AssistanceApprovalError ? error.code : "draft_save_failed";
