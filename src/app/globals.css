@@ -369,13 +369,13 @@ dd { margin: .25rem 0 0; white-space: pre-wrap; }
 }
 
 /* Workflow progress component */
-.workflow-progress {
+.admin-content .workflow-progress {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
   margin-bottom: 2rem;
-  background: var(--af-color-blue-note) !important;
-  border-color: var(--af-color-transfer-divider) !important;
+  background: var(--af-color-blue-note);
+  border-color: var(--af-color-transfer-divider);
 }
 
 .workflow-steps {
