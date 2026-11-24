@@ -1,19 +1,20 @@
 # Amaana Foundation — current verified state
 
-**24 November 2026 IST — owner-approved release continuation; preparation checkpoint, not a live feed.** Sole writer `CHATGPT_ACTIVE`. The owner approved finishing existing #1143 and then #1141. Read current GitHub PR/head/check/merge and Railway evidence before acting; source, tests, merge, deployment and live acceptance remain separate.
+**24 November 2026 IST — release continuation; dated checkpoint, not a live feed.** Sole implementation writer `CHATGPT_ACTIVE`. Check GitHub exact heads, required checks and Railway/public identity before further releases. All historical evidence below remains dated.
 
-| Boundary | Latest independently observed evidence at this checkpoint |
+| Boundary | Verified observation at preparation |
 |---|---|
-| Main before this release batch | `d85acb54791c6b5c78accc7ec332b3775f4b971d` (#1142); main selected CI/verify passed |
-| First release | #1143 completed-medical-showcase status filter, candidate `ccc51c64917756670ace320d60165e3a3ace1a40`; full CI45311977595 browser outstanding at preparation; no merge claimed here |
-| Current task | #1141 on `fix/assistance-single-missing-information-route-20261124`: preserved source head6208667b non-force reconciled with exact #1143 candidate so CI can overlap; four assistance blobs unchanged; merge only after #1143 and current-tree parity/full+ready checks |
-| Release outcomes | Use the existing PRs' exact-head checks, separate ready_for_review run and merge SHA as canonical final evidence; this source preparation note does not pre-claim a later merge/deploy |
-| Last provider release | Railway website0977bf61-b9c6-45ee-87f8-40ae2a77097c SUCCESS/online for d85acb54; public version/readiness independently blocked403 in this audit environment |
-| Backlog |149 unique IDs:59 Completed /7 Implemented /64 Partial /17 Not started /1 Superseded /1 Not applicable; no whole-item promotion from these corrections |
-| Held lanes | #1134 additive rejection-history migration, #1132 overlap, #845 payment eligibility. No migration, live payment, media publication, provider setting, cron or outbound communication authorized by this release batch |
-| Next | Complete #1143 full+ready protected merge; verify source/provider/public boundary; verify #1141 diff/current-main tree parity, finish exact-head full+ready and guarded merge. Do not force rollout to align SHAs |
+| Protected main | `7877bb547f65dfb2824c727132e360b897c9c527` (#845 mixed-case synthetic appeal protection). Full CI 45366073240 and ready-state 45371639040 succeeded before guarded merge. |
+| Production provider | Railway website deployment `5487dcf1-4c37-44e2-910a-4dc5ecfcf0d0` SUCCESS for matching main. Independent public version/readiness access remains unavailable; not an outage finding. |
+| Earlier release | #1144 reviewer guidance merge `79f92b2bae40aa9b9ab5847168b3dcf30b834d4e`; Railway deployment SUCCESS before #845. #1141/#1143 already merged. |
+| #1134 assistance workflow | Head `3b4d3ebf67ac3b94b9faeb5379ffeb529cefc3e9`, run 45372083375. Fast, 112 PostgreSQL tests and production build passed; aggregate JS 815276/819200 bytes. Browser outstanding. Additive private rejection history and approval-permission reopening protection have exact scoped owner approval after full acceptance; no backfill/deletion. |
+| #1145 Taleem tests | Head `6f8f6100ea507d4d27cef5f1a81d8092e772da6b`, run 45372565618. Fast, 82 PostgreSQL tests (17 journey and 3 private-link tests), production passed; browser outstanding. #1146 closed as superseded, both test blobs retained exactly. |
+| Other closure | #1132 and #1133 closed without merge; original histories retained. |
+| Independent implementation | Donation destination-neutral guidance branch `fix/acknowledgement-destination-neutral-copy-20261124` head `d7ec9b164c648f6236093ea74ea9957af7ac2006`, no PR yet; reconcile shared checkout presentation with #1134 before acceptance. Admin fee-first reporting branch `fix/admin-donation-fee-refund-reporting-20261124`, implementation head `735887a12ba71c431bef725a6589a51866e26cf4`; focused source-function and SQL-semantic probes only, hosted acceptance pending. |
+| Canonical 149 | 59 Completed / 7 Implemented / 64 Partial / 17 Not started / 1 Superseded / 1 Not applicable; no whole-item promotions from these subscopes. |
+| Next | Complete browser/verify and separate ready-state release gates for #1134 and #1145, then SHA-guarded merges with current-base reconciliation. Validate independent reporting in draft. No force pushes, budget increases, or forced deployments. |
 
-Domestic INR only/no FCRA; 12A provisional and unresolved80G governing-evidence conflict retained; ordinary acknowledgements are not statutory certificates. Every identifiable public donor/beneficiary face needs reviewed redaction and EXIF/GPS removal; preserve originals privately. Official logo and cream/blue/gold identity unchanged. Provider/source merges do not authorize live financial, schema, auth, checkout CSP, media, telemetry or infrastructure activation.
+Domestic INR only; no FCRA. Provisional 12A and unresolved 80G governing evidence; ordinary acknowledgements are not statutory certificates. Public identifiable donor/beneficiary faces require reviewed redaction and EXIF/GPS removal. Preserve originals privately. No live payments/refunds, data changes, notification activation or infrastructure changes without separately scoped approval.
 
 ## Historical detailed checkpoint — 22 November 2026
 
