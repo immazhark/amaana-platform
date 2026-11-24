@@ -127,6 +127,12 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
     prisma.auditEvent.findMany({ where: { entityType: "AssistanceRequest", entityId: id }, select: { id: true, action: true, createdAt: true, actor: { select: { name: true } } }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] }),
   ]);
   if (!request) notFound();
+  // A shared phone number or email is a prompt for human judgement, never proof of a duplicate or of anything else.
+  const possibleDuplicates = await prisma.assistanceRequest.findMany({
+    where: { id: { not: id }, OR: [{ phone: request.phone }, ...(request.email ? [{ email: request.email }] : [])] },
+    select: { id: true, referenceNumber: true, status: true, createdAt: true },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 5,
+  });
 
   const currentAssigneeUnavailable = Boolean(request.assignedToId && !staff.some(member => member.id === request.assignedToId));
   const converted = request.status === "CONVERTED_TO_APPEAL" || Boolean(request.appealId);
@@ -188,7 +194,9 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
             <div><dt>Phone</dt><dd>{request.phone}</dd></div>
             <div><dt>Email</dt><dd>{request.email ?? "Not supplied"}</dd></div>
             <div className="full"><dt>Description</dt><dd>{request.description}</dd></div>
+            {request.beneficiaryResidence && <div><dt>Beneficiary lives (self-declared)</dt><dd>{request.beneficiaryResidence === "HYDERABAD_SERVICE_AREA" ? "In the Hyderabad service area" : "Outside the service area"}</dd></div>}
           </dl>
+          {possibleDuplicates.length > 0 && <aside aria-label="Possible duplicate requests"><p><strong>Possible duplicates.</strong> Another request shares this phone number or email. This is a prompt for your judgement, not proof: compare before deciding, and do not decline on a match alone.</p><ul>{possibleDuplicates.map(other => <li key={other.id}><a href={`/admin/requests/${other.id}`}>{other.referenceNumber}</a> · {other.status} · {other.createdAt.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })}</li>)}</ul></aside>}
         </section>
 
         <section className="card">

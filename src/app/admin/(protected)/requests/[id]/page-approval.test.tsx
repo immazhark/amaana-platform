@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ request: vi.fn(), staff: vi.fn(), history: vi.fn(), permission: vi.fn(), draft: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ requirePermission: vi.fn(async () => ({ id: "synthetic-staff" })), hasPermission: mocks.permission }));
-vi.mock("@/lib/prisma", () => ({ prisma: { assistanceRequest: { findUnique: mocks.request }, user: { findMany: mocks.staff }, auditEvent: { findMany: mocks.history } } }));
+vi.mock("@/lib/prisma", () => ({ prisma: { assistanceRequest: { findUnique: mocks.request, findMany: async () => [] }, user: { findMany: mocks.staff }, auditEvent: { findMany: mocks.history } } }));
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: mocks.draft }) }));
 vi.mock("next/navigation", () => ({ notFound: () => { throw new Error("NOT_FOUND"); } }));
 vi.mock("./actions", () => ({ assignRequest: vi.fn(), convertToAppeal: vi.fn(), saveVerificationWithFeedback: vi.fn(), updateRequestWithFeedback: vi.fn() }));
