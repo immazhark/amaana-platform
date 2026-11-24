@@ -1,19 +1,18 @@
 # Amaana Foundation — current verified state
 
-**24 November 2026 IST — owner-approved release continuation; preparation checkpoint, not a live feed.** Sole writer `CHATGPT_ACTIVE`. The owner approved finishing existing #1143 and then #1141. Read current GitHub PR/head/check/merge and Railway evidence before acting; source, tests, merge, deployment and live acceptance remain separate.
+**24 November 2026 IST — dated release checkpoint, not a live feed.** Sole implementation writer `CHATGPT_ACTIVE`. Reverify source, CI and Railway before acting.
 
-| Boundary | Latest independently observed evidence at this checkpoint |
+| Boundary | Verified evidence |
 |---|---|
-| Main before this release batch | `d85acb54791c6b5c78accc7ec332b3775f4b971d` (#1142); main selected CI/verify passed |
-| First release | #1143 completed-medical-showcase status filter, candidate `ccc51c64917756670ace320d60165e3a3ace1a40`; full CI45311977595 browser outstanding at preparation; no merge claimed here |
-| Current task | #1141 on `fix/assistance-single-missing-information-route-20261124`: preserved source head6208667b non-force reconciled with exact #1143 candidate so CI can overlap; four assistance blobs unchanged; merge only after #1143 and current-tree parity/full+ready checks |
-| Release outcomes | Use the existing PRs' exact-head checks, separate ready_for_review run and merge SHA as canonical final evidence; this source preparation note does not pre-claim a later merge/deploy |
-| Last provider release | Railway website0977bf61-b9c6-45ee-87f8-40ae2a77097c SUCCESS/online for d85acb54; public version/readiness independently blocked403 in this audit environment |
-| Backlog |149 unique IDs:59 Completed /7 Implemented /64 Partial /17 Not started /1 Superseded /1 Not applicable; no whole-item promotion from these corrections |
-| Held lanes | #1134 additive rejection-history migration, #1132 overlap, #845 payment eligibility. No migration, live payment, media publication, provider setting, cron or outbound communication authorized by this release batch |
-| Next | Complete #1143 full+ready protected merge; verify source/provider/public boundary; verify #1141 diff/current-main tree parity, finish exact-head full+ready and guarded merge. Do not force rollout to align SHAs |
+| Main | `99ad35ea68aa4044f015a3e2df4ef3a6e3e21d38` after #1134. Full CI 45372083375 (1,707 Chromium, 24 cross-browser, 112 database tests; aggregate JS 815276/819200 bytes), separate ready-state 45377555081 and guarded squash merge passed. |
+| Deployment | Railway website 3ce3b96a-6ff2-4edf-80d3-f94c58c9462e BUILDING at observation. Previous deployment 5487dcf1-4c37-44e2-910a-4dc5ecfcf0d0 SUCCESS for #845. Independent public version/readiness not verified. |
+| Assistance scope | Approved additive private rejection history, save/approve/reject workflow and permission correction. Production migration outcome outstanding. Application rollback retains private history. No backfill or deletion. |
+| Donation successor #1147 | Exact #1145 tests from `6f8f6100ea507d4d27cef5f1a81d8092e772da6b` plus reporting files from `a214f5dee457e2d11c0dba4e7da768cbee785b88`. Previous fast, database and production passed; fresh combined exact-head and ready-state acceptance required. #1145 retirement conditional on byte-for-byte preservation. |
+| Other work | Donor wording and mocked Taleem transfer coverage preserved on `fix/acknowledgement-destination-neutral-copy-20261124` head `bf7cd37a079359b23f836b5c2464f0bd53048561`; reconcile shared checkout copy before submitting. |
+| Canonical 149 | 59 Completed / 7 Implemented / 64 Partial / 17 Not started / 1 Superseded / 1 Not applicable. No promotions. |
+| Next | Verify #1134 deployment; complete #1147 exact-head and ready-state gates, guarded merge; reconcile donor copy against actual main. |
 
-Domestic INR only/no FCRA; 12A provisional and unresolved80G governing-evidence conflict retained; ordinary acknowledgements are not statutory certificates. Every identifiable public donor/beneficiary face needs reviewed redaction and EXIF/GPS removal; preserve originals privately. Official logo and cream/blue/gold identity unchanged. Provider/source merges do not authorize live financial, schema, auth, checkout CSP, media, telemetry or infrastructure activation.
+Domestic INR only, no FCRA. 12A/12AB provisional; 80G evidence conflict unresolved. Ordinary acknowledgements are not statutory certificates. Preserve redaction and metadata removal, original assets and official brand. No unapproved production data changes, live financial actions, notification or infrastructure changes.
 
 ## Historical detailed checkpoint — 22 November 2026
 
