@@ -63,6 +63,21 @@ describe("reviewer guidance when information is missing", () => {
   });
 });
 
+describe("one path for requesting additional information", () => {
+  it.each(["SUBMITTED", "UNDER_VERIFICATION"])("does not offer DOCUMENTS_REQUESTED in the generic %s status editor", async status => {
+    const { html, options } = await statusOptions(status);
+    expect(options.some(option => option.value === "DOCUMENTS_REQUESTED")).toBe(false);
+    expect(html).toContain('name="status" value="DOCUMENTS_REQUESTED"');
+    expect(html).toContain("Request additional information");
+  });
+
+  it("preserves the existing DOCUMENTS_REQUESTED state for note-only saves and allows verification to resume", async () => {
+    const { options } = await statusOptions("DOCUMENTS_REQUESTED");
+    expect(options.filter(option => option.selected).map(option => option.value)).toEqual(["DOCUMENTS_REQUESTED"]);
+    expect(options.some(option => option.value === "UNDER_VERIFICATION")).toBe(true);
+  });
+});
+
 describe("request review current-status preservation", () => {
   it.each(["APPROVED", "REJECTED"])("retains %s for a note-only editor without granting the other restricted transition", async status => {
     const { options } = await statusOptions(status);

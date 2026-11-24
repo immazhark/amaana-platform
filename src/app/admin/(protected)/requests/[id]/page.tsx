@@ -47,7 +47,7 @@ export default async function RequestDetailPage({ params }: Props) {
 
   const currentAssigneeUnavailable = Boolean(request.assignedToId && !staff.some(member => member.id === request.assignedToId));
   const converted = request.status === "CONVERTED_TO_APPEAL" || Boolean(request.appealId);
-  const manualStatuses = [...MANUAL_ASSISTANCE_STATUSES];
+  const manualStatuses = MANUAL_ASSISTANCE_STATUSES.filter(status => status !== "DOCUMENTS_REQUESTED" || request.status === status);
   const visibleStatuses = converted
     ? ["CONVERTED_TO_APPEAL"]
     : hasPermission(user, "assistance.approve")

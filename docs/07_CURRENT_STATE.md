@@ -1,5 +1,24 @@
 # Amaana Foundation — current verified state
 
+**24 November 2026 IST — owner-approved release continuation; preparation checkpoint, not a live feed.** Sole writer `CHATGPT_ACTIVE`. The owner approved finishing existing #1143 and then #1141. Read current GitHub PR/head/check/merge and Railway evidence before acting; source, tests, merge, deployment and live acceptance remain separate.
+
+| Boundary | Latest independently observed evidence at this checkpoint |
+|---|---|
+| Main before this release batch | `d85acb54791c6b5c78accc7ec332b3775f4b971d` (#1142); main selected CI/verify passed |
+| First release | #1143 completed-medical-showcase status filter, candidate `ccc51c64917756670ace320d60165e3a3ace1a40`; full CI45311977595 browser outstanding at preparation; no merge claimed here |
+| Current task | #1141 on `fix/assistance-single-missing-information-route-20261124`: preserved source head6208667b non-force reconciled with exact #1143 candidate so CI can overlap; four assistance blobs unchanged; merge only after #1143 and current-tree parity/full+ready checks |
+| Release outcomes | Use the existing PRs' exact-head checks, separate ready_for_review run and merge SHA as canonical final evidence; this source preparation note does not pre-claim a later merge/deploy |
+| Last provider release | Railway website0977bf61-b9c6-45ee-87f8-40ae2a77097c SUCCESS/online for d85acb54; public version/readiness independently blocked403 in this audit environment |
+| Backlog |149 unique IDs:59 Completed /7 Implemented /64 Partial /17 Not started /1 Superseded /1 Not applicable; no whole-item promotion from these corrections |
+| Held lanes | #1134 additive rejection-history migration, #1132 overlap, #845 payment eligibility. No migration, live payment, media publication, provider setting, cron or outbound communication authorized by this release batch |
+| Next | Complete #1143 full+ready protected merge; verify source/provider/public boundary; verify #1141 diff/current-main tree parity, finish exact-head full+ready and guarded merge. Do not force rollout to align SHAs |
+
+Domestic INR only/no FCRA; 12A provisional and unresolved80G governing-evidence conflict retained; ordinary acknowledgements are not statutory certificates. Every identifiable public donor/beneficiary face needs reviewed redaction and EXIF/GPS removal; preserve originals privately. Official logo and cream/blue/gold identity unchanged. Provider/source merges do not authorize live financial, schema, auth, checkout CSP, media, telemetry or infrastructure activation.
+
+## Historical detailed checkpoint — 22 November 2026
+
+The following dated evidence is retained for its unique activation/rollback and operational details. Its branch/PR/status snapshot is superseded by current GitHub and the checkpoint above.
+
 **22 November 2026 IST (refreshed after #1107).** GitHub source, CI, Railway deployment and independently retrieved public runtime are distinct boundaries. One writer: `CLAUDE_CODE_ACTIVE` (owner directive of 21 November continuing the 17 November handoff); independent read-only review permitted. PR numbers, SHAs and counts below are a snapshot: verify against live Git/PR state before use.
 
 | Boundary | State |
