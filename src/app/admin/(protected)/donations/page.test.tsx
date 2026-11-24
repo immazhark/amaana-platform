@@ -207,3 +207,25 @@ describe("admin donation summary excludes refunded processing fees", () => {
     expect(html).not.toContain("Net retained: ₹188");
   });
 });
+
+describe("admin donation outcome cohort boundaries", () => {
+  it("uses one bounded 90-day creation window independently of list filters", async () => {
+    const now = Date.parse("2026-11-24T12:00:00.000Z");
+    const clock = vi.spyOn(Date, "now").mockReturnValue(now);
+    mocks.donationFind.mockResolvedValue([]);
+    try {
+      await DonationsPage({ searchParams: Promise.resolve({ status: "CAPTURED", intent: "SADAQAH", page: "2" }) });
+      const args = mocks.donationGroups.mock.calls.map(call => call[0]).find(args => Array.isArray(args.by) && args.by.includes("paymentMethod"));
+      expect(args).toEqual({
+        by: ["paymentMethod", "status"],
+        where: { createdAt: { gte: new Date(now - 90 * 24 * 60 * 60 * 1000), lte: new Date(now) } },
+        _count: { _all: true },
+      });
+      expect(mocks.donationFind).toHaveBeenCalledWith(expect.objectContaining({
+        where: { status: "CAPTURED", givingIntent: "SADAQAH" },
+      }));
+    } finally {
+      clock.mockRestore();
+    }
+  });
+});
