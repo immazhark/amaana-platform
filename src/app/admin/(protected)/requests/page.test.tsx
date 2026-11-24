@@ -38,7 +38,7 @@ describe("legacy queue ordering", () => {
     await expect(AdminRequestsAlias(props({ sort: "oldest", status: "SUBMITTED", page: "2" })))
       .rejects.toThrow("REDIRECT:/admin?status=SUBMITTED&page=2&sort=oldest");
   });
-  it.each([["bad"], ["oldest", "newest"]])("does not forward repeated sort parameters", async sort => {
+  it.each([{ sort: ["bad"] }, { sort: ["oldest", "newest"] }])("does not forward repeated sort parameters", async ({ sort }) => {
     await expect(AdminRequestsAlias(props({ sort }))).rejects.toThrow("REDIRECT:/admin");
   });
 });
