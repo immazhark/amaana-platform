@@ -233,3 +233,18 @@ test("AF-R005 rejects a symlinked .next parent even when static files appear cle
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+for (const assetRoot of [".next/static", "public"]) {
+  test(`AF-R005 scans configured media access-key values in ${assetRoot}`, () => {
+    for (const value of ["media-key-12", "synthetic-media-access-key-fixture"]) {
+      const result = runScanner(JSON.stringify({ fixture: value }), { MEDIA_S3_ACCESS_KEY_ID: value }, "config.json", assetRoot);
+      assert.equal(result.status, 1, "Configured media access key must not reach a served asset");
+      assert.match(result.stderr, /REDACTED SECRET VALUE/);
+      assert.equal((result.stdout + result.stderr).includes(value), false);
+    }
+  });
+  test(`AF-R005 accepts clean assets when a media key is configured in ${assetRoot}`, () => {
+    const result = runScanner('{"fixture":"reviewed public metadata"}', { MEDIA_S3_ACCESS_KEY_ID: "synthetic-media-access-key-fixture" }, "config.json", assetRoot);
+    assert.equal(result.status, 0, result.stderr);
+  });
+}
