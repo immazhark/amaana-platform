@@ -321,6 +321,13 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("assistance approv
       const b = await makeRequest();
       const results = await Promise.allSettled([approveAssistanceRequest(await input(a.id)), approveAssistanceRequest(await input(b.id))]);
       expect(results.filter(result => result.status === "fulfilled")).toHaveLength(1);
+      const rejected = results.find(result => result.status === "rejected");
+      expect(rejected?.reason).toBeInstanceOf(AssistanceApprovalError);
+      expect(rejected?.reason).toMatchObject({ code: "capacity_full" });
+      const after = await prisma.assistanceRequest.findMany({ where: { id: { in: [a.id, b.id] } }, select: { status: true, acceptedAt: true } });
+      expect(after).toHaveLength(2);
+      expect(after.filter(row => row.status === "APPROVED" && row.acceptedAt !== null)).toHaveLength(1);
+      expect(after.filter(row => row.status === "UNDER_VERIFICATION" && row.acceptedAt === null)).toHaveLength(1);
     });
   });
 });
