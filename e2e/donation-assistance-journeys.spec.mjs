@@ -107,7 +107,7 @@ test('assistance intake visibly marks all required fields and distinguishes the 
   await expect(page.locator('input[name="consent"]')).toHaveAttribute('required', '');
   // The visual markers must not change accessible field labels used by keyboard/screen-reader users.
   await page.getByRole('button', { name: /Contact/ }).click();
-  for (const name of ['Applicant name', 'Phone number', 'City']) {
+  for (const name of ['Applicant name', 'Phone number', 'Beneficiary’s locality or area in Hyderabad']) {
     await expect(page.getByLabel(name, { exact: true })).toBeVisible();
   }
   await page.getByRole('button', { name: /Need/ }).click();
