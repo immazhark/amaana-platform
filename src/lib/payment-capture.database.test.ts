@@ -25,19 +25,22 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("payment capture P
     await prisma.$disconnect();
   });
 
-  async function fixture() {
+  async function fixture(referenceNumber?: string) {
     const key = prefix + created.length;
-    const user = await prisma.user.create({ data: { name: "Synthetic operator", email: key + "@example.test" } });
-    const appeal = await prisma.appeal.create({ data: {
-      slug: key, title: "Synthetic capture test", summary: "CI only", story: "CI only", category: "MEDICAL", status: "PUBLISHED",
-      beneficiaryName: "Synthetic", goalAmount: 100000, amountRaised: 0, createdById: user.id,
-    } });
     const orderId = "order_" + key;
-    const donation = await prisma.donation.create({ data: {
-      referenceNumber: key, appealId: appeal.id, donorName: "Synthetic donor", donorEmail: key + "@example.test",
-      domesticConfirmedAt: new Date(), amount: 100, feeContributionAmount: 0, status: "CREATED", providerOrderId: orderId,
-      receiptTokenHash: "synthetic-not-a-real-token",
-    } });
+    const { user, appeal, donation } = await prisma.$transaction(async tx => {
+      const user = await tx.user.create({ data: { name: "Synthetic operator", email: key + "@example.test" } });
+      const appeal = await tx.appeal.create({ data: {
+        slug: key, title: "Synthetic capture test", summary: "CI only", story: "CI only", category: "MEDICAL", status: "PUBLISHED",
+        beneficiaryName: "Synthetic", goalAmount: 100000, amountRaised: 0, createdById: user.id,
+      } });
+      const donation = await tx.donation.create({ data: {
+        referenceNumber: referenceNumber ?? key, appealId: appeal.id, donorName: "Synthetic donor", donorEmail: key + "@example.test",
+        domesticConfirmedAt: new Date(), amount: 100, feeContributionAmount: 0, status: "CREATED", providerOrderId: orderId,
+        receiptTokenHash: "synthetic-not-a-real-token",
+      } });
+      return { user, appeal, donation };
+    });
     created.push({ userId: user.id, appealId: appeal.id, donationId: donation.id });
     return { donation, appeal, orderId, paymentId: "pay_" + key };
   }
@@ -51,6 +54,26 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("payment capture P
     expect(appeal.amountRaised.toNumber()).toBe(100);
     expect(await prisma.notification.count({ where: { donationId: donation.id, templateKey: "donation-acknowledgement" } })).toBe(1);
   }
+
+  it("rolls back synthetic setup when a late donation reference collision occurs", async () => {
+    const existing = await fixture();
+    const registered = created.length;
+    const failedKey = prefix + registered;
+    try {
+      await expect(fixture(existing.donation.referenceNumber)).rejects.toMatchObject({ code: "P2002" });
+      expect(created).toHaveLength(registered);
+      expect(await prisma.user.count({ where: { email: failedKey + "@example.test" } })).toBe(0);
+      expect(await prisma.appeal.count({ where: { slug: failedKey } })).toBe(0);
+      expect(await prisma.donation.count({ where: { providerOrderId: "order_" + failedKey } })).toBe(0);
+    } finally {
+      // Keep the negative regression isolated even if atomic setup is accidentally removed.
+      // A successful fixture is already registered for the ordinary afterAll cleanup.
+      if (created.length === registered) {
+        await prisma.appeal.deleteMany({ where: { slug: failedKey } });
+        await prisma.user.deleteMany({ where: { email: failedKey + "@example.test" } });
+      }
+    }
+  });
 
   it("concurrent duplicate captures of one payment raise the total and queue the acknowledgement exactly once", async () => {
     const f = await fixture();
