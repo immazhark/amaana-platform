@@ -35,3 +35,21 @@ test("AF-R066 public-route loading styles contain no ungoverned hex literals", (
   const css = readFileSync(new URL("src/components/public-route-loading.module.css", root), "utf8");
   assert.doesNotMatch(css, /#[0-9a-fA-F]{3,8}\b/u);
 });
+
+for (const target of [
+  "src/components/verification-faq.module.css",
+  "src/components/mobile-support-bar.module.css",
+]) {
+  test(`AF-R066 governs public support stylesheet ${target}`, () => {
+    const manifest = JSON.parse(readFileSync(new URL("package.json", root), "utf8"));
+    const command = manifest.scripts?.["stylelint:governed"];
+    assert.equal(typeof command, "string");
+    assert.match(command, /stylelint@17\.16\.0/u);
+    assert.ok(command.trim().split(/\s+/u).includes(target), `Stylelint scope omits ${target}`);
+  });
+
+  test(`AF-R066 ${target} has no ungoverned hex literals`, () => {
+    const css = readFileSync(new URL(target, root), "utf8");
+    assert.doesNotMatch(css, /#[0-9a-fA-F]{3,8}\b/u);
+  });
+}
