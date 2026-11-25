@@ -20,20 +20,23 @@ const forbiddenMarkers = [
   "AUTH_RATE_LIMIT_PEPPER",
 ];
 
+// Only explicitly constructed guard errors may appear in diagnostics.
+class PublicAssetBoundaryError extends Error {}
+
 async function filesUnder(directory) {
   // A symlinked public artifact can evade this scanner while remaining served.
   if ((await lstat(directory)).isSymbolicLink()) {
-    throw new Error("Symbolic link in public client bundle");
+    throw new PublicAssetBoundaryError("Symbolic link in public client bundle");
   }
   const entries = await readdir(directory, { withFileTypes: true });
   const files = [];
   for (const entry of entries) {
     // Reject environment files even if their contents contain no known marker.
     if (/^\.env(?:\.|$)/i.test(entry.name)) {
-      throw new Error("Sensitive environment file in public client bundle");
+      throw new PublicAssetBoundaryError("Sensitive environment file in public client bundle");
     }
     const fullPath = path.join(directory, entry.name);
-    if (entry.isSymbolicLink()) throw new Error("Symbolic link in public client bundle");
+    if (entry.isSymbolicLink()) throw new PublicAssetBoundaryError("Symbolic link in public client bundle");
     if (entry.isDirectory()) files.push(...await filesUnder(fullPath));
     else if (entry.isFile()) files.push(fullPath);
   }
@@ -45,7 +48,7 @@ try {
   // lstat of static alone follows a symlinked .next parent.
   // Reject an aliased build root before accepting any client artifact.
   if ((await lstat(path.dirname(root))).isSymbolicLink()) {
-    throw new Error("Symbolic link in public client bundle");
+    throw new PublicAssetBoundaryError("Symbolic link in public client bundle");
   }
   files = await filesUnder(root);
   // Next serves public/ directly; these files never enter .next/static.
@@ -59,7 +62,9 @@ try {
   }
   if (hasPublicRoot) files.push(...await filesUnder(publicRoot));
 } catch (error) {
-  console.error("Client bundle security check requires a completed Next.js build and readable public assets.", error);
+  console.error("Client bundle security check requires a completed Next.js build and readable public assets.");
+  // Filesystem errors can contain sensitive asset names. Never print raw errors.
+  if (error instanceof PublicAssetBoundaryError) console.error(error.message);
   process.exit(1);
 }
 
@@ -77,12 +82,24 @@ const offenders = [];
 for (const file of files) {
   // Every regular build/public file is served regardless of its extension.
   // Inspect bytes so binary assets cannot hide an embedded UTF-8 secret value.
-  const content = await readFile(file);
-  for (const marker of forbiddenMarkers) {
-    if (content.includes(marker)) offenders.push({ file: path.relative(process.cwd(), file), marker });
+  const relativePath = path.relative(process.cwd(), file);
+  const secretInPath = secretValues.some((value) => relativePath.includes(value));
+  const reportedPath = secretInPath ? "[REDACTED ASSET PATH]" : relativePath;
+  let content;
+  try {
+    content = await readFile(file);
+  } catch {
+    // Raw filesystem errors can disclose credentials embedded in paths.
+    console.error("Client bundle security check could not read a public asset.");
+    process.exit(1);
   }
-  if (secretValues.some((value) => content.includes(value))) {
-    offenders.push({ file: path.relative(process.cwd(), file), marker: "[REDACTED SECRET VALUE]" });
+  for (const marker of forbiddenMarkers) {
+    if (relativePath.includes(marker) || content.includes(marker)) {
+      offenders.push({ file: reportedPath, marker });
+    }
+  }
+  if (secretInPath || secretValues.some((value) => content.includes(value))) {
+    offenders.push({ file: reportedPath, marker: "[REDACTED SECRET VALUE]" });
   }
 }
 

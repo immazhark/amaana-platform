@@ -396,7 +396,7 @@ function run() {
     if (result.cssRouteAttributionAvailable) {
       result.cssMetric = "client-reference-assigned-uncompressed-css-bytes";
       result.cssRoutes = summarizeClientReferenceCss(appPaths,
-        page => readFileSync(clientPath(page), "utf8"), asset => statSync(join(buildDir, asset)).size);
+        page => readFileSync(clientPath(page), "utf8"), asset => legacyStaticAssetBytes(buildDir, asset));
       if (compressed) {
         result.cssGzipMetric = "client-reference-assigned-gzip-css-bytes";
         result.cssRoutesGzip = summarizeClientReferenceCss(appPaths,
@@ -410,7 +410,7 @@ function run() {
         result.jsMetric = "client-reference-assigned-uncompressed-js-bytes";
         result.jsRoutes = summarizeClientReferenceJs(appPaths,
           page => readFileSync(clientPath(page), "utf8"), buildManifest.rootMainFiles,
-          asset => statSync(join(buildDir, asset)).size);
+          asset => legacyStaticAssetBytes(buildDir, asset));
         if (compressed) {
           result.jsGzipMetric = "client-reference-assigned-gzip-js-bytes";
           result.jsRoutesGzip = summarizeClientReferenceJs(appPaths,
