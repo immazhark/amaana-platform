@@ -9,6 +9,8 @@ import {
   NotificationChannel,
   ZakatReviewStatus,
 } from "@prisma/client";
+import { capacityUsed } from "@/lib/assistance-capacity";
+import { INDIVIDUAL_CASE_ANNUAL_CAPACITY } from "@/lib/assistance-policy";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
@@ -249,6 +251,7 @@ export async function updateRequest(formData: FormData) {
         status: true,
         appealId: true,
         updatedAt: true,
+        acceptedAt: true,
         verification: { select: { decision: true, completedAt: true } },
       },
     });
@@ -263,6 +266,12 @@ export async function updateRequest(formData: FormData) {
       throw new Error("Verification changed while you were reviewing it. Refresh and confirm the approved verification before saving.");
     }
 
+    // Taking a case up counts against the annual capacity on every route, not only the Approve form. A case that is already
+    // accepted keeps its original acceptance time.
+    const accepting = status === AssistanceStatus.APPROVED && previous.status !== status;
+    if (accepting && (await capacityUsed(tx)) >= INDIVIDUAL_CASE_ANNUAL_CAPACITY) {
+      throw new Error("This year's planning limit of individual cases has been reached. Use the Approve form to accept this case with a capacity exception.");
+    }
     const updated = await tx.assistanceRequest.updateMany({
       where: {
         id,
@@ -270,7 +279,7 @@ export async function updateRequest(formData: FormData) {
         ...(previous.appealId ? { appealId: previous.appealId } : { appealId: null }),
         updatedAt: expectedUpdatedAt,
       },
-      data: { status, internalNotes: internalNotes || null },
+      data: { status, internalNotes: internalNotes || null, ...(accepting ? { acceptedAt: current.acceptedAt ?? new Date() } : {}) },
     });
     if (updated.count !== 1) {
       throw new Error("This request changed while you were reviewing it. Refresh before saving.");
@@ -401,6 +410,7 @@ export type AdminActionFeedback = {
 // return raw database, network, auth or unexpected exception text to clients.
 const safeReviewFeedbackPrefixes = [
   "Complete verification with an approved decision before marking this request approved",
+  "This year's planning limit of individual cases has been reached.",
   "Use Reject request to reject this request.",
   "To decline a request, use Reject request.",
   "Verification summary is required.",

@@ -88,7 +88,7 @@ async function processReview(formData: FormData, intent: "save" | "approve", inl
   const raw = Object.fromEntries(
     ["decision", "needConfirmed", "evidenceReviewed", "otherFundingChecked", "verifiedNeedAmount", "approvedPublicTarget", "paymentDestination", "otherFundingNotes",
       "verificationSummary", "confidentialityLevel", "publicNameConsent", "photoConsent", "medicalDetailsConsent", "institutionNameConsent", "archiveConsent",
-      "zakatStatus", "confirmApproval"].map(name => [name, single(formData, name)]),
+      "zakatStatus", "confirmApproval", "capacityExceptionNote"].map(name => [name, single(formData, name)]),
   ) as Record<string, string | null>;
   const consent = (name: string) => oneOf(raw[name]!, ASSISTANCE_CONSENT_DECISIONS);
   const confidentiality = oneOf(raw.confidentialityLevel!, ASSISTANCE_CONFIDENTIALITY_LEVELS);
@@ -167,6 +167,7 @@ async function processReview(formData: FormData, intent: "save" | "approve", inl
   try {
     const result = await approveAssistanceRequest({
       requestId: id, route: route!, fields, actorId: user.id,
+      capacityExceptionNote: on(single(formData, "capacityException")) ? (raw.capacityExceptionNote ?? "").trim().slice(0, 1000) : null,
       expectedRequestUpdatedAt: requestVersion as Date, expectedVerificationUpdatedAt: verificationVersion as Date | null,
     });
     outcome = result.outcome;

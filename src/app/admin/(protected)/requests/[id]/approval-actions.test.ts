@@ -199,7 +199,7 @@ describe("a manipulated or malformed submission fails safely", () => {
 
   it("ignores rejection and status fields entirely", async () => {
     expect(await redirected(form({ status: "REJECTED", reason: "Duplicate", confirmRejection: "on", markComplete: "on" }))).toContain("approve=done");
-    expect(Object.keys(mocks.approve.mock.calls[0]![0]).sort()).toEqual(["actorId", "expectedRequestUpdatedAt", "expectedVerificationUpdatedAt", "fields", "requestId", "route"]);
+    expect(Object.keys(mocks.approve.mock.calls[0]![0]).sort()).toEqual(["actorId", "capacityExceptionNote", "expectedRequestUpdatedAt", "expectedVerificationUpdatedAt", "fields", "requestId", "route"]);
   });
 });
 

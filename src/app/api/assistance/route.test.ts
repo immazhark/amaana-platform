@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   staffFindMany: vi.fn(),
   assistanceCreate: vi.fn(),
   assistanceFindUnique: vi.fn(),
+  intakeSetting: vi.fn(),
 }));
 
 vi.mock("@/lib/assistance", () => ({
@@ -27,6 +28,7 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     user: { findMany: mocks.staffFindMany },
     assistanceRequest: { create: mocks.assistanceCreate, findUnique: mocks.assistanceFindUnique },
+    assistanceIntakeSetting: { findUnique: mocks.intakeSetting },
   },
 }));
 
@@ -48,6 +50,7 @@ import { POST } from "./route";
 beforeEach(() => {
   vi.clearAllMocks();
   mocks.enforceAssistanceRateLimit.mockResolvedValue(true);
+  mocks.intakeSetting.mockResolvedValue(null);
   mocks.assistanceSafeParse.mockReturnValue({
     success: true,
     data: {
@@ -202,6 +205,35 @@ describe("assistance submission request bounds", () => {
     expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
     expect(mocks.staffFindMany).not.toHaveBeenCalled();
     expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+  });
+
+  it("stops an out-of-area beneficiary before any validation, upload or write", async () => {
+    const data = new FormData();
+    data.set("beneficiaryResidence", "OUTSIDE_SERVICE_AREA");
+    data.set("applicantName", "Synthetic Representative");
+    data.append("documents", new File(["x"], "report.pdf", { type: "application/pdf" }));
+
+    const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: data }));
+
+    expect(response.status).toBe(422);
+    expect((await response.json()).code).toBe("outside_service_area");
+    expect(mocks.assistanceSafeParse).not.toHaveBeenCalled();
+    expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+    expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+  });
+
+  it("refuses new requests on the server while intake is paused in the admin switch", async () => {
+    mocks.intakeSetting.mockResolvedValue({ paused: true });
+    try {
+      const data = new FormData();
+      data.set("beneficiaryResidence", "HYDERABAD_SERVICE_AREA");
+      const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: data }));
+      expect(response.status).toBe(403);
+      expect((await response.json()).code).toBe("intake_paused");
+      expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+    } finally {
+      mocks.intakeSetting.mockResolvedValue(null);
+    }
   });
 
   it.each([

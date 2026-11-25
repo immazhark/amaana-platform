@@ -1,3 +1,4 @@
+import { ASSISTANCE_DECLINE_REASONS } from "@/lib/assistance-policy";
 import { REJECTION_ERROR_MESSAGES, rejectionProblemMessage, type RejectionNotice, type RejectionProblem } from "@/lib/assistance-rejection";
 
 export type RejectRequestFormProps = {
@@ -47,7 +48,12 @@ export function RejectRequestForm({ action, requestId, referenceNumber, requestV
         </div>
       )}
 
-      <label htmlFor="reject-reason">Reason for rejection <span className="muted">(Required to reject)</span></label>
+      <label htmlFor="reject-reason-code">Reason category <span className="muted">(Optional; choose “Other” if none fits)</span></label>
+      <select id="reject-reason-code" name="reasonCode" defaultValue="">
+        <option value="">No category</option>
+        {ASSISTANCE_DECLINE_REASONS.map(reason => <option key={reason.code} value={reason.code}>{reason.label}</option>)}
+      </select>
+      <label htmlFor="reject-reason">Reason for rejection <span className="muted">(Required unless a category above explains it)</span></label>
       <small id="reject-reason-hint" className="muted">
         Say plainly why this request is being declined, for example “Duplicate of AF-2026-100000” or “Not eligible for assistance”. Up to 2000 characters. Kept privately; not sent to the applicant.
       </small>

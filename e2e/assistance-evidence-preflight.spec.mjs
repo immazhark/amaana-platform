@@ -10,7 +10,8 @@ test("six evidence files are rejected in the browser before assistance submissio
   await page.goto("/request-assistance");
   await page.getByLabel("Applicant name").fill("Synthetic evidence applicant");
   await page.getByLabel("Phone number").fill("9000000000");
-  await page.getByLabel("City").fill("Hyderabad");
+  await page.getByLabel("Beneficiary’s locality or area in Hyderabad").fill("Hyderabad");
+  await page.getByLabel('In our Hyderabad service area').check();
   await page.getByRole("button", { name: "Continue to need →" }).click();
   await page.getByLabel("Type of assistance").selectOption("MEDICAL");
   await page.getByLabel("Describe the need").fill("Synthetic private intake evidence preflight: no request data or documents are sent during this test.");
@@ -41,7 +42,8 @@ test("oversized private evidence cannot advance to confirmation", async ({ page 
   await page.goto("/request-assistance");
   await page.getByLabel("Applicant name").fill("Synthetic evidence applicant");
   await page.getByLabel("Phone number").fill("9000000000");
-  await page.getByLabel("City").fill("Hyderabad");
+  await page.getByLabel("Beneficiary’s locality or area in Hyderabad").fill("Hyderabad");
+  await page.getByLabel('In our Hyderabad service area').check();
   await page.getByRole("button", { name: "Continue to need →" }).click();
   await page.getByLabel("Type of assistance").selectOption("MEDICAL");
   await page.getByLabel("Describe the need").fill("Synthetic evidence preflight size check without creating any private assistance request.");

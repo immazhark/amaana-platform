@@ -268,7 +268,8 @@ jobs:
           node scripts/test-historical-pageview-migration.mjs
           node --test scripts/test-master-content-assets.mjs
           # Select every *.database.test.ts by suffix: a hand-kept list silently skipped new files (scripts/test-database-tests-wired.mjs guards this).
-          npx vitest run .database.test.ts
+          # All files share this database; serialize file fixtures but retain explicit concurrent operations inside tests.
+          npx vitest run .database.test.ts --no-file-parallelism
 
 
   production:

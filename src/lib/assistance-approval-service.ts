@@ -3,10 +3,12 @@ import {
   type AssistanceVerificationDecision, type ConfidentialityLevel, type ConsentDecision, type ZakatReviewStatus,
 } from "@prisma/client";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
+import { capacityUsed } from "@/lib/assistance-capacity";
+import { INDIVIDUAL_CASE_ANNUAL_CAPACITY } from "@/lib/assistance-policy";
 import { approvalIssues, type ApprovalFieldErrors, type ApprovalFields, type ApprovalRoute } from "@/lib/assistance-approval";
 
 export type AssistanceApprovalErrorCode =
-  | "not_found" | "linked_appeal" | "rejected" | "closed" | "not_eligible" | "stale_request" | "stale_verification" | "reopen_forbidden" | "incomplete";
+  | "not_found" | "linked_appeal" | "rejected" | "closed" | "not_eligible" | "stale_request" | "stale_verification" | "reopen_forbidden" | "incomplete" | "capacity_full";
 
 /** A refusal whose message is safe to show the reviewer. Anything else stays server-side. */
 export class AssistanceApprovalError extends Error {
@@ -24,6 +26,7 @@ export const APPROVAL_MESSAGES: Record<Exclude<AssistanceApprovalErrorCode, "inc
   stale_request: "This request changed while you were reviewing it. Refresh the page and check it before approving.",
   stale_verification: "The review changed while you were reviewing it. Refresh the page and check it before approving.",
   reopen_forbidden: "Approval permission is required to reopen a completed verification.",
+  capacity_full: `This year's planning limit of ${INDIVIDUAL_CASE_ANNUAL_CAPACITY} individual cases has been reached. To accept this case anyway, tick the capacity exception and give the reason.`,
 };
 
 export type ApprovalInput = {
@@ -34,6 +37,8 @@ export type ApprovalInput = {
   expectedRequestUpdatedAt: Date;
   expectedVerificationUpdatedAt: Date | null;
   actorId: string;
+  /** The reason an authorised approver is accepting this case beyond the annual capacity. Empty or absent means no exception. */
+  capacityExceptionNote?: string | null;
 };
 
 export type ApprovalResult = {
@@ -65,7 +70,7 @@ export async function approveAssistanceRequest(input: ApprovalInput): Promise<Ap
     const current = await tx.assistanceRequest.findUnique({
       where: { id: input.requestId },
       select: {
-        id: true, status: true, appealId: true, email: true, referenceNumber: true, updatedAt: true,
+        id: true, status: true, appealId: true, email: true, referenceNumber: true, updatedAt: true, acceptedAt: true,
         verification: { select: { id: true, updatedAt: true, decision: true, completedAt: true, reviewedBy: { select: { name: true } } } },
       },
     });
@@ -96,11 +101,18 @@ export async function approveAssistanceRequest(input: ApprovalInput): Promise<Ap
       throw new AssistanceApprovalError("stale_verification", APPROVAL_MESSAGES.stale_verification);
     }
 
+    // Capacity is counted when a case is accepted. The serializable transaction makes two concurrent acceptances conflict and
+    // retry, so the second sees the first and cannot take the last place as well.
+    const exception = input.capacityExceptionNote?.trim() || null;
+    const used = await capacityUsed(tx);
+    const overCapacity = used >= INDIVIDUAL_CASE_ANNUAL_CAPACITY;
+    if (overCapacity && !exception) throw new AssistanceApprovalError("capacity_full", APPROVAL_MESSAGES.capacity_full);
+
     // The guard repeats the state the decision was made against, so a rejection, a conversion or an edit that commits
     // between the read above and this write cannot be overwritten.
     const claimed = await tx.assistanceRequest.updateMany({
       where: { id: current.id, status: current.status, appealId: null, updatedAt: current.updatedAt },
-      data: { status: AssistanceStatus.APPROVED },
+      data: { status: AssistanceStatus.APPROVED, acceptedAt: current.acceptedAt ?? new Date(), capacityExceptionNote: overCapacity ? exception : null },
     });
     if (claimed.count !== 1) throw new AssistanceApprovalError("stale_request", APPROVAL_MESSAGES.stale_request);
 
@@ -123,7 +135,7 @@ export async function approveAssistanceRequest(input: ApprovalInput): Promise<Ap
       data: {
         actorId: input.actorId, action: "assistance.approved", entityType: "AssistanceRequest", entityId: current.id,
         // What happened, never the private summary or notes.
-        metadata: { route: input.route, previousStatus: current.status, previousDecision: current.verification?.decision ?? null, confidentialityLevel: f.confidentialityLevel, zakatStatus: f.zakatStatus },
+        metadata: { route: input.route, previousStatus: current.status, previousDecision: current.verification?.decision ?? null, confidentialityLevel: f.confidentialityLevel, zakatStatus: f.zakatStatus, countedBefore: used, capacityException: overCapacity },
       },
     });
 
