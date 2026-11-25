@@ -267,6 +267,8 @@ export function ScrollCarousel({
         role="group"
         tabIndex={slideCount > 1 ? 0 : -1}
         onPointerDown={event => {
+          // A new press without an active drag cannot be the prior drag's click.
+          if (!drag.current) suppressClick.current = false;
           if (event.defaultPrevented) return;
           navigation.current = null;
           if (mode === "hero" || event.pointerType !== "mouse" || event.button !== 0 || (event.target instanceof Element && event.target.closest("button,video,input,textarea,select,[contenteditable]"))) return;
