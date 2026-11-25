@@ -82,6 +82,50 @@ describe("unverified, private aggregate digest draft", () => {
     expect(() => digestSyntheticAggregateDraft(withSymbol)).toThrow();
   });
 
+  it("rejects a top-level accessor without invoking it", () => {
+    let reads = 0;
+    const input = Object.defineProperty({ ...draft }, "periodStart", {
+      enumerable: true, get() { reads++; return draft.periodStart; },
+    });
+    expect(() => digestSyntheticAggregateDraft(input)).toThrow();
+    expect(reads).toBe(0);
+  });
+
+  it("rejects a metric accessor without invoking it", () => {
+    let reads = 0;
+    const metric = Object.defineProperty({ ...draft.metrics[0] }, "count", {
+      enumerable: true, get() { reads++; return 3; },
+    });
+    expect(() => digestSyntheticAggregateDraft({ ...draft, metrics: [metric] })).toThrow();
+    expect(reads).toBe(0);
+  });
+
+  it("rejects a metric array index accessor without invoking it", () => {
+    let reads = 0;
+    const metrics = Object.defineProperty([...draft.metrics], "0", {
+      enumerable: true, get() { reads++; return draft.metrics[0]; },
+    });
+    expect(() => digestSyntheticAggregateDraft({ ...draft, metrics })).toThrow();
+    expect(reads).toBe(0);
+  });
+
+  it("rejects array subclasses instead of accepting custom array behavior", () => {
+    class SpecialMetrics extends Array<(typeof draft.metrics)[number]> {}
+    const metrics = new SpecialMetrics(...draft.metrics);
+    expect(() => digestSyntheticAggregateDraft({ ...draft, metrics })).toThrow();
+  });
+
+  it("rejects nonenumerable expected fields", () => {
+    const input = Object.defineProperty({ ...draft }, "periodStart", { enumerable: false });
+    expect(() => digestSyntheticAggregateDraft(input)).toThrow();
+  });
+
+  it("preserves the exact canonical result for valid frozen data", () => {
+    const metrics = Object.freeze(draft.metrics.map(metric => Object.freeze({ ...metric })));
+    const input = Object.freeze({ ...draft, metrics });
+    expect(digestSyntheticAggregateDraft(input)).toEqual(digestSyntheticAggregateDraft(draft));
+  });
+
   it("uses a separate digest domain from bare JSON and never signs or publishes", async () => {
     const { createHash } = await import("node:crypto");
     const result = digestSyntheticAggregateDraft(draft);
