@@ -1,6 +1,6 @@
 import { beforeEach, expect, it, vi } from "vitest";
 const mocks=vi.hoisted(()=>({faith:vi.fn(),empty:vi.fn(),indexing:vi.fn()}));
-vi.mock("@/lib/prisma",()=>({prisma:{faithContent:{findMany:mocks.faith},appeal:{findMany:mocks.empty},initiative:{findMany:mocks.empty},story:{findMany:mocks.empty}}}));
+vi.mock("@/lib/prisma",()=>({prisma:{faithContent:{findMany:mocks.faith},appeal:{findMany:mocks.empty},initiative:{findMany:mocks.empty},story:{findMany:mocks.empty},fund:{findFirst:async()=>null}}}));
 vi.mock("@/lib/site-indexing",()=>({shouldAllowIndexing:mocks.indexing}));
 import sitemap from "./sitemap";
 const reviewed={slug:"reviewed-citation",updatedAt:new Date("2026-01-01"),status:"PUBLISHED",religiousReviewStatus:"VERIFIED",verifiedAt:new Date("2026-01-01"),sourceCitation:"Reviewed source"};
