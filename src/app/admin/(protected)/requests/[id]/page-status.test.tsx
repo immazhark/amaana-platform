@@ -195,3 +195,19 @@ describe("verification field requirements", () => {
     expect(form).not.toMatch(/\brequired(?:=|\s|>)/);
   });
 });
+
+describe("reviewer beneficiary residence evidence", () => {
+  it.each([
+    { residence: "HYDERABAD_SERVICE_AREA", expected: "In the Hyderabad service area" },
+    { residence: "OUTSIDE_SERVICE_AREA", expected: "Outside the service area" },
+    { residence: null, expected: "Not recorded — confirm beneficiary residence" },
+    { residence: undefined, expected: "Not recorded — confirm beneficiary residence" },
+    { residence: "UNKNOWN", expected: "Unrecognized answer — confirm beneficiary residence" },
+    { residence: "", expected: "Unrecognized answer — confirm beneficiary residence" },
+  ])("shows explicit evidence for residence $residence", async ({ residence, expected }) => {
+    mocks.request.mockResolvedValue({ ...request("SUBMITTED"), beneficiaryResidence: residence });
+    const html = renderToStaticMarkup(await RequestDetailPage({ params: Promise.resolve({ id: "synthetic-request" }) }));
+    expect(html).toContain("<dt>Beneficiary lives (self-declared)</dt><dd>" + expected + "</dd>");
+    if (residence !== "OUTSIDE_SERVICE_AREA") expect(html).not.toContain("<dd>Outside the service area</dd>");
+  });
+});

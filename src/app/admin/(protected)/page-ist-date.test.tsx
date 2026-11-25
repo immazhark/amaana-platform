@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   count: vi.fn(),
   groupBy: vi.fn(),
   findMany: vi.fn(),
+  findFirst: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({
@@ -19,6 +20,7 @@ vi.mock("@/lib/prisma", () => ({
     count: mocks.count,
     groupBy: mocks.groupBy,
     findMany: mocks.findMany,
+    findFirst: mocks.findFirst,
   }, assistanceIntakeSetting: { findUnique: async () => null } },
 }));
 
@@ -31,6 +33,7 @@ beforeEach(() => {
   mocks.permission.mockReturnValue(true);
   mocks.count.mockResolvedValue(1);
   mocks.groupBy.mockResolvedValue([]);
+  mocks.findFirst.mockResolvedValue(null);
 });
 
 afterEach(() => vi.unstubAllEnvs());
@@ -188,5 +191,31 @@ describe("assistance queue triage authorization boundary", () => {
     expect(mocks.count).not.toHaveBeenCalled();
     expect(mocks.groupBy).not.toHaveBeenCalled();
     expect(mocks.findMany).not.toHaveBeenCalled();
+  });
+});
+
+describe("assistance workload labels and record visibility", () => {
+  it("reports current submitted status and receipt age, without claiming an unseen first review", async () => {
+    mocks.count.mockImplementation(async ({ where }) => {
+      if (where.acceptedAt) return 0;
+      if (where.status === "SUBMITTED") return 4;
+      if (where.assignedToId === null) return 3;
+      return 9;
+    });
+    mocks.findFirst.mockResolvedValue({ createdAt: new Date(Date.now() - 3.5 * 86_400_000) });
+    mocks.findMany.mockResolvedValue([]);
+    const html = renderToStaticMarkup(await AdminQueuePage({ searchParams: Promise.resolve({ view: "tests", assignment: "unassigned" }) }));
+    expect(html).toContain("4 submitted requests");
+    expect(html).toContain("oldest received 3 days ago");
+    expect(html).toContain("3 of 9 open requests have no assignee");
+    expect(html).not.toContain("awaiting a first review");
+    expect(mocks.findFirst).toHaveBeenCalledWith({
+      where: { referenceNumber: "AF-STAGING-ACCEPTANCE", status: "SUBMITTED" },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+      select: { createdAt: true },
+    });
+    expect(mocks.count).toHaveBeenCalledWith({
+      where: { referenceNumber: "AF-STAGING-ACCEPTANCE", status: { in: ["SUBMITTED", "DOCUMENTS_REQUESTED", "UNDER_VERIFICATION"] }, assignedToId: null },
+    });
   });
 });
