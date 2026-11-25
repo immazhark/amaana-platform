@@ -2,6 +2,8 @@ import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "./prisma";
 import { rejectAssistanceRequest } from "./assistance-rejection-service";
+import { capacityUsed, capacityYearBounds, countedCaseWhere } from "./assistance-capacity";
+import { INDIVIDUAL_CASE_ANNUAL_CAPACITY } from "./assistance-policy";
 import { AssistanceApprovalError, approveAssistanceRequest, saveApprovalDraft, type ApprovalInput } from "./assistance-approval-service";
 
 // A real PostgreSQL test, deliberately unavailable to hosted and production DBs. Synthetic data only.
@@ -287,13 +289,32 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("assistance approv
   });
 
   describe("annual individual-case capacity", () => {
-    const fillCapacity = async () => {
-      const existing = await prisma.assistanceRequest.count({ where: { acceptedAt: { not: null }, status: { in: ["APPROVED", "CONVERTED_TO_APPEAL", "CLOSED"] } } });
-      for (let i = existing; i < 12; i++) {
+    const fillCapacity = async (now = new Date()) => {
+      const existing = await capacityUsed(prisma, now);
+      for (let i = existing; i < INDIVIDUAL_CASE_ANNUAL_CAPACITY; i++) {
         const filler = await makeRequest({ status: "APPROVED" });
-        await prisma.assistanceRequest.update({ where: { id: filler.id }, data: { acceptedAt: new Date() } });
+        await prisma.assistanceRequest.update({ where: { id: filler.id }, data: { acceptedAt: now } });
       }
     };
+
+    it("fills the current IST-year capacity without counting adjacent-year accepted cases", async () => {
+      const now = new Date();
+      const { start, end } = capacityYearBounds(now);
+      const previous = await makeRequest({ status: "CLOSED" });
+      const future = await makeRequest({ status: "APPROVED" });
+      const previousAcceptance = new Date(start.getTime() - 1);
+      await prisma.assistanceRequest.update({ where: { id: previous.id }, data: { acceptedAt: previousAcceptance } });
+      await prisma.assistanceRequest.update({ where: { id: future.id }, data: { acceptedAt: end } });
+
+      await fillCapacity(now);
+
+      // Count independently of the fixture's helper to detect an all-years query regression.
+      expect(await prisma.assistanceRequest.count({
+        where: { acceptedAt: { gte: start, lt: end }, status: { in: ["APPROVED", "CONVERTED_TO_APPEAL", "CLOSED"] } },
+      })).toBe(INDIVIDUAL_CASE_ANNUAL_CAPACITY);
+      expect((await prisma.assistanceRequest.findUniqueOrThrow({ where: { id: previous.id } })).acceptedAt).toEqual(previousAcceptance);
+      expect((await prisma.assistanceRequest.findUniqueOrThrow({ where: { id: future.id } })).acceptedAt).toEqual(end);
+    });
 
     it("records the acceptance time and refuses a thirteenth case without an exception", async () => {
       await fillCapacity();
@@ -313,9 +334,13 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("assistance approv
     });
 
     it("lets concurrent acceptances take only the places left", async () => {
-      await fillCapacity();
-      // Free exactly one place: the oldest filler is moved back into review.
-      const filler = await prisma.assistanceRequest.findFirstOrThrow({ where: { id: { in: requestIds }, acceptedAt: { not: null }, status: "APPROVED" } });
+      const now = new Date();
+      await fillCapacity(now);
+      // Free exactly one place: a counted current-year filler is moved back into review.
+      const filler = await prisma.assistanceRequest.findFirstOrThrow({
+        where: { ...countedCaseWhere(now), id: { in: requestIds }, status: "APPROVED" },
+        orderBy: [{ acceptedAt: "asc" }, { id: "asc" }],
+      });
       await prisma.assistanceRequest.update({ where: { id: filler.id }, data: { status: "UNDER_VERIFICATION" } });
       const a = await makeRequest();
       const b = await makeRequest();

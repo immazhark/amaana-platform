@@ -81,7 +81,7 @@ export function AssistanceForm({ copy }: { copy: AssistanceCopy }) {
   }
 
   function navigateToStep(target: AssistanceStep) {
-    if (target > step && !validateStep(step)) return;
+    if ((outsideArea && target > 1) || (target > step && !validateStep(step))) return;
     goToStep(target);
   }
 
@@ -206,7 +206,7 @@ export function AssistanceForm({ copy }: { copy: AssistanceCopy }) {
     {copy.heading}
     <nav className={styles.progress} aria-label="Assistance request progress">
       <p aria-live="polite" aria-atomic="true"><strong>Step {step} of 4</strong><span>{stepLabels[step - 1]}</span></p>
-      <ol>{stepLabels.map((label, index) => { const itemStep = (index + 1) as AssistanceStep; return <li key={label}><button type="button" onClick={() => navigateToStep(itemStep)} disabled={itemStep > maxVisitedStep || locked} aria-current={itemStep === step ? "step" : undefined} aria-controls={`assistance-step-${itemStep}`}><span>{String(itemStep).padStart(2, "0")}</span>{label}</button></li>; })}</ol>
+      <ol>{stepLabels.map((label, index) => { const itemStep = (index + 1) as AssistanceStep; return <li key={label}><button type="button" onClick={() => navigateToStep(itemStep)} disabled={itemStep > maxVisitedStep || locked || (outsideArea && itemStep > 1)} aria-current={itemStep === step ? "step" : undefined} aria-controls={`assistance-step-${itemStep}`}><span>{String(itemStep).padStart(2, "0")}</span>{label}</button></li>; })}</ol>
     </nav>
     {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}{phase === "followup" && <p><a className="v2-text-link" href="/contact" target="_blank" rel="noreferrer">Contact Amaana about this request<span className="sr-only"> (opens in a new tab)</span></a></p>}</div>}
     <fieldset id="assistance-step-1" data-assistance-step="1" tabIndex={-1} hidden={step !== 1} disabled={locked}><legend><span>01</span> Contact</legend><div className="form-grid">

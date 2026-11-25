@@ -672,6 +672,33 @@ test.describe('private assistance journey', () => {
     await expect(page.getByLabel('Type of assistance')).toBeHidden();
   });
 
+  test('changing residence to outside the service area blocks every previously visited later step', async ({ page }) => {
+    await openAssistance(page);
+    await fillAssistanceForm(page);
+    const progress = page.getByRole('navigation', { name: 'Assistance request progress' });
+    await progress.getByRole('button', { name: /Contact/ }).click();
+    await expect(page.locator('#assistance-step-1')).toBeVisible();
+
+    await page.getByLabel('Somewhere else').check();
+    await expect(page.locator('#outside-area-notice')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Continue to need →' })).toBeDisabled();
+    for (const step of [2, 3, 4]) {
+      await expect(progress.locator(`button[aria-controls="assistance-step-${step}"]`)).toBeDisabled();
+      await expect(page.locator(`#assistance-step-${step}`)).toBeHidden();
+    }
+    await expect(progress.locator('[aria-live="polite"]')).toContainText('Step 1 of 4');
+    await expect(page.getByRole('button', { name: 'Submit private request →' })).toHaveCount(0);
+
+    // A corrected self-declaration restores the ordinary, still-validated navigation.
+    await page.getByLabel('In our Hyderabad service area').check();
+    await expect(page.locator('#outside-area-notice')).toHaveCount(0);
+    const confirm = progress.locator('button[aria-controls="assistance-step-4"]');
+    await expect(confirm).toBeEnabled();
+    await confirm.click();
+    await expect(progress.locator('[aria-live="polite"]')).toContainText('Step 4 of 4');
+    await expect(page.locator('#assistance-step-4')).toBeVisible();
+  });
+
   test('server validation focuses the first rejected field and clears its inline error on edit', async ({ page }) => {
     await page.route('**/api/assistance', route => route.fulfill({
       status: 400,
