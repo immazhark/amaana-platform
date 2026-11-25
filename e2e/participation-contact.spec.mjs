@@ -2,24 +2,19 @@ import { expect, test } from '@playwright/test';
 import { waitForPublicOverview } from './helpers/public-overview-ready.mjs';
 import AxeBuilder from '@axe-core/playwright';
 
-test('contact card actions preserve native email, phone, internal and secure external destinations', async ({ page }) => {
+test('contact card actions preserve native email, internal and secure external destinations', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const response = await page.goto('/contact', { waitUntil: 'domcontentloaded' });
   expect(response?.ok()).toBe(true);
 
   const email = page.locator('.v2-intent-card[data-contact-kind="01"]');
-  const phone = page.locator('.v2-intent-card[data-contact-kind="02"]');
-  const whatsapp = page.locator('.v2-intent-card[data-contact-kind="02A"]');
   const assistance = page.locator('.v2-intent-card[data-contact-kind="03"]');
 
   await expect(email).toHaveAttribute('href', 'mailto:amaanafoundation24@gmail.com');
-  await expect(phone).toHaveAttribute('href', 'tel:+919908002694');
   await expect(email).not.toHaveAttribute('target', '_blank');
-  await expect(phone).not.toHaveAttribute('target', '_blank');
   await expect(assistance).toHaveAttribute('href', '/request-assistance');
-  await expect(whatsapp).toHaveAttribute('href', 'https://wa.me/919908002694');
-  await expect(whatsapp).toHaveAttribute('target', '_blank');
-  await expect(whatsapp).toHaveAttribute('rel', /noopener noreferrer/);
+  // Assistance is form-first: no public call or WhatsApp route to the foundation number.
+  await expect(page.locator('a[href^="tel:"], a[href*="wa.me/919908002694"]')).toHaveCount(0);
 });
 
 for (const width of [320, 390, 768, 1024, 1440, 1920]) {
@@ -34,7 +29,7 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
         const copy = card.querySelector('p').getBoundingClientRect();
         return { gap: copy.top - heading.bottom, decoration: getComputedStyle(card, '::before').content };
       }));
-      expect(geometry.length).toBe(route === '/contact' ? 7 : 6);
+      expect(geometry.length).toBe(route === '/contact' ? 5 : 6);
       expect(geometry.every(card => card.gap >= 8 && card.decoration === 'none')).toBe(true);
       await first.hover();
       await first.focus();
@@ -51,9 +46,6 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
         expect(journey).toHaveLength(5);
         expect(journey.every(step => step.gap >= 8 && step.decoration === 'none')).toBe(true);
       } else {
-        const whatsapp = page.locator('.v2-intent-card[href^="https://wa.me/"]');
-        await expect(whatsapp).toHaveAttribute('target', '_blank');
-        await expect(whatsapp).toHaveAttribute('rel', /noopener/);
         const socials = page.locator('.v2-contact-social-links a');
         await expect(socials).toHaveCount(5);
         const expectedChannels = new Map([

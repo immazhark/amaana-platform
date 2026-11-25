@@ -33,8 +33,8 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
         expect(await page.locator('.v2-faith-standard').evaluate(node => getComputedStyle(node, '::before').content)).toBe('none');
       }
       if (route === '/contact') {
-        const contacts = page.locator('.v2-closing a[href^="mailto:"], .v2-closing a[href^="tel:"]');
-        await expect(contacts).toHaveCount(2);
+        const contacts = page.locator('.v2-closing a[href^="mailto:"]');
+        await expect(contacts).toHaveCount(1);
         for (const link of await contacts.all()) {
           await expect(link.locator('svg')).toHaveCount(1);
           expect(await link.evaluate(node => node.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);

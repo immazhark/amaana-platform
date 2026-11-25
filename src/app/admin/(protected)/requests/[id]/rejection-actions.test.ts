@@ -83,7 +83,7 @@ describe("a rejection reads only the reason and the confirmation", () => {
     expect(await redirected(form({ reason: "  Not eligible  " }))).toBe(`${base}?reject=done&o=rejected#reject-heading`);
     expect(mocks.reject).toHaveBeenCalledOnce();
     expect(mocks.reject).toHaveBeenCalledWith({
-      requestId: ID, reason: "Not eligible", actorId: "synthetic-staff",
+      requestId: ID, reason: "Not eligible", reasonCode: null, actorId: "synthetic-staff",
       expectedRequestUpdatedAt: new Date(REQUEST_VERSION), expectedVerificationUpdatedAt: new Date(VERIFICATION_VERSION),
     });
     expect(mocks.revalidate).toHaveBeenCalledWith(`/admin/requests/${ID}`);
@@ -96,7 +96,7 @@ describe("a rejection reads only the reason and the confirmation", () => {
       publicNameConsent: "UNCONFIRMED", zakatStatus: "UNREVIEWED", status: "APPROVED", markComplete: "on",
     }));
     expect(result).toContain("reject=done");
-    expect(Object.keys(mocks.reject.mock.calls[0]![0]).sort()).toEqual(["actorId", "expectedRequestUpdatedAt", "expectedVerificationUpdatedAt", "reason", "requestId"]);
+    expect(Object.keys(mocks.reject.mock.calls[0]![0]).sort()).toEqual(["actorId", "expectedRequestUpdatedAt", "expectedVerificationUpdatedAt", "reason", "reasonCode", "requestId"]);
   });
 
   it("accepts a request that has no verification record yet", async () => {

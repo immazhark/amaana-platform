@@ -61,7 +61,8 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
       if (step === 1) {
         await page.getByLabel('Applicant name').fill('Responsive Acceptance Applicant');
         await page.getByLabel('Phone number').fill('9000000000');
-        await page.getByLabel('City').fill('Hyderabad');
+        await page.getByLabel('Beneficiary’s locality or area in Hyderabad').fill('Hyderabad');
+        await page.getByLabel('In our Hyderabad service area').check();
         await page.getByRole('button', { name: 'Continue to need →' }).click();
       } else if (step === 2) {
         await page.getByLabel('Type of assistance').selectOption('MEDICAL');

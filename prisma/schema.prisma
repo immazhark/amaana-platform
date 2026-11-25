@@ -180,6 +180,7 @@ model User {
   assistanceAssignments   AssistanceRequest[]      @relation("AssistanceAssignee")
   assistanceVerifications AssistanceVerification[] @relation("AssistanceVerifier")
   assistanceRejections    AssistanceRejection[]    @relation("AssistanceRejecter")
+  assistanceIntakeUpdates AssistanceIntakeSetting[] @relation("AssistanceIntakeUpdater")
   notifications           Notification[]
   credential              PasswordCredential?
   sessions                Session[]
@@ -672,6 +673,12 @@ model AssistanceRequest {
   description       String
   consentGivenAt    DateTime
   trackingTokenHash String
+  // Self-declared answer to "does the beneficiary live in the Hyderabad service area?". Null on requests made before it existed.
+  beneficiaryResidence String?
+  // When the case was formally taken up (approved). Counts toward the annual individual-case capacity; null otherwise.
+  acceptedAt        DateTime?
+  // Set only when an authorised approver accepted a case beyond the annual capacity; the note is the stated reason.
+  capacityExceptionNote String?
   status            AssistanceStatus        @default(SUBMITTED)
   internalNotes     String?
   assignedToId      String?
@@ -687,6 +694,7 @@ model AssistanceRequest {
   @@index([status, createdAt])
   @@index([phone])
   @@index([createdAt])
+  @@index([acceptedAt])
 }
 
 model AssistanceVerification {
@@ -907,6 +915,7 @@ model AssistanceRejection {
   id                  String            @id @default(cuid())
   assistanceRequestId String
   reason              String
+  reasonCode          String?
   rejectedById        String
   previousStatus      AssistanceStatus
   rejectedAt          DateTime          @default(now())
@@ -914,4 +923,13 @@ model AssistanceRejection {
   rejectedBy          User              @relation("AssistanceRejecter", fields: [rejectedById], references: [id], onDelete: Restrict)
   @@index([assistanceRequestId, rejectedAt])
   @@index([rejectedById])
+}
+
+// Single-row switch for pausing new assistance requests. No row means intake is open.
+model AssistanceIntakeSetting {
+  id          String   @id
+  paused      Boolean  @default(false)
+  updatedById String?
+  updatedBy   User?    @relation("AssistanceIntakeUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+  updatedAt   DateTime @updatedAt
 }

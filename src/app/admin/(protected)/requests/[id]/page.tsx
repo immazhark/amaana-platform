@@ -71,6 +71,12 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
     prisma.auditEvent.findMany({ where: { entityType: "AssistanceRequest", entityId: id }, select: { id: true, action: true, createdAt: true, actor: { select: { name: true } } }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] }),
   ]);
   if (!request) notFound();
+  // A shared phone number or email is a prompt for human judgement, never proof of a duplicate or of anything else.
+  const possibleDuplicates = await prisma.assistanceRequest.findMany({
+    where: { id: { not: id }, OR: [{ phone: request.phone }, ...(request.email ? [{ email: request.email }] : [])] },
+    select: { id: true, referenceNumber: true, status: true, createdAt: true },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 5,
+  });
 
   const currentAssigneeUnavailable = Boolean(request.assignedToId && !staff.some(member => member.id === request.assignedToId));
   const converted = request.status === "CONVERTED_TO_APPEAL" || Boolean(request.appealId);
@@ -112,13 +118,27 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
 
     <div className="admin-detail-grid">
       <div className="grid">
+        <details className="card">
+          <summary><h2 id="reviewer-guide-heading">Reviewer guide</h2></summary>
+          <ol>
+            <li><strong>Review first:</strong> where the beneficiary lives (the applicant may be a representative elsewhere), then whether the need is severe hardship within current scope, then whether we can verify it locally.</li>
+            <li><strong>Need more information:</strong> set Documents requested and ask only for what assessment needs, through the private channel, never in public comments.</li>
+            <li><strong>Decline respectfully:</strong> reject with a reason category (outside service area, outside scope, insufficient information, unable to verify, duplicate, capacity unavailable, withdrawn, or other with a note). Rejection needs only a reason and a confirmation. Never describe an applicant as dishonest.</li>
+            <li><strong>Duplicates:</strong> a shared phone number or similar text is a prompt for your judgement, not proof. Compare, then decide; do not decline on a match alone.</li>
+            <li><strong>Acceptance is not publication:</strong> approving a request does not publish a story, name, photo or medical detail. Publication is a separate decision with its own consent review.</li>
+            <li><strong>Capacity:</strong> the planning limit is 12 new individual cases a year, counted when a case is formally taken up, not when a request arrives or money is paid. Annual distributions and Taleem sponsorships are separate. Check workload before accepting; this limit is a maximum, not a promise.</li>
+          </ol>
+        </details>
+
         <section className="card">
           <h2>Request details</h2>
           <dl className="details">
             <div><dt>Phone</dt><dd>{request.phone}</dd></div>
             <div><dt>Email</dt><dd>{request.email ?? "Not supplied"}</dd></div>
             <div className="full"><dt>Description</dt><dd>{request.description}</dd></div>
+            {request.beneficiaryResidence && <div><dt>Beneficiary lives (self-declared)</dt><dd>{request.beneficiaryResidence === "HYDERABAD_SERVICE_AREA" ? "In the Hyderabad service area" : "Outside the service area"}</dd></div>}
           </dl>
+          {possibleDuplicates.length > 0 && <aside aria-label="Possible duplicate requests"><p><strong>Possible duplicates.</strong> Another request shares this phone number or email. This is a prompt for your judgement, not proof: compare before deciding, and do not decline on a match alone.</p><ul>{possibleDuplicates.map(other => <li key={other.id}><a href={`/admin/requests/${other.id}`}>{other.referenceNumber}</a> · {other.status} · {other.createdAt.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })}</li>)}</ul></aside>}
         </section>
 
         <section className="card">
@@ -244,6 +264,12 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
             {fieldError("zakatStatus")}
 
             {approvalOpen && canApprove && <>
+              {approvalNotice?.kind === "error" && approvalNotice.code === "capacity_full" && <fieldset>
+                <legend>Capacity exception</legend>
+                <label className="checkbox"><input type="checkbox" name="capacityException" /><span><strong>Accept this case beyond the annual planning limit</strong><small>Recorded in the audit history with your name.</small></span></label>
+                <label htmlFor="capacityExceptionNote">Reason for the exception</label>
+                <textarea id="capacityExceptionNote" name="capacityExceptionNote" rows={2} maxLength={1000} />
+              </fieldset>}
               <label className="checkbox"><input id="confirmApproval" type="checkbox" name="confirmApproval" {...fieldAttrs("confirmApproval")}/><span><strong>I confirm I am approving this request on the support route chosen above</strong> <span className="muted">({REQUIRED_TO_APPROVE})</span><small>This completes the verification and marks the request Approved with your name on it. If the applicant gave an email address, the standard “status updated” message is queued (queued is not delivered). Approval is not payment, and for public fundraising it does not publish anything.</small></span></label>
               {fieldError("confirmApproval")}
             </>}

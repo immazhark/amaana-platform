@@ -5,6 +5,7 @@ import { AssistanceForm } from "@/components/assistance-form";
 import { PageHero } from "@/components/page-hero";
 import styles from "./assistance-surface.module.css";
 import formStyles from "@/components/assistance-form.module.css";
+import { ASSISTANCE_SCOPE_NOTICE, ASSISTANCE_SCOPE_POINTS } from "@/lib/assistance-policy";
 
 export const metadata: Metadata = {
   title: "Request Assistance",
@@ -26,7 +27,9 @@ const assistanceCopy = {
 
 export default function RequestAssistancePage() {
   return <div className="v2-home v2-assistance-page">
-    <PageHero variant="action" eyebrow="Request Assistance · Private First Step" title="Ask for Help Privately and With Dignity" description={<p>Tell Amaana what support is needed through a private request. Sensitive documents stay outside the public website while the team reviews the circumstances and follows up where needed.</p>} actions={[{label:"Begin your request",href:"#request-form"},{label:"Track an existing request",href:"/request-assistance/status",secondary:true}]} visualKicker="What happens here" visualTitle="Private Request → Human Review" visualNote="A request begins review; it does not guarantee assistance, fundraising or public publication." />
+    <PageHero variant="action" eyebrow="Request Assistance · Private First Step" title="Ask for Help Privately and With Dignity" description={<p>Individual assistance is currently limited to beneficiaries in our Hyderabad service area and to a small number of severe, verifiable cases. Tell Amaana what support is needed through this private request form. Sensitive documents stay outside the public website while the team reviews the circumstances and follows up where needed.</p>} actions={[{label:"Begin your request",href:"#request-form"},{label:"Track an existing request",href:"/request-assistance/status",secondary:true}]} visualKicker="What happens here" visualTitle="Private Request → Human Review" visualNote="A request begins review; it does not guarantee assistance, fundraising or public publication." />
+
+    <section className={`v2-assistance-scope ${styles.before}`} aria-labelledby="assistance-scope-heading"><div className="v2-shell"><SectionHeading eyebrow="Please read first" title={<span id="assistance-scope-heading">Who we can currently help</span>} subtitle={ASSISTANCE_SCOPE_NOTICE[0]} />{ASSISTANCE_SCOPE_NOTICE.slice(1).map(paragraph => <p key={paragraph}>{paragraph}</p>)}<ul className="muted">{ASSISTANCE_SCOPE_POINTS.map(point => <li key={point}>{point}</li>)}</ul></div></section>
 
     <section className={`v2-assistance-before ${styles.before}`}><div className="v2-shell"><SectionHeading eyebrow="Before you begin" title="Share what helps us understand the need." subtitle={<>Describe the situation and the support requested. Add supporting documents only when they genuinely help verification.<span className={styles.privacy}><strong>Uploads remain private.</strong> Any later public sharing would require a separate reviewed decision.</span></>} /></div></section>
 

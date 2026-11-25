@@ -19,7 +19,7 @@ vi.mock("@/lib/prisma", () => ({
     count: mocks.count,
     groupBy: mocks.groupBy,
     findMany: mocks.findMany,
-  } },
+  }, assistanceIntakeSetting: { findUnique: async () => null } },
 }));
 
 import AdminQueuePage from "./page";

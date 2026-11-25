@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 const mocks = vi.hoisted(() => ({ permission: vi.fn(), allowed: vi.fn(), request: vi.fn(), staff: vi.fn(), history: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ requirePermission: mocks.permission, hasPermission: mocks.allowed }));
 vi.mock("@/lib/prisma", () => ({ prisma: {
-  assistanceRequest: { findUnique: mocks.request }, user: { findMany: mocks.staff }, auditEvent: { findMany: mocks.history },
+  assistanceRequest: { findUnique: mocks.request, findMany: async () => [] }, user: { findMany: mocks.staff }, auditEvent: { findMany: mocks.history },
 } }));
 vi.mock("./actions", () => ({ assignRequest: vi.fn(), convertToAppeal: vi.fn(), saveVerificationWithFeedback: vi.fn(), updateRequestWithFeedback: vi.fn() }));
 import RequestDetailPage from "./page";

@@ -12,7 +12,6 @@ export function StructuredData() {
         alternateName: ["Amaana Foundation Hyderabad", "Amaana"],
         url: siteUrl,
         email: "amaanafoundation24@gmail.com",
-        telephone: "+91-9908002694",
         description: "Amaana Foundation is a Hyderabad-based registered charitable trust supporting verified community needs through relief, education, seasonal programmes and case-led assistance with dignity, transparency and accountability.",
         address: {
           "@type": "PostalAddress",
@@ -23,8 +22,7 @@ export function StructuredData() {
         contactPoint: {
           "@type": "ContactPoint",
           contactType: "general enquiries",
-          telephone: "+91-9908002694",
-          email: "amaanafoundation24@gmail.com",
+            email: "amaanafoundation24@gmail.com",
           areaServed: "IN",
           availableLanguage: ["en"],
         },
