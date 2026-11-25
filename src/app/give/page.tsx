@@ -6,12 +6,15 @@ import { CanonicalArticle } from "@/components/canonical-article";
 import { FundGivingCheckout } from "@/components/fund-giving/fund-giving-checkout";
 import type { GiveCampaign, GiveFund } from "@/components/fund-giving/fund-copy";
 import { PublicRouteLoading } from "@/components/public-route-loading";
+import { VerifiedImpactStrip } from "@/components/verified-impact-strip";
 import { getDonationPaymentDetails } from "@/lib/donation-payment-details";
 import { isFundGivingEnabled } from "@/lib/fund-giving-flag";
 import { GIVE_HERO_ACTIONS } from "@/lib/giving-hero-actions";
 import { complianceCopy } from "@/lib/master-copy";
 import { prisma } from "@/lib/prisma";
 import { feeEstimateBasisPoints } from "@/lib/processing-fee";
+import { getDonationImpactHighlights } from "@/lib/public-page-data";
+import { logServerError } from "@/lib/server-log";
 
 const description = "Choose the fund your gift supports and give securely. Every gift is recorded against the fund you choose.";
 
@@ -24,6 +27,22 @@ export const metadata: Metadata = {
 
 // Fund availability and the activation switch are rechecked on every request.
 export const dynamic = "force-dynamic";
+
+// Optional evidence streams independently of the checkout and never gates giving.
+async function GiveImpactEvidence() {
+  const initiatives = await getDonationImpactHighlights().catch(error => {
+    logServerError("give.published_impact_unavailable", {
+      errorName: error instanceof Error ? error.name : "unknown",
+    });
+    return [];
+  });
+  const items = initiatives.flatMap(item =>
+    item.primaryMetric && item.primaryMetricLabel
+      ? [{ slug: item.slug, title: item.title, value: item.primaryMetric, label: item.primaryMetricLabel }]
+      : [],
+  );
+  return items.length ? <VerifiedImpactStrip items={items} headingId="give-published-outcomes" /> : null;
+}
 
 async function GiveContent({ fundParam }: { fundParam: Promise<{ fund?: string | string[] }> }) {
   const [{ fund: requested }, rows] = await Promise.all([
@@ -63,6 +82,7 @@ async function GiveContent({ fundParam }: { fundParam: Promise<{ fund?: string |
       ]}
     >
       <FundGivingCheckout funds={funds} copies={Object.fromEntries(funds.map(fund => [fund.slug, fundDonationFormCopy(fund)]))} campaigns={campaigns} initialSlug={initialSlug} paymentDetails={getDonationPaymentDetails()} feeBps={feeEstimateBasisPoints()} />
+      <Suspense fallback={null}><GiveImpactEvidence /></Suspense>
     </CanonicalArticle>
   );
 }

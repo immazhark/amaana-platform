@@ -28,10 +28,10 @@ test.each(["af-menu-lock", "af-navigation-lock"])(
     const { useSiteScroll } = await import("./site-scroll");
     useSiteScroll("/about");
     try {
-      const zoom = Object.assign(new Event("wheel", { cancelable: true }), { ctrlKey: true });
+      const zoom = Object.assign(new Event("wheel", { cancelable: true }), { ctrlKey: true, deltaY: 100 });
       target.dispatchEvent(zoom);
       expect(zoom.defaultPrevented).toBe(false);
-      const scroll = new Event("wheel", { cancelable: true });
+      const scroll = Object.assign(new Event("wheel", { cancelable: true }), { deltaY: 100 });
       target.dispatchEvent(scroll);
       expect(scroll.defaultPrevented).toBe(true);
       await vi.dynamicImportSettled();
@@ -69,7 +69,7 @@ test.each([
     const { useSiteScroll } = await import("./site-scroll");
     useSiteScroll("/about");
     try {
-      const wheel = new Event("wheel", { cancelable: true });
+      const wheel = Object.assign(new Event("wheel", { cancelable: true }), { deltaY: 100 });
       Object.defineProperty(wheel, "target", { value: new Element() });
       windowTarget.dispatchEvent(wheel);
       expect(wheel.defaultPrevented).toBe(prevented);
@@ -119,14 +119,14 @@ test.each(["Tab", "ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", "
     const { useSiteScroll } = await import("./site-scroll");
     useSiteScroll("/about");
     try {
-      windowTarget.dispatchEvent(new Event("wheel"));
+      windowTarget.dispatchEvent(Object.assign(new Event("wheel"), { deltaY: 100 }));
       await vi.waitFor(() => expect(importing).toHaveBeenCalledOnce());
       windowTarget.dispatchEvent(Object.assign(new Event("keydown"), { key }));
       release?.();
       await vi.dynamicImportSettled();
       expect(created).not.toHaveBeenCalled();
 
-      windowTarget.dispatchEvent(new Event("wheel"));
+      windowTarget.dispatchEvent(Object.assign(new Event("wheel"), { deltaY: 100 }));
       await vi.dynamicImportSettled();
       expect(created).toHaveBeenCalledOnce();
       windowTarget.dispatchEvent(Object.assign(new Event("keydown"), { key }));
@@ -173,7 +173,7 @@ test.each(["click", "popstate", "hashchange"])(
     const { useSiteScroll } = await import("./site-scroll");
     useSiteScroll("/about");
     try {
-      windowTarget.dispatchEvent(new Event("wheel"));
+      windowTarget.dispatchEvent(Object.assign(new Event("wheel"), { deltaY: 100 }));
       await vi.waitFor(() => expect(created).toHaveBeenCalledOnce());
       const navigation = new Event(eventName);
       if (eventName === "click") {
@@ -183,7 +183,7 @@ test.each(["click", "popstate", "hashchange"])(
       }
       windowTarget.dispatchEvent(navigation);
       expect(destroyed).toHaveBeenCalledOnce();
-      windowTarget.dispatchEvent(new Event("wheel"));
+      windowTarget.dispatchEvent(Object.assign(new Event("wheel"), { deltaY: 100 }));
       await vi.waitFor(() => expect(created).toHaveBeenCalledTimes(2));
     } finally {
       cleanup?.();
@@ -217,9 +217,9 @@ test("failed optional Lenis import preserves native scrolling and permits retry"
   const { useSiteScroll } = await import("./site-scroll");
   useSiteScroll("/about");
   try {
-    windowTarget.dispatchEvent(new Event("wheel"));
+    windowTarget.dispatchEvent(Object.assign(new Event("wheel"), { deltaY: 100 }));
     await vi.waitFor(() => expect(attempts).toBe(1));
-    windowTarget.dispatchEvent(new Event("wheel"));
+    windowTarget.dispatchEvent(Object.assign(new Event("wheel"), { deltaY: 100 }));
     await vi.waitFor(() => expect(attempts).toBe(2));
   } finally {
     cleanup?.();
@@ -260,7 +260,7 @@ test.each(["Home", "End"])(
     const { useSiteScroll } = await import("./site-scroll");
     useSiteScroll("/about");
     try {
-      target.dispatchEvent(new Event("wheel"));
+      target.dispatchEvent(Object.assign(new Event("wheel"), { deltaY: 100 }));
       await vi.dynamicImportSettled();
       // IME candidate navigation belongs to the input method, even when a
       // smooth-wheel instance is active elsewhere on the page.
@@ -277,7 +277,7 @@ test.each(["Home", "End"])(
       // Modified Home/End combinations are browser/assistive-tech shortcuts;
       // releasing Lenis must not forcibly redirect their destination.
       for (const modifier of ["ctrlKey", "shiftKey", "altKey", "metaKey"] as const) {
-        target.dispatchEvent(new Event("wheel"));
+        target.dispatchEvent(Object.assign(new Event("wheel"), { deltaY: 100 }));
         await vi.dynamicImportSettled();
         scrollTo.mockClear();
         target.dispatchEvent(Object.assign(new Event("keydown"), { key, [modifier]: true }));
@@ -322,10 +322,10 @@ test.each(["Home", "End"])("%s does not redirect native-scroll navigation to the
     target.dispatchEvent(event);
   };
   try {
-    dispatch(new Event("wheel"));
+    dispatch(Object.assign(new Event("wheel"), { deltaY: 100 }));
     await vi.dynamicImportSettled();
     expect(created).not.toHaveBeenCalled();
-    target.dispatchEvent(new Event("wheel"));
+    target.dispatchEvent(Object.assign(new Event("wheel"), { deltaY: 100 }));
     await vi.dynamicImportSettled();
     expect(created).toHaveBeenCalledOnce();
     dispatch(Object.assign(new Event("keydown"), { key }));
@@ -366,7 +366,7 @@ test("native route handoff clears stale Lenis root classes when destroy leaves C
   const { useSiteScroll } = await import("./site-scroll");
   useSiteScroll("/about");
   try {
-    target.dispatchEvent(new Event("wheel"));
+    target.dispatchEvent(Object.assign(new Event("wheel"), { deltaY: 100 }));
     await vi.waitFor(() => expect(created).toHaveBeenCalledOnce());
     // A navigation click must surrender to native scrolling before the new
     // route renders, even if Lenis.destroy() fails to remove root CSS tokens.
@@ -418,7 +418,7 @@ test.each(["click", "popstate", "hashchange"])(
     const { useSiteScroll } = await import("./site-scroll");
     useSiteScroll("/about");
     try {
-      target.dispatchEvent(new Event("wheel"));
+      target.dispatchEvent(Object.assign(new Event("wheel"), { deltaY: 100 }));
       await vi.waitFor(() => expect(instances).toHaveBeenCalledOnce());
       const event = new Event(eventName);
       if (eventName === "click") Object.defineProperty(event, "target", { value: new Element() });
@@ -433,7 +433,7 @@ test.each(["click", "popstate", "hashchange"])(
       expect(removeClasses).toHaveBeenCalledWith("lenis", "lenis-smooth", "lenis-scrolling", "lenis-stopped");
       // A thrown teardown may have left vendor event handlers attached; do not
       // start a second engine in this tab. Native wheel scrolling remains usable.
-      target.dispatchEvent(new Event("wheel"));
+      target.dispatchEvent(Object.assign(new Event("wheel"), { deltaY: 100 }));
       await vi.dynamicImportSettled();
       expect(instances).toHaveBeenCalledOnce();
     } finally { cleanup?.(); }
@@ -461,11 +461,11 @@ test("a stop exception still destroys Lenis and prevents a replacement instance"
   const { useSiteScroll } = await import("./site-scroll");
   useSiteScroll("/about");
   try {
-    target.dispatchEvent(new Event("wheel"));
+    target.dispatchEvent(Object.assign(new Event("wheel"), { deltaY: 100 }));
     await vi.waitFor(() => expect(created).toHaveBeenCalledOnce());
     expect(() => target.dispatchEvent(new Event("popstate"))).not.toThrow();
     expect(destroyed).toHaveBeenCalledOnce();
-    target.dispatchEvent(new Event("wheel"));
+    target.dispatchEvent(Object.assign(new Event("wheel"), { deltaY: 100 }));
     await vi.dynamicImportSettled();
     expect(created).toHaveBeenCalledOnce();
   } finally { cleanup?.(); }
@@ -511,7 +511,7 @@ test("cross-route link handoff ignores a queued wheel until the destination path
   const { useSiteScroll } = await import("./site-scroll");
   useSiteScroll("/about");
   try {
-    windowTarget.dispatchEvent(new Event("wheel"));
+    windowTarget.dispatchEvent(Object.assign(new Event("wheel"), { deltaY: 100 }));
     await vi.waitFor(() => expect(created).toHaveBeenCalledOnce());
     const click = Object.assign(new Event("click"), {
       button: 0, ctrlKey: false, metaKey: false, shiftKey: false, altKey: false,
@@ -522,13 +522,56 @@ test("cross-route link handoff ignores a queued wheel until the destination path
 
     // Wheel events already queued in the previous page may not remount Lenis
     // while a cross-route Link is in flight. Browser-native scroll remains.
-    windowTarget.dispatchEvent(new Event("wheel"));
+    windowTarget.dispatchEvent(Object.assign(new Event("wheel"), { deltaY: 100 }));
     await vi.dynamicImportSettled();
     expect(created).toHaveBeenCalledOnce();
 
     cleanup?.();
     useSiteScroll("/our-work");
-    windowTarget.dispatchEvent(new Event("wheel"));
+    windowTarget.dispatchEvent(Object.assign(new Event("wheel"), { deltaY: 100 }));
     await vi.waitFor(() => expect(created).toHaveBeenCalledTimes(2));
+  } finally { cleanup?.(); }
+});
+
+test("horizontal-only and zero-delta wheels do not load vertical smoothing", async () => {
+  let cleanup: (() => void) | undefined;
+  const importing = vi.fn();
+  const created = vi.fn();
+  vi.doMock("react", () => ({
+    useEffect: (effect: () => () => void) => { cleanup = effect(); },
+  }));
+  vi.doMock("lenis", () => {
+    importing();
+    return { default: class {
+      constructor() { created(); }
+      on() {}
+      stop() {}
+      destroy() {}
+    } };
+  });
+  const target = Object.assign(new EventTarget(), {
+    matchMedia: (query: string) => Object.assign(new EventTarget(), { matches: query === "(pointer: fine)" }),
+  });
+  vi.stubGlobal("window", target);
+  vi.stubGlobal("document", Object.assign(new EventTarget(), {
+    hidden: false, body: { matches: () => false },
+  }));
+  vi.stubGlobal("Element", class {});
+  const { useSiteScroll } = await import("./site-scroll");
+  useSiteScroll("/about");
+  try {
+    for (const deltaX of [0, 150, -150]) {
+      const wheel = Object.assign(new Event("wheel", { cancelable: true }), { deltaX, deltaY: 0 });
+      target.dispatchEvent(wheel);
+      await vi.dynamicImportSettled();
+      expect(wheel.defaultPrevented).toBe(false);
+      expect(importing).not.toHaveBeenCalled();
+      expect(created).not.toHaveBeenCalled();
+    }
+
+    target.dispatchEvent(Object.assign(new Event("wheel"), { deltaX: 50, deltaY: -100 }));
+    await vi.dynamicImportSettled();
+    expect(importing).toHaveBeenCalledOnce();
+    expect(created).toHaveBeenCalledOnce();
   } finally { cleanup?.(); }
 });

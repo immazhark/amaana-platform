@@ -458,3 +458,34 @@ test("AF-N14 accepts zero-padded decimal identity lengths but rejects malformed 
     await assert.rejects(auditPublicSchema(badFetch), /length/i);
   }
 });
+
+test("AF-R080 rejects private URLs after browser-equivalent URL preprocessing", () => {
+  for (const url of [
+    origin + "/admin/team",
+    " " + origin + "/admin/team",
+    "\n/admin/team",
+    "ht\ttps://amaanafoundation.org/admin/team",
+    "https:/admin/team",
+    "https:admin/team",
+    "https:\\admin/team",
+    "\u0000/request-assistance/status#token=synthetic",
+    "\t" + origin + "/about?token=synthetic",
+  ]) {
+    const suspect = [{ ...graph[0], sameAs: [url] }, graph[1]];
+    assert.throws(() => analyzePublicSchemaHtml("/", page(suspect)), /Private route or token/);
+  }
+});
+
+test("AF-R080 URL preprocessing preserves public links and ordinary text", () => {
+  for (const value of [
+    origin + "/about",
+    "  " + origin + "/about  ",
+    "  /about  ",
+    "https:/about",
+    "A normal description",
+    "mailto:contact@example.invalid",
+  ]) {
+    const allowed = [{ ...graph[0], description: value }, graph[1]];
+    assert.doesNotThrow(() => analyzePublicSchemaHtml("/", page(allowed)));
+  }
+});

@@ -1,5 +1,34 @@
 # Amaana Foundation — current verified state
 
+**26 November 2026 IST — current release checkpoint, not a live feed.** Sole writer `CHATGPT_ACTIVE`. Reverify source, PRs, CI, Railway and public runtime before action.
+
+| Boundary | Verified evidence |
+|---|---|
+| Main | `415a41026849344aaa7e725168d42bbbb7442f91` from #1169; full 45667249324 (1717 Chromium, 24 cross-browser, 130 PostgreSQL); separate ready-state 45675295070; protected SHA-guarded squash, identical tree. |
+| Production | Railway `5d3f5ca9-0d11-44c3-909e-9ff32af89692` SUCCESS; independent uncached public version exact main, readiness ready. /give reviewed evidence and all three initiative links verified read-only; evidence comment 7170995886. No live payment, new factual certification or field CWV claim. |
+| Engineering | Scroll demand, client-secret scanner, CI selected-check verification, route attribution and reviewed /give evidence released. #1164–#1167 closed as superseded after exact blob inclusion; refs preserved. Build JS 817763/819200 B, CSS 345042/364544 B; synthetic home blocking 160/200 ms. |
+| Next candidate | #1168 original head `0d8ab12ca19cd7d15c05cd252c90199ca3d217dd` 45657187773 attempt 2 seven green; 1716 Chromium, 24 cross-browser, home 40 ms; original 254/380 ms failure preserved, cause unproven. #1170 original head `cad8d32aa5d7cffbbd6ecee5ead4f664fb2ec497` 45673091909 seven green; 1717 Chromium, 24 cross-browser, home 107 ms. Combine exact four compatible source/test blobs and both parent histories on #1170. Fresh exact-head full checks then separate promotion required. |
+| Canonical 149 | 59 Completed / 7 Implemented / 64 Partial / 16 Not started / 1 Superseded / 2 Not applicable. 87 actionable; 146 applicable. No promotions. |
+| Blocker | #446 authenticated Railway configuration plan/preview unavailable; no infrastructure apply, forced rollout, or live transaction. |
+| Next | Verify combined #1170, separate promotion, guarded merge, exact runtime and #1168 supersession only after proven inclusion. Keep factual/privacy/financial locks. |
+
+## Previous verified checkpoint — 25 November 2026
+
+**25 November 2026 IST — current release checkpoint, not a live feed.** Sole writer `CHATGPT_ACTIVE`. Reverify GitHub, Railway and runtime at each release boundary.
+
+| Boundary | Verified evidence |
+|---|---|
+| Protected main | `9bd36d986472c47f7e68224e146cd63d0f1950c2`, #1161 full exact-head 45654021121 (all seven jobs), separate ready-state 45658685168 (three required jobs), no unresolved reviews, guarded squash merge. |
+| Production | Railway website `1c459313-7413-4263-ab14-86b2e5921dc5` SUCCESS, independent fresh public version exact main SHA, production/live mode; readiness ready. Health proves identity and readiness, not payment execution. |
+| Assistance | Eligibility navigation correction and synthetic year-boundary approval/payment-capture fixture reliability accepted. #1162 closed as superseded with original ref retained, exact test blob present in main. |
+| Active release candidates | #1164 scroll `012c67c10cb0e1b72c7532e3b13492b959a64368` (45657537269); #1165 scanner `009aa8a4011717d5f6fb02eaa6fe32f23308d74b` (45656524104); #1166 CI verify `a3ebdb7f872ef9774b756455ed17bcda92192fdf` (45658639039); #1167 bundle report `124839942243b880e36289018088ef8f869c9941` (45656284309); #1168 schema audit `0d8ab12ca19cd7d15c05cd252c90199ca3d217dd` (45657187773). Original acceptance progressing; reconcile compatible accepted changes against actual main, preserve source history, fresh combined CI then separate promotion. |
+| Independent scope | AF-R087 /give uses existing reviewed public projection and strip below checkout in independent Suspense. Synthetic full-file probe RED 3/7, GREEN 7/7; hosted acceptance outstanding. No new factual claim or payment behavior. |
+| Canonical 149 | 59 Completed / 7 Implemented / 64 Partial / 16 Not started / 1 Superseded / 2 Not applicable. 87 actionable; 146 applicable. No new Completed promotion. |
+| Operational blocker | #446 authenticated Railway config plan/preview unavailable; no infrastructure apply or forced rollout. |
+| Next | Complete accepted compatible candidates' fresh combined-head checks, separate promotion, protected merge and exact production verification. Preserve locked facts, domestic INR, privacy and financial boundaries. |
+
+## Historical checkpoints — 24 November 2026 and earlier
+
 **24 November 2026 IST — dated release checkpoint, not a live feed.** Sole writer `CHATGPT_ACTIVE`. Reverify source, PRs, CI, Railway and public runtime before acting.
 
 | Boundary | Verified evidence |

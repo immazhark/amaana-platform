@@ -53,7 +53,7 @@ jobs:
           node --check scripts/diagnose-resend-dns.mjs
           node --test scripts/test-backlog-queue.mjs
           node scripts/check-backlog-queue.mjs
-          node --test scripts/test-ci-plan.mjs scripts/test-ci-concurrency.mjs scripts/test-railway-watch-contract.mjs scripts/test-railway-iac-parity.mjs
+          node --test scripts/test-ci-plan.mjs scripts/test-ci-concurrency.mjs scripts/test-ci-verification.mjs scripts/test-railway-watch-contract.mjs scripts/test-railway-iac-parity.mjs
           node scripts/ci-plan.mjs
 
   fast:
@@ -547,11 +547,29 @@ jobs:
           DATABASE: ${{ needs.database.result }}
           PRODUCTION: ${{ needs.production.result }}
           BROWSER: ${{ needs.browser.result }}
+          APP_SELECTED: ${{ needs.plan.outputs.app }}
+          DATABASE_SELECTED: ${{ needs.plan.outputs.database }}
+          BROWSER_SELECTED: ${{ needs.plan.outputs.browser }}
+          EVENT_ACTION: ${{ github.event.action }}
         run: |
-          test "$PLAN" = success
-          for result in "$FAST" "$DATABASE" "$PRODUCTION" "$BROWSER"; do
-            case "$result" in success|skipped) ;; *) exit 1 ;; esac
-          done
+          test "$PLAN" = success || exit 1
+          require_result() {
+            case "$1" in true|false) ;; *) exit 1 ;; esac
+            case "$2" in
+              success) ;;
+              skipped)
+                if [ "$1" = true ] && [ "$EVENT_ACTION" != ready_for_review ]; then
+                  echo "Required $3 check was skipped." >&2
+                  exit 1
+                fi
+                ;;
+              *) exit 1 ;;
+            esac
+          }
+          require_result "$APP_SELECTED" "$FAST" fast
+          require_result "$DATABASE_SELECTED" "$DATABASE" database
+          require_result "$APP_SELECTED" "$PRODUCTION" production
+          require_result "$BROWSER_SELECTED" "$BROWSER" browser
 
 
   production-promotion-readiness:
