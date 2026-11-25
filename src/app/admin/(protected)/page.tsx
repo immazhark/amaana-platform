@@ -6,6 +6,7 @@ import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { adminRecordView, assistanceAdminWhere } from "@/lib/admin-record-visibility";
 import { hasPermission, permissionKeys, requireAuthenticatedUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { assistanceWorkload } from "@/lib/assistance-workload";
 import { capacityRemaining, capacityUsed, isIntakePaused } from "@/lib/assistance-capacity";
 import { INDIVIDUAL_CASE_ANNUAL_CAPACITY } from "@/lib/assistance-policy";
 import { setAssistanceIntakeAction } from "./intake-actions";
@@ -24,7 +25,7 @@ export default async function AdminQueuePage({ searchParams }: Props) {
   const unassignedOnly = requestedAssignment === "unassigned";
   const scope = { ...assistanceAdminWhere(view), ...(unassignedOnly ? { assignedToId: null } : {}) };
   const where = { ...scope, ...(selected ? { status: selected } : {}) };
-  const [used, paused] = await Promise.all([capacityUsed(prisma), isIntakePaused(prisma)]);
+  const [used, paused, workload] = await Promise.all([capacityUsed(prisma), isIntakePaused(prisma), assistanceWorkload(prisma, assistanceAdminWhere(view))]);
   const canApprove = hasPermission(user, "assistance.approve");
   const [totalItems, grouped] = await Promise.all([
     prisma.assistanceRequest.count({ where }),
@@ -64,6 +65,7 @@ export default async function AdminQueuePage({ searchParams }: Props) {
     <section className="card" aria-labelledby="capacity-heading">
       <h2 id="capacity-heading">Intake and annual capacity</h2>
       <p>{used} of {INDIVIDUAL_CASE_ANNUAL_CAPACITY} individual cases taken up this calendar year ({capacityRemaining(used)} places left). A maximum, not a commitment. Counted when a case is approved; annual distributions and Taleem sponsorships are separate.</p>
+      <p>{workload.awaitingFirstReview} awaiting a first review{workload.oldestWaitingDays !== null && <> (oldest has waited {workload.oldestWaitingDays} {workload.oldestWaitingDays === 1 ? "day" : "days"})</>}; {workload.openUnassigned} of {workload.open} open requests have no assignee. No response time is promised to applicants.</p>
       <p>New requests are <strong>{paused ? "paused" : "open"}</strong>. Intake never reopens by itself at a year boundary.</p>
       {canApprove && <form action={setAssistanceIntakeAction}><input type="hidden" name="paused" value={paused ? "false" : "true"} /><button className="button" type="submit">{paused ? "Reopen new requests" : "Pause new requests"}</button></form>}
     </section>

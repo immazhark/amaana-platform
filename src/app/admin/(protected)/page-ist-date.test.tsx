@@ -19,6 +19,7 @@ vi.mock("@/lib/prisma", () => ({
     count: mocks.count,
     groupBy: mocks.groupBy,
     findMany: mocks.findMany,
+    findFirst: async () => null,
   }, assistanceIntakeSetting: { findUnique: async () => null } },
 }));
 
