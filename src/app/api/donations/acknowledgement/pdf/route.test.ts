@@ -101,6 +101,13 @@ describe("acknowledgement PDF download", () => {
     expect(await unknown.text()).toBe(await wrongToken.text());
   });
 
+  it("stops honouring a link once staff reissue replaces the stored credential, with the same answer as any wrong token", async () => {
+    mocks.findUnique.mockResolvedValue(donation({ receiptTokenHash: "c".repeat(64) }));
+    const response = await post();
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ found: false });
+  });
+
   it("refuses a cross-origin request before reading anything", async () => {
     mocks.sameOrigin.mockReturnValue(false);
     expect((await post()).status).toBe(403);
