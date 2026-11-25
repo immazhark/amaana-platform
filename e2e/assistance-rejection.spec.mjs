@@ -35,6 +35,7 @@ async function openCase(page) {
 
 test('an approver rejects an untouched eligible request with only a reason and a confirmation', async ({ page }) => {
   const card = await openCase(page);
+  const requestAddress = new URL(`/admin/requests/${encodeURIComponent(seed.rejectRequestId)}`, page.url()).href;
   const reason = () => page.locator('#reject-reason');
   const confirm = () => page.locator('#reject-confirm');
   const submit = () => page.locator('section[aria-labelledby="reject-heading"]').getByRole('button', { name: 'Confirm rejection' });
@@ -71,8 +72,8 @@ test('an approver rejects an untouched eligible request with only a reason and a
   await expect(page.locator('#reject-errors').getByRole('link', { name: /at least 3 characters/ })).toBeVisible();
   await expect(reason()).toHaveValue('no');
   await expect(page.locator('#reject-reason-error')).toContainText('at least 3');
-  expect(page.url()).not.toContain('no');
-  expect(decodeURIComponent(page.url())).not.toMatch(/reason=|draft/i);
+  // Match the complete allowlisted redirect, including origin, path, query and fragment.
+  expect(page.url()).toBe(`${requestAddress}?reject=error&e=reason-short#reject-errors`);
 
   // No failed attempt changed the request.
   await expect(page.locator('.status-badge').first()).toContainText('SUBMITTED');
@@ -93,7 +94,7 @@ test('an approver rejects an untouched eligible request with only a reason and a
   await expect(recorded).toContainText('Duplicate of an earlier request');
   await expect(page.locator('.status-badge').first()).toContainText('REJECTED');
   await expect(recorded.getByRole('button', { name: 'Confirm rejection' })).toHaveCount(0);
-  expect(page.url()).not.toContain('Duplicate');
+  expect(page.url()).toBe(`${requestAddress}?reject=done&o=rejected#reject-heading`);
 });
 
 // Runs after the journey above in this serial file: the same case is now rejected.
