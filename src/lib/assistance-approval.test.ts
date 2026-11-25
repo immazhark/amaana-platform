@@ -82,7 +82,7 @@ describe("public fundraising approval", () => {
 
   it("does not let a target be entered for a route that is not public", () => {
     expect(keys("APPROVED_PRIVATE", { ...complete, approvedPublicTarget: 100 })).toEqual(["approvedPublicTarget_notPublic"]);
-    expect(keys("APPROVED_PARTIAL", { ...complete, approvedPublicTarget: 100 })).toEqual(["approvedPublicTarget_notPublic"]);
+    expect(keys("APPROVED_PARTIAL", { ...complete, approvedPublicTarget: 100 }, true)).toEqual(["approvedPublicTarget_notPublic"]);
   });
 });
 

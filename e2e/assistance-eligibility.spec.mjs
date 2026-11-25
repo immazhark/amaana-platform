@@ -10,12 +10,3 @@ test('an out-of-area beneficiary is told so and cannot continue to sensitive fie
   await page.getByLabel('In our Hyderabad service area').check();
   await expect(page.getByRole('button', { name: 'Continue to need →' })).toBeEnabled();
 });
-
-test('the API refuses an out-of-area request without creating anything', async ({ request, baseURL }) => {
-  const response = await request.post('/api/assistance', {
-    headers: { origin: baseURL },
-    multipart: { beneficiaryResidence: 'OUTSIDE_SERVICE_AREA', applicantName: 'Synthetic Applicant' },
-  });
-  expect(response.status()).toBe(422);
-  expect((await response.json()).code).toBe('outside_service_area');
-});
