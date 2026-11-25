@@ -69,3 +69,9 @@ test("the guard check fails for a database test without the loopback or opt-in c
   assert.deepEqual(unguarded({ noLoopback: 'AMAANA_DATABASE_TESTS; "/amaana"' }), ["noLoopback"]);
   assert.deepEqual(unguarded({ noName: 'AMAANA_DATABASE_TESTS; localhost' }), ["noName"]);
 });
+
+// The annual-capacity predicate and temporary audit triggers span records in a shared database.
+// File-level concurrency is not business-operation concurrency: Promise.all races inside tests remain enabled.
+test("the shared database job isolates file fixtures without dropping any database test", () => {
+  assert.equal(databaseCommand(ci)?.trim(), "npx vitest run .database.test.ts --no-file-parallelism");
+});
