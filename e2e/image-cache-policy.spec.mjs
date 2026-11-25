@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import sharp from 'sharp';
 
 function maxAge(response) {
   const value = response.headers()['cache-control'] ?? '';
@@ -7,8 +8,8 @@ function maxAge(response) {
   return Number(match[1]);
 }
 
-function optimized(source) {
-  const params = new URLSearchParams({ url: source, w: '32', q: '75' });
+function optimized(source, width = 32) {
+  const params = new URLSearchParams({ url: source, w: String(width), q: '75' });
   return `/_next/image?${params}`;
 }
 
@@ -38,5 +39,39 @@ test('brand and artwork source headers preserve the existing static cache lifeti
     expect(response.status(), source).toBe(200);
     expect(response.headers()['cache-control'], source).toContain('immutable');
     expect(maxAge(response), source).toBe(31536000);
+  }
+});
+
+test('optimizer negotiates AVIF and WebP at the requested responsive dimensions', async ({ request }) => {
+  const source = '/hero/origin.webp';
+  const upstream = await request.get(source);
+  expect(upstream.status()).toBe(200);
+  const original = await sharp(await upstream.body()).metadata();
+  expect(original.width).toBeGreaterThanOrEqual(1280);
+  expect(original.height).toBeGreaterThan(0);
+
+  // Repeat WebP after AVIF at the same URL to detect format-cache collisions.
+  for (const [width, accept, type] of [
+    [412, 'image/webp', 'image/webp'],
+    [412, 'image/avif,image/webp', 'image/avif'],
+    [412, 'image/webp', 'image/webp'],
+    [1280, 'image/webp', 'image/webp'],
+  ]) {
+    const label = `${width}px ${type}`;
+    const response = await request.get(optimized(source, width), { headers: { accept } });
+    expect(response.status(), label).toBe(200);
+    expect(response.headers()['content-type'], label).toBe(type);
+    const vary = (response.headers().vary ?? '').split(',').map(value => value.trim().toLowerCase());
+    expect(vary, label).toContain('accept');
+    const body = await response.body();
+    if (type === 'image/avif') {
+      expect(body.subarray(4, 12).toString('ascii'), label).toBe('ftypavif');
+    } else {
+      expect(body.subarray(0, 4).toString('ascii'), label).toBe('RIFF');
+      expect(body.subarray(8, 12).toString('ascii'), label).toBe('WEBP');
+    }
+    const metadata = await sharp(body).metadata();
+    expect(metadata.width, label).toBe(width);
+    expect(metadata.height, label).toBe(Math.round(width * original.height / original.width));
   }
 });
