@@ -111,7 +111,7 @@ export function getDonationAcknowledgementPresentation(
       : {
           tone: "captured",
           heading: "JazakAllahu Khairan.",
-          summary: "Amaana Foundation gratefully acknowledges your contribution and the trust placed in this appeal.",
+          summary: "Amaana Foundation gratefully acknowledges your contribution and your trust.",
           statusLabel: "Payment verified",
         };
   }
@@ -120,7 +120,7 @@ export function getDonationAcknowledgementPresentation(
     return {
       tone: "pending",
       heading: "Your transfer is awaiting verification.",
-      summary: "Amaana has recorded the transfer details you submitted. This contribution will count toward the appeal only after the UTR/reference is matched against funds received by Amaana Foundation. Keep your bank or UPI confirmation and do not submit the same transfer again.",
+      summary: "Amaana has recorded the transfer details you submitted. Your contribution will be recorded as verified only after the UTR/reference is matched against funds received by Amaana Foundation. Keep your bank or UPI confirmation and do not submit the same transfer again.",
       statusLabel: "Verification pending",
     };
   }

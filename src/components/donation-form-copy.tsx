@@ -30,7 +30,10 @@ export type DonationFormCopy = {
   };
 };
 
-export function donationFormCopy(zakatEligible: boolean): DonationFormCopy {
+export function donationFormCopy(zakatEligible: boolean, destination: "appeal" | "fund" = "appeal"): DonationFormCopy {
+  const transferGuidance = destination === "fund"
+    ? "Your contribution is recorded as verified only after Amaana matches the transfer to funds received."
+    : "Your appeal total changes only after verification.";
   const intentions: DonationIntentValue[] = ["GENERAL", "SADAQAH", ...(zakatEligible ? ["ZAKAT" as const] : [])];
   return {
     classes: styles,
@@ -50,8 +53,8 @@ export function donationFormCopy(zakatEligible: boolean): DonationFormCopy {
     direct: {
       classes: directStyles,
       choiceClass: styles.choice,
-      upiHeading: <div className="v2-form-heading"><span>Direct UPI</span><h2>Pay Amaana directly by UPI.</h2><p>Complete the transfer using the verified details below, then submit the UTR/reference so Amaana can reconcile it. Your appeal total changes only after verification.</p></div>,
-      bankHeading: <div className="v2-form-heading"><span>Bank transfer</span><h2>Transfer directly to Amaana Foundation.</h2><p>Complete the transfer using the verified details below, then submit the UTR/reference so Amaana can reconcile it. Your appeal total changes only after verification.</p></div>,
+      upiHeading: <div className="v2-form-heading"><span>Direct UPI</span><h2>Pay Amaana directly by UPI.</h2><p>Complete the transfer using the verified details below, then submit the UTR/reference so Amaana can reconcile it. {transferGuidance}</p></div>,
+      bankHeading: <div className="v2-form-heading"><span>Bank transfer</span><h2>Transfer directly to Amaana Foundation.</h2><p>Complete the transfer using the verified details below, then submit the UTR/reference so Amaana can reconcile it. {transferGuidance}</p></div>,
       qrMissing: <p className={styles.status}>A verified QR code is not published yet. Please pay using the UPI ID above.</p>,
       bankMissing: <div className="form-error" role="alert">Official bank-transfer details are not configured. Amaana will not display guessed or incomplete banking information.</div>,
       intentOptions: <div className={styles.intentGrid}>{intentions.map((intent, index) => <label className={styles.intentOption} key={intent}><input type="radio" name="givingIntent" value={intent} defaultChecked={index === 0}/><span><strong>{DONATION_INTENT_LABELS[intent]}</strong><small>{DONATION_INTENT_DESCRIPTIONS[intent]}</small></span></label>)}</div>,

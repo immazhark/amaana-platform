@@ -77,6 +77,24 @@ describe("donation acknowledgement presentation", () => {
     expect(view.statusLabel).toBe("Payment verified");
   });
 
+  it("acknowledges a verified contribution without assuming it belongs to an appeal", () => {
+    const view = getDonationAcknowledgementPresentation("CAPTURED", 1_000, 0);
+    expect(view).toMatchObject({
+      tone: "captured",
+      statusLabel: "Payment verified",
+      summary: "Amaana Foundation gratefully acknowledges your contribution and your trust.",
+    });
+  });
+
+  it("keeps pending contributions unverified without assuming an appeal destination", () => {
+    const view = getDonationAcknowledgementPresentation("PENDING_VERIFICATION", 1_000, 0);
+    expect(view).toMatchObject({
+      tone: "pending",
+      statusLabel: "Verification pending",
+      summary: "Amaana has recorded the transfer details you submitted. Your contribution will be recorded as verified only after the UTR/reference is matched against funds received by Amaana Foundation. Keep your bank or UPI confirmation and do not submit the same transfer again.",
+    });
+  });
+
   it("shows partial refunds without misclassifying the original payment", () => {
     const view = getDonationAcknowledgementPresentation("CAPTURED", 1_000, 250);
     expect(view.tone).toBe("captured");
