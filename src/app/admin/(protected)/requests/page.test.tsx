@@ -32,3 +32,25 @@ describe("legacy assistance-queue admin URL", () => {
     }))).rejects.toThrow("REDIRECT:/admin");
   });
 });
+
+describe("legacy queue ordering", () => {
+  it("retains an explicitly selected oldest-first order", async () => {
+    await expect(AdminRequestsAlias(props({ sort: "oldest", status: "SUBMITTED", page: "2" })))
+      .rejects.toThrow("REDIRECT:/admin?status=SUBMITTED&page=2&sort=oldest");
+  });
+  it.each([{ sort: ["bad"] }, { sort: ["oldest", "newest"] }])("does not forward repeated sort parameters", async ({ sort }) => {
+    await expect(AdminRequestsAlias(props({ sort }))).rejects.toThrow("REDIRECT:/admin");
+  });
+});
+
+describe("legacy queue assignment filter", () => {
+  it("retains the supported unassigned filter with the existing queue parameters", async () => {
+    await expect(AdminRequestsAlias(props({ status: "SUBMITTED", sort: "oldest", assignment: "unassigned" })))
+      .rejects.toThrow("REDIRECT:/admin?status=SUBMITTED&sort=oldest&assignment=unassigned");
+  });
+  it.each([{ assignment: ["unassigned"] }, { assignment: "synthetic-user-id" }, { assignment: "assigned" }])(
+    "does not forward unsupported assignment filters", async ({ assignment }) => {
+      await expect(AdminRequestsAlias(props({ assignment }))).rejects.toThrow("REDIRECT:/admin");
+    },
+  );
+});

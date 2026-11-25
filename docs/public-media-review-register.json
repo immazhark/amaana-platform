@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-24",
+  "updatedAt": "2026-11-25",
   "purpose": "Coverage and launch-readiness register for public/media after the 21 September 2026 programme-image reset. Legacy programme images were removed so future media can be reintroduced only from the curated, initiative-by-initiative selection with an explicit hero/identity image and ordered supporting assets.",
   "groups": [
     {
@@ -82,6 +82,30 @@
       "sensitiveContext": true,
       "notes": "Winter relief media can include students or beneficiaries and remains pending individual review.",
       "reviewPriority": "CRITICAL"
+    },
+    {
+      "id": "medical-khaja",
+      "pattern": "^medical-khaja-",
+      "humanReview": "REVIEWED_APPROVED",
+      "provenance": "DOCUMENTED",
+      "consent": "CONFIRMED",
+      "sensitiveContext": true,
+      "reviewedAt": "2026-11-25",
+      "reviewedBy": "Owner (Mohammed Mazhar Khan), explicit written approval in session",
+      "provenanceReference": "Owner-supplied originals kept privately; public derivatives have faces pixelated and patient names, IDs, hospital name and capture dates blurred, with metadata removed. Consent is the owner's attestation of 25 Nov 2026, matching the dignity-preserving treatment already used on the foundation's Instagram.",
+      "notes": "Medical case media. Originals are never published."
+    },
+    {
+      "id": "medical-riyaz",
+      "pattern": "^medical-riyaz-",
+      "humanReview": "REVIEWED_APPROVED",
+      "provenance": "DOCUMENTED",
+      "consent": "CONFIRMED",
+      "sensitiveContext": true,
+      "reviewedAt": "2026-11-25",
+      "reviewedBy": "Owner (Mohammed Mazhar Khan), explicit written approval in session",
+      "provenanceReference": "Owner-supplied originals kept privately; public derivatives have faces pixelated and patient names, IDs, hospital name and capture dates blurred, with metadata removed. Consent is the owner's attestation of 25 Nov 2026, matching the dignity-preserving treatment already used on the foundation's Instagram.",
+      "notes": "Medical case media. Originals are never published."
     }
   ],
   "overrides": [],
