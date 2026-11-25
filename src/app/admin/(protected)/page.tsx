@@ -65,7 +65,7 @@ export default async function AdminQueuePage({ searchParams }: Props) {
     <section className="card" aria-labelledby="capacity-heading">
       <h2 id="capacity-heading">Intake and annual capacity</h2>
       <p>{used} of {INDIVIDUAL_CASE_ANNUAL_CAPACITY} individual cases taken up this calendar year ({capacityRemaining(used)} places left). A maximum, not a commitment. Counted when a case is approved; annual distributions and Taleem sponsorships are separate.</p>
-      <p>{workload.awaitingFirstReview} awaiting a first review{workload.oldestWaitingDays !== null && <> (oldest has waited {workload.oldestWaitingDays} {workload.oldestWaitingDays === 1 ? "day" : "days"})</>}; {workload.openUnassigned} of {workload.open} open requests have no assignee. No response time is promised to applicants.</p>
+      <p>{workload.submitted} submitted {workload.submitted === 1 ? "request" : "requests"}{workload.oldestSubmittedAgeDays !== null && <> (oldest received {workload.oldestSubmittedAgeDays} {workload.oldestSubmittedAgeDays === 1 ? "day" : "days"} ago)</>}; {workload.openUnassigned} of {workload.open} open requests have no assignee. Counts cover this record view before status and assignment filters. No response time is promised to applicants.</p>
       <p>New requests are <strong>{paused ? "paused" : "open"}</strong>. Intake never reopens by itself at a year boundary.</p>
       {canApprove && <form action={setAssistanceIntakeAction}><input type="hidden" name="paused" value={paused ? "false" : "true"} /><button className="button" type="submit">{paused ? "Reopen new requests" : "Pause new requests"}</button></form>}
     </section>
