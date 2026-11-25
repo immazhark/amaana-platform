@@ -9,11 +9,13 @@ type Props = {
     status?: FilterValue;
     view?: FilterValue;
     page?: FilterValue;
+    sort?: FilterValue;
+    assignment?: FilterValue;
   }>;
 };
 
 export default async function AdminRequestsAlias({ searchParams }: Props) {
-  const { status, view, page } = await searchParams;
+  const { status, view, page, sort, assignment } = await searchParams;
   const query = new URLSearchParams();
 
   // Forward only values already accepted by the real assistance queue.
@@ -22,6 +24,9 @@ export default async function AdminRequestsAlias({ searchParams }: Props) {
   }
   if (view === "tests") query.set("view", "tests");
   if (typeof page === "string" && /^[1-9][0-9]{0,4}$/.test(page)) query.set("page", page);
+
+  if (sort === "oldest") query.set("sort", sort);
+  if (assignment === "unassigned") query.set("assignment", assignment);
 
   redirect(query.size ? `/admin?${query.toString()}` : "/admin");
 }

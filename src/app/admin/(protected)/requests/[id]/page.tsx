@@ -56,7 +56,7 @@ function RequestWorkflowProgress({ status, decision, hasAppeal }: { status: stri
   if (currentIdx === -2) return null;
 
   return (
-    <div className="card workflow-progress" aria-label="Workflow progress">
+    <div className="card workflow-progress" role="group" aria-label="Workflow progress">
       <ol className="workflow-steps">
         {stages.map((stage, idx) => {
           const isCompleted = idx < currentIdx || (currentIdx === 2 && idx === 1);
