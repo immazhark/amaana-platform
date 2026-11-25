@@ -71,7 +71,7 @@ test('an approver rejects an untouched eligible request with only a reason and a
   await expect(page.locator('#reject-errors').getByRole('link', { name: /at least 3 characters/ })).toBeVisible();
   await expect(reason()).toHaveValue('no');
   await expect(page.locator('#reject-reason-error')).toContainText('at least 3');
-  expect(page.url()).not.toContain('no');
+  expect(new URL(page.url()).search).not.toMatch(/(^|[=&,])no($|[&,])/);
   expect(decodeURIComponent(page.url())).not.toMatch(/reason=|draft/i);
 
   // No failed attempt changed the request.
