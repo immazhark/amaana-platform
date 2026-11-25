@@ -20,12 +20,13 @@ test('every directly addressable public media file has exactly one conservative 
   assert.deepEqual(resolved.map(item => item.path).sort(), assetPaths);
 });
 
-test('reset register keeps every retained asset conservative until human review', async () => {
+test('only the owner-approved redacted medical case media is approved; everything else stays conservative', async () => {
   const resolved = await loadAndValidatePublicMediaReviewRegister();
+  const approved = resolved.filter(item => item.humanReview === 'REVIEWED_APPROVED');
+  assert.ok(approved.every(item => /^medical-(khaja|riyaz)-/.test(item.path) && item.reviewedBy && item.reviewedAt && item.consent === 'CONFIRMED'));
+  const rest = resolved.filter(item => !approved.includes(item));
+  assert.ok(rest.every(item => item.humanReview === 'PENDING_HUMAN_REVIEW' && item.consent === 'UNKNOWN'));
   const summary = publicMediaReviewSummary(resolved);
-  assert.equal(summary.approved, 0);
-  assert.equal(summary.pending, summary.total);
-  assert.equal(summary.unknownConsent, summary.total);
   assert.equal(summary.restricted, 0);
   assert.equal(summary.blocked, 0);
 });

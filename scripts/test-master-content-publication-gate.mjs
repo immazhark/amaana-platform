@@ -3,12 +3,14 @@ import { test } from "node:test";
 import master from "../prisma/master-programmes.json" with { type: "json" };
 import { eligibleMasterInitiatives } from "../prisma/master-content-publication.mjs";
 
-test("new unreviewed medical cases are excluded from content import", () => {
+test("the two owner-approved medical cases are imported; any other unreviewed record stays out", () => {
   const eligible = eligibleMasterInitiatives(master.initiatives);
   assert.equal(master.initiatives.filter(record => record.causeSlug === "medical-financial-relief").length, 8);
-  assert.equal(eligible.filter(record => record.causeSlug === "medical-financial-relief").length, 6);
-  assert.equal(eligible.length, 30);
-  assert.ok(!eligible.some(record => ["accident-recovery-support-2026", "medical-recovery-relief-2026"].includes(record.slug)));
+  assert.equal(eligible.filter(record => record.causeSlug === "medical-financial-relief").length, 8);
+  assert.equal(eligible.length, 32);
+  for (const slug of ["accident-recovery-support-2026", "medical-recovery-relief-2026"]) {
+    assert.equal(master.initiatives.find(record => record.slug === slug).publicationReviewStatus, "APPROVED");
+  }
 });
 
 test("publication review fails closed on unknown states while preserving existing approved source", () => {

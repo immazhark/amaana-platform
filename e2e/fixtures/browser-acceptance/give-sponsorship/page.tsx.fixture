@@ -18,7 +18,10 @@ export const metadata: Metadata = {
 // Synthetic fund and payment details only. This route exists only while the isolated browser-acceptance server is running
 // and never creates a payment or donation record.
 const fund: GiveFund = { slug: "taleem", name: "Taleem Fund", summary: "Qur'an and Islamic education sponsorship for children facing hardship.", zakatPolicy: "ACCEPTED", isGeneral: false };
-const paymentDetails = { upi: { id: "synthetic@bank", qrImageUrl: null }, bank: null } as unknown as DonationPaymentDetails;
+const paymentDetails: DonationPaymentDetails = {
+  upi: { id: "synthetic@invalid", qrImageUrl: null },
+  bank: { accountName: "Synthetic fixture — not a payment destination", accountNumber: "000000000", ifsc: "TEST0000000", bankName: "Synthetic bank", branch: "CI only" },
+};
 
 export default function TaleemSponsorshipAcceptanceFixture() {
   if (process.env.AMAANA_BROWSER_ACCEPTANCE !== "true") notFound();

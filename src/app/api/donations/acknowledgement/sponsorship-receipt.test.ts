@@ -30,6 +30,22 @@ describe("receipts for Taleem programme sponsorships", () => {
     expect(isAcknowledgementResponse(body, reference)).toBe(true);
   });
 
+  it.each(["CAPTURED", "PENDING_VERIFICATION"])("uses destination-neutral acknowledgement copy for %s Taleem gifts", async status => {
+    mocks.findUnique.mockResolvedValue(row({ status, ...(status === "PENDING_VERIFICATION" ? { receiptNumber: null, capturedAt: null, providerPaymentId: null } : {}) }));
+    const response = await ask();
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(isAcknowledgementResponse(body, reference)).toBe(true);
+    expect(body.donation.fund).toEqual({ name: "Taleem Fund", slug: "taleem" });
+    expect(body.donation.appeal).toBeNull();
+    expect(body.presentation.summary).not.toMatch(/\bappeal\b/i);
+    expect(body.presentation.statusLabel).toBe(status === "CAPTURED" ? "Payment verified" : "Verification pending");
+    if (status === "PENDING_VERIFICATION") {
+      expect(body.presentation.summary).toContain("UTR/reference");
+      expect(body.presentation.summary).toContain("do not submit the same transfer again");
+    }
+  });
+
   it("shows the rate recorded on the donation, never the live catalogue rate", async () => {
     // Qaida is Rs 1,000 in the live catalogue; this donor was quoted Rs 900 under an earlier version.
     mocks.findUnique.mockResolvedValue(row({ sponsorshipMonthlyRate: dec(900), amount: dec(2700), sponsorshipRateVersion: "baseline-2026-09" }));
