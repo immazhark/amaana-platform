@@ -8,7 +8,7 @@ import { SiteMotion } from "./site-motion";
 
 afterEach(() => { effects.length = 0; vi.unstubAllGlobals(); });
 
-function fixture() {
+function fixture(reducedMotion = false) {
   const listeners = new Map<string, EventListener>();
   class Control {
     disabled = false;
@@ -50,7 +50,7 @@ function fixture() {
   vi.stubGlobal("KeyboardEvent", Keyboard);
   vi.stubGlobal("IntersectionObserver", class { disconnect() {} observe() {} });
   vi.stubGlobal("getComputedStyle", () => ({ translate: "none", scale: "none" }));
-  const windowEvents = Object.assign(new EventTarget(), { matchMedia: () => ({ matches: false, addEventListener() {}, removeEventListener() {} }) });
+  const windowEvents = Object.assign(new EventTarget(), { matchMedia: () => ({ matches: reducedMotion, addEventListener() {}, removeEventListener() {} }) });
   vi.stubGlobal("window", windowEvents);
   const documentEvents = {
     hidden: false,
@@ -91,6 +91,28 @@ function fixture() {
 }
 
 describe("site motion press recovery", () => {
+  it("cancels only its animation and preserves inline styles, including later component changes", () => {
+    const motion = fixture();
+    motion.control.style = { translate: "4px 7px", scale: "1.1", opacity: "0.7" };
+    motion.send("pointerdown", 0);
+    const active = motion.control.animate.mock.results[0]?.value;
+    motion.control.style.opacity = "0.6";
+    motion.blur();
+    expect(active.cancel).toHaveBeenCalledOnce();
+    expect(motion.control.style).toEqual({ translate: "4px 7px", scale: "1.1", opacity: "0.6" });
+    motion.cleanup?.();
+    expect(motion.control.style).toEqual({ translate: "4px 7px", scale: "1.1", opacity: "0.6" });
+  });
+
+  it("does not clear another component's inline styles on an unanimated reduced-motion action", () => {
+    const motion = fixture(true);
+    motion.control.style = { translate: "2px", scale: "0.9", opacity: "0.8" };
+    motion.send("pointerdown", 0);
+    expect(motion.control.animate).not.toHaveBeenCalled();
+    expect(motion.control.style).toEqual({ translate: "2px", scale: "0.9", opacity: "0.8" });
+    motion.cleanup?.();
+  });
+
   it.each(["focusout", "pointerout"] as const)("settles a disabled action on %s without waiting for release", type => {
     const motion = fixture();
     motion.send("pointerdown", 0);

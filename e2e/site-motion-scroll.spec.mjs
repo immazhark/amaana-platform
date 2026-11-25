@@ -130,6 +130,36 @@ test('Motion feedback restores styles and responds to live preference changes', 
   await expect(action).toBeFocused();
 });
 
+test('motion cleanup preserves inline styles that belong to another component', async ({ page }) => {
+  await open(page);
+  const action = page.locator('.nav-donate');
+  await action.hover();
+  await expect.poll(() => action.evaluate(n => getComputedStyle(n).translate)).toBe('0px -1px');
+  await action.evaluate(n => {
+    n.style.translate = '4px 7px';
+    n.style.scale = '1.1';
+    n.style.opacity = '0.7';
+    n.dispatchEvent(new PointerEvent('pointerdown', {
+      bubbles: true, pointerType: 'touch', pointerId: 92, button: 0, buttons: 1,
+    }));
+    n.style.opacity = '0.6';
+    window.dispatchEvent(new Event('blur'));
+  });
+  await expect.poll(() => action.evaluate(n => ({
+    translate: n.style.translate, scale: n.style.scale, opacity: n.style.opacity,
+    animations: n.getAnimations().length,
+  }))).toEqual({ translate: '4px 7px', scale: '1.1', opacity: '0.6', animations: 0 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await action.evaluate(n => n.dispatchEvent(new PointerEvent('pointerdown', {
+    bubbles: true, pointerType: 'touch', pointerId: 93, button: 0, buttons: 1,
+  })));
+  await expect.poll(() => action.evaluate(n => ({
+    translate: n.style.translate, scale: n.style.scale, opacity: n.style.opacity,
+    animations: n.getAnimations().length,
+  }))).toEqual({ translate: '4px 7px', scale: '1.1', opacity: '0.6', animations: 0 });
+  await expect(page).toHaveURL(/\/about$/);
+});
+
 for (const scenario of [
   { name: 'pointer cancellation without a primary button code', event: 'pointercancel', button: -1, disabled: false },
   { name: 'release after the action becomes disabled', event: 'pointerup', button: 0, disabled: true },
