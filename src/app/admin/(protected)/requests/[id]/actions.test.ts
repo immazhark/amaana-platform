@@ -392,3 +392,32 @@ describe("rejection has one route: the dedicated Reject request form", () => {
     expect(mocks.verificationUpsert).not.toHaveBeenCalled();
   });
 });
+
+describe("manual approval counts against the annual capacity like the Approve form", () => {
+  const idle = { kind: "idle" as const, message: "" };
+  const approvedVerification = { decision: "APPROVED_PRIVATE", completedAt: new Date("2026-11-20T00:00:00.000Z") };
+  const row = { id: "synthetic-request", status: AssistanceStatus.UNDER_VERIFICATION, appealId: null, email: null, referenceNumber: "AF-SYNTH-03", updatedAt: new Date("2026-11-25T04:00:00.000Z"), acceptedAt: null, verification: approvedVerification };
+  const submit = () => updateRequestWithFeedback(idle, form({ id: "synthetic-request", expectedUpdatedAt: "2026-11-25T04:00:00.000Z", status: "APPROVED", internalNotes: "" }));
+  const withCount = (count: number) => mocks.transaction.mockImplementation(async callback => callback({ ...tx(), assistanceRequest: { ...tx().assistanceRequest, count: async () => count } }));
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requirePermission.mockResolvedValue({ id: "synthetic-approver" });
+    mocks.hasPermission.mockReturnValue(true);
+    mocks.requestFind.mockResolvedValue(row);
+    mocks.requestUpdateMany.mockResolvedValue({ count: 1 });
+    mocks.auditCreate.mockResolvedValue({ id: "audit-1" });
+  });
+
+  it("refuses the thirteenth case on the manual status route", async () => {
+    withCount(12);
+    expect((await submit()).kind).toBe("error");
+    expect(mocks.requestUpdateMany).not.toHaveBeenCalled();
+  });
+
+  it("stamps the acceptance time when a place is free, so the case is counted", async () => {
+    withCount(3);
+    await submit();
+    expect(mocks.requestUpdateMany.mock.calls[0]![0].data.acceptedAt).toBeInstanceOf(Date);
+  });
+});

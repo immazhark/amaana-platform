@@ -116,8 +116,17 @@ export function AssistanceForm({ copy }: { copy: AssistanceCopy }) {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (submissionLocked.current || outsideArea) return;
+    if (submissionLocked.current) return;
     const form = event.currentTarget;
+    // The beneficiary answer gates everything after it: take the person back to it instead of silently ignoring Submit.
+    if (outsideArea || !residence) {
+      setStep(1);
+      if (!residence) setFieldErrors({ beneficiaryResidence: ["Tell us where the person who needs help lives."] });
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        (outsideArea ? document.getElementById("outside-area-notice") : form.querySelector<HTMLInputElement>('input[name="beneficiaryResidence"]'))?.focus();
+      }));
+      return;
+    }
     setError("");
     setFieldErrors({});
 
@@ -202,10 +211,10 @@ export function AssistanceForm({ copy }: { copy: AssistanceCopy }) {
     {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}{phase === "followup" && <p><a className="v2-text-link" href="/contact" target="_blank" rel="noreferrer">Contact Amaana about this request<span className="sr-only"> (opens in a new tab)</span></a></p>}</div>}
     <fieldset id="assistance-step-1" data-assistance-step="1" tabIndex={-1} hidden={step !== 1} disabled={locked}><legend><span>01</span> Contact</legend><div className="form-grid">
       <div className="field full"><fieldset className="v2-form-choice" aria-describedby={residenceError ? "residence-help residence-error" : "residence-help"}><legend>Where does the person who needs help live?</legend><small id="residence-help">Answer for the beneficiary, not for the person filling in the form. A family member or friend living elsewhere may apply for someone who lives in our Hyderabad service area.</small>
-        <label className="checkbox"><input type="radio" name="beneficiaryResidence" value="HYDERABAD_SERVICE_AREA" required checked={residence === "HYDERABAD_SERVICE_AREA"} onChange={() => { setResidence("HYDERABAD_SERVICE_AREA"); clearFieldError("beneficiaryResidence"); }} /><span>In our Hyderabad service area</span></label>
-        <label className="checkbox"><input type="radio" name="beneficiaryResidence" value="OUTSIDE_SERVICE_AREA" checked={outsideArea} onChange={() => { setResidence("OUTSIDE_SERVICE_AREA"); clearFieldError("beneficiaryResidence"); }} /><span>Somewhere else</span></label>
+        <label className="checkbox"><input type="radio" name="beneficiaryResidence" value="HYDERABAD_SERVICE_AREA" required aria-describedby={outsideArea ? "outside-area-notice" : undefined} checked={residence === "HYDERABAD_SERVICE_AREA"} onChange={() => { setResidence("HYDERABAD_SERVICE_AREA"); clearFieldError("beneficiaryResidence"); }} /><span>In our Hyderabad service area</span></label>
+        <label className="checkbox"><input type="radio" name="beneficiaryResidence" value="OUTSIDE_SERVICE_AREA" required aria-describedby={outsideArea ? "outside-area-notice" : undefined} checked={outsideArea} onChange={() => { setResidence("OUTSIDE_SERVICE_AREA"); clearFieldError("beneficiaryResidence"); }} /><span>Somewhere else</span></label>
         {residenceError && <small id="residence-error" className="v2-field-error">{residenceError}</small>}
-        {outsideArea && <p className="form-error" role="status" id="outside-area-notice">{OUTSIDE_SERVICE_AREA_MESSAGE}</p>}
+        {outsideArea && <p className="form-error" role="status" id="outside-area-notice" tabIndex={-1}>{OUTSIDE_SERVICE_AREA_MESSAGE}</p>}
       </fieldset></div>
       <div className="field"><label htmlFor="name">Applicant name</label><input id="name" aria-label="Applicant name" name="applicantName" autoComplete="name" minLength={2} maxLength={120} required aria-invalid={Boolean(nameError) || undefined} aria-describedby={nameError ? "name-error" : undefined} onChange={() => clearFieldError("applicantName")} />{nameError && <small id="name-error" className="v2-field-error">{nameError}</small>}</div>
       <div className="field"><label htmlFor="phone">Phone number</label><input id="phone" aria-label="Phone number" name="phone" type="tel" autoComplete="tel" required aria-invalid={Boolean(phoneError) || undefined} aria-describedby={phoneError ? "phone-error" : undefined} onChange={() => clearFieldError("phone")} />{phoneError && <small id="phone-error" className="v2-field-error">{phoneError}</small>}</div>

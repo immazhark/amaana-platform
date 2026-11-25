@@ -70,7 +70,7 @@ export async function approveAssistanceRequest(input: ApprovalInput): Promise<Ap
     const current = await tx.assistanceRequest.findUnique({
       where: { id: input.requestId },
       select: {
-        id: true, status: true, appealId: true, email: true, referenceNumber: true, updatedAt: true,
+        id: true, status: true, appealId: true, email: true, referenceNumber: true, updatedAt: true, acceptedAt: true,
         verification: { select: { id: true, updatedAt: true, decision: true, completedAt: true, reviewedBy: { select: { name: true } } } },
       },
     });
@@ -112,7 +112,7 @@ export async function approveAssistanceRequest(input: ApprovalInput): Promise<Ap
     // between the read above and this write cannot be overwritten.
     const claimed = await tx.assistanceRequest.updateMany({
       where: { id: current.id, status: current.status, appealId: null, updatedAt: current.updatedAt },
-      data: { status: AssistanceStatus.APPROVED, acceptedAt: new Date(), capacityExceptionNote: overCapacity ? exception : null },
+      data: { status: AssistanceStatus.APPROVED, acceptedAt: current.acceptedAt ?? new Date(), capacityExceptionNote: overCapacity ? exception : null },
     });
     if (claimed.count !== 1) throw new AssistanceApprovalError("stale_request", APPROVAL_MESSAGES.stale_request);
 
