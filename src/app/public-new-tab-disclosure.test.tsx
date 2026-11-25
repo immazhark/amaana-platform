@@ -5,6 +5,8 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("next/link", () => ({
   default: ({ children, href }: { children: ReactNode; href: string }) => <a href={href}>{children}</a>,
 }));
+vi.mock("@/lib/assistance-capacity", () => ({ isIntakePaused: async () => false }));
+vi.mock("@/lib/prisma", () => ({ prisma: {} }));
 vi.mock("@/components/page-hero", () => ({ PageHero: () => null }));
 vi.mock("@/components/section-heading", () => ({ SectionHeading: () => null }));
 vi.mock("@/components/assistance-form", () => ({
@@ -32,8 +34,8 @@ function expectAnnouncedNewTab(link: string, visibleText: string) {
 }
 
 describe("public links that open a new tab", () => {
-  it("announces the context change for assistance terms and privacy without changing their links", () => {
-    const html = renderToStaticMarkup(<RequestAssistancePage />);
+  it("announces the context change for assistance terms and privacy without changing their links", async () => {
+    const html = renderToStaticMarkup(await RequestAssistancePage());
     expectAnnouncedNewTab(linkMarkup(html, "/terms"), "assistance and platform terms");
     expectAnnouncedNewTab(linkMarkup(html, "/privacy"), "privacy notice");
   });
