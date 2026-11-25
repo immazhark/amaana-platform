@@ -16,11 +16,16 @@ type SyntheticMetric = {
   count: number;
 };
 
+function hasDataField(value: object, key: PropertyKey): boolean {
+  const descriptor = Object.getOwnPropertyDescriptor(value, key);
+  return descriptor?.enumerable === true && Object.hasOwn(descriptor, "value");
+}
+
 function exactObject(value: unknown, keys: readonly string[], label: string): asserts value is Record<string, unknown> {
   if (typeof value !== "object" || value === null || Array.isArray(value) ||
       Object.getPrototypeOf(value) !== Object.prototype ||
       Reflect.ownKeys(value).length !== keys.length ||
-      !keys.every(key => Object.hasOwn(value, key))) {
+      !keys.every(key => hasDataField(value, key))) {
     throw new Error(`${label} has missing or unexpected fields`);
   }
 }
@@ -48,12 +53,13 @@ export function digestSyntheticAggregateDraft(raw: unknown): {
   const periodEnd = parseDay(raw.periodEnd, "period end");
   if (periodStart > periodEnd) throw new Error("Aggregate period is reversed");
   const rawMetrics = raw.metrics;
-  if (!Array.isArray(rawMetrics) || rawMetrics.length === 0 || rawMetrics.length > syntheticMetricCodes.size) {
+  if (!Array.isArray(rawMetrics) || Object.getPrototypeOf(rawMetrics) !== Array.prototype ||
+      rawMetrics.length === 0 || rawMetrics.length > syntheticMetricCodes.size) {
     throw new Error("Invalid synthetic metric list");
   }
   if (Reflect.ownKeys(rawMetrics).length !== rawMetrics.length + 1 ||
       Array.from({ length: rawMetrics.length }, (_, index) => index)
-        .some(index => !Object.hasOwn(rawMetrics, index))) {
+        .some(index => !hasDataField(rawMetrics, index))) {
     throw new Error("Sparse or unexpected synthetic metric array properties");
   }
 
