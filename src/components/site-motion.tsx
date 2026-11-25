@@ -32,7 +32,6 @@ export function SiteMotion() {
     const clear = (element: HTMLElement) => {
       running.get(element)?.cancel();
       running.delete(element);
-      element.style.translate = element.style.scale = element.style.opacity = "";
       owned.delete(element);
     };
     const clearAll = () => {
