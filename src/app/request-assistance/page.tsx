@@ -5,7 +5,12 @@ import { AssistanceForm } from "@/components/assistance-form";
 import { PageHero } from "@/components/page-hero";
 import styles from "./assistance-surface.module.css";
 import formStyles from "@/components/assistance-form.module.css";
-import { ASSISTANCE_SCOPE_NOTICE, ASSISTANCE_SCOPE_POINTS } from "@/lib/assistance-policy";
+import { ASSISTANCE_SCOPE_NOTICE, ASSISTANCE_SCOPE_POINTS, INTAKE_PAUSED_MESSAGE } from "@/lib/assistance-policy";
+import { isIntakePaused } from "@/lib/assistance-capacity";
+import { prisma } from "@/lib/prisma";
+
+// Read the current switch on every request; do not serve a cached open form after intake closes.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Request Assistance",
@@ -25,7 +30,13 @@ const assistanceCopy = {
   termsNotice: <p className="muted">Before submitting, please review the <a href="/terms" target="_blank" rel="noreferrer">assistance and platform terms<span className="sr-only"> (opens in a new tab)</span></a> and <a href="/privacy" target="_blank" rel="noreferrer">privacy notice<span className="sr-only"> (opens in a new tab)</span></a>.</p>,
 };
 
-export default function RequestAssistancePage() {
+export default async function RequestAssistancePage() {
+  if (await isIntakePaused(prisma)) {
+    return <div className="v2-home v2-assistance-page">
+      <PageHero variant="action" eyebrow="Request Assistance · Private First Step" title="New assistance requests are paused" description={<><p>{INTAKE_PAUSED_MESSAGE}</p><p>{ASSISTANCE_SCOPE_NOTICE[0]}</p></>} actions={[{label:"Track an existing request",href:"/request-assistance/status"}]} visualKicker="Existing requests" visualTitle="Track Privately" visualNote="If you already have a tracking reference, you can still check your request." />
+    </div>;
+  }
+
   return <div className="v2-home v2-assistance-page">
     <PageHero variant="action" eyebrow="Request Assistance · Private First Step" title="Ask for Help Privately and With Dignity" description={<p>Individual assistance is currently limited to beneficiaries in our Hyderabad service area and to a small number of severe, verifiable cases. Tell Amaana what support is needed through this private request form. Sensitive documents stay outside the public website while the team reviews the circumstances and follows up where needed.</p>} actions={[{label:"Begin your request",href:"#request-form"},{label:"Track an existing request",href:"/request-assistance/status",secondary:true}]} visualKicker="What happens here" visualTitle="Private Request → Human Review" visualNote="A request begins review; it does not guarantee assistance, fundraising or public publication." />
 
