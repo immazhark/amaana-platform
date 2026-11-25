@@ -10,7 +10,7 @@ describe("assistance workload", () => {
 
   it("derives the figures from the live scope, with the oldest submitted request first", async () => {
     const count = vi.fn(async ({ where }: { where: Record<string, unknown> }) => (where.status === "SUBMITTED" ? 4 : "assignedToId" in where ? 3 : 9));
-    const findFirst = vi.fn(async (_args: { where: unknown; orderBy: unknown }) => ({ createdAt: new Date("2026-11-20T12:00:00Z") }));
+    const findFirst = vi.fn<(_args: { where: unknown; orderBy: unknown }) => Promise<{ createdAt: Date }>>(async () => ({ createdAt: new Date("2026-11-20T12:00:00Z") }));
     const result = await assistanceWorkload({ assistanceRequest: { count, findFirst } } as never, { id: { not: "x" } }, new Date("2026-11-25T12:00:00Z"));
     expect(result).toEqual({ submitted: 4, oldestSubmittedAgeDays: 5, openUnassigned: 3, open: 9 });
     expect(findFirst.mock.calls[0]![0].orderBy).toEqual([{ createdAt: "asc" }, { id: "asc" }]);
