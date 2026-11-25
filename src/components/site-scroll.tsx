@@ -52,7 +52,7 @@ export function useSiteScroll(pathname: string) {
     const eligible = () => !wheelEnhancementDisabled && !disposed && !routeChangePending && !preference.matches && pointer.matches && !document.hidden;
     const wake = () => { if (instance && frame === undefined) frame = requestAnimationFrame(tick); };
     const initialize = async (event: WheelEvent) => {
-      if (!eligible() || event.ctrlKey || event.defaultPrevented || loading || instance) return;
+      if (!event.deltaY || !eligible() || event.ctrlKey || event.defaultPrevented || loading || instance) return;
       if (event.target instanceof Element && event.target.closest(nested)) return;
       loading = true;
       const initializationGeneration = generation;

@@ -48,7 +48,7 @@ test.each(["click", "popstate", "hashchange", "keyboard", "hidden", "unmount"])(
   const { useSiteScroll } = await import("./site-scroll");
   useSiteScroll("/about");
   try {
-    browser.dispatchEvent(new Event("wheel"));
+    browser.dispatchEvent(Object.assign(new Event("wheel"), { deltaY: 100 }));
     await vi.waitFor(() => expect(classes.has("lenis")).toBe(true));
     vi.useFakeTimers();
     browser.scrollY = 200;
