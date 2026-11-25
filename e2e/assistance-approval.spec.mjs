@@ -175,7 +175,7 @@ test('a conflicting approval keeps entered work and does not overwrite the newer
     await newer.locator('#verificationSummary').fill('Newer saved review text');
     await newer.locator('#decision').selectOption('REFERRED');
     await other.getByRole('button', { name: 'Save review progress' }).click();
-    await expect(other.getByRole('status')).toContainText('Review progress saved');
+    await expect(other.getByRole('status').filter({ hasText: /^Review progress saved\. No decision has been made\.$/ })).toBeVisible();
     await submitApproval(card, page);
     await expect(page.locator('#approval-inline-errors')).toContainText('review changed');
     await expect(page.locator('#verificationSummary')).toHaveValue('Unsaved original review text');

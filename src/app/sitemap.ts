@@ -18,7 +18,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (!shouldAllowIndexing(configuredBase, process.env.NEXT_PUBLIC_ALLOW_INDEXING)) return [];
   const base = new URL(configuredBase).origin;
 
-  const [appeals, initiatives, stories, faithContent] = await Promise.all([
+  const [appeals, initiatives, stories, faithContent, activeFund] = await Promise.all([
     prisma.appeal.findMany({
       where: { status: { in: ["PUBLISHED", "FUNDED", "CLOSED"] } },
       select: {
@@ -53,6 +53,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       where: publicFaithWhere,
       select: { slug: true, updatedAt: true, status: true, religiousReviewStatus: true, verifiedAt: true, sourceCitation: true },
     }),
+    isFundGivingEnabled()
+      ? prisma.fund.findFirst({ where: { status: "ACTIVE" }, select: { id: true } })
+      : Promise.resolve(null),
   ]);
 
   const canonicalInitiatives = initiatives.filter(item => isCanonicalSitemapSlug(item.slug) && !isLegacyOurWorkSlug(item.slug));
@@ -81,9 +84,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     && canListAppealInSitemap(item.assistanceRequest?.verification?.confidentialityLevel),
   );
 
-  // Designated giving pages exist (and are indexable) only while the owner has switched fund giving on. They are kept out of
-  // PUBLIC_STATIC_ROUTES on purpose: other checks treat every entry there as always reachable.
-  const fundGivingPages: MetadataRoute.Sitemap = isFundGivingEnabled()
+  // Both giving pages require the owner switch and at least one active fund. Keep them out of the always-reachable routes.
+  const fundGivingPages: MetadataRoute.Sitemap = activeFund
     ? [{ url: `${base}/give`, changeFrequency: "weekly", priority: 0.85 }, { url: `${base}/funds`, changeFrequency: "weekly", priority: 0.8 }]
     : [];
 
