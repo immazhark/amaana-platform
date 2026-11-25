@@ -7,7 +7,7 @@ vi.mock("@/lib/auth", () => ({
   hasPermission: mocks.permission,
 }));
 vi.mock("@/lib/prisma", () => ({ prisma: {
-  assistanceRequest: { findUnique: mocks.request }, user: { findMany: mocks.staff },
+  assistanceRequest: { findUnique: mocks.request, findMany: async () => [] }, user: { findMany: mocks.staff },
   auditEvent: { findMany: mocks.history },
 } }));
 vi.mock("next/navigation", () => ({ notFound: () => { throw new Error("NOT_FOUND"); } }));

@@ -8,6 +8,7 @@ import {
   parseRejectionInput, rejectionDraftCookieName, rejectionDraftCookieValue, rejectionProblems, rejectionRedirect,
   type RejectionNotice,
 } from "@/lib/assistance-rejection";
+import { ASSISTANCE_DECLINE_REASONS, composeDeclineReason } from "@/lib/assistance-policy";
 import { AssistanceRejectionError, rejectAssistanceRequest } from "@/lib/assistance-rejection-service";
 
 const DRAFT_PATH = "/admin/requests";
@@ -53,7 +54,10 @@ export async function rejectRequestAction(formData: FormData): Promise<never> {
 
   if (!hasPermission(user, "assistance.approve")) back({ kind: "error", problems: [], code: "forbidden" });
 
-  const reasonField = single(formData, "reason");
+  const noteField = single(formData, "reason");
+  const codeField = single(formData, "reasonCode");
+  // A chosen category and the optional note become one recorded reason; with no category the typed reason is used as before.
+  const reasonField = noteField === null || codeField === null ? null : composeDeclineReason(codeField, noteField);
   const confirmation = single(formData, "confirmRejection");
   const requestVersion = version(single(formData, "expectedRequestUpdatedAt"), false);
   const verificationVersion = version(single(formData, "expectedVerificationUpdatedAt"), true);
@@ -63,28 +67,28 @@ export async function rejectRequestAction(formData: FormData): Promise<never> {
   const fields = { reason: reasonField, confirmRejection: confirmation === "" ? undefined : confirmation };
   const problems = rejectionProblems(fields);
   if (problems.length) {
-    await keepDraft(id, reasonField ?? "");
+    await keepDraft(id, noteField ?? "");
     back({ kind: "error", problems, code: null });
   }
   const parsed = parseRejectionInput(fields);
   if (!parsed.ok) back({ kind: "error", problems, code: null });
 
   if (requestVersion === "invalid" || requestVersion === null || verificationVersion === "invalid") {
-    await keepDraft(id, reasonField ?? "");
+    await keepDraft(id, noteField ?? "");
     back({ kind: "error", problems: [], code: "version" });
   }
 
   let outcome: "rejected" | "already_rejected";
   try {
     const result = await rejectAssistanceRequest({
-      requestId: id, reason: (parsed as { ok: true; reason: string }).reason, actorId: user.id,
+      requestId: id, reason: (parsed as { ok: true; reason: string }).reason, reasonCode: ASSISTANCE_DECLINE_REASONS.some(reason => reason.code === codeField) ? codeField : null, actorId: user.id,
       expectedRequestUpdatedAt: requestVersion as Date, expectedVerificationUpdatedAt: verificationVersion as Date | null,
     });
     outcome = result.outcome;
   } catch (error) {
     // Only this module's own refusals have messages written for reviewers. Anything else stays server-side.
     if (error instanceof AssistanceRejectionError) {
-      await keepDraft(id, reasonField ?? "");
+      await keepDraft(id, noteField ?? "");
       back({ kind: "error", problems: [], code: error.code });
     }
     throw error;

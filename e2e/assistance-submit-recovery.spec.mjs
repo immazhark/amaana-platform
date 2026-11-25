@@ -9,7 +9,8 @@ async function prepare(page) {
   await expect(page.locator("#assistance-consent-help")).toHaveCount(1);
   await page.getByLabel("Applicant name").fill("Synthetic Recovery Applicant");
   await page.getByLabel("Phone number").fill("9000000000");
-  await page.getByLabel("City").fill("Hyderabad");
+  await page.getByLabel("Beneficiary’s locality or area in Hyderabad").fill("Hyderabad");
+  await page.getByLabel('In our Hyderabad service area').check();
   await page.getByRole("button", { name: "Continue to need →" }).click();
   await page.getByLabel("Type of assistance").selectOption("MEDICAL");
   await page.getByLabel("Describe the need").fill("Synthetic browser acceptance only: verify uncertain submission recovery without creating any real assistance request.");

@@ -150,7 +150,7 @@ export type ApprovalNotice =
   | { kind: "error"; problems: string[]; code: string | null }
   | { kind: "done"; outcome: "approved" | "already_approved"; route: ApprovalRoute | null };
 
-const APPROVAL_ERROR_CODES = ["draft_save_failed", "incomplete", "not_found", "linked_appeal", "rejected", "closed", "not_eligible", "stale_request", "stale_verification", "reopen_forbidden", "forbidden", "form", "version"] as const;
+const APPROVAL_ERROR_CODES = ["draft_save_failed", "incomplete", "not_found", "linked_appeal", "rejected", "closed", "not_eligible", "stale_request", "stale_verification", "reopen_forbidden", "capacity_full", "forbidden", "form", "version"] as const;
 
 export function approvalRedirect(requestId: string, notice: ApprovalNotice): string {
   const base = `/admin/requests/${encodeURIComponent(requestId)}`;
@@ -208,6 +208,7 @@ export const APPROVAL_ERROR_MESSAGES = {
   not_eligible: "This request cannot be approved from its current state.",
   stale_request: "This request changed while you were reviewing it. Refresh the page and check it before approving.",
   stale_verification: "The review changed while you were reviewing it. Refresh the page and check it before approving.",
+  capacity_full: `This year's planning limit of 12 individual cases has been reached. To accept this case anyway, tick the capacity exception and give the reason.`,
   forbidden: "Approval permission is required to approve a request.",
   reopen_forbidden: "Approval permission is required to reopen a completed verification.",
   form: "The form was not submitted correctly. Refresh the page and try again.",

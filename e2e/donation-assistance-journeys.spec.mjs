@@ -107,7 +107,7 @@ test('assistance intake visibly marks all required fields and distinguishes the 
   await expect(page.locator('input[name="consent"]')).toHaveAttribute('required', '');
   // The visual markers must not change accessible field labels used by keyboard/screen-reader users.
   await page.getByRole('button', { name: /Contact/ }).click();
-  for (const name of ['Applicant name', 'Phone number', 'City']) {
+  for (const name of ['Applicant name', 'Phone number', 'Beneficiary’s locality or area in Hyderabad']) {
     await expect(page.getByLabel(name, { exact: true })).toBeVisible();
   }
   await page.getByRole('button', { name: /Need/ }).click();
@@ -127,6 +127,7 @@ test('assistance errors are linked before keyboard focus reaches invalid input',
       }
     });
   });
+  await page.getByLabel('In our Hyderabad service area').check();
   await page.getByRole('button', { name: 'Continue to need →' }).click();
   await expect(page.getByLabel('Applicant name')).toBeFocused();
   await expect.poll(() => page.evaluate(() => window.__amaanaInvalidFocusLinked)).toBe(true);
@@ -136,7 +137,9 @@ test('rapid assistance step changes leave focus on the currently visible step', 
   await openAssistance(page);
   await page.getByLabel('Applicant name').fill('Acceptance Applicant');
   await page.getByLabel('Phone number').fill('9000000000');
-  await page.getByLabel('City').fill('Hyderabad');
+  await page.getByLabel('Beneficiary’s locality or area in Hyderabad').fill('Hyderabad');
+
+  await page.getByLabel('In our Hyderabad service area').check();
 
   await page.getByRole('button', { name: 'Continue to need →' }).click();
   await page.getByRole('button', { name: /Contact/ }).click();
@@ -149,6 +152,7 @@ test('rapid assistance step changes leave focus on the currently visible step', 
 
 test('assistance step validation announces required fields and moves focus', async ({ page }) => {
   await openAssistance(page);
+  await page.getByLabel('In our Hyderabad service area').check();
   await page.getByRole('button', { name: 'Continue to need →' }).click();
   const name = page.getByLabel('Applicant name');
   await expect(name).toBeFocused();
@@ -158,6 +162,7 @@ test('assistance step validation announces required fields and moves focus', asy
 
   await name.fill('Acceptance Applicant');
   await expect(page.locator('#name-error')).toHaveCount(0);
+  await page.getByLabel('In our Hyderabad service area').check();
   await page.getByRole('button', { name: 'Continue to need →' }).click();
   const phone = page.getByLabel('Phone number');
   await expect(phone).toBeFocused();
@@ -169,7 +174,8 @@ async function fillAssistanceForm(page, { stopAtEvidence = false } = {}) {
   await page.getByLabel('Applicant name').fill('Acceptance Applicant');
   await page.getByLabel('Phone number').fill('9000000000');
   await page.getByLabel(/Email/).fill('applicant@example.test');
-  await page.getByLabel('City').fill('Hyderabad');
+  await page.getByLabel('Beneficiary’s locality or area in Hyderabad').fill('Hyderabad');
+  await page.getByLabel('In our Hyderabad service area').check();
   await page.getByRole('button', { name: 'Continue to need →' }).click();
 
   await page.getByLabel('Type of assistance').selectOption('MEDICAL');
@@ -609,13 +615,16 @@ test.describe('private assistance journey', () => {
   test('guided form blocks step progression until required contact fields are complete', async ({ page }) => {
     await openAssistance(page);
 
+    await page.getByLabel('In our Hyderabad service area').check();
+
     await page.getByRole('button', { name: 'Continue to need →' }).click();
     await expect(page.getByText('Step 1 of 4')).toBeVisible();
     await expect(page.getByLabel('Applicant name')).toBeFocused();
 
     await page.getByLabel('Applicant name').fill('Acceptance Applicant');
     await page.getByLabel('Phone number').fill('9000000000');
-    await page.getByLabel('City').fill('Hyderabad');
+    await page.getByLabel('Beneficiary’s locality or area in Hyderabad').fill('Hyderabad');
+    await page.getByLabel('In our Hyderabad service area').check();
     await page.getByRole('button', { name: 'Continue to need →' }).click();
 
     await expect(page.getByText('Step 2 of 4')).toBeVisible();
@@ -638,7 +647,8 @@ test.describe('private assistance journey', () => {
 
     await page.getByLabel('Applicant name').fill('Acceptance Applicant');
     await page.getByLabel('Phone number').fill('9000000000');
-    await page.getByLabel('City').fill('Hyderabad');
+    await page.getByLabel('Beneficiary’s locality or area in Hyderabad').fill('Hyderabad');
+    await page.getByLabel('In our Hyderabad service area').check();
     await page.getByRole('button', { name: 'Continue to need →' }).click();
 
     await expect(status).toContainText('Step 2 of 4');
@@ -652,7 +662,7 @@ test.describe('private assistance journey', () => {
     await fillAssistanceForm(page);
 
     await page.getByRole('button', { name: /Contact/ }).click();
-    const city = page.getByLabel('City');
+    const city = page.getByLabel('Beneficiary’s locality or area in Hyderabad');
     await city.fill('');
 
     await page.getByRole('button', { name: /Confirm/ }).click();

@@ -22,7 +22,7 @@ describe("initial form", () => {
 
   it("carries no approval field of any kind, so none can block or travel with a rejection", () => {
     const names = [...html.matchAll(/\bname="([^"]+)"/g)].map(match => match[1]).sort();
-    expect(names).toEqual(["confirmRejection", "expectedRequestUpdatedAt", "expectedVerificationUpdatedAt", "id", "reason"]);
+    expect(names).toEqual(["confirmRejection", "expectedRequestUpdatedAt", "expectedVerificationUpdatedAt", "id", "reason", "reasonCode"]);
   });
 
   it("sends the versions the page showed, so a later change is a conflict rather than an overwrite", () => {
