@@ -55,8 +55,8 @@ function fixture(slideCount = 1) {
       props.onPointerMove({ buttons: 1, clientX: 70, currentTarget: surface, pointerId: 1, preventDefault: vi.fn() });
       props.onPointerUp({ pointerId: 1, currentTarget: surface });
     },
-    start(pointerId = 1) {
-      props.onPointerDown({ pointerType: "mouse", pointerId, button: 0, target: null, clientX: 100, currentTarget: surface });
+    start(pointerId = 1, overrides: object = {}) {
+      props.onPointerDown({ pointerType: "mouse", pointerId, button: 0, target: null, clientX: 100, currentTarget: surface, ...overrides });
     },
     move(pointerId = 1, buttons = 1) {
       const preventDefault = vi.fn();
@@ -267,6 +267,37 @@ describe("carousel drag and activation boundaries", () => {
     carousel.end("up", 8);
     carousel.end("up", 7);
     expect(carousel.click(1).preventDefault).toHaveBeenCalledOnce();
+  });
+
+  it.each(["button", "touch", "prevented descendant"])("does not suppress a fresh %s activation after a cancelled drag", kind => {
+    class Control {
+      closest(query: string) { return query.split(",").includes("button") ? this : null; }
+    }
+    vi.stubGlobal("Element", Control);
+    const carousel = fixture();
+    carousel.start(7);
+    carousel.move(7);
+    carousel.end("cancel", 7);
+    // A cancelled gesture need not generate a click. The next genuine
+    // press can belong to a control or a different input modality.
+    carousel.start(8, kind === "button" ? { target: new Control() }
+      : kind === "touch" ? { pointerType: "touch" }
+      : { defaultPrevented: true });
+    carousel.end("up", 8);
+    const click = carousel.click(1);
+    expect(click.preventDefault).not.toHaveBeenCalled();
+    expect(click.stopPropagation).not.toHaveBeenCalled();
+    expect(carousel.surface.setPointerCapture).toHaveBeenCalledTimes(1);
+  });
+
+  it("retains drag click suppression when a foreign touch presses during the active drag", () => {
+    const carousel = fixture();
+    carousel.start(7);
+    carousel.move(7);
+    carousel.start(8, { pointerType: "touch" });
+    carousel.end("up", 7);
+    expect(carousel.click(1).preventDefault).toHaveBeenCalledOnce();
+    expect(carousel.click(1).preventDefault).not.toHaveBeenCalled();
   });
 
   it("preserves keyboard activation after a pointer drag", () => {

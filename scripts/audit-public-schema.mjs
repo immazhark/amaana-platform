@@ -121,9 +121,11 @@ function rejectPrivateLinks(value) {
   } else if (typeof value === "object" && value !== null) {
     for (const nested of Object.values(value)) rejectPrivateLinks(nested);
   } else if (typeof value === "string") {
-    if (!/^https?:\/\//i.test(value) && !value.startsWith("/") && !value.startsWith("\\")) return;
+    // Mirror URL-parser preprocessing before deciding whether a string is a URL.
+    const candidate = value.replace(/^[\u0000-\u0020]+|[\u0000-\u0020]+$/g, "").replace(/[\t\n\r]/g, "");
+    if (!/^https?:/i.test(candidate) && !candidate.startsWith("/") && !candidate.startsWith("\\")) return;
     let url;
-    try { url = new URL(value, origin); }
+    try { url = new URL(candidate, origin); }
     catch { return; }
     let path = url.pathname;
     try {
