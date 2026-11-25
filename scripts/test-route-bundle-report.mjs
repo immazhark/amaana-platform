@@ -979,3 +979,39 @@ test("CLI --compressed adds gzip route attribution beside the unchanged uncompre
     assert.equal(missing.stdout, "");
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
+
+// AF-R047: a directory can have an asset suffix but has no bundle file bytes.
+for (const kind of ["js", "css"]) {
+  test(`AF-R047 rejects directory-valued ${kind} manifest assets in both reporting modes`, () => {
+    const directory = mkdtempSync(join(tmpdir(), "amaana-directory-asset-"));
+    const build = join(directory, ".next");
+    const cli = fileURLToPath(new URL("./report-route-bundles.mjs", import.meta.url));
+    try {
+      mkdirSync(join(build, "static/chunks"), { recursive: true });
+      mkdirSync(join(build, "server/app"), { recursive: true });
+      const js = "static/chunks/runtime.js";
+      const css = "static/chunks/root.css";
+      for (const asset of [js, css]) {
+        if (asset.endsWith("." + kind)) mkdirSync(join(build, asset));
+        else writeFileSync(join(build, asset), "synthetic");
+      }
+      writeFileSync(join(build, "app-path-routes-manifest.json"), JSON.stringify({ "/page": "/" }));
+      writeFileSync(join(build, "build-manifest.json"), JSON.stringify({ rootMainFiles: [js] }));
+      writeFileSync(join(build, "server/app/page_client-reference-manifest.js"),
+        'globalThis.__RSC_MANIFEST = globalThis.__RSC_MANIFEST || {};globalThis.__RSC_MANIFEST["/page"] = ' + JSON.stringify({
+          entryCSSFiles: { "[project]/src/app/layout": [{ path: css, inlined: false }] },
+          entryJSFiles: { "[project]/src/app/layout": [js] },
+        }));
+      for (const flags of [[], ["--compressed"]]) {
+        const result = spawnSync(process.execPath, [cli, "--json", ...flags], {
+          cwd: directory, encoding: "utf8", timeout: 10000,
+        });
+        assert.equal(result.status, 1, "Non-file asset must fail closed");
+        assert.equal(result.stdout, "", "No partial byte report may be emitted");
+        assert.match(result.stderr, /Next\.js static asset path is not a file/);
+      }
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+}

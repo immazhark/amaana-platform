@@ -233,3 +233,34 @@ test("AF-R005 rejects a symlinked .next parent even when static files appear cle
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+// AF-R005 / AF-R007: paths are part of publicly exposed artifacts as well.
+// Never include the fixture value in assertion error messages or CI diagnostics.
+test("client scanner rejects configured secret values in public filenames and parent paths", () => {
+  for (const assetRoot of ["public", ".next/static"]) {
+    for (const filename of [`${canary}.txt`, `nested/${canary}/fixture.js`]) {
+      const result = runScanner("Reviewed synthetic content", {}, filename, assetRoot);
+      assert.equal((result.stderr + result.stdout).includes(canary), false,
+        "Secret-bearing asset path must not be printed");
+      assert.equal(result.status, 1, "Secret-bearing asset path must be rejected");
+      assert.match(result.stderr, /REDACTED ASSET PATH/);
+      assert.match(result.stderr, /REDACTED SECRET VALUE/);
+    }
+  }
+});
+
+test("client scanner redacts a secret-bearing asset path even when content also violates the guard", () => {
+  for (const content of ["DATABASE_URL", canary]) {
+    const result = runScanner(content, {}, `${canary}.js`, "public");
+    assert.equal((result.stderr + result.stdout).includes(canary), false,
+      "Violation diagnostics must not disclose a configured secret in the filename");
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /REDACTED ASSET PATH/);
+  }
+});
+
+test("client scanner rejects forbidden credential names in asset paths", () => {
+  const result = runScanner("Synthetic placeholder", {}, "nested/DATABASE_URL.txt", "public");
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /DATABASE_URL/);
+});
