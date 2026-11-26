@@ -304,8 +304,25 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("assistance approv
     }
     await prisma.auditEvent.create({ data: { actorId, entityType: "AssistanceRequest", entityId: cases[2].id, action: "assistance.approved", createdAt: at(2) } });
     await prisma.auditEvent.create({ data: { actorId, entityType: "AssistanceRequest", entityId: cases[3].id, action: "assistance.approved", createdAt: at(31) } });
-    expect(await loadAssistanceDecisionReport(prisma, "live", now)).toEqual({ received: 7, recorded: 4, withinDay: 1, withinWeek: 2, overWeek: 1, openWithoutDecision: 1, otherWithoutDecision: 2 });
-    expect(await loadAssistanceDecisionReport(prisma, "tests", now)).toEqual({ received: 0, recorded: 0, withinDay: 0, withinWeek: 0, overWeek: 0, openWithoutDecision: 0, otherWithoutDecision: 0 });
+    // A saved draft can exist without a verification audit event. Reopening or later
+    // edits must not move its earliest evidence. Exclude unrelated actions, pre-receipt
+    // timestamps and future evidence; retain exact threshold boundaries.
+    for (const [index, createdAt] of [[0, at(1)], [1, at(7)], [3, at(-1)], [5, at(31)]] as const) {
+      await prisma.assistanceVerification.create({ data: { assistanceRequestId: cases[index].id, createdAt } });
+    }
+    for (const [index, action, createdAt] of [
+      [0, "assistance.verification_saved", at(2)],
+      [1, "assistance.verification_completed", at(8)],
+      [2, "assistance.verification_saved", at(7, 1)],
+      [3, "assistance.verification_saved", at(-1)],
+      [4, "assistance.assigned", at(1)],
+      [5, "assistance.verification_saved", at(31)],
+      [6, "assistance.verification_completed", at(0)],
+    ] as const) {
+      await prisma.auditEvent.create({ data: { actorId, entityType: "AssistanceRequest", entityId: cases[index].id, action, createdAt } });
+    }
+    expect(await loadAssistanceDecisionReport(prisma, "live", now)).toEqual({ received: 7, recorded: 4, withinDay: 1, withinWeek: 2, overWeek: 1, openWithoutDecision: 1, otherWithoutDecision: 2, verificationRecorded: 4, verificationWithinDay: 2, verificationWithinWeek: 1, verificationOverWeek: 1, verificationMissing: 3 });
+    expect(await loadAssistanceDecisionReport(prisma, "tests", now)).toEqual({ received: 0, recorded: 0, withinDay: 0, withinWeek: 0, overWeek: 0, openWithoutDecision: 0, otherWithoutDecision: 0, verificationRecorded: 0, verificationWithinDay: 0, verificationWithinWeek: 0, verificationOverWeek: 0, verificationMissing: 0 });
   });
 
   describe("annual individual-case capacity", () => {
