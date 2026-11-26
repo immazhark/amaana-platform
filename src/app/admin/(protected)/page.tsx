@@ -113,6 +113,24 @@ export default async function AdminQueuePage({ searchParams }: Props) {
         </div>
       </>}
     </section>
+    <section className="admin-card" aria-labelledby="verification-report-heading">
+      <h2 id="verification-report-heading">Recorded verification activity</h2>
+      <p className="muted">Same {DECISION_COHORT_DAYS}-day receipt cohort as the decision report. Measured to the earliest saved verification record or verification audit event. A saved record does not establish a completed review, first human contact or a response-time commitment. Missing evidence does not establish that nobody reviewed the case.</p>
+      {decisions.received === 0 ? <p>No requests in this receipt cohort.</p> : <>
+        <p><strong>{decisions.verificationRecorded} of {decisions.received}</strong> requests have saved verification evidence.</p>
+        <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Recorded verification activity counts">
+          <table className="admin-table">
+            <thead><tr><th scope="col">Earliest recorded verification evidence</th><th scope="col">Requests</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Within 24 hours</th><td>{decisions.verificationWithinDay}</td></tr>
+              <tr><th scope="row">After 24 hours, within 7 days</th><td>{decisions.verificationWithinWeek}</td></tr>
+              <tr><th scope="row">After 7 days</th><td>{decisions.verificationOverWeek}</td></tr>
+              <tr><th scope="row">No recorded verification evidence</th><td>{decisions.verificationMissing}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </>}
+    </section>
     <div className="filter-row" role="group" aria-label="Record visibility"><strong>Records:</strong><Link href={{ pathname: "/admin", query: { ...sortQuery, ...assignmentQuery } }} aria-current={view === "live" ? "page" : undefined}>Live records</Link><Link href={{ pathname: "/admin", query: { ...sortQuery, ...assignmentQuery, view: "tests" } }} aria-current={view === "tests" ? "page" : undefined}>Historical tests</Link></div>
     {view === "tests" && <p className="muted">Retained staging acceptance records only. Related payment and refund history remains available for audit.</p>}
     <div className="filter-row" role="group" aria-label="Assistance request status filter"><strong>Status:</strong><Link href={{ pathname: "/admin", query: filterQuery }} aria-current={!selected ? "page" : undefined}>All</Link>{allowed.map(item => <Link key={item} href={{ pathname: "/admin", query: { ...filterQuery, status: item } }} aria-current={selected === item ? "page" : undefined}>{item.replaceAll("_", " ")} ({counts.get(item) ?? 0})</Link>)}</div>

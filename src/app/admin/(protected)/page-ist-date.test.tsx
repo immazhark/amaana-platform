@@ -37,7 +37,7 @@ beforeEach(() => {
   mocks.count.mockResolvedValue(1);
   mocks.groupBy.mockResolvedValue([]);
   mocks.findFirst.mockResolvedValue(null);
-  mocks.decisions.mockResolvedValue({ received: 0, recorded: 0, withinDay: 0, withinWeek: 0, overWeek: 0, openWithoutDecision: 0, otherWithoutDecision: 0 });
+  mocks.decisions.mockResolvedValue({ received: 0, recorded: 0, withinDay: 0, withinWeek: 0, overWeek: 0, openWithoutDecision: 0, otherWithoutDecision: 0, verificationRecorded: 0, verificationWithinDay: 0, verificationWithinWeek: 0, verificationOverWeek: 0, verificationMissing: 0 });
 });
 
 afterEach(() => vi.unstubAllEnvs());
@@ -258,7 +258,7 @@ describe("assistance workload labels and record visibility", () => {
 describe("assistance recorded decision reporting", () => {
   it("shows evidence-based counts in the selected record view without a promised SLA", async () => {
     mocks.findMany.mockResolvedValue([]);
-    mocks.decisions.mockResolvedValue({ received: 8, recorded: 4, withinDay: 1, withinWeek: 2, overWeek: 1, openWithoutDecision: 2, otherWithoutDecision: 2 });
+    mocks.decisions.mockResolvedValue({ received: 8, recorded: 4, withinDay: 1, withinWeek: 2, overWeek: 1, openWithoutDecision: 2, otherWithoutDecision: 2, verificationRecorded: 5, verificationWithinDay: 2, verificationWithinWeek: 2, verificationOverWeek: 1, verificationMissing: 3 });
     const html = renderToStaticMarkup(await AdminQueuePage({ searchParams: Promise.resolve({ view: "tests", status: "SUBMITTED" }) }));
     expect(mocks.decisions).toHaveBeenCalledWith(expect.anything(), "tests");
     expect(html).toContain("4 of 8");
@@ -266,11 +266,18 @@ describe("assistance recorded decision reporting", () => {
     expect(html).toContain("Other status, no recorded decision");
     expect(html).toContain("not first-review time, case resolution, disbursement, or a promised response time");
     expect(html).not.toContain("SLA achieved");
+    expect(html).toContain("Recorded verification activity");
+    expect(html).toContain("5 of 8");
+    expect(html).toContain("No recorded verification evidence");
+    expect(html).toContain("Missing evidence does not establish that nobody reviewed the case.");
+    expect(html).toContain("does not establish a completed review, first human contact");
+    expect(html).not.toContain("synthetic-operator");
   });
   it("does not present missing records as zero turnaround", async () => {
     mocks.findMany.mockResolvedValue([]);
     const html = renderToStaticMarkup(await AdminQueuePage({ searchParams: Promise.resolve({}) }));
     expect(html).toContain("No requests in this receipt cohort.");
     expect(html).not.toContain("Decision within 24 hours");
+    expect(html).not.toContain("No recorded verification evidence");
   });
 });

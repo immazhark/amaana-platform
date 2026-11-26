@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { NOT_A_TAX_RECEIPT, acknowledgementLines, buildAcknowledgementPdf, isLatin1Printable, type AcknowledgementPdfInput } from "./acknowledgement-pdf";
+import { NOT_A_TAX_RECEIPT, acknowledgementLines, acknowledgementPages, buildAcknowledgementPdf, isLatin1Printable, type AcknowledgementPdfInput } from "./acknowledgement-pdf";
 
 const base: AcknowledgementPdfInput = {
   referenceNumber: "AFD-2026-37563771", receiptNumber: "AFR-2026-000123", donorName: "Synthetic Donor", amount: 1250,
@@ -119,5 +119,51 @@ describe("isLatin1Printable", () => {
     expect(isLatin1Printable("Ahmed Khan-O'Neil")).toBe(true);
     expect(isLatin1Printable("Zoë Çelik")).toBe(true);
     for (const bad of ["₹100", "名前", "tab\there", "line\nbreak", "é"]) expect(isLatin1Printable(bad), bad).toBe(false);
+  });
+});
+
+describe("bounded multi-page acknowledgement layout", () => {
+  it("wraps wide glyphs and long unbroken donor/purpose text without losing characters", () => {
+    const input = { ...base, donorName: "W".repeat(120), purposeLines: ["W".repeat(82), "Z".repeat(220)] };
+    const pages = acknowledgementPages(input);
+    expect(pages).toHaveLength(1);
+    const lines = pages.flat();
+    const wide = lines.filter(line => /^[WZ]+$/.test(line.text));
+    expect(wide.map(line => line.text).join("").match(/W/g)).toHaveLength(202);
+    expect(wide.map(line => line.text).join("").match(/Z/g)).toHaveLength(220);
+    for (const line of wide) {
+      const advance = line.text[0] === "W" ? 0.944 : 0.611;
+      expect(line.x + line.text.length * advance * line.size).toBeLessThanOrEqual(539);
+    }
+    expect(lines.every(line => line.text.length <= 82)).toBe(true);
+  });
+
+  it("paginates overflowing purpose text, preserves every entry and labels every page as an ordinary acknowledgement", () => {
+    const purposeLines = Array.from({ length: 65 }, (_, i) =>
+      "Purpose " + (i + 1) + ": Synthetic contribution record for approved programme activities.");
+    const input = { ...base, purposeLines };
+    const pages = acknowledgementPages(input);
+    expect(pages.length).toBeGreaterThan(1);
+    const joined = pages.flat().map(line => line.text).join(" ");
+    for (const entry of purposeLines) expect(joined).toContain(entry);
+    pages.forEach((page, i) => {
+      const text = page.map(line => line.text).join(" ");
+      expect(text).toContain(NOT_A_TAX_RECEIPT);
+      expect(text).toContain(base.referenceNumber);
+      expect(text).toContain("Page " + (i + 1) + " of " + pages.length);
+      expect(page.every(line => line.y >= 56 && line.y <= 786)).toBe(true);
+      for (let j = 1; j < page.length; j++) expect(page[j]!.y).toBeLessThan(page[j - 1]!.y);
+    });
+    const pdf = asText(buildAcknowledgementPdf(input));
+    expect(pdf).toContain("/Count " + pages.length + " >>");
+    const startxref = Number(/startxref\n(\d+)\n%%EOF/.exec(pdf)![1]);
+    expect(pdf.slice(startxref, startxref + 4)).toBe("xref");
+    const entries = [...pdf.slice(startxref).matchAll(/^(\d{10}) 00000 n $/gm)].map(match => Number(match[1]));
+    expect(entries).toHaveLength(7 + (pages.length - 1) * 2);
+    entries.forEach((offset, i) => expect(pdf.slice(offset, offset + (i + 1 + " 0 obj").length)).toBe(i + 1 + " 0 obj"));
+    const streams = [...pdf.matchAll(/\/Length (\d+) >>\nstream\n([\s\S]*?)\nendstream/g)];
+    expect(streams).toHaveLength(pages.length);
+    streams.forEach(match => expect(Buffer.byteLength(match[2]!, "latin1")).toBe(Number(match[1])));
+    expect(buildAcknowledgementPdf(input).equals(buildAcknowledgementPdf(input))).toBe(true);
   });
 });
