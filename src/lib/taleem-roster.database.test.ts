@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { prisma } from "./prisma";
 import {
-  RosterError, assignLearner, createLearner, createPlace, endAssignment, loadRoster, recordHifdhCompletion, setLearnerStatus, setPlaceStatus, startEnrolment,
+  RosterError, assignLearner, confirmHifdhEvidence, createLearner, createPlace, endAssignment, loadRoster, recordHifdhCompletion, setLearnerStatus, setPlaceStatus, startEnrolment,
 } from "./taleem-roster-service";
 
 // A real PostgreSQL test, deliberately unavailable to hosted and production DBs. Synthetic data only.
@@ -144,6 +144,44 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("Taleem roster Pos
     expect(await prisma.taleemMilestone.count({ where: { learnerId: a.id } })).toBe(1);
     expect(await prisma.taleemPlaceAssignment.count({ where: { learnerId: a.id, endedOn: null } })).toBe(1);
     expect(await prisma.taleemLearner.count({ where: { id: a.id } })).toBe(1);
+  });
+
+  it("confirms previously unresolved evidence once, preserving the recorded completion and assignment", async () => {
+    const [a, p] = [await learner(), await place()];
+    await assignLearner(p.id, a.id, "2020-01-01", actorId);
+    const recorded = await recordHifdhCompletion(a.id, "2020-06-15", { supportAssociated: false, verified: false }, actorId);
+    expect(await confirmHifdhEvidence(a.id, { verified: true, supportAssociated: false }, actorId)).toBe("confirmed");
+    const first = await prisma.taleemMilestone.findUniqueOrThrow({ where: { id: recorded.id } });
+    expect(first.verifiedAt).not.toBeNull();
+    expect(first.supportAssociated).toBe(false);
+    expect(await confirmHifdhEvidence(a.id, { verified: false, supportAssociated: true }, actorId)).toBe("confirmed");
+    expect(await confirmHifdhEvidence(a.id, { verified: true, supportAssociated: true }, actorId)).toBe("unchanged");
+    const after = await prisma.taleemMilestone.findUniqueOrThrow({ where: { id: recorded.id } });
+    expect(after).toMatchObject({ completedOn: new Date("2020-06-15T00:00:00Z"), verifiedAt: first.verifiedAt, supportAssociated: true });
+    const events = await prisma.auditEvent.findMany({ where: { actorId, entityId: recorded.id, action: "taleem.milestone.confirm" } });
+    expect(events).toHaveLength(2);
+    expect(await prisma.taleemPlaceAssignment.count({ where: { learnerId: a.id, endedOn: null } })).toBe(1);
+    const roster = await loadRoster(new Date("2026-11-22T00:00:00Z"));
+    expect(roster.learners.find(row => row.id === a.id)).toMatchObject({ completedHifdhOn: "2020-06-15", completionReview: { verified: true, supportAssociated: true } });
+  });
+
+  it("rejects missing, empty and future evidence confirmation without writing a milestone", async () => {
+    const a = await learner();
+    expect(await refused(confirmHifdhEvidence(a.id, { verified: true, supportAssociated: false }, actorId))).toBeInstanceOf(RosterError);
+    const recorded = await recordHifdhCompletion(a.id, "2999-01-01", { supportAssociated: false, verified: false }, actorId);
+    expect(await refused(confirmHifdhEvidence(a.id, { verified: true, supportAssociated: false }, actorId))).toBeInstanceOf(RosterError);
+    expect(await refused(confirmHifdhEvidence(a.id, { verified: false, supportAssociated: false }, actorId))).toBeInstanceOf(RosterError);
+    expect(await prisma.taleemMilestone.findUniqueOrThrow({ where: { id: recorded.id } })).toMatchObject({ verifiedAt: null, supportAssociated: false });
+    expect(await prisma.auditEvent.count({ where: { actorId, entityId: recorded.id, action: "taleem.milestone.confirm" } })).toBe(0);
+  });
+
+  it("preserves both independent confirmations when two reviewers act concurrently", async () => {
+    const a = await learner();
+    const recorded = await recordHifdhCompletion(a.id, "2020-06-15", { supportAssociated: false, verified: false }, actorId);
+    await Promise.all([confirmHifdhEvidence(a.id, { verified: true, supportAssociated: false }, actorId), confirmHifdhEvidence(a.id, { verified: false, supportAssociated: true }, actorId)]);
+    const after = await prisma.taleemMilestone.findUniqueOrThrow({ where: { id: recorded.id } });
+    expect(after.verifiedAt).not.toBeNull();
+    expect(after.supportAssociated).toBe(true);
   });
 
   it("refuses to delete a learner who has history", async () => {

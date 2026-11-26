@@ -14,6 +14,10 @@ export async function loadTaleemSponsorshipReport(client: Pick<Prisma.Transactio
     netRetained: Prisma.Decimal;
     pendingCount: bigint;
     pendingAmount: Prisma.Decimal;
+    verifiedQuotedUnitMonths: bigint;
+    pendingQuotedUnitMonths: bigint;
+    retainedWholeUnitMonths: Prisma.Decimal;
+    retainedRemainder: Prisma.Decimal;
   }[]>`
     WITH cohorts AS (
       SELECT d."sponsorshipProgramme" AS "programme",
@@ -23,14 +27,19 @@ export async function loadTaleemSponsorshipReport(client: Pick<Prisma.Transactio
              COALESCE(SUM(d."amount") FILTER (WHERE d."status" IN ('CAPTURED', 'REFUNDED')), 0) AS "grossCaptured",
              COALESCE(SUM(GREATEST(d."refundedAmount" - d."feeContributionAmount", 0)) FILTER (WHERE d."status" IN ('CAPTURED', 'REFUNDED')), 0) AS "principalRefunded",
              COUNT(*) FILTER (WHERE d."status" = 'PENDING_VERIFICATION') AS "pendingCount",
-             COALESCE(SUM(d."amount") FILTER (WHERE d."status" = 'PENDING_VERIFICATION'), 0) AS "pendingAmount"
+             COALESCE(SUM(d."amount") FILTER (WHERE d."status" = 'PENDING_VERIFICATION'), 0) AS "pendingAmount",
+             COALESCE(SUM(d."sponsorshipUnits" * d."sponsorshipMonths") FILTER (WHERE d."status" IN ('CAPTURED', 'REFUNDED')), 0) AS "verifiedQuotedUnitMonths",
+             COALESCE(SUM(d."sponsorshipUnits" * d."sponsorshipMonths") FILTER (WHERE d."status" = 'PENDING_VERIFICATION'), 0) AS "pendingQuotedUnitMonths"
       FROM "Donation" d JOIN "Fund" f ON f."id" = d."fundId"
       WHERE f."slug" = 'taleem' AND d."sponsorshipProgramme" IS NOT NULL
         AND d."status" IN ('CAPTURED', 'REFUNDED', 'PENDING_VERIFICATION')
       GROUP BY d."sponsorshipProgramme", d."sponsorshipMonthlyRate", d."sponsorshipRateVersion"
+    ), retained AS (
+      SELECT *, GREATEST("grossCaptured" - "principalRefunded", 0) AS "netRetained" FROM cohorts
     )
-    SELECT *, GREATEST("grossCaptured" - "principalRefunded", 0) AS "netRetained"
-    FROM cohorts ORDER BY "programme", "monthlyRate", "rateVersion"
+    SELECT *, DIV("netRetained", "monthlyRate") AS "retainedWholeUnitMonths",
+           MOD("netRetained", "monthlyRate") AS "retainedRemainder"
+    FROM retained ORDER BY "programme", "monthlyRate", "rateVersion"
   `;
   return rows.map(row => ({
     programme: row.programme,
@@ -42,5 +51,9 @@ export async function loadTaleemSponsorshipReport(client: Pick<Prisma.Transactio
     netRetained: row.netRetained.toNumber(),
     pendingCount: Number(row.pendingCount),
     pendingAmount: row.pendingAmount.toNumber(),
+    verifiedQuotedUnitMonths: Number(row.verifiedQuotedUnitMonths),
+    pendingQuotedUnitMonths: Number(row.pendingQuotedUnitMonths),
+    retainedWholeUnitMonths: row.retainedWholeUnitMonths.toNumber(),
+    retainedRemainder: row.retainedRemainder.toNumber(),
   }));
 }

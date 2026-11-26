@@ -13,7 +13,7 @@ import {
 } from "@/lib/assistance-approval";
 import { parseRejectionNotice, rejectionDraftCookieName, rejectionDraftFromCookie, rejectionEligibility } from "@/lib/assistance-rejection";
 import { hasPermission, requirePermission } from "@/lib/auth";
-import { assistanceCaseHref, assistanceQueueHref, assistanceReturnFilters } from "@/lib/assistance-queue-navigation";
+import { assistanceCaseHref, assistanceQueueContext, assistanceQueueHref, assistanceReturnFilters } from "@/lib/assistance-queue-navigation";
 import { prisma } from "@/lib/prisma";
 import { assignRequest, convertToAppeal, updateRequestWithFeedback } from "./actions";
 import { approveRequestAction, approveRequestWithFeedback, saveReviewProgressWithFeedback } from "./approval-actions";
@@ -49,6 +49,8 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
   const search = await (searchParams ?? Promise.resolve({}));
   const returnFilters = assistanceReturnFilters(search);
   const queueHref = assistanceQueueHref(returnFilters);
+  const queueContext = assistanceQueueContext(returnFilters);
+  const queueFields = Object.entries(queueContext).map(([name, value]) => <input key={name} type="hidden" name={name} value={value}/>);
   const notice = parseRejectionNotice(search);
   // What the reviewer typed before an error, held privately in a short-lived cookie (never in the address), read only then.
   const draftName = notice?.kind === "error" ? rejectionDraftCookieName(id) : null;
@@ -185,7 +187,7 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
           </>}
           {rejection === "eligible" && (canReject ? <>
             <p className="muted">Enter the reason and confirm. You do not need to complete any approval check to reject a request, and nothing you have entered in the verification form is used or required.</p>
-            <RejectRequestForm action={rejectRequestAction} requestId={id} referenceNumber={request.referenceNumber} requestVersion={request.updatedAt.toISOString()} verificationVersion={verification?.updatedAt.toISOString() ?? ""} notice={notice?.kind === "error" ? notice : null} draftReason={draftReason} />
+            <RejectRequestForm queueContext={queueContext} action={rejectRequestAction} requestId={id} referenceNumber={request.referenceNumber} requestVersion={request.updatedAt.toISOString()} verificationVersion={verification?.updatedAt.toISOString() ?? ""} notice={notice?.kind === "error" ? notice : null} draftReason={draftReason} />
           </> : <p className="muted">Only an authorised approver can reject a request. You can still save review notes; ask an approver to decide this case.</p>)}
         </section>}
 
@@ -208,6 +210,7 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
             {APPROVAL_ROUTES.map(route => <div key={route.value} className="full"><dt>{route.label}</dt><dd>{route.meaning} {route.value === "APPROVED_PUBLIC" ? "Needs the approved public target and every disclosure permission decided, as well as the checks below." : "Needs the checks below only."}</dd></div>)}
           </dl>
           <ApprovalCheckAnswers approveAction={approveRequestWithFeedback} saveAction={saveReviewProgressWithFeedback}><AdminActionFeedbackForm action={saveReviewProgressWithFeedback}>
+            {queueFields}
             <input type="hidden" name="id" value={id}/>
             <input type="hidden" name="expectedRequestUpdatedAt" value={request.updatedAt.toISOString()}/>
             <input type="hidden" name="expectedVerificationUpdatedAt" value={verification?.updatedAt.toISOString() ?? ""}/>
@@ -356,6 +359,7 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
           <p className="muted">The target is locked to the approved verification record. Write new privacy-safe public copy; raw intake text is never copied automatically.</p>
           <dl className="details"><div><dt>Approved target</dt><dd>₹{verification.approvedPublicTarget!.toNumber().toLocaleString("en-IN")}</dd></div></dl>
           <form action={convertToAppeal} className="field">
+            {queueFields}
             <input type="hidden" name="id" value={id}/>
             <input type="hidden" name="expectedUpdatedAt" value={request.updatedAt.toISOString()}/>
             <input type="hidden" name="expectedVerificationUpdatedAt" value={verification.updatedAt.toISOString()}/>

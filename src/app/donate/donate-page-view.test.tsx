@@ -8,7 +8,7 @@ const choice = (id: string, maxAmount = 12_000) => ({
   id, slug: id, title: `Reviewed ${id}`, maxAmount, zakatEligible: false, copy: donationFormCopy(false),
 });
 const view = (choices: ReturnType<typeof choice>[], fundGivingEnabled = false) => renderToStaticMarkup(
-  <DonatePageView choices={choices} impactItems={[]} paymentDetails={paymentDetails} fundGivingEnabled={fundGivingEnabled} />,
+  <DonatePageView choices={choices} impactEvidence={null} paymentDetails={paymentDetails} fundGivingEnabled={fundGivingEnabled} />,
 );
 
 describe("donate hero actions", () => {
@@ -104,4 +104,10 @@ describe("donate page view", () => {
     expect(view([choice("first")], false)).not.toContain('href="/give"');
     expect(view([choice("first")], true)).toContain('href="/give"');
   });
+});
+
+it("renders optional evidence after the giving controls", () => {
+  const html = renderToStaticMarkup(<DonatePageView choices={[choice("first")]} impactEvidence={<aside id="synthetic-evidence">Synthetic reviewed outcomes</aside>} paymentDetails={paymentDetails} fundGivingEnabled={false} />);
+  expect(html.indexOf('id="choose-appeal-checkout"')).toBeGreaterThan(-1);
+  expect(html.indexOf('id="synthetic-evidence"')).toBeGreaterThan(html.indexOf('id="choose-appeal-checkout"'));
 });

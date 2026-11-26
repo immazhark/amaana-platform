@@ -6,7 +6,7 @@ vi.mock("@/lib/auth", () => ({ requirePermission: mocks.requirePermission }));
 vi.mock("@/lib/taleem-roster-service", () => ({ loadRoster: mocks.loadRoster }));
 vi.mock("./actions", () => {
   const noop = async () => undefined;
-  return { assignLearnerAction: noop, createLearnerAction: noop, createPlaceAction: noop, endAssignmentAction: noop, recordHifdhCompletionAction: noop, setLearnerStatusAction: noop, setPlaceStatusAction: noop, startEnrolmentAction: noop };
+  return { assignLearnerAction: noop, confirmHifdhEvidenceAction: noop, createLearnerAction: noop, createPlaceAction: noop, endAssignmentAction: noop, recordHifdhCompletionAction: noop, setLearnerStatusAction: noop, setPlaceStatusAction: noop, startEnrolmentAction: noop };
 });
 
 import TaleemRosterPage from "./page";
@@ -36,14 +36,14 @@ describe("Taleem roster admin page", () => {
     expect(html).toContain("Do not add them together");
   });
 
-  it("states the published baseline and stays quiet when the records agree with it", async () => {
-    const html = await render({ counts: counts(), learners: [], places: [] });
-    expect(html).toContain("published baseline: 26");
-    expect(html).not.toContain("differs from the published baseline");
-  });
-
-  it("says plainly when the records differ from the published baseline, or hold no places yet", async () => {
-    expect(await render({ counts: counts({ maintainedPlaces: 24, occupiedPlaces: 24, vacantPlaces: 0 }), learners: [], places: [] })).toContain("differs from the published baseline; reconcile before publishing anything");
+  it("compares the published student baseline to matched Nazira / Hifdh learners, never to the place count", async () => {
+    const learners = Array.from({ length: 26 }, (_, index) => ({ id: `l${index}`, publicAlias: `TL-SYNTH${index}`, fullName: "Synthetic Person", status: "ACTIVE", programme: "NAZIRA", placeCode: `TP-SYNTH${index}`, assignmentId: null, openAssignmentPlaceCode: null, openAssignmentStartsOn: null, hasBlockingAssignment: true, completedHifdhOn: null, completionReview: null }));
+    const places = learners.map((learner, index) => ({ id: `p${index}`, placeCode: learner.placeCode, status: "MAINTAINED", holderAlias: learner.publicAlias, assignmentId: null, hasBlockingAssignment: true }));
+    const html = await render({ counts: counts({ occupiedPlaces: 26, vacantPlaces: 0, currentlySupportedStudents: 26 }), learners, places });
+    expect(html).toContain("Published student baseline</dt><dd>26");
+    expect(html).toContain("numerical match only; confirm the underlying records");
+    const missing = await render({ counts: counts(), learners: learners.slice(0, 25), places });
+    expect(missing).toContain("differs from the dated student baseline");
     expect(await render({ counts: counts({ maintainedPlaces: 0, occupiedPlaces: 0, vacantPlaces: 0 }), learners: [], places: [] })).toContain("no places entered yet");
   });
 
@@ -78,7 +78,7 @@ describe("Taleem roster admin page", () => {
     });
     expect(html).not.toContain("Assign this place");
     expect(html).not.toContain("Record Hifdh completion");
-    expect(html).toContain("Hifdh completed 2026-06-15");
+    expect(html).toContain("Hifdh completion recorded 2026-06-15");
   });
 
   it("distinguishes scheduled and current assignments, and does not offer a reserved place to a different learner", async () => {
@@ -120,4 +120,19 @@ describe("Taleem roster admin page", () => {
     expect(await render({ counts: counts(), learners: [], places: [] }, "Place assigned.")).toContain("Place assigned.");
     expect(await render({ counts: counts(), learners: [], places: [] }, "x".repeat(500))).not.toContain("x".repeat(201));
   });
+});
+
+it("offers follow-up confirmation only for unresolved evidence on a recorded, nonfuture milestone", async () => {
+  const learner = { id: "l1", publicAlias: "TL-ABCDEFGH", fullName: "Synthetic Person", status: "GRADUATED", programme: "HIFDH", placeCode: null, assignmentId: null, openAssignmentPlaceCode: null, openAssignmentStartsOn: null, hasBlockingAssignment: false, completedHifdhOn: "2026-06-15", completionReview: { verified: false, supportAssociated: true } };
+  const html = await render({ counts: counts(), learners: [learner], places: [] });
+  expect(html).toContain("Confirm selected Hifdh evidence");
+  expect(html).toContain('name="verified"');
+  expect(html).not.toContain('name="supportAssociated"');
+  expect(html).toContain("Amaana support association confirmed");
+  expect(html).toContain('href="#learner-TL-ABCDEFGH"');
+  expect(html).toContain("This does not publish a new figure or end support.");
+  const complete = await render({ counts: counts(), learners: [{ ...learner, completionReview: { verified: true, supportAssociated: true } }], places: [] });
+  expect(complete).not.toContain("Confirm selected Hifdh evidence");
+  const future = await render({ counts: counts(), learners: [{ ...learner, completedHifdhOn: "2026-11-23" }], places: [] });
+  expect(future).not.toContain("Confirm selected Hifdh evidence");
 });

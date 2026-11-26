@@ -30,8 +30,8 @@ describe("private Taleem reconciliation", () => {
 
   it("renders historic rates, retained principal and unverified claims separately", async () => {
     mocks.report.mockResolvedValue([
-      { programme: "qaida", monthlyRate: 900, rateVersion: "historic", verifiedCount: 1, grossCaptured: 900, principalRefunded: 0, netRetained: 900, pendingCount: 0, pendingAmount: 0 },
-      { programme: "qaida", monthlyRate: 1000, rateVersion: "current", verifiedCount: 3, grossCaptured: 3000, principalRefunded: 1100, netRetained: 1900, pendingCount: 1, pendingAmount: 3000 },
+      { programme: "qaida", monthlyRate: 900, rateVersion: "historic", verifiedCount: 1, grossCaptured: 900, principalRefunded: 0, netRetained: 900, pendingCount: 0, pendingAmount: 0, verifiedQuotedUnitMonths: 1, retainedWholeUnitMonths: 1, retainedRemainder: 0, pendingQuotedUnitMonths: 0 },
+      { programme: "qaida", monthlyRate: 1000, rateVersion: "current", verifiedCount: 3, grossCaptured: 3000, principalRefunded: 1100, netRetained: 1900, pendingCount: 1, pendingAmount: 3000, verifiedQuotedUnitMonths: 3, retainedWholeUnitMonths: 1, retainedRemainder: 900, pendingQuotedUnitMonths: 3 },
     ]);
     const html = renderToStaticMarkup(await FundsLedgerPage({ searchParams: Promise.resolve({ fy: "2020-21" }) }));
     expect(html).toContain("Taleem sponsorship reconciliation");
@@ -40,6 +40,11 @@ describe("private Taleem reconciliation", () => {
     expect(html).toContain("<td>₹1,100</td><td>₹1,900</td><td>1</td><td>₹3,000</td>");
     expect(html).toContain("not student assignments");
     expect(html).toContain("Pending claims are not receipts");
+    expect(html).toContain("Verified quoted unit-months");
+    expect(html).toContain("Retained whole rate equivalents");
+    expect(html).toContain("Pending quoted unit-months");
+    expect(html).toContain("<td>₹3,000</td><td>3</td><td>1</td><td>₹900</td><td>3</td>");
+    expect(html).toContain("not allocated places, unspent balances, fee coverage dates or available sponsorship capacity");
   });
 
   it("renders an explicit empty state", async () => {

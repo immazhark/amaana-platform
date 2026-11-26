@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CanonicalArticle } from "@/components/canonical-article";
 import { AppealLandingCheckout, type ReviewedAppealChoice } from "@/components/donation-methods";
-import { VerifiedImpactStrip, type VerifiedImpactItem } from "@/components/verified-impact-strip";
+import type { ReactNode } from "react";
 import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
 import { complianceCopy } from "@/lib/master-copy";
 import styles from "./donate-audit.module.css";
@@ -58,13 +58,13 @@ export function donateHeroPanel(openAppealCount: number, fundGivingEnabled = fal
 
 export type DonatePageViewProps = {
   choices: readonly ReviewedAppealChoice[];
-  impactItems: readonly VerifiedImpactItem[];
+  impactEvidence: ReactNode;
   paymentDetails: DonationPaymentDetails;
   fundGivingEnabled: boolean;
 };
 
 /** Pure presentation of the donate page. Data loading stays in `page.tsx`. */
-export function DonatePageView({ choices, impactItems, paymentDetails, fundGivingEnabled }: DonatePageViewProps) {
+export function DonatePageView({ choices, impactEvidence, paymentDetails, fundGivingEnabled }: DonatePageViewProps) {
   const hasOpenAppeals = choices.length > 0;
   const panel = donateHeroPanel(choices.length, fundGivingEnabled);
   return (
@@ -93,7 +93,7 @@ export function DonatePageView({ choices, impactItems, paymentDetails, fundGivin
         <article className={styles.route}><span>Route 02</span><h3>Support education or another approved programme</h3><p>Programme availability and terms are shown on the Taleem page. School and college support starts with an enquiry and verification, not an automatic learner assignment. Choose the appropriate path before contributing.</p><Link className="v2-button v2-button--paper-secondary" href={TALEEM_ROUTE}>Explore Taleem sponsorship</Link><Link className="v2-text-link" href="/contact">Ask about programme giving →</Link></article>
       </div>
       {hasOpenAppeals && <AppealLandingCheckout appeals={choices} paymentDetails={paymentDetails} />}
-      <VerifiedImpactStrip items={[...impactItems]} headingId="donate-published-outcomes" />
+      {impactEvidence}
     </CanonicalArticle>
   );
 }
