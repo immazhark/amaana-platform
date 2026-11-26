@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { Prisma } from "@prisma/client";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "./prisma";
 import { rejectAssistanceRequest } from "./assistance-rejection-service";
@@ -344,10 +345,13 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("assistance approv
       await prisma.assistanceRequest.update({ where: { id: filler.id }, data: { status: "UNDER_VERIFICATION" } });
       const a = await makeRequest();
       const b = await makeRequest();
-      const results = await Promise.allSettled([approveAssistanceRequest(await input(a.id)), approveAssistanceRequest(await input(b.id))]);
+      const [aInput, bInput] = await Promise.all([input(a.id), input(b.id)]);
+      const results = await Promise.allSettled([approveAssistanceRequest(aInput), approveAssistanceRequest(bInput)]);
       expect(results.filter(result => result.status === "fulfilled")).toHaveLength(1);
       const rejected = results.find(result => result.status === "rejected");
-      expect(rejected?.reason).toBeInstanceOf(AssistanceApprovalError);
+      const prismaCode = rejected?.reason instanceof Prisma.PrismaClientKnownRequestError && /^P\d{4}$/.test(rejected.reason.code)
+        ? rejected.reason.code : "unavailable";
+      expect(rejected?.reason, "Expected capacity refusal; Prisma error code: " + prismaCode).toBeInstanceOf(AssistanceApprovalError);
       expect(rejected?.reason).toMatchObject({ code: "capacity_full" });
       const after = await prisma.assistanceRequest.findMany({ where: { id: { in: [a.id, b.id] } }, select: { status: true, acceptedAt: true } });
       expect(after).toHaveLength(2);
