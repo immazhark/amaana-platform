@@ -5,6 +5,7 @@ export type RejectRequestFormProps = {
   /** The rejection server action. The form posts to it directly, so no client JavaScript is involved. */
   action: (formData: FormData) => void | Promise<void>;
   requestId: string;
+  queueContext?: Readonly<Record<string, string>>;
   referenceNumber: string;
   requestVersion: string;
   verificationVersion: string;
@@ -23,7 +24,7 @@ const reasonProblem = (problems: RejectionProblem[]) => problems.find(problem =>
  * listed together in a summary that links to the fields (the address carries a fragment that moves focus to it), the
  * fields marked and described, and what was typed kept. A double submission is safe because the decision is recorded once.
  */
-export function RejectRequestForm({ action, requestId, referenceNumber, requestVersion, verificationVersion, notice, draftReason }: RejectRequestFormProps) {
+export function RejectRequestForm({ action, requestId, referenceNumber, requestVersion, verificationVersion, notice, draftReason, queueContext = {} }: RejectRequestFormProps) {
   const problems = notice?.problems ?? [];
   const reasonError = reasonProblem(problems);
   const confirmError = problems.includes("confirmation");
@@ -35,6 +36,7 @@ export function RejectRequestForm({ action, requestId, referenceNumber, requestV
 
   return (
     <form action={action} className="field" noValidate>
+      {Object.entries(queueContext).map(([name, value]) => <input key={name} type="hidden" name={name} value={value} />)}
       <input type="hidden" name="id" value={requestId} />
       <input type="hidden" name="expectedRequestUpdatedAt" value={requestVersion} />
       <input type="hidden" name="expectedVerificationUpdatedAt" value={verificationVersion} />

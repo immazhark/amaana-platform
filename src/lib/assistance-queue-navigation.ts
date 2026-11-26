@@ -39,3 +39,30 @@ export function assistanceReturnFilters(raw: Filters): Filters {
   const candidate = Object.fromEntries(keys.map(key => [key, raw[detailKey(key)]]));
   return Object.fromEntries(queueQuery(candidate));
 }
+
+/** Only validated queue fields belong in case action forms. */
+export function assistanceQueueContext(raw: Filters): Record<string, string> {
+  const accepted = queueQuery(raw);
+  const fields: Record<string, string> = {};
+  for (const key of keys) {
+    const value = accepted.get(key);
+    if (value !== null) fields[detailKey(key)] = value;
+  }
+  return fields;
+}
+
+/** Append navigation state to a server-generated case URL, preserving its notice and focus fragment. */
+export function assistanceActionReturnHref(href: string, formData: FormData): string {
+  const raw: Filters = {};
+  for (const key of keys) {
+    const name = detailKey(key);
+    const values = formData.getAll(name);
+    if (values.length === 1 && typeof values[0] === "string") raw[name] = values[0];
+  }
+  const query = new URLSearchParams(assistanceQueueContext(assistanceReturnFilters(raw)));
+  if (!query.size) return href;
+  const fragmentIndex = href.indexOf("#");
+  const path = fragmentIndex === -1 ? href : href.slice(0, fragmentIndex);
+  const fragment = fragmentIndex === -1 ? "" : href.slice(fragmentIndex);
+  return `${path}${path.includes("?") ? "&" : "?"}${query.toString()}${fragment}`;
+}
