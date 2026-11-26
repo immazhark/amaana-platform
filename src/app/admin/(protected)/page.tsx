@@ -23,9 +23,10 @@ export default async function AdminQueuePage({ searchParams }: Props) {
   const direction = oldestFirst ? "asc" : "desc";
   const selected = allowed.includes(status as AssistanceStatus) ? status as AssistanceStatus : undefined;
   const unassignedOnly = requestedAssignment === "unassigned";
-  const scope = { ...assistanceAdminWhere(view), ...(unassignedOnly ? { assignedToId: null } : {}) };
+  const mineOnly = requestedAssignment === "mine";
+  const scope = { ...assistanceAdminWhere(view), ...(unassignedOnly ? { assignedToId: null } : mineOnly ? { assignedToId: user.id } : {}) };
   const where = { ...scope, ...(selected ? { status: selected } : {}) };
-  const [used, paused, workload] = await Promise.all([capacityUsed(prisma), isIntakePaused(prisma), assistanceWorkload(prisma, assistanceAdminWhere(view))]);
+  const [used, paused, workload] = await Promise.all([capacityUsed(prisma), isIntakePaused(prisma), assistanceWorkload(prisma, assistanceAdminWhere(view), user.id)]);
   const canApprove = hasPermission(user, "assistance.approve");
   const [totalItems, grouped] = await Promise.all([
     prisma.assistanceRequest.count({ where }),
@@ -53,12 +54,19 @@ export default async function AdminQueuePage({ searchParams }: Props) {
   const viewQuery = view === "tests" ? { view: "tests" } : {};
   const sortQuery = oldestFirst ? { sort: "oldest" } : {};
   const statusQuery = selected ? { status: selected } : {};
-  const assignmentQuery = unassignedOnly ? { assignment: "unassigned" } : {};
+  const assignmentQuery = unassignedOnly ? { assignment: "unassigned" } : mineOnly ? { assignment: "mine" } : {};
   const filterQuery = { ...viewQuery, ...sortQuery, ...assignmentQuery };
   const pageHref = (targetPage: number) => ({
     pathname: "/admin",
     query: { ...filterQuery, ...statusQuery, page: targetPage },
   });
+
+  const stageHref = (stage: AssistanceStatus, assignment?: "mine" | "unassigned") => ({
+    pathname: "/admin",
+    query: { ...viewQuery, sort: "oldest", ...(assignment ? { assignment } : {}), status: stage },
+  });
+  const stageLabels = { SUBMITTED: "Submitted", DOCUMENTS_REQUESTED: "Documents requested", UNDER_VERIFICATION: "Under verification" } as const;
+  const ageLabel = (days: number | null) => days === null ? "No receipt age" : `Oldest received ${days} ${days === 1 ? "day" : "days"} ago`;
 
   return <>
     <div className="admin-heading"><div><p className="eyebrow">Case management</p><h1>Assistance queue</h1></div></div>
@@ -69,11 +77,27 @@ export default async function AdminQueuePage({ searchParams }: Props) {
       <p>New requests are <strong>{paused ? "paused" : "open"}</strong>. Intake never reopens by itself at a year boundary.</p>
       {canApprove && <form action={setAssistanceIntakeAction}><input type="hidden" name="paused" value={paused ? "false" : "true"} /><button className="button" type="submit">{paused ? "Reopen new requests" : "Pause new requests"}</button></form>}
     </section>
+    <section className="admin-card" aria-labelledby="reviewer-workbench-heading">
+      <h2 id="reviewer-workbench-heading">Reviewer workbench</h2>
+      <p className="muted">{workload.openMine} open {workload.openMine === 1 ? "request" : "requests"} assigned to you. Counts cover the selected record view. Open a stage to review the oldest received cases first. Receipt age is not time in the current stage or a promised response time.</p>
+      <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Open assistance workload by stage">
+        <table className="admin-table">
+          <thead><tr><th scope="col">Current stage</th><th scope="col">All open</th><th scope="col">Assigned to me</th><th scope="col">Unassigned</th></tr></thead>
+          <tbody>{workload.stages.map(stage => <tr key={stage.status}>
+            <th scope="row">{stageLabels[stage.status]}</th>
+            {(["total", "mine", "unassigned"] as const).map(kind => <td key={kind}>
+              {stage[kind].count > 0 ? <Link href={stageHref(stage.status, kind === "total" ? undefined : kind)} aria-label={`${stage[kind].count} ${stageLabels[stage.status]} requests, ${kind === "total" ? "all assignments" : kind === "mine" ? "assigned to me" : "unassigned"}, oldest first`}>{stage[kind].count}</Link> : "0"}
+              <br /><small>{ageLabel(stage[kind].oldestAgeDays)}</small>
+            </td>)}
+          </tr>)}</tbody>
+        </table>
+      </div>
+    </section>
     <div className="filter-row" role="group" aria-label="Record visibility"><strong>Records:</strong><Link href={{ pathname: "/admin", query: { ...sortQuery, ...assignmentQuery } }} aria-current={view === "live" ? "page" : undefined}>Live records</Link><Link href={{ pathname: "/admin", query: { ...sortQuery, ...assignmentQuery, view: "tests" } }} aria-current={view === "tests" ? "page" : undefined}>Historical tests</Link></div>
     {view === "tests" && <p className="muted">Retained staging acceptance records only. Related payment and refund history remains available for audit.</p>}
     <div className="filter-row" role="group" aria-label="Assistance request status filter"><strong>Status:</strong><Link href={{ pathname: "/admin", query: filterQuery }} aria-current={!selected ? "page" : undefined}>All</Link>{allowed.map(item => <Link key={item} href={{ pathname: "/admin", query: { ...filterQuery, status: item } }} aria-current={selected === item ? "page" : undefined}>{item.replaceAll("_", " ")} ({counts.get(item) ?? 0})</Link>)}</div>
     <div className="filter-row" role="group" aria-label="Assistance request ordering"><strong>Received:</strong><Link href={{ pathname: "/admin", query: { ...viewQuery, ...assignmentQuery, ...statusQuery } }} aria-current={!oldestFirst ? "page" : undefined}>Newest first</Link><Link href={{ pathname: "/admin", query: { ...viewQuery, ...assignmentQuery, ...statusQuery, sort: "oldest" } }} aria-current={oldestFirst ? "page" : undefined}>Oldest first</Link></div>
-    <div className="filter-row" role="group" aria-label="Assistance request assignment filter"><strong>Assignment:</strong><Link href={{ pathname: "/admin", query: { ...viewQuery, ...sortQuery, ...statusQuery } }} aria-current={!unassignedOnly ? "page" : undefined}>All assignments</Link><Link href={{ pathname: "/admin", query: { ...viewQuery, ...sortQuery, ...statusQuery, assignment: "unassigned" } }} aria-current={unassignedOnly ? "page" : undefined}>Unassigned only</Link></div>
+    <div className="filter-row" role="group" aria-label="Assistance request assignment filter"><strong>Assignment:</strong><Link href={{ pathname: "/admin", query: { ...viewQuery, ...sortQuery, ...statusQuery } }} aria-current={!unassignedOnly && !mineOnly ? "page" : undefined}>All assignments</Link><Link href={{ pathname: "/admin", query: { ...viewQuery, ...sortQuery, ...statusQuery, assignment: "mine" } }} aria-current={mineOnly ? "page" : undefined}>Assigned to me</Link><Link href={{ pathname: "/admin", query: { ...viewQuery, ...sortQuery, ...statusQuery, assignment: "unassigned" } }} aria-current={unassignedOnly ? "page" : undefined}>Unassigned only</Link></div>
     <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Operational records"><table><thead><tr><th>Reference</th><th>Applicant</th><th>Category</th><th>Status</th><th>Assigned to</th><th>Documents</th><th>Received</th></tr></thead><tbody>{requests.map(item => <tr key={item.id}><td><Link href={`/admin/requests/${item.id}`}><strong>{item.referenceNumber}</strong></Link></td><td>{item.applicantName}<br/><small>{item.city}</small></td><td>{item.category.replaceAll("_", " ")}</td><td><span className="status-badge">{item.status.replaceAll("_", " ")}</span></td><td>{item.assignedTo?.name ?? "Unassigned"}</td><td>{item._count.documents}</td><td>{item.createdAt.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })}</td></tr>)}</tbody></table>{requests.length === 0 && <p className="empty-state">{view === "tests" ? "No historical test requests match this view." : "No requests match this view."}</p>}</div>
     <nav className="filter-row" aria-label="Assistance request pagination">
       {pagination.hasPrevious && <Link href={pageHref(pagination.page - 1)}>Previous</Link>}
