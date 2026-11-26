@@ -46,7 +46,7 @@ export default function Page({ searchParams }: { searchParams: Promise<{ fy?: st
   // Checked before streaming starts so a closed page is a real HTTP 404.
   if (!isFundGivingEnabled()) notFound();
   return (
-    <Suspense fallback={<PublicRouteLoading route="donate" />}>
+    <Suspense fallback={<PublicRouteLoading route="funds" />}>
       <FundsContent params={searchParams} />
     </Suspense>
   );

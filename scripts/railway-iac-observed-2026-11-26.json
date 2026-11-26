@@ -1,0 +1,84 @@
+{
+  "capturedAt": "2026-11-26",
+  "environment": "production",
+  "serviceNames": [
+    "amaana-platform",
+    "amaana-rebuild-preview",
+    "amaana-notification-cron"
+  ],
+  "bucketCount": 3,
+  "volumeCount": 0,
+  "website": {
+    "repository": "immazhark/amaana-platform",
+    "branch": "main",
+    "builder": "RAILPACK",
+    "watchPatterns": [
+      "src/**",
+      "public/**",
+      "prisma/**",
+      "package.json",
+      "package-lock.json",
+      "next.config.ts",
+      "tsconfig.json",
+      "postcss.config.mjs",
+      "Dockerfile"
+    ],
+    "healthcheckPath": "/api/health/ready",
+    "healthcheckTimeout": 90,
+    "preDeployCommand": [
+      "node prisma/railway-predeploy.mjs"
+    ],
+    "restartPolicyMaxRetries": 3,
+    "sleepApplication": true,
+    "regionReplicas": {
+      "asia-southeast1-eqsg3a": 1
+    }
+  },
+  "auxiliaryServices": [
+    {
+      "name": "amaana-notification-cron",
+      "repository": "immazhark/amaana-platform",
+      "branch": "main",
+      "rootDirectory": "/ops/notification-cron",
+      "builder": "DOCKERFILE",
+      "dockerfilePath": "Dockerfile",
+      "watchPatterns": [
+        "/ops/notification-cron/**"
+      ],
+      "buildCommand": "echo 'Notification worker: no Next.js build required'",
+      "startCommand": "node run.mjs",
+      "cronSchedule": "*/5 * * * *",
+      "restartPolicyType": "NEVER",
+      "regionReplicas": {
+        "iad": 1
+      }
+    },
+    {
+      "name": "amaana-rebuild-preview",
+      "repository": "immazhark/amaana-platform",
+      "branch": "phase-public-site-rebuild",
+      "pinnedCommitSha": "974e925f0c53366e6525bfd7d7763b18d067692c",
+      "builder": "RAILPACK",
+      "watchPatterns": [
+        "src/**",
+        "public/**",
+        "prisma/**",
+        "package.json",
+        "package-lock.json",
+        "next.config.ts",
+        "tsconfig.json",
+        "postcss.config.mjs",
+        "Dockerfile"
+      ],
+      "preDeployCommand": [
+        "node prisma/railway-predeploy.mjs"
+      ],
+      "healthcheckPath": "/api/health/ready",
+      "healthcheckTimeout": 300,
+      "sleepApplication": true,
+      "regionReplicas": {
+        "iad": 1
+      }
+    }
+  ]
+}

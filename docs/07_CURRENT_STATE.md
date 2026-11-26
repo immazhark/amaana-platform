@@ -1,5 +1,9 @@
 # Amaana Foundation — current verified state
 
+**26 November 2026 IST — consolidated release checkpoint:** main `067a97adcd8bc85058f51af6571cb85082d4ba64` deployed by Railway 5f17ca90-20ce-4b8a-bc88-17b45889bba9 SUCCESS; independent public readiness and identity pending. Combined candidate #1182 preserves exact substantive changes from #1174/#1176/#1177/#1179/#1180/#1181/#1182 in one bounded release; original runs preserved, combined full acceptance and separate promotion required. Finance channel and Taleem programme reports remain private and based on application records, not bank settlements or student assignments. Railway authenticated plan/apply not performed. Canonical149 unchanged.
+
+**26 November 2026 IST — #1178 merged:** main `067a97adcd8bc85058f51af6571cb85082d4ba64`; full CI 45737507741 and separate promotion 45741955476 passed; exact accepted tree verified. Railway 5f17ca90-20ce-4b8a-bc88-17b45889bba9 BUILDING at observation; public runtime verification outstanding. New Taleem private reconciliation report candidate: stored quote cohorts, verified/refunded principal and pending claims, no student identities or assignment claims. Local synthetic SQL acceptance passed; hosted checks pending. Existing financial and migration candidates preserved. Canonical149 unchanged.
+
 **26 November 2026 IST — current release checkpoint, not a live feed.** Sole writer `CHATGPT_ACTIVE`. Reverify source, PRs, CI, Railway and runtime before action.
 
 | Boundary | Verified evidence |
