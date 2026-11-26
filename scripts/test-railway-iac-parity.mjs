@@ -117,3 +117,8 @@ test('CLI rejects the superseded dormant worker configuration', () => {
   assert.match(result.stderr, /auxiliary\.amaana-notification-cron\.startCommand/);
   assert.match(result.stderr, /auxiliary\.amaana-notification-cron\.cronSchedule/);
 });
+
+// Run the separate deployment-contract gate alongside historical stored-inventory checks.
+import './test-railway-iac-deployment-parity.mjs';
+
+import './test-railway-iac-identity-parity.mjs';
