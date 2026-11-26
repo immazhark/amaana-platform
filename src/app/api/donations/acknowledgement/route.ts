@@ -1,4 +1,5 @@
 import { TALEEM_CATALOGUE } from "@/content/taleem-catalogue";
+import { acknowledgementRecordDate } from "@/lib/acknowledgement-record-date";
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -102,7 +103,7 @@ export async function POST(request: Request) {
     const feeContribution = donation.feeContributionAmount.toNumber();
     const donationRefunded = Math.max(0, Math.round((refundedAmount - feeContribution) * 100) / 100);
     const presentation = getDonationAcknowledgementPresentation(donation.status, amount, donationRefunded);
-    const recordDate = donation.refundedAt ?? donation.capturedAt ?? donation.createdAt;
+    const recordDate = acknowledgementRecordDate(donation);
     // The units and price recorded on the donation itself, never the campaign's current price, so a later price
     // change cannot rewrite what this donor bought.
     const campaign = donation.campaign && donation.units && donation.unitPrice
