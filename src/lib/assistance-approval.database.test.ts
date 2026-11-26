@@ -5,6 +5,7 @@ import { prisma } from "./prisma";
 import { rejectAssistanceRequest } from "./assistance-rejection-service";
 import { capacityUsed, capacityYearBounds, countedCaseWhere } from "./assistance-capacity";
 import { INDIVIDUAL_CASE_ANNUAL_CAPACITY } from "./assistance-policy";
+import { loadAssistanceDecisionReport } from "./assistance-decision-report";
 import { AssistanceApprovalError, approveAssistanceRequest, saveApprovalDraft, type ApprovalInput } from "./assistance-approval-service";
 
 // A real PostgreSQL test, deliberately unavailable to hosted and production DBs. Synthetic data only.
@@ -287,6 +288,24 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("assistance approv
       await saveApprovalDraft(await draft(request.id, { route: "APPROVED_PRIVATE", fields: { ...fields, approvedPublicTarget: 1000 } }));
       expect((await prisma.assistanceVerification.findUniqueOrThrow({ where: { assistanceRequestId: request.id } })).approvedPublicTarget).toBeNull();
     });
+  });
+
+  it("reports earliest recorded decisions for a bounded synthetic receipt cohort without inferring legacy decisions", async () => {
+    const received = new Date("2040-03-01T00:00:00Z");
+    const now = new Date("2040-03-31T00:00:00Z");
+    const day = 86_400_000;
+    const at = (days: number, extra = 0) => new Date(received.getTime() + days * day + extra);
+    const cases = await Promise.all([makeRequest({ status: "APPROVED" }), makeRequest({ status: "REJECTED" }), makeRequest({ status: "UNDER_VERIFICATION" }), makeRequest({ status: "SUBMITTED" }), makeRequest({ status: "CLOSED" }), makeRequest({ status: "APPROVED" }), makeRequest({ status: "REJECTED" })]);
+    await prisma.assistanceRequest.updateMany({ where: { id: { in: cases.map(item => item.id) } }, data: { createdAt: received } });
+    await prisma.assistanceRequest.update({ where: { id: cases[0].id }, data: { acceptedAt: at(1) } });
+    await prisma.assistanceRequest.update({ where: { id: cases[5].id }, data: { acceptedAt: at(-1) } });
+    for (const [index, rejectedAt] of [[1, at(7)], [2, at(9)], [6, at(7, 1)]] as const) {
+      await prisma.assistanceRejection.create({ data: { assistanceRequestId: cases[index].id, reason: "Synthetic evidence", rejectedById: actorId, previousStatus: "UNDER_VERIFICATION", rejectedAt } });
+    }
+    await prisma.auditEvent.create({ data: { actorId, entityType: "AssistanceRequest", entityId: cases[2].id, action: "assistance.approved", createdAt: at(2) } });
+    await prisma.auditEvent.create({ data: { actorId, entityType: "AssistanceRequest", entityId: cases[3].id, action: "assistance.approved", createdAt: at(31) } });
+    expect(await loadAssistanceDecisionReport(prisma, "live", now)).toEqual({ received: 7, recorded: 4, withinDay: 1, withinWeek: 2, overWeek: 1, openWithoutDecision: 1, otherWithoutDecision: 2 });
+    expect(await loadAssistanceDecisionReport(prisma, "tests", now)).toEqual({ received: 0, recorded: 0, withinDay: 0, withinWeek: 0, overWeek: 0, openWithoutDecision: 0, otherWithoutDecision: 0 });
   });
 
   describe("annual individual-case capacity", () => {

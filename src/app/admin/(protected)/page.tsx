@@ -7,6 +7,7 @@ import { adminRecordView, assistanceAdminWhere } from "@/lib/admin-record-visibi
 import { hasPermission, permissionKeys, requireAuthenticatedUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { assistanceWorkload } from "@/lib/assistance-workload";
+import { DECISION_COHORT_DAYS, loadAssistanceDecisionReport } from "@/lib/assistance-decision-report";
 import { capacityRemaining, capacityUsed, isIntakePaused } from "@/lib/assistance-capacity";
 import { INDIVIDUAL_CASE_ANNUAL_CAPACITY } from "@/lib/assistance-policy";
 import { setAssistanceIntakeAction } from "./intake-actions";
@@ -25,7 +26,7 @@ export default async function AdminQueuePage({ searchParams }: Props) {
   const unassignedOnly = requestedAssignment === "unassigned";
   const scope = { ...assistanceAdminWhere(view), ...(unassignedOnly ? { assignedToId: null } : {}) };
   const where = { ...scope, ...(selected ? { status: selected } : {}) };
-  const [used, paused, workload] = await Promise.all([capacityUsed(prisma), isIntakePaused(prisma), assistanceWorkload(prisma, assistanceAdminWhere(view))]);
+  const [used, paused, workload, decisions] = await Promise.all([capacityUsed(prisma), isIntakePaused(prisma), assistanceWorkload(prisma, assistanceAdminWhere(view)), loadAssistanceDecisionReport(prisma, view)]);
   const canApprove = hasPermission(user, "assistance.approve");
   const [totalItems, grouped] = await Promise.all([
     prisma.assistanceRequest.count({ where }),
@@ -68,6 +69,25 @@ export default async function AdminQueuePage({ searchParams }: Props) {
       <p>{workload.submitted} submitted {workload.submitted === 1 ? "request" : "requests"}{workload.oldestSubmittedAgeDays !== null && <> (oldest received {workload.oldestSubmittedAgeDays} {workload.oldestSubmittedAgeDays === 1 ? "day" : "days"} ago)</>}; {workload.openUnassigned} of {workload.open} open requests have no assignee. Counts cover this record view before status and assignment filters. No response time is promised to applicants.</p>
       <p>New requests are <strong>{paused ? "paused" : "open"}</strong>. Intake never reopens by itself at a year boundary.</p>
       {canApprove && <form action={setAssistanceIntakeAction}><input type="hidden" name="paused" value={paused ? "false" : "true"} /><button className="button" type="submit">{paused ? "Reopen new requests" : "Pause new requests"}</button></form>}
+    </section>
+    <section className="admin-card" aria-labelledby="decision-report-heading">
+      <h2 id="decision-report-heading">Recorded decision turnaround</h2>
+      <p className="muted">Requests received in the last {DECISION_COHORT_DAYS} days in the selected record view, before queue filters. Time is measured from receipt to the earliest recorded approval or rejection evidence. This is not first-review time, case resolution, disbursement, or a promised response time. Reopened cases retain their recorded decision history. Older or missing evidence cannot be inferred.</p>
+      {decisions.received === 0 ? <p>No requests in this receipt cohort.</p> : <>
+        <p><strong>{decisions.recorded} of {decisions.received}</strong> requests have recorded decision evidence.</p>
+        <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Recorded decision turnaround counts">
+          <table className="admin-table">
+            <thead><tr><th scope="col">Recorded outcome or evidence gap</th><th scope="col">Requests</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Decision within 24 hours</th><td>{decisions.withinDay}</td></tr>
+              <tr><th scope="row">Decision after 24 hours, within 7 days</th><td>{decisions.withinWeek}</td></tr>
+              <tr><th scope="row">Decision after 7 days</th><td>{decisions.overWeek}</td></tr>
+              <tr><th scope="row">Open, no recorded decision</th><td>{decisions.openWithoutDecision}</td></tr>
+              <tr><th scope="row">Other status, no recorded decision</th><td>{decisions.otherWithoutDecision}</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </>}
     </section>
     <div className="filter-row" role="group" aria-label="Record visibility"><strong>Records:</strong><Link href={{ pathname: "/admin", query: { ...sortQuery, ...assignmentQuery } }} aria-current={view === "live" ? "page" : undefined}>Live records</Link><Link href={{ pathname: "/admin", query: { ...sortQuery, ...assignmentQuery, view: "tests" } }} aria-current={view === "tests" ? "page" : undefined}>Historical tests</Link></div>
     {view === "tests" && <p className="muted">Retained staging acceptance records only. Related payment and refund history remains available for audit.</p>}

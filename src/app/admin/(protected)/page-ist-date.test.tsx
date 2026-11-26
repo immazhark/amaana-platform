@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   groupBy: vi.fn(),
   findMany: vi.fn(),
   findFirst: vi.fn(),
+  decisions: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({
@@ -24,6 +25,8 @@ vi.mock("@/lib/prisma", () => ({
   }, assistanceIntakeSetting: { findUnique: async () => null } },
 }));
 
+vi.mock("@/lib/assistance-decision-report", async importOriginal => ({ ...await importOriginal<typeof import("@/lib/assistance-decision-report")>(), loadAssistanceDecisionReport: mocks.decisions }));
+
 import AdminQueuePage from "./page";
 
 beforeEach(() => {
@@ -34,6 +37,7 @@ beforeEach(() => {
   mocks.count.mockResolvedValue(1);
   mocks.groupBy.mockResolvedValue([]);
   mocks.findFirst.mockResolvedValue(null);
+  mocks.decisions.mockResolvedValue({ received: 0, recorded: 0, withinDay: 0, withinWeek: 0, overWeek: 0, openWithoutDecision: 0, otherWithoutDecision: 0 });
 });
 
 afterEach(() => vi.unstubAllEnvs());
@@ -191,6 +195,7 @@ describe("assistance queue triage authorization boundary", () => {
     expect(mocks.count).not.toHaveBeenCalled();
     expect(mocks.groupBy).not.toHaveBeenCalled();
     expect(mocks.findMany).not.toHaveBeenCalled();
+    expect(mocks.decisions).not.toHaveBeenCalled();
   });
 });
 
@@ -217,5 +222,25 @@ describe("assistance workload labels and record visibility", () => {
     expect(mocks.count).toHaveBeenCalledWith({
       where: { referenceNumber: "AF-STAGING-ACCEPTANCE", status: { in: ["SUBMITTED", "DOCUMENTS_REQUESTED", "UNDER_VERIFICATION"] }, assignedToId: null },
     });
+  });
+});
+
+describe("assistance recorded decision reporting", () => {
+  it("shows evidence-based counts in the selected record view without a promised SLA", async () => {
+    mocks.findMany.mockResolvedValue([]);
+    mocks.decisions.mockResolvedValue({ received: 8, recorded: 4, withinDay: 1, withinWeek: 2, overWeek: 1, openWithoutDecision: 2, otherWithoutDecision: 2 });
+    const html = renderToStaticMarkup(await AdminQueuePage({ searchParams: Promise.resolve({ view: "tests", status: "SUBMITTED" }) }));
+    expect(mocks.decisions).toHaveBeenCalledWith(expect.anything(), "tests");
+    expect(html).toContain("4 of 8");
+    expect(html).toContain("Decision after 24 hours, within 7 days");
+    expect(html).toContain("Other status, no recorded decision");
+    expect(html).toContain("not first-review time, case resolution, disbursement, or a promised response time");
+    expect(html).not.toContain("SLA achieved");
+  });
+  it("does not present missing records as zero turnaround", async () => {
+    mocks.findMany.mockResolvedValue([]);
+    const html = renderToStaticMarkup(await AdminQueuePage({ searchParams: Promise.resolve({}) }));
+    expect(html).toContain("No requests in this receipt cohort.");
+    expect(html).not.toContain("Decision within 24 hours");
   });
 });
