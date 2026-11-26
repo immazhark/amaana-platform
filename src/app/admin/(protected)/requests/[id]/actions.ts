@@ -13,6 +13,7 @@ import { capacityUsed } from "@/lib/assistance-capacity";
 import { INDIVIDUAL_CASE_ANNUAL_CAPACITY } from "@/lib/assistance-policy";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { assistanceActionReturnHref, assistanceCaseHref } from "@/lib/assistance-queue-navigation";
 import {
   ASSISTANCE_CONFIDENTIALITY_LEVELS,
   ASSISTANCE_CONSENT_DECISIONS,
@@ -398,7 +399,7 @@ export async function convertToAppeal(formData: FormData) {
       await tx.notification.create({ data: { channel: NotificationChannel.EMAIL, recipient: request.email, templateKey: "assistance-status-updated", subject: "Your Amaana request status was updated", payload: { referenceNumber: request.referenceNumber, status: AssistanceStatus.CONVERTED_TO_APPEAL }, assistanceRequestId: id } });
     }
   });
-  redirect(`/admin/requests/${id}`);
+  redirect(assistanceActionReturnHref(assistanceCaseHref(id, {}), formData));
 }
 
 export type AdminActionFeedback = {

@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { assistanceActionReturnHref } from "@/lib/assistance-queue-navigation";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { parsePositiveRupeeAmount } from "@/lib/amount-entry";
 import {
@@ -80,7 +81,7 @@ async function processReview(formData: FormData, intent: "save" | "approve", inl
 
   const id = single(formData, "id");
   if (!id) redirect("/admin");
-  const back = (notice: ApprovalNotice): never => redirect(approvalRedirect(id, notice));
+  const back = (notice: ApprovalNotice): never => redirect(assistanceActionReturnHref(approvalRedirect(id, notice), formData));
 
   const canReopenCompletedVerification = hasPermission(user, "assistance.approve");
   if (intent === "approve" && !canReopenCompletedVerification) back({ kind: "error", problems: [], code: "forbidden" });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assistanceCaseHref, assistanceQueueHref, assistanceReturnFilters } from "./assistance-queue-navigation";
+import { assistanceActionReturnHref, assistanceCaseHref, assistanceQueueContext, assistanceQueueHref, assistanceReturnFilters } from "./assistance-queue-navigation";
 
 describe("assistance queue navigation", () => {
   it("round trips only accepted filters through case and duplicate links", () => {
@@ -17,5 +17,34 @@ describe("assistance queue navigation", () => {
     }))).toBe("/admin");
     expect(assistanceCaseHref("synthetic-request", {})).toBe("/admin/requests/synthetic-request");
     expect(assistanceCaseHref("a/b?c", {})).toBe("/admin/requests/a%2Fb%3Fc");
+  });
+});
+
+describe("assistance action return context", () => {
+  it("retains valid queue filters and original notices and fragments", () => {
+    const filters = { status: "SUBMITTED", view: "tests", page: "3", sort: "oldest", assignment: "mine" };
+    const data = new FormData();
+    for (const [key, value] of Object.entries(assistanceQueueContext(filters))) data.append(key, value);
+    for (const href of ["/admin/requests/synthetic?approve=done&o=approved&r=APPROVED_PUBLIC#approve-heading", "/admin/requests/synthetic?reject=error&e=reason%2Cconfirmation#reject-errors", "/admin/requests/synthetic"]) {
+      const before = new URL(href, "https://example.test");
+      const after = new URL(assistanceActionReturnHref(href, data), "https://example.test");
+      expect(after.pathname).toBe(before.pathname);
+      expect(after.hash).toBe(before.hash);
+      for (const [key, value] of before.searchParams) expect(after.searchParams.get(key)).toBe(value);
+      expect(assistanceQueueHref(assistanceReturnFilters(Object.fromEntries(after.searchParams)))).toBe(assistanceQueueHref(filters));
+    }
+  });
+  it("ignores unsafe values, repeated or non-text fields, and unrelated private form data", () => {
+    const data = new FormData();
+    for (const [key, value] of Object.entries({ queueStatus: "SUBMITTED", queuePage: "-1", queueSort: "oldest", queueAssignment: "staff-id", queueView: "//evil.test", returnTo: "https://evil.test", reason: "private", approve: "done" })) data.append(key, value);
+    data.append("queueStatus", "APPROVED");
+    data.append("queueSort", new Blob(["oldest"]), "x.txt");
+    const href = "/admin/requests/synthetic?reject=error#reject-errors";
+    expect(assistanceActionReturnHref(href, data)).toBe(href);
+    expect(assistanceQueueContext({ status: ["SUBMITTED"], view: "invalid", assignment: "someone" })).toEqual({});
+  });
+  it("leaves existing notices byte-for-byte unchanged without queue context", () => {
+    const href = "/admin/requests/synthetic?approve=error&e=a%2Cb#approve-errors";
+    expect(assistanceActionReturnHref(href, new FormData())).toBe(href);
   });
 });

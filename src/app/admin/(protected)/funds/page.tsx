@@ -93,13 +93,13 @@ export default async function FundsLedgerPage({ searchParams }: Props) {
     </section>
     <section className="admin-card" aria-labelledby="taleem-report-heading">
       <h2 id="taleem-report-heading">Taleem sponsorship reconciliation</h2>
-      <p className="muted">Programme-level gifts grouped by their original monthly rate and rate version, across all recorded dates. Verified records include subsequently refunded gifts. Pending claims are not receipts. These amounts are not student assignments, fee obligations or recurring payment mandates.</p>
+      <p className="muted">Programme-level gifts grouped by their original monthly rate and rate version, across all recorded dates. Verified records include subsequently refunded gifts. Pending claims are not receipts. These amounts are not student assignments, fee obligations or recurring payment mandates. A quoted unit-month is one unit for one month at the recorded rate. Retained rate equivalents divide the retained principal of the cohort by that historical rate, with the exact remainder shown separately. They are arithmetic only, not allocated places, unspent balances, fee coverage dates or available sponsorship capacity.</p>
       {sponsorships.length === 0 ? <p>No verified sponsorship gifts or pending claims recorded.</p> : <div className="admin-table-wrap" role="region" aria-label="Taleem sponsorship totals" tabIndex={0}>
         <table className="admin-table">
-          <thead><tr><th scope="col">Programme and recorded rate</th><th scope="col">Verified records</th><th scope="col">Gross verified</th><th scope="col">Principal refunded</th><th scope="col">Net retained</th><th scope="col">Pending claims</th><th scope="col">Pending amount</th></tr></thead>
+          <thead><tr><th scope="col">Programme and recorded rate</th><th scope="col">Verified records</th><th scope="col">Gross verified</th><th scope="col">Principal refunded</th><th scope="col">Net retained</th><th scope="col">Pending claims</th><th scope="col">Pending amount</th><th scope="col">Verified quoted unit-months</th><th scope="col">Retained whole rate equivalents</th><th scope="col">Retained remainder</th><th scope="col">Pending quoted unit-months</th></tr></thead>
           <tbody>{sponsorships.map(row => <tr key={JSON.stringify([row.programme, row.monthlyRate, row.rateVersion])}>
             <th scope="row">{TALEEM_CATALOGUE.programmes.find(programme => programme.id === row.programme)?.name ?? row.programme}<br /><small>{formatDonationReportINR(row.monthlyRate)} per unit/month · {row.rateVersion}</small></th>
-            <td>{row.verifiedCount}</td><td>{formatDonationReportINR(row.grossCaptured)}</td><td>{formatDonationReportINR(row.principalRefunded)}</td><td>{formatDonationReportINR(row.netRetained)}</td><td>{row.pendingCount}</td><td>{formatDonationReportINR(row.pendingAmount)}</td>
+            <td>{row.verifiedCount}</td><td>{formatDonationReportINR(row.grossCaptured)}</td><td>{formatDonationReportINR(row.principalRefunded)}</td><td>{formatDonationReportINR(row.netRetained)}</td><td>{row.pendingCount}</td><td>{formatDonationReportINR(row.pendingAmount)}</td><td>{row.verifiedQuotedUnitMonths}</td><td>{row.retainedWholeUnitMonths}</td><td>{formatDonationReportINR(row.retainedRemainder)}</td><td>{row.pendingQuotedUnitMonths}</td>
           </tr>)}</tbody>
         </table>
       </div>}

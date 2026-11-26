@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { assistanceActionReturnHref } from "@/lib/assistance-queue-navigation";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import {
   parseRejectionInput, rejectionDraftCookieName, rejectionDraftCookieValue, rejectionProblems, rejectionRedirect,
@@ -50,7 +51,7 @@ export async function rejectRequestAction(formData: FormData): Promise<never> {
 
   const id = single(formData, "id");
   if (!id) redirect("/admin");
-  const back = (notice: RejectionNotice): never => redirect(rejectionRedirect(id, notice));
+  const back = (notice: RejectionNotice): never => redirect(assistanceActionReturnHref(rejectionRedirect(id, notice), formData));
 
   if (!hasPermission(user, "assistance.approve")) back({ kind: "error", problems: [], code: "forbidden" });
 

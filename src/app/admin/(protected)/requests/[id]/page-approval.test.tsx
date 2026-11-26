@@ -277,3 +277,17 @@ describe("approval summary and completed decision protection", () => {
     expect(html).not.toContain("What you entered has been saved");
   });
 });
+
+it("posts only accepted queue context with the approval and rejection forms", async () => {
+  const html = await render({}, { queueStatus: "SUBMITTED", queueAssignment: "mine", queuePage: "3", queueSort: "oldest", queueView: "//evil.test", returnTo: "https://evil.test" });
+  const card = reviewCard(html);
+  const rejection = html.match(/<section class="card" aria-labelledby="reject-heading">[\s\S]*?<\/section>/)?.[0] ?? "";
+  for (const form of [card, rejection]) {
+    expect(form).toContain('name="queueStatus" value="SUBMITTED"');
+    expect(form).toContain('name="queueAssignment" value="mine"');
+    expect(form).toContain('name="queuePage" value="3"');
+    expect(form).toContain('name="queueSort" value="oldest"');
+    expect(form).not.toContain('name="queueView"');
+    expect(form).not.toContain('name="returnTo"');
+  }
+});

@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   cookie: vi.fn(), user: vi.fn(), revalidate: vi.fn(),
   createLearner: vi.fn(), setLearnerStatus: vi.fn(), startEnrolment: vi.fn(), createPlace: vi.fn(), setPlaceStatus: vi.fn(),
-  assignLearner: vi.fn(), endAssignment: vi.fn(), recordHifdhCompletion: vi.fn(),
+  assignLearner: vi.fn(), endAssignment: vi.fn(), recordHifdhCompletion: vi.fn(), confirmHifdhEvidence: vi.fn(),
 }));
 
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: mocks.cookie }) }));
@@ -17,19 +17,19 @@ vi.mock("@/lib/taleem-roster-service", () => {
     RosterError,
     createLearner: mocks.createLearner, setLearnerStatus: mocks.setLearnerStatus, startEnrolment: mocks.startEnrolment,
     createPlace: mocks.createPlace, setPlaceStatus: mocks.setPlaceStatus, assignLearner: mocks.assignLearner,
-    endAssignment: mocks.endAssignment, recordHifdhCompletion: mocks.recordHifdhCompletion,
+    endAssignment: mocks.endAssignment, recordHifdhCompletion: mocks.recordHifdhCompletion, confirmHifdhEvidence: mocks.confirmHifdhEvidence,
   };
 });
 
 import {
-  assignLearnerAction, createLearnerAction, createPlaceAction, endAssignmentAction, recordHifdhCompletionAction,
+  assignLearnerAction, confirmHifdhEvidenceAction, createLearnerAction, createPlaceAction, endAssignmentAction, recordHifdhCompletionAction,
   setLearnerStatusAction, setPlaceStatusAction, startEnrolmentAction,
 } from "./actions";
 import { RosterError } from "@/lib/taleem-roster-service";
 
 const token = Buffer.alloc(32, 0x5a).toString("base64url");
 const tokenHash = createHash("sha256").update(token).digest("hex");
-const serviceCalls = () => [mocks.createLearner, mocks.setLearnerStatus, mocks.startEnrolment, mocks.createPlace, mocks.setPlaceStatus, mocks.assignLearner, mocks.endAssignment, mocks.recordHifdhCompletion];
+const serviceCalls = () => [mocks.createLearner, mocks.setLearnerStatus, mocks.startEnrolment, mocks.createPlace, mocks.setPlaceStatus, mocks.assignLearner, mocks.endAssignment, mocks.recordHifdhCompletion, mocks.confirmHifdhEvidence];
 
 const form = (entries: Record<string, string>) => {
   const data = new FormData();
@@ -46,6 +46,7 @@ const actions = [
   ["assignLearner", assignLearnerAction, { placeId: "p", learnerId: "l", startedOn: "2026-01-01" }],
   ["endAssignment", endAssignmentAction, { assignmentId: "a", endedOn: "2026-01-02" }],
   ["recordHifdhCompletion", recordHifdhCompletionAction, { learnerId: "l", completedOn: "2026-06-01", verified: "yes", supportAssociated: "yes" }],
+  ["confirmHifdhEvidence", confirmHifdhEvidenceAction, { learnerId: "l", verified: "on" }],
 ] as const;
 
 beforeEach(() => {
@@ -118,4 +119,14 @@ describe("error handling", () => {
     await expect(recordHifdhCompletionAction(form({ learnerId: "l", completedOn: "2026-06-01", verified: "yes", supportAssociated: "no" }))).rejects.toThrow("Synthetic redirect");
     expect(mocks.recordHifdhCompletion).toHaveBeenCalledWith("l", "2026-06-01", { supportAssociated: false, verified: true }, "synthetic-approver");
   });
+});
+
+it("passes positive evidence confirmation and the authenticated actor only, rejecting unsupported values", async () => {
+  mocks.user.mockResolvedValue({ id: "synthetic-approver", status: "ACTIVE", roles: [{ role: { permissions: [{ permission: { key: "assistance.approve" } }] } }] });
+  mocks.confirmHifdhEvidence.mockResolvedValue("confirmed");
+  await expect(confirmHifdhEvidenceAction(form({ learnerId: "l", verified: "on" }))).rejects.toThrow("Synthetic redirect");
+  expect(mocks.confirmHifdhEvidence).toHaveBeenCalledWith("l", { verified: true, supportAssociated: false }, "synthetic-approver");
+  mocks.confirmHifdhEvidence.mockClear();
+  await expect(confirmHifdhEvidenceAction(form({ learnerId: "l", verified: "yes" }))).rejects.toThrow("notice=Choose%20valid%20evidence%20confirmations.");
+  expect(mocks.confirmHifdhEvidence).not.toHaveBeenCalled();
 });

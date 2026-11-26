@@ -1,9 +1,10 @@
 import { requirePermission } from "@/lib/auth";
-import { TALEEM_FACTS } from "@/content/taleem-facts";
+import { TALEEM_FACTS, TALEEM_HIFDH_COMPLETIONS } from "@/content/taleem-facts";
+import { rosterReview } from "@/lib/taleem-roster-review";
 import { loadRoster } from "@/lib/taleem-roster-service";
 import { parseCalendarDate } from "@/lib/taleem-roster-rules";
 import {
-  assignLearnerAction, createLearnerAction, createPlaceAction, endAssignmentAction, recordHifdhCompletionAction,
+  assignLearnerAction, confirmHifdhEvidenceAction, createLearnerAction, createPlaceAction, endAssignmentAction, recordHifdhCompletionAction,
   setLearnerStatusAction, setPlaceStatusAction, startEnrolmentAction,
 } from "./actions";
 
@@ -26,6 +27,15 @@ export default async function TaleemRosterPage({ searchParams }: Props) {
   const { counts } = roster;
   const vacant = roster.places.filter(place => place.status === "MAINTAINED" && place.holderAlias === null && !place.hasBlockingAssignment);
   const baseline = TALEEM_FACTS.sponsoredStudents;
+  const review = rosterReview(roster.learners, roster.places);
+  const reviewGroups = [
+    { label: "Maintained places available for assignment", values: review.assignableVacancies, target: "place" },
+    { label: "Vacant today but already reserved", values: review.reservedVacancies, target: "place" },
+    { label: "Assigned learners without a recorded current programme", values: review.missingProgramme, target: "learner" },
+    { label: "Assigned learners marked Left or Graduated", values: review.inactiveHolders, target: "learner" },
+    { label: "Assignments needing place-status or holder reconciliation", values: review.placeConflicts, target: "learner" },
+    { label: "Recorded Hifdh milestones with evidence not fully confirmed", values: review.pendingMilestones, target: "learner" },
+  ];
 
   return <>
     <div className="admin-heading">
@@ -41,7 +51,7 @@ export default async function TaleemRosterPage({ searchParams }: Props) {
       <h2 id="counts-heading">Counts as of {counts.asOf}</h2>
       <p className="muted">These are separate figures from separate rules. Do not add them together or publish one as another.</p>
       <dl className="details">
-        <div><dt>Places maintained in these records</dt><dd><strong>{counts.maintainedPlaces}</strong> <span className="muted">(published baseline: {baseline}, {TALEEM_FACTS.asOf.label}){counts.maintainedPlaces === baseline ? "" : counts.maintainedPlaces === 0 ? " — no places entered yet" : " — differs from the published baseline; reconcile before publishing anything"}</span></dd></div>
+        <div><dt>Places maintained in these records</dt><dd><strong>{counts.maintainedPlaces}</strong>{counts.maintainedPlaces === 0 ? <span className="muted"> — no places entered yet</span> : null}</dd></div>
         <div><dt>Places with a learner today</dt><dd><strong>{counts.occupiedPlaces}</strong></dd></div>
         <div><dt>Vacant maintained places</dt><dd><strong>{counts.vacantPlaces}</strong></dd></div>
         <div><dt>Currently supported students</dt><dd><strong>{counts.currentlySupportedStudents}</strong></dd></div>
@@ -51,12 +61,28 @@ export default async function TaleemRosterPage({ searchParams }: Props) {
       </dl>
     </section>
 
+    <section className="card" aria-labelledby="roster-review-heading">
+      <h2 id="roster-review-heading">Sponsorship reconciliation workbench</h2>
+      <p className="muted">Compare like with like. The published figure is a dated owner-confirmed Nazira / Hifdh student count, not the number of maintained places. This private view does not certify a new public count or assign a sponsor.</p>
+      <dl className="details">
+        <div><dt>Published student baseline</dt><dd>{baseline} ({TALEEM_FACTS.asOf.label})</dd></div>
+        <div><dt>Recorded Nazira / Hifdh learners in matched maintained places today</dt><dd><strong>{review.naziraHifdhStudents}</strong> — {review.naziraHifdhStudents === baseline ? "numerical match only; confirm the underlying records" : "differs from the dated student baseline; review the records and any later changes"}</dd></div>
+        <div><dt>Published Hifdh completions in {TALEEM_HIFDH_COMPLETIONS.year}</dt><dd>{TALEEM_HIFDH_COMPLETIONS.sponsored} ({TALEEM_HIFDH_COMPLETIONS.asOf.label})</dd></div>
+        {counts.asOf.startsWith(String(TALEEM_HIFDH_COMPLETIONS.year) + "-") && <div><dt>Recorded verified, support-associated completions this year</dt><dd>{counts.hifdhCompletionsInYear} — {counts.hifdhCompletionsInYear === TALEEM_HIFDH_COMPLETIONS.sponsored ? "numerical match only" : "review difference from the dated completion baseline"}</dd></div>}
+      </dl>
+      <p className="muted">Review groups can overlap. A vacancy does not establish available funding; a review prompt does not change a learner, place, or public figure.</p>
+      {reviewGroups.map(group => <details key={group.label}>
+        <summary>{group.label}: <strong>{group.values.length}</strong></summary>
+        {group.values.length ? <ul>{group.values.map(reference => <li key={reference}><a href={`#${group.target}-${reference}`}>{reference}</a></li>)}</ul> : <p className="muted">None recorded in this group.</p>}
+      </details>)}
+    </section>
+
     <section className="card" aria-labelledby="places-heading">
       <h2 id="places-heading">Sponsored places</h2>
       {roster.places.length === 0 ? <p className="muted">No places yet. Add each approved sponsored place once; a place is the commitment, and different learners can hold it over time.</p> : <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Sponsored places and who holds each today"><table>
         <caption className="sr-only">Sponsored places and who holds each today</caption>
         <thead><tr><th scope="col">Place</th><th scope="col">Status</th><th scope="col">Held by</th><th scope="col">Change status</th></tr></thead>
-        <tbody>{roster.places.map(place => <tr key={place.id}>
+        <tbody>{roster.places.map(place => <tr key={place.id} id={`place-${place.placeCode}`}>
           <th scope="row">{place.placeCode}</th>
           <td>{PLACE_STATUS_LABEL[place.status]}</td>
           <td>{place.holderAlias ?? <span className="muted">{place.hasBlockingAssignment ? "Vacant today — future assignment recorded" : "Vacant"}</span>}</td>
@@ -77,8 +103,8 @@ export default async function TaleemRosterPage({ searchParams }: Props) {
 
     <section className="card" aria-labelledby="learners-heading">
       <h2 id="learners-heading">Learners</h2>
-      {roster.learners.length === 0 ? <p className="muted">No learners yet.</p> : roster.learners.map(learner => <details key={learner.id} className="card">
-        <summary><strong>{learner.fullName}</strong> <small>{learner.publicAlias} · {LEARNER_STATUS_LABEL[learner.status]} · {learner.programme ? PROGRAMME_LABEL[learner.programme] : "No programme recorded"} · {learner.placeCode ?? "No place today"}{learner.openAssignmentStartsOn && learner.openAssignmentStartsOn > counts.asOf ? ` · Scheduled from ${learner.openAssignmentStartsOn}: ${learner.openAssignmentPlaceCode ?? "place recorded"}` : ""}{learner.completedHifdhOn ? ` · Hifdh completed ${learner.completedHifdhOn}` : ""}</small></summary>
+      {roster.learners.length === 0 ? <p className="muted">No learners yet.</p> : roster.learners.map(learner => <details key={learner.id} id={`learner-${learner.publicAlias}`} className="card">
+        <summary><strong>{learner.fullName}</strong> <small>{learner.publicAlias} · {LEARNER_STATUS_LABEL[learner.status]} · {learner.programme ? PROGRAMME_LABEL[learner.programme] : "No programme recorded"} · {learner.placeCode ?? "No place today"}{learner.openAssignmentStartsOn && learner.openAssignmentStartsOn > counts.asOf ? ` · Scheduled from ${learner.openAssignmentStartsOn}: ${learner.openAssignmentPlaceCode ?? "place recorded"}` : ""}{learner.completedHifdhOn ? ` · Hifdh completion recorded ${learner.completedHifdhOn}` : ""}</small></summary>
         <form action={setLearnerStatusAction} className="form-grid">
           <input type="hidden" name="learnerId" value={learner.id} />
           <div className="field"><label htmlFor={`lstatus-${learner.id}`}>Status</label><select id={`lstatus-${learner.id}`} name="status" defaultValue={learner.status}>{Object.entries(LEARNER_STATUS_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
@@ -102,6 +128,16 @@ export default async function TaleemRosterPage({ searchParams }: Props) {
           <div className="field full"><button className="button" type="submit">Assign this place</button></div>
         </form> : null}
         {!learner.assignmentId && learner.hasBlockingAssignment ? <p className="muted">A current or future dated assignment is already recorded. A new open assignment would overlap.</p> : null}
+        {learner.completedHifdhOn && <section aria-label="Hifdh milestone evidence">
+          <p>Completion recorded on {learner.completedHifdhOn}. {learner.completionReview?.verified ? "Completion evidence verified." : "Completion evidence not confirmed."} {learner.completionReview?.supportAssociated ? "Amaana support association confirmed." : "Amaana support association not confirmed."}</p>
+          {learner.completionReview && (!learner.completionReview.verified || !learner.completionReview.supportAssociated) && learner.completedHifdhOn <= counts.asOf && <form action={confirmHifdhEvidenceAction} className="form-grid">
+            <input type="hidden" name="learnerId" value={learner.id} />
+            {!learner.completionReview.verified && <label><input type="checkbox" name="verified" /> I reviewed evidence of the recorded completion.</label>}
+            {!learner.completionReview.supportAssociated && <label><input type="checkbox" name="supportAssociated" /> I confirmed Amaana support association.</label>}
+            <p className="muted full">Confirm only evidence you have reviewed. The existing date and previous confirmations stay unchanged. This does not publish a new figure or end support.</p>
+            <div className="field full"><button className="button" type="submit">Confirm selected Hifdh evidence</button></div>
+          </form>}
+        </section>}
         {learner.completedHifdhOn ? null : <form action={recordHifdhCompletionAction} className="form-grid">
           <input type="hidden" name="learnerId" value={learner.id} />
           <div className="field"><label htmlFor={`done-${learner.id}`}>Hifdh completed on</label><input id={`done-${learner.id}`} name="completedOn" type="date" required /></div>
