@@ -131,12 +131,20 @@ describe("public media safety", () => {
     })).toBe(true);
   });
 
-  it("optimizes only public managed image paths on the configured application origin", () => {
+  it("optimizes only static public images on the configured application origin", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
     expect(getPublicImageOptimizationUrl("/media/2026/Eid%20Kits.webp"))
-      .toBe("/media/2026/Eid%20Kits.webp");
+      .toBeNull();
     expect(getPublicImageOptimizationUrl("https://amaanafoundation.org/media/approved.webp?width=small"))
-      .toBe("/media/approved.webp?width=small");
+      .toBeNull();
+    expect(getPublicImageOptimizationUrl("https://amaanafoundation.org/media/approved.webp"))
+      .toBe("/media/approved.webp");
+    for (const managed of [
+      "/media/2026/approved.webp",
+      "https://amaanafoundation.org/media/2026/approved.webp",
+      "/media/2026%2Fapproved.webp",
+      "/media/2026%252Fapproved.webp",
+    ]) expect(getPublicImageOptimizationUrl(managed)).toBeNull();
     expect(getPublicImageOptimizationUrl("https://amaanafoundation.org/brand/mark.svg"))
       .toBe("/brand/mark.svg");
 

@@ -1,0 +1,28 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { CampaignMediaGallery } from "@/components/campaign-media-gallery";
+import { toPublicGalleryItems } from "@/lib/public-gallery-projection";
+import "@/app/our-work/[slug]/campaign.css";
+
+export const dynamic = "force-dynamic";
+export const metadata: Metadata = { title: "Synthetic responsive media acceptance", robots: { index: false, follow: false }, referrer: "no-referrer" };
+
+const items = toPublicGalleryItems(Array.from({ length: 4 }, (_, index) => ({
+  id: `synthetic-${index + 1}`,
+  kind: "IMAGE" as const,
+  publicUrl: `/media/2099/00000000-0000-4000-8000-00000000000${index + 1}.jpg`,
+  altText: `Synthetic texture ${index + 1}`,
+  width: 2400,
+  height: 1600,
+})));
+
+export default async function ManagedImageGallery({ searchParams }: { searchParams: Promise<{ mode?: string }> }) {
+  if (process.env.AMAANA_BROWSER_ACCEPTANCE !== "true") notFound();
+  const { mode = "responsive" } = await searchParams;
+  if (mode !== "original" && mode !== "responsive") notFound();
+  const visible = mode === "responsive" ? items : items.map(item => ({ ...item, managedRenditions: undefined }));
+  return <div className="v2-home campaign-page"><section className="campaign-gallery"><div className="v2-shell">
+    <h1>Synthetic responsive media acceptance</h1>
+    <CampaignMediaGallery items={visible} />
+  </div></section></div>;
+}

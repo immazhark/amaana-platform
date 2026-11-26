@@ -1,0 +1,39 @@
+import sharp from "sharp";
+import { parseManagedImageWidth } from "@/lib/managed-image-variants";
+import { renderManagedImage, withManagedImageSlot } from "@/lib/managed-image-render";
+
+export const dynamic = "force-dynamic";
+const headers = { "Cache-Control": "private, no-store, max-age=0", "X-Robots-Tag": "noindex, nofollow, noarchive", "X-Content-Type-Options": "nosniff" };
+let original: Promise<Buffer> | undefined;
+
+// Deterministic synthetic texture; no faces, files, database or object storage.
+function source() {
+  original ??= (async () => {
+    const width = 2400, height = 1600;
+    const pixels = Buffer.alloc(width * height * 3);
+    let state = 0x2a6c87d1;
+    for (let i = 0; i < pixels.length; i++) {
+      state ^= state << 13; state ^= state >>> 17; state ^= state << 5;
+      pixels[i] = state & 255;
+    }
+    const bytes = await sharp(pixels, { raw: { width, height, channels: 3 } }).jpeg({ quality: 85 }).toBuffer();
+    if (bytes.length > 5 * 1024 * 1024 || bytes.length < 1024 * 1024) throw new Error("Unexpected synthetic source size");
+    return bytes;
+  })();
+  return original;
+}
+
+export async function GET(request: Request) {
+  const refuse = (status: number) => new Response(null, { status, headers });
+  if (process.env.AMAANA_BROWSER_ACCEPTANCE !== "true") return refuse(404);
+  const url = new URL(request.url);
+  if (!/^\/media\/2099\/00000000-0000-4000-8000-00000000000[1-4]\.jpg$/.test(url.pathname)) return refuse(404);
+  const width = parseManagedImageWidth(url.search);
+  if (width === null) return refuse(404);
+  try {
+    const bytes = width === undefined ? await source() : await withManagedImageSlot(async () => renderManagedImage(await source(), "image/jpeg", width));
+    const body = new ArrayBuffer(bytes.byteLength);
+    new Uint8Array(body).set(bytes);
+    return new Response(body, { headers: { ...headers, "Content-Type": width === undefined ? "image/jpeg" : "image/webp", "Content-Length": String(bytes.byteLength) } });
+  } catch { return refuse(503); }
+}

@@ -281,3 +281,13 @@ describe("assistance recorded decision reporting", () => {
     expect(html).not.toContain("No recorded verification evidence");
   });
 });
+
+it("keeps the filtered reviewer queue context on case links and prioritises records before reporting", async () => {
+  mocks.count.mockResolvedValue(101);
+  mocks.findMany.mockResolvedValue([{ id: "synthetic-request", referenceNumber: "SYNTHETIC-CONTEXT", applicantName: "Synthetic applicant", city: "Synthetic city", category: "MEDICAL", status: "SUBMITTED", assignedTo: null, _count: { documents: 0 }, createdAt: new Date("2026-11-09T00:00:00.000Z") }]);
+  const html = renderToStaticMarkup(await AdminQueuePage({ searchParams: Promise.resolve({ view: "tests", status: "SUBMITTED", sort: "oldest", assignment: "mine", page: "2" }) }));
+  expect(html).toContain('href="/admin/requests/synthetic-request?queueStatus=SUBMITTED&amp;queueView=tests&amp;queuePage=2&amp;queueSort=oldest&amp;queueAssignment=mine"');
+  expect(html.indexOf('aria-label="Operational records"')).toBeGreaterThan(-1);
+  expect(html.indexOf('aria-labelledby="decision-report-heading"')).toBeGreaterThan(html.indexOf('aria-label="Assistance request pagination"'));
+  expect(html.indexOf('aria-labelledby="verification-report-heading"')).toBeGreaterThan(html.indexOf('aria-labelledby="decision-report-heading"'));
+});

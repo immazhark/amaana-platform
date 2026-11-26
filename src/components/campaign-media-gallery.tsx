@@ -7,6 +7,7 @@ import Image from "next/image";
 import { getPublicImageDimensions } from "@/lib/public-image-dimensions";
 import { getPublicImageOptimizationUrl, isCspCompatiblePublicImageUrl, isPrivateAppMediaUrl, normalizeSafePublicMediaUrl } from "@/lib/public-media";
 import { adjacentGalleryId } from "@/lib/gallery-selection";
+import { managedImageSrcSet } from "@/lib/managed-image-variants";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import styles from "./campaign-media-gallery.module.css";
 
@@ -18,6 +19,8 @@ export type CampaignGalleryItem = {
   graphicArtwork?: boolean;
   /** Set only by the server public-gallery projection after publication and origin checks. */
   serverApprovedExternal?: true;
+  /** Set by the public projection only for known eligible original dimensions. */
+  managedRenditions?: true;
   width?: number | null;
   height?: number | null;
 };
@@ -29,7 +32,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
     const seenIds = new Set<string>();
     return items.flatMap(item => {
       if (!item || !["id", "url", "alt"].every(key => Object.hasOwn(item, key)) ||
-          ["caption", "graphicArtwork", "serverApprovedExternal", "width", "height"]
+          ["caption", "graphicArtwork", "serverApprovedExternal", "managedRenditions", "width", "height"]
             .some(key => key in item && !Object.hasOwn(item, key)) ||
           typeof item.id !== "string" || !item.id.trim() ||
           typeof item.alt !== "string" || !item.alt.trim() ||
@@ -140,6 +143,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
           const graphicAsset = item.graphicArtwork === true;
           const { width, height } = getPublicImageDimensions(item);
           const optimizedSrc = getPublicImageOptimizationUrl(item.url);
+          const srcSet = item.managedRenditions === true ? managedImageSrcSet(item.url, item.width, item.height) : undefined;
                     return (
           <figure className={`${styles.card} ${graphicAsset ? styles.graphicCard : ""}`} key={item.id}>
             <button
@@ -149,7 +153,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
               onClick={event => { openerRef.current = event.currentTarget; setActiveId(item.id); }}
               aria-label={`Enlarge image ${index + 1} of ${safeItems.length}: ${item.alt ?? "programme photograph"}`}
             >
-              {optimizedSrc ? <Image src={optimizedSrc} alt={item.alt ?? ""} width={width} height={height} sizes="(max-width: 900px) 50vw, 33vw" loading="lazy" /> : <img src={item.url} alt={item.alt ?? ""} width={width} height={height} loading="lazy" decoding="async" />}
+              {optimizedSrc ? <Image src={optimizedSrc} alt={item.alt ?? ""} width={width} height={height} sizes="(max-width: 900px) 50vw, 33vw" loading="lazy" /> : <img src={item.url} srcSet={srcSet} sizes={srcSet ? "(max-width: 900px) 50vw, 33vw" : undefined} alt={item.alt ?? ""} width={width} height={height} loading="lazy" decoding="async" />}
               <span className={styles.openLabel}>Enlarge</span>
             </button>
             {item.caption ? <figcaption>{item.caption}</figcaption> : null}

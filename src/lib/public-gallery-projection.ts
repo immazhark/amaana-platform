@@ -1,6 +1,7 @@
 import { getPublicImageDimensions } from "./public-image-dimensions";
-import { canRenderPublicMedia, getPublicImageOptimizationUrl, resolvePublicMediaUrl, type PublicMediaCandidate } from "./public-media";
+import { canRenderPublicMedia, getRelativePublicMediaUrl, resolvePublicMediaUrl, type PublicMediaCandidate } from "./public-media";
 import { isCampaignGraphicDescriptor } from "./campaign-artwork-descriptor";
+import { managedImageSrcSet } from "./managed-image-variants";
 
 /** Project already publication/privacy-approved records into public image cards. */
 export function toPublicGalleryItems<T extends PublicMediaCandidate & {
@@ -26,7 +27,7 @@ export function toPublicGalleryItems<T extends PublicMediaCandidate & {
         !canRenderPublicMedia(asset)) return [];
     const url = resolvePublicMediaUrl(asset);
     if (!url) return [];
-    const displayUrl = getPublicImageOptimizationUrl(url) ?? url;
+    const displayUrl = getRelativePublicMediaUrl(url) ?? url;
     if (urls.has(displayUrl) || ids.has(asset.id)) return [];
     urls.add(displayUrl);
     ids.add(asset.id);
@@ -36,6 +37,7 @@ export function toPublicGalleryItems<T extends PublicMediaCandidate & {
       // Already passed server publication and CSP-origin validation above.
       // This public boolean preserves reviewed CDN media during browser hydration.
       ...(displayUrl.startsWith("https://") ? { serverApprovedExternal: true as const } : {}),
+      ...(managedImageSrcSet(displayUrl, asset.width, asset.height) ? { managedRenditions: true as const } : {}),
       alt: asset.altText ?? null,
       caption: asset.caption,
       // Compute styling from reviewed metadata on the server; never serialize
