@@ -89,6 +89,8 @@ jobs:
         run: node --test scripts/test-database-tests-wired.mjs
       - name: Validate App Router bundle reporting
         run: node --test scripts/test-route-bundle-report.mjs scripts/test-live-route-css.mjs
+      - name: Guard synthetic blocking-time failure diagnostics
+        run: node --test scripts/test-synthetic-vitals-diagnostics.mjs
       - name: Guard responsive hero/artwork image weight
         run: |
           node --test scripts/test-public-image-weight.mjs
