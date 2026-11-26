@@ -6,7 +6,7 @@ vi.mock("@/lib/auth", () => ({ requirePermission: mocks.permission }));
 vi.mock("@/lib/prisma", () => ({ prisma: {} }));
 vi.mock("@/lib/funds-ledger", () => ({ getFundsLedger: mocks.ledger }));
 vi.mock("@/lib/taleem-sponsorship-report", () => ({ loadTaleemSponsorshipReport: mocks.report }));
-vi.mock("@/lib/annual-finance-review", async importOriginal => ({ ...await importOriginal<typeof import("@/lib/annual-finance-review")>(), loadAnnualFinanceReview: mocks.annual }));
+vi.mock("@/lib/annual-finance-review", async importOriginal => ({ ...await importOriginal<typeof import("@/lib/annual-finance-review")>(), loadAnnualFinanceBreakdown: mocks.annual }));
 
 import FundsLedgerPage from "./page";
 
@@ -15,7 +15,7 @@ beforeEach(() => {
   mocks.permission.mockResolvedValue({ id: "synthetic-viewer" });
   mocks.ledger.mockResolvedValue({ funds: [], byFund: {}, zakatAccount: { receivedPaise: 0, pendingPaise: 0, refundedPaise: 0, spentPaise: 0, publishedSpentPaise: 0, balancePaise: 0 } });
   mocks.report.mockResolvedValue([]);
-  mocks.annual.mockResolvedValue([]);
+  mocks.annual.mockResolvedValue({ destinations: [], channels: [] });
 });
 
 describe("private Taleem reconciliation", () => {
@@ -54,7 +54,7 @@ describe("private Taleem reconciliation", () => {
 
 describe("annual finance review", () => {
   it("selects an Indian financial year and exposes aggregate CSV only after authorization", async () => {
-    mocks.annual.mockResolvedValue([{ destination: "fund", fundSlug: "taleem", pool: "ZAKAT", grossPaise: 10001, refundedPaise: 1, retainedPaise: 10000, pendingPaise: 0, pendingCount: 0, draftPaise: 0, publishedPaise: 1250 }]);
+    mocks.annual.mockResolvedValue({ destinations: [{ destination: "fund", fundSlug: "taleem", pool: "ZAKAT", grossPaise: 10001, refundedPaise: 1, retainedPaise: 10000, pendingPaise: 0, pendingCount: 0, draftPaise: 0, publishedPaise: 1250 }], channels: [{ paymentMethod: "RAZORPAY", grossPaise: 10001, refundedPaise: 1, retainedPaise: 10000, pendingPaise: 0, pendingCount: 0 }] });
     const html = renderToStaticMarkup(await FundsLedgerPage({ searchParams: Promise.resolve({ fy: "2020-21" }) }));
     expect(mocks.annual).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ label: "2020-21", start: new Date("2020-03-31T18:30:00Z"), end: new Date("2021-03-31T18:30:00Z") }));
     expect(html).toContain("amaana-application-finance-review-2020-21.csv");
@@ -62,11 +62,16 @@ describe("annual finance review", () => {
     expect(html).toContain("not refund-date cash flows");
     expect(html).toContain("not bank statements, statutory tax filings");
     expect(html).not.toContain("donorEmail");
+    expect(html).toContain("Payment channels · FY 2020-21");
+    expect(html).toContain("<th scope=\"row\">Razorpay</th><td>₹100.01</td><td>₹0.01</td><td>₹100</td>");
+    expect(html).toContain("Spending is not attributed to a channel.");
+    expect(mocks.annual).toHaveBeenCalledTimes(1);
   });
 
   it("does not imply zero foundation activity when no matching records exist", async () => {
     const html = renderToStaticMarkup(await FundsLedgerPage({ searchParams: Promise.resolve({ fy: "2020-21" }) }));
     expect(html).toContain("This does not establish zero foundation activity.");
     expect(html).not.toContain("Download aggregate CSV");
+    expect(html).toContain("No matching receipt or direct claim records for this year.");
   });
 });
