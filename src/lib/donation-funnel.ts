@@ -49,6 +49,10 @@ function rowFrom(method: FunnelRow["method"], raw: Record<FunnelStage, number>, 
 }
 
 export function summariseDonationFunnel(groups: readonly GroupedDonationCount[], minCell: number = MIN_REPORTABLE_CELL): FunnelRow[] {
+  // Callers may strengthen suppression, but cannot lower the privacy floor.
+  if (!Number.isSafeInteger(minCell) || minCell < MIN_REPORTABLE_CELL) {
+    throw new RangeError("Donation funnel requires a safe integer cell threshold of at least five");
+  }
   const byMethod = new Map<DonationPaymentMethod, Record<FunnelStage, number>>();
   const all = empty();
   for (const group of groups) {
