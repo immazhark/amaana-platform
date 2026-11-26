@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   findMany: vi.fn(),
   findFirst: vi.fn(),
   decisions: vi.fn(),
+  logServerError: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({
@@ -26,6 +27,8 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 vi.mock("@/lib/assistance-decision-report", async importOriginal => ({ ...await importOriginal<typeof import("@/lib/assistance-decision-report")>(), loadAssistanceDecisionReport: mocks.decisions }));
+
+vi.mock("@/lib/server-log", () => ({ logServerError: mocks.logServerError }));
 
 import AdminQueuePage from "./page";
 
@@ -256,6 +259,24 @@ describe("assistance workload labels and record visibility", () => {
 });
 
 describe("assistance recorded decision reporting", () => {
+  it("keeps the authorized queue usable when the optional evidence report fails without inventing zero counts", async () => {
+    mocks.decisions.mockRejectedValueOnce(new Error("PRIVATE_SYNTHETIC_DIAGNOSTIC"));
+    mocks.findMany.mockResolvedValueOnce([{
+      id: "synthetic-request", referenceNumber: "SYNTHETIC-REPORT-FAILURE", applicantName: "Synthetic applicant",
+      city: "Synthetic city", category: "MEDICAL", status: "SUBMITTED", assignedTo: null,
+      _count: { documents: 0 }, createdAt: new Date("2026-11-09T00:00:00.000Z"),
+    }]);
+    const html = renderToStaticMarkup(await AdminQueuePage({ searchParams: Promise.resolve({ view: "tests", sort: "oldest" }) }));
+    expect(html).toContain("SYNTHETIC-REPORT-FAILURE");
+    expect(html).toContain("Report temporarily unavailable. This is not a zero count.");
+    expect(html).not.toContain("No requests in this receipt cohort.");
+    expect(html).not.toContain("PRIVATE_SYNTHETIC_DIAGNOSTIC");
+    expect(html).not.toContain("Decision within 24 hours");
+    expect(html).toContain('href="/admin/requests/synthetic-request?queueView=tests&amp;queueSort=oldest"');
+    expect(mocks.decisions).toHaveBeenCalledWith(expect.anything(), "tests");
+    expect(mocks.logServerError).toHaveBeenCalledExactlyOnceWith("assistance.decision_report_unavailable");
+  });
+
   it("shows evidence-based counts in the selected record view without a promised SLA", async () => {
     mocks.findMany.mockResolvedValue([]);
     mocks.decisions.mockResolvedValue({ received: 8, recorded: 4, withinDay: 1, withinWeek: 2, overWeek: 1, openWithoutDecision: 2, otherWithoutDecision: 2, verificationRecorded: 5, verificationWithinDay: 2, verificationWithinWeek: 2, verificationOverWeek: 1, verificationMissing: 3 });
