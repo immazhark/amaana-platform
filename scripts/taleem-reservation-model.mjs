@@ -43,3 +43,24 @@ export function evaluateHold(input) {
   const minimumRemaining = Math.min(...free);
   return { outcome: minimumRemaining >= request.units ? 'candidate' : 'insufficient_capacity', minimumRemaining };
 }
+
+// Synthetic transition proposal only. The caller must establish inventory ownership,
+// immutable request evidence and atomic concurrency control before any real write.
+export function evaluateReservationTransition(input) {
+  if (!exact(input, ['reservation', 'expected', 'action', 'now']) || !integer(input.now, 0) ||
+      !valid(input.reservation, ['state']) || !states.has(input.reservation.state) ||
+      !valid(input.expected) || !['confirm', 'release', 'expire'].includes(input.action)) return result('invalid_transition');
+  const { reservation, expected, action, now } = input;
+  if (!fields.every(field => reservation[field] === expected[field])) return result('id_conflict');
+  const { state, expiresAt } = reservation;
+  if (action === 'confirm') {
+    if (state === 'committed') return result('unchanged');
+    if (state === 'released') return result('released_confirmation');
+    if (expiresAt <= now) return result('late_confirmation');
+    return { outcome: 'candidate', nextState: 'committed' };
+  }
+  if (state === 'released') return result('unchanged');
+  if (state === 'committed') return result(action === 'expire' ? 'unchanged' : 'committed_release_review');
+  if (action === 'expire' && expiresAt > now) return result('unchanged');
+  return { outcome: 'candidate', nextState: 'released' };
+}
