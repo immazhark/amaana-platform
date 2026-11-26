@@ -289,3 +289,41 @@ describe("direct transfer review workbench", () => {
     }
   });
 });
+
+describe("operational reconciliation exception drill-down", () => {
+  it("links the global counters directly to the corresponding oldest-first record queues", async () => {
+    mocks.donationFind.mockResolvedValue([]);
+    const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({}) }));
+    expect(html).toContain('href="/admin/donations?issue=missing-acknowledgement&amp;sort=oldest"');
+    expect(html).toContain('href="/admin/donations?issue=missing-refund-time&amp;sort=oldest"');
+    expect(html).toContain("may overlap; they do not count distinct affected donations");
+  });
+  it.each([
+    ["missing-acknowledgement", { status: { in: ["CAPTURED", "REFUNDED"] }, receiptNumber: null }],
+    ["missing-refund-time", { status: "REFUNDED", refundedAt: null }],
+  ] as const)("intersects %s with existing filters and uses the same predicate for global counts", async (issue, predicate) => {
+    mocks.donationFind.mockResolvedValue([]);
+    mocks.donationCount.mockResolvedValue(101);
+    const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({ issue, status: "CAPTURED", method: "BANK_TRANSFER", intent: "SADAQAH", reference: "AFD-2026-12345678", sort: "oldest", page: "2" }) }));
+    const where = { paymentMethod: "BANK_TRANSFER", referenceNumber: "AFD-2026-12345678", status: "CAPTURED", givingIntent: "SADAQAH", AND: [predicate] };
+    expect(mocks.donationFind).toHaveBeenCalledWith(expect.objectContaining({ where, orderBy: [{ createdAt: "asc" }, { id: "asc" }], skip: 50, take: 50 }));
+    expect(mocks.donationCount).toHaveBeenCalledWith({ where });
+    expect(mocks.donationCount).toHaveBeenCalledWith({ where: predicate });
+    expect(mocks.donationGroups).toHaveBeenCalledWith(expect.objectContaining({ by: ["status"], where: { paymentMethod: "BANK_TRANSFER", referenceNumber: "AFD-2026-12345678", givingIntent: "SADAQAH", AND: [predicate] } }));
+    expect(mocks.donationGroups).toHaveBeenCalledWith(expect.objectContaining({ by: ["givingIntent"], where: { paymentMethod: "BANK_TRANSFER", referenceNumber: "AFD-2026-12345678", status: "CAPTURED", AND: [predicate] } }));
+    expect(html).toContain(`name="issue" value="${issue}"`);
+    expect(html).toContain(`issue=${issue}&amp;page=3`);
+    expect(html).toContain("Clear exception review");
+    expect(mocks.donationTotalsQuery).toHaveBeenCalledOnce();
+  });
+  it("does not broaden or reflect invalid selectors when navigating or searching", async () => {
+    mocks.donationFind.mockResolvedValue([]);
+    const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({ issue: ["missing-refund-time", "private@example.invalid"], reference: "private-bank-token" }) }));
+    expect(mocks.donationFind).toHaveBeenCalledWith(expect.objectContaining({ where: { id: { in: [] }, AND: [{ id: { in: [] } }] } }));
+    expect(html).toContain("Unsupported review filter. No records were matched.");
+    expect(html).toContain("issue=invalid");
+    expect(html).toContain("reference=invalid");
+    expect(html).not.toContain("private@example.invalid");
+    expect(html).not.toContain("private-bank-token");
+  });
+});
