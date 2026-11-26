@@ -4,13 +4,28 @@
 
 | Boundary | Verified evidence |
 |---|---|
-| Main | `92c2d983988439b3053ad0fcf3ff1dfadd3b35d6` from #1171, full 45703035438 seven green; 1716 Chromium and one recovered flaky Lenis assertion, 24 cross-browser, synthetic home 58 ms. Separate promotion 45732549092 green; identical accepted tree. #1172/#1173 superseded after exact inclusion. |
-| Production | Railway a421addb-fe00-4a9c-a0a4-8cb00601d27e SUCCESS; fresh independent exact public SHA and readiness ready. No live payment tested. |
-| #1174 | Original `73ec912160a27de664199feb175e597f940d4db3` run 45703555611 attempt1 1718 Chromium/24 cross-browser passed, database 129/130; controlled attempt2 130/130, all seven green. Root cause unproven. Exact compatible image regression blob reconciled to main. Fresh full checks and separate promotion required. |
-| #1175 | Original seven green; reconciled c6848ede01670239265942ef2dc4511371a6f96d CI 45732932654 active. |
+| Main | `0f50d8a87224c55249759d6bae8af9132fe3aa05` (#1175), full 45732932654 and separate promotion 45736078076 passed; exact accepted tree 8a078c1f34be8b26dc707d7879bda176ba80bf7a. |
+| Production | Railway e7c48302-c102-439e-99bb-1b4698daa3ae SKIPPED as expected. Prior a421addb-fe00-4a9c-a0a4-8cb00601d27e SUCCESS, independent fresh runtime 92c2d983988439b3053ad0fcf3ff1dfadd3b35d6 ready. No forced rollout. |
+| #1174 | Reconciled head 7d81deb51680853658cccde4773499afd53e0674 full 45733233153 seven green, 1718 Chromium, 24 cross-browser, home synthetic blocking 60 ms. Original database failure retained; controlled repeat passed, cause unknown. |
+| #1176 | Original 2448034eed10aa637e7d79170141dced67441178 run 45734247224 five mandatory jobs passed; browser/final verification outstanding. Typography source tests 2/2 hosted passed. Five substantive files combined on #1174 against current main; fresh full acceptance and separate promotion required. |
+| AF-R018 | Authenticated DNS 18 records; three web-host candidates (apex/www/rsend). HTTPS redirect on, min TLS1.2, SSL Full, Cloudflare HSTS disabled. Application HSTS separate. Hostname TLS/preload acceptance incomplete. No settings modified. |
 | Canonical149 | 59 Completed / 7 Implemented / 64 Partial / 16 Not started / 1 Superseded / 2 Not applicable. No promotions. |
-| Blockers | #446 authenticated Railway configuration plan unavailable; production image-cache headers unverified; assistance concurrency failure root cause unproven. |
-| Next | Complete current-base candidate acceptance; combine compatible changes only with fresh acceptance and promotion; preserve evidence. |
+| Blockers | #446 authenticated Railway config plan; live image-cache headers; assistance concurrency root cause; full typography acceptance. |
+| Next | Verify original #1176 and combined gates, separate promotion, guarded merge and exact deployed runtime; close original only after verified inclusion. |
+
+## Earlier release checkpoint — 26 November 2026
+
+**26 November 2026 IST — current release checkpoint, not a live feed.** Sole writer `CHATGPT_ACTIVE`. Reverify source, PRs, CI, Railway and runtime before action.
+
+| Boundary | Verified evidence |
+|---|---|
+| Main | `92c2d983988439b3053ad0fcf3ff1dfadd3b35d6` from #1171, full 45703035438 seven green; 1716 Chromium passed and one recovered flaky Lenis assertion, 24 cross-browser, synthetic home blocking 58 ms. Separate promotion 45732549092 green; exact accepted tree verified. #1172/#1173 superseded after exact inclusion. |
+| Production | Railway a421addb-fe00-4a9c-a0a4-8cb00601d27e BUILDING at observation. Last independently verified runtime 6cf0687086b84c96c1d1c2e30a9775607aa37ecd. |
+| #1175 | Original `5521dbf2bc94923ff024daf44a7400f34f611d5f` run 45704184707 all seven green; 1717 Chromium, 24 cross-browser; synthetic home blocking 103 ms. Exact compatible source/test/CI blobs reconciled to current main. Fresh full checks and separate promotion required. |
+| #1174 | Original 45703555611 attempt1 browser 1718/24 passed; database 129/130 failed assistance capacity concurrency assertion, error code not logged. One controlled failed-job repeat active; no waiver or root cause claim. |
+| Canonical 149 | 59 Completed / 7 Implemented / 64 Partial / 16 Not started / 1 Superseded / 2 Not applicable. No promotions. |
+| Blocker | #446 authenticated Railway configuration plan unavailable; no apply. Production image-cache headers still unverified. |
+| Next | Verify new runtime; investigate #1174 repeat; full current-base acceptance and separate promotion of #1175. |
 
 ## Earlier release checkpoint — 26 November 2026
 

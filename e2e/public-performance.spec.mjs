@@ -202,6 +202,7 @@ for (const path of webVitalRoutes) {
     await page.addInitScript(() => {
       window.__amaanaLCP = 0;
       window.__amaanaBlockingTime = 0;
+      window.__amaanaLongTaskSummary = { count: 0, longest: [] };
 
       new PerformanceObserver(list => {
         const entries = list.getEntries();
@@ -212,6 +213,15 @@ for (const path of webVitalRoutes) {
       new PerformanceObserver(list => {
         for (const entry of list.getEntries()) {
           window.__amaanaBlockingTime += Math.max(0, entry.duration - 50);
+          const summary = window.__amaanaLongTaskSummary;
+          summary.count += 1;
+          const longest = summary.longest;
+          // Keep only eight timings; never capture frame URLs or DOM attribution.
+          if (longest.length < 8 || entry.duration > longest[longest.length - 1].duration) {
+            longest.push({ startTime: entry.startTime, duration: entry.duration });
+            longest.sort((a, b) => b.duration - a.duration);
+            if (longest.length > 8) longest.pop();
+          }
         }
       }).observe({ type: 'longtask', buffered: true });
     });
@@ -224,9 +234,13 @@ for (const path of webVitalRoutes) {
     const metrics = await page.evaluate(() => ({
       lcp: window.__amaanaLCP ?? 0,
       blockingTime: window.__amaanaBlockingTime ?? 0,
+      longTasks: window.__amaanaLongTaskSummary ?? { count: 0, longest: [] },
     }));
 
     console.log(`Synthetic CWV ${path}: LCP=${metrics.lcp.toFixed(1)}ms; blocking=${metrics.blockingTime.toFixed(1)}ms`);
+    if (metrics.blockingTime > 200) {
+      console.log(`Synthetic long tasks ${path}: ${JSON.stringify(metrics.longTasks)}`);
+    }
     expect(metrics.lcp, `${path} exceeded the 2.5s synthetic LCP launch budget`).toBeGreaterThan(0);
     expect(metrics.lcp, `${path} exceeded the 2.5s synthetic LCP launch budget`).toBeLessThanOrEqual(2500);
     expect(metrics.blockingTime, `${path} exceeded the 200ms synthetic blocking-time launch budget`).toBeLessThanOrEqual(200);
