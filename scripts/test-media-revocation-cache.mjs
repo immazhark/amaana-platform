@@ -32,3 +32,16 @@ test('managed media route keeps publication and approval gates and no-store succ
   assert.match(source, /const headers = new Headers\(\{\s*"Cache-Control": "private, no-store, max-age=0"/);
   assert.doesNotMatch(source, /"Cache-Control":\s*"public,/);
 });
+
+function rewrites(acceptance) {
+  const r = spawnSync(process.execPath, ['--experimental-strip-types', '--input-type=module', '-e', 'import c from "./next.config.ts"; console.log(JSON.stringify(await c.rewrites?.() ?? []))'], { cwd: root, env: {...process.env, AMAANA_BROWSER_ACCEPTANCE: String(acceptance)}, encoding: 'utf8' });
+  assert.equal(r.status, 0, r.stderr);
+  return JSON.parse(r.stdout);
+}
+test('production has no synthetic media rewrite', () => assert.deepEqual(rewrites(false), []));
+test('acceptance has four exact synthetic image routes only', () => assert.deepEqual(rewrites(true), {
+  beforeFiles: Array.from({length: 4}, (_, i) => ({
+    source: `/media/2099/00000000-0000-4000-8000-00000000000${i+1}.jpg`,
+    destination: `/browser-acceptance/managed-image-source?item=${i+1}`,
+  })), afterFiles: [], fallback: [],
+}));

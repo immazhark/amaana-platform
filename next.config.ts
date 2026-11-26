@@ -82,6 +82,18 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60,
     maximumResponseBody: 5 * 1024 * 1024,
   },
+  async rewrites() {
+    if (!browserAcceptance) return [];
+    // Exact synthetic keys only; no real storage or publication records are used.
+    return {
+      beforeFiles: Array.from({ length: 4 }, (_, index) => ({
+        source: `/media/2099/00000000-0000-4000-8000-00000000000${index + 1}.jpg`,
+        destination: `/browser-acceptance/managed-image-source?item=${index + 1}`,
+      })),
+      afterFiles: [],
+      fallback: [],
+    };
+  },
   async headers() {
     return [
       // The managed-media handler owns its success, missing-record and failure cache headers.
