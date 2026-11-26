@@ -8,7 +8,7 @@ import { hasPermission, permissionKeys, requireAuthenticatedUser } from "@/lib/a
 import { prisma } from "@/lib/prisma";
 import { assistanceWorkload } from "@/lib/assistance-workload";
 import { assistanceCaseHref } from "@/lib/assistance-queue-navigation";
-import { DECISION_COHORT_DAYS, loadAssistanceDecisionReport } from "@/lib/assistance-decision-report";
+import { DECISION_COHORT_DAYS, loadAssistanceDecisionBreakdown } from "@/lib/assistance-decision-report";
 import { capacityRemaining, capacityUsed, isIntakePaused } from "@/lib/assistance-capacity";
 import { INDIVIDUAL_CASE_ANNUAL_CAPACITY } from "@/lib/assistance-policy";
 import { setAssistanceIntakeAction } from "./intake-actions";
@@ -28,7 +28,7 @@ export default async function AdminQueuePage({ searchParams }: Props) {
   const mineOnly = requestedAssignment === "mine";
   const scope = { ...assistanceAdminWhere(view), ...(unassignedOnly ? { assignedToId: null } : mineOnly ? { assignedToId: user.id } : {}) };
   const where = { ...scope, ...(selected ? { status: selected } : {}) };
-  const [used, paused, workload, decisions] = await Promise.all([capacityUsed(prisma), isIntakePaused(prisma), assistanceWorkload(prisma, assistanceAdminWhere(view), user.id), loadAssistanceDecisionReport(prisma, view)]);
+  const [used, paused, workload, { totals: decisions, categories: decisionCategories }] = await Promise.all([capacityUsed(prisma), isIntakePaused(prisma), assistanceWorkload(prisma, assistanceAdminWhere(view), user.id), loadAssistanceDecisionBreakdown(prisma, view)]);
   const canApprove = hasPermission(user, "assistance.approve");
   const [totalItems, grouped] = await Promise.all([
     prisma.assistanceRequest.count({ where }),
@@ -143,6 +143,18 @@ export default async function AdminQueuePage({ searchParams }: Props) {
           </table>
         </div>
       </>}
+    </section>
+    <section className="admin-card" aria-labelledby="decision-category-heading">
+      <h2 id="decision-category-heading">Request categories and evidence coverage</h2>
+      <p className="muted">Same {DECISION_COHORT_DAYS}-day receipt cohort and selected record view. Compare demand and saved evidence by requested category, not confirmed need or priority. Missing decision and verification counts can overlap. No response-time commitment is implied.</p>
+      {decisionCategories.length === 0 ? <p>No requests in this receipt cohort.</p> : <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Request category evidence coverage">
+        <table className="admin-table">
+          <thead><tr><th scope="col">Requested category</th><th scope="col">Received</th><th scope="col">Recorded decision</th><th scope="col">Open, no decision</th><th scope="col">Other, no decision</th><th scope="col">Saved verification</th><th scope="col">No verification evidence</th></tr></thead>
+          <tbody>{decisionCategories.map(row => <tr key={row.category}>
+            <th scope="row">{row.category.replaceAll("_", " ")}</th><td>{row.received}</td><td>{row.recorded}</td><td>{row.openWithoutDecision}</td><td>{row.otherWithoutDecision}</td><td>{row.verificationRecorded}</td><td>{row.verificationMissing}</td>
+          </tr>)}</tbody>
+        </table>
+      </div>}
     </section>
   </>;
 }

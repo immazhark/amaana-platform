@@ -3,20 +3,18 @@ import { STAGING_ASSISTANCE_REFERENCE, type AdminRecordView } from "./admin-reco
 
 export const DECISION_COHORT_DAYS = 90;
 const DAY_MS = 86_400_000;
-const fields = ["received", "recorded", "withinDay", "withinWeek", "overWeek", "openWithoutDecision", "otherWithoutDecision",
-  "verificationRecorded", "verificationWithinDay", "verificationWithinWeek", "verificationOverWeek", "verificationMissing"] as const;
-export type AssistanceDecisionReport = Record<(typeof fields)[number], number>;
-type Raw = Record<(typeof fields)[number], bigint>;
+import { summarizeDecisionCategories, type AssistanceDecisionReport, type DecisionCategoryBreakdown, type RawDecisionCategory } from "./assistance-decision-categories";
+export type { AssistanceDecisionReport } from "./assistance-decision-categories";
 
 /** Receipt cohort, not a review SLA. Decision and saved verification evidence are separate measures. */
-export async function loadAssistanceDecisionReport(
+export async function loadAssistanceDecisionBreakdown(
   client: Pick<Prisma.TransactionClient, "$queryRaw">, view: AdminRecordView, now = new Date(),
-): Promise<AssistanceDecisionReport> {
+): Promise<DecisionCategoryBreakdown> {
   const start = new Date(now.getTime() - DECISION_COHORT_DAYS * DAY_MS);
   const tests = view === "tests";
-  const rows = await client.$queryRaw<Raw[]>`
+  const rows = await client.$queryRaw<RawDecisionCategory[]>`
     WITH cohort AS (
-      SELECT id, status, "createdAt", "acceptedAt"
+      SELECT id, status, category, "createdAt", "acceptedAt"
       FROM "AssistanceRequest"
       WHERE "createdAt" >= ${start} AND "createdAt" <= ${now}
         AND ((${tests} AND "referenceNumber" = ${STAGING_ASSISTANCE_REFERENCE}) OR (NOT ${tests} AND "referenceNumber" <> ${STAGING_ASSISTANCE_REFERENCE}))
@@ -44,11 +42,11 @@ export async function loadAssistanceDecisionReport(
       WHERE v."verificationAt" >= c."createdAt" AND v."verificationAt" <= ${now}
       GROUP BY c.id
     ), durations AS (
-      SELECT c.status, e."decisionAt", EXTRACT(EPOCH FROM (e."decisionAt" - c."createdAt")) AS seconds,
+      SELECT c.status, c.category, e."decisionAt", EXTRACT(EPOCH FROM (e."decisionAt" - c."createdAt")) AS seconds,
         v."verificationAt", EXTRACT(EPOCH FROM (v."verificationAt" - c."createdAt")) AS "verificationSeconds"
       FROM cohort c LEFT JOIN earliest e ON e.id = c.id LEFT JOIN earliest_verification v ON v.id = c.id
     )
-    SELECT COUNT(*)::bigint AS "received",
+    SELECT CAST(category AS TEXT) AS category, COUNT(*)::bigint AS "received",
       COUNT("decisionAt")::bigint AS "recorded",
       COUNT(CASE WHEN seconds <= 86400 THEN 1 END)::bigint AS "withinDay",
       COUNT(CASE WHEN seconds > 86400 AND seconds <= 604800 THEN 1 END)::bigint AS "withinWeek",
@@ -60,17 +58,13 @@ export async function loadAssistanceDecisionReport(
       COUNT(CASE WHEN "verificationSeconds" > 86400 AND "verificationSeconds" <= 604800 THEN 1 END)::bigint AS "verificationWithinWeek",
       COUNT(CASE WHEN "verificationSeconds" > 604800 THEN 1 END)::bigint AS "verificationOverWeek",
       COUNT(CASE WHEN "verificationAt" IS NULL THEN 1 END)::bigint AS "verificationMissing"
-    FROM durations
+    FROM durations GROUP BY category
   `;
-  const row = rows[0];
-  if (rows.length !== 1 || !row) throw new Error("Inconsistent assistance decision report");
-  const report = Object.fromEntries(fields.map(field => [field, Number(row[field])])) as AssistanceDecisionReport;
-  if (fields.some(field => !Number.isSafeInteger(report[field]) || report[field] < 0) ||
-      report.recorded !== report.withinDay + report.withinWeek + report.overWeek ||
-      report.received !== report.recorded + report.openWithoutDecision + report.otherWithoutDecision ||
-      report.verificationRecorded !== report.verificationWithinDay + report.verificationWithinWeek + report.verificationOverWeek ||
-      report.received !== report.verificationRecorded + report.verificationMissing) {
-    throw new Error("Inconsistent assistance decision report");
-  }
-  return report;
+  return summarizeDecisionCategories(rows);
+}
+
+export async function loadAssistanceDecisionReport(
+  client: Pick<Prisma.TransactionClient, "$queryRaw">, view: AdminRecordView, now = new Date(),
+): Promise<AssistanceDecisionReport> {
+  return (await loadAssistanceDecisionBreakdown(client, view, now)).totals;
 }

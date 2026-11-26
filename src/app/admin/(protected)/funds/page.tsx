@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requirePermission } from "@/lib/auth";
-import { annualFinanceCsv, financeReviewPeriod, loadAnnualFinanceReview } from "@/lib/annual-finance-review";
+import { annualFinanceCsv, financeReviewPeriod, loadAnnualFinanceBreakdown } from "@/lib/annual-finance-review";
 import { formatINR } from "@/lib/appeals";
 import { getFundsLedger } from "@/lib/funds-ledger";
 import { loadTaleemSponsorshipReport } from "@/lib/taleem-sponsorship-report";
@@ -13,6 +13,7 @@ export const dynamic = "force-dynamic";
 
 const rupees = (paise: number) => formatINR(paise / 100);
 const ZAKAT_LABEL = { ACCEPTED: "Zakat accepted", NOT_ACCEPTED: "Zakat not accepted", UNDER_REVIEW: "Zakat under review" } as const;
+const CHANNEL_LABEL = { RAZORPAY: "Razorpay", DIRECT_UPI: "Direct UPI", BANK_TRANSFER: "Bank transfer" } as const;
 const EMPTY: PoolTotals = { receivedPaise: 0, pendingPaise: 0, refundedPaise: 0, spentPaise: 0, publishedSpentPaise: 0, balancePaise: 0 };
 
 type Props = { searchParams: Promise<{ fy?: string | string[] }> };
@@ -20,7 +21,7 @@ type Props = { searchParams: Promise<{ fy?: string | string[] }> };
 export default async function FundsLedgerPage({ searchParams }: Props) {
   await requirePermission("donation.view");
   const period = financeReviewPeriod((await searchParams).fy);
-  const [{ funds, byFund, zakatAccount }, sponsorships, annual] = await Promise.all([getFundsLedger(), loadTaleemSponsorshipReport(prisma), loadAnnualFinanceReview(prisma, period)]);
+  const [{ funds, byFund, zakatAccount }, sponsorships, { destinations: annual, channels }] = await Promise.all([getFundsLedger(), loadTaleemSponsorshipReport(prisma), loadAnnualFinanceBreakdown(prisma, period)]);
   const fundNames = new Map(funds.map(fund => [fund.slug, fund.name]));
   const csvHref = "data:text/csv;charset=utf-8," + encodeURIComponent(annualFinanceCsv(period.label, annual));
   const appealTotals = byFund[APPEAL_BUCKET]?.total ?? EMPTY;
@@ -90,6 +91,16 @@ export default async function FundsLedgerPage({ searchParams }: Props) {
           </table>
         </div>
       </>}
+    </section>
+    <section className="admin-card" aria-labelledby="annual-channel-heading">
+      <h2 id="annual-channel-heading">Payment channels · FY {period.label}</h2>
+      <p className="muted">The same financial-year receipt and pending-claim snapshot, grouped by payment channel rather than destination. Spending is not attributed to a channel. These are application records, not settlement or bank statements; pending claims are not receipts.</p>
+      {channels.length === 0 ? <p>No matching receipt or direct claim records for this year. This does not establish zero foundation activity.</p> : <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Financial-year payment channel reconciliation">
+        <table className="admin-table">
+          <thead><tr><th scope="col">Payment channel</th><th scope="col">Gross verified</th><th scope="col">Cumulative principal refunded</th><th scope="col">Retained principal</th><th scope="col">Pending claims</th><th scope="col">Pending amount</th></tr></thead>
+          <tbody>{channels.map(row => <tr key={row.paymentMethod}><th scope="row">{CHANNEL_LABEL[row.paymentMethod]}</th><td>{formatDonationReportINR(row.grossPaise / 100)}</td><td>{formatDonationReportINR(row.refundedPaise / 100)}</td><td>{formatDonationReportINR(row.retainedPaise / 100)}</td><td>{row.pendingCount}</td><td>{formatDonationReportINR(row.pendingPaise / 100)}</td></tr>)}</tbody>
+        </table>
+      </div>}
     </section>
     <section className="admin-card" aria-labelledby="taleem-report-heading">
       <h2 id="taleem-report-heading">Taleem sponsorship reconciliation</h2>
