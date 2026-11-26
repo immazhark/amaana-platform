@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { prisma } from "@/lib/prisma";
 import { loadFundsLedger } from "@/lib/funds-ledger";
+import { loadPendingTransferReview } from "@/lib/pending-transfer-review";
 import { financeReviewPeriod, loadAnnualFinanceReview } from "@/lib/annual-finance-review";
 import { loadDonationReconciliationReport, loadDonationReconciliationTotals } from "@/lib/donation-reconciliation-totals";
 
@@ -255,6 +256,25 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("designated giving
       return (await loadAnnualFinanceReview(tx, period)).find(item => item.fundSlug === f.slug && item.pool === "ZAKAT");
     }, Prisma.TransactionIsolationLevel.RepeatableRead);
     expect(row).toMatchObject({ destination: "fund", grossPaise: 20000, refundedPaise: 3800, retainedPaise: 16200, pendingPaise: 8000, pendingCount: 1, draftPaise: 2000, publishedPaise: 3025 });
+  });
+
+  it("partitions pending direct claims at exact elapsed-time boundaries and excludes captured gifts", async () => {
+    await probe(async tx => {
+      const now = new Date("2026-11-26T10:00:00Z");
+      const before = await loadPendingTransferReview(tx, now);
+      const f = await fund(tx);
+      for (const [method, age] of [["DIRECT_UPI", 0], ["DIRECT_UPI", 1], ["DIRECT_UPI", 7], ["DIRECT_UPI", 8], ["BANK_TRANSFER", -1], ["BANK_TRANSFER", 2]] as const) {
+        await tx.donation.create({ data: donation(f.id, { status: "PENDING_VERIFICATION", paymentMethod: method, provider: null, providerOrderId: null, transferReference: next(), transferredAt: new Date(now.getTime() - 8 * 86_400_000), createdAt: new Date(now.getTime() - age * 86_400_000) }) });
+      }
+      await tx.donation.create({ data: donation(f.id, { status: "CAPTURED", capturedAt: now, createdAt: now }) });
+      const after = await loadPendingTransferReview(tx, now);
+      for (const [method, expected] of [["DIRECT_UPI", { underDay: 1, oneToSevenDays: 2, overSevenDays: 1, future: 0, total: 4 }], ["BANK_TRANSFER", { underDay: 0, oneToSevenDays: 1, overSevenDays: 0, future: 1, total: 2 }]] as const) {
+        const old = before.find(row => row.paymentMethod === method);
+        const current = after.find(row => row.paymentMethod === method);
+        if (!old || !current) throw new Error("Missing review method");
+        expect({ underDay: current.underDay - old.underDay, oneToSevenDays: current.oneToSevenDays - old.oneToSevenDays, overSevenDays: current.overSevenDays - old.overSevenDays, future: current.future - old.future, total: current.total - old.total }).toEqual(expected);
+      }
+    }, Prisma.TransactionIsolationLevel.RepeatableRead);
   });
 
   it("caps a recorded refund at the whole charge: the gift plus any covered gateway fee", async () => {
