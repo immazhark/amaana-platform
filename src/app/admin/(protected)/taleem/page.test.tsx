@@ -50,8 +50,8 @@ describe("Taleem roster admin page", () => {
   it("lists learners with their opaque reference, programme and place, and a vacant place as assignable", async () => {
     const html = await render({
       counts: counts(),
-      learners: [{ id: "l1", publicAlias: "TL-ABCDEFGH", fullName: "Synthetic Person", status: "ACTIVE", programme: "NAZIRA", placeCode: null, assignmentId: null, completedHifdhOn: null }],
-      places: [{ id: "p1", placeCode: "TP-ABCDEF", status: "MAINTAINED", holderAlias: null, assignmentId: null }],
+      learners: [{ id: "l1", publicAlias: "TL-ABCDEFGH", fullName: "Synthetic Person", status: "ACTIVE", programme: "NAZIRA", placeCode: null, assignmentId: null, openAssignmentPlaceCode: null, openAssignmentStartsOn: null, hasBlockingAssignment: false, completedHifdhOn: null }],
+      places: [{ id: "p1", placeCode: "TP-ABCDEF", status: "MAINTAINED", holderAlias: null, assignmentId: null, hasBlockingAssignment: false }],
     });
     expect(html).toContain("TL-ABCDEFGH");
     expect(html).toContain("Nazira");
@@ -63,8 +63,8 @@ describe("Taleem roster admin page", () => {
   it("offers to end the current assignment, not to assign again, for a learner who holds a place", async () => {
     const html = await render({
       counts: counts(),
-      learners: [{ id: "l1", publicAlias: "TL-ABCDEFGH", fullName: "Synthetic Person", status: "ACTIVE", programme: "HIFDH", placeCode: "TP-ABCDEF", assignmentId: "a1", completedHifdhOn: null }],
-      places: [{ id: "p1", placeCode: "TP-ABCDEF", status: "MAINTAINED", holderAlias: "TL-ABCDEFGH", assignmentId: "a1" }],
+      learners: [{ id: "l1", publicAlias: "TL-ABCDEFGH", fullName: "Synthetic Person", status: "ACTIVE", programme: "HIFDH", placeCode: "TP-ABCDEF", assignmentId: "a1", openAssignmentPlaceCode: "TP-ABCDEF", openAssignmentStartsOn: "2026-01-01", hasBlockingAssignment: true, completedHifdhOn: null }],
+      places: [{ id: "p1", placeCode: "TP-ABCDEF", status: "MAINTAINED", holderAlias: "TL-ABCDEFGH", assignmentId: "a1", hasBlockingAssignment: true }],
     });
     expect(html).toContain("End this assignment");
     expect(html).not.toContain("Assign this place");
@@ -73,24 +73,39 @@ describe("Taleem roster admin page", () => {
   it("never offers a place to a learner who has left, and hides the completion form once one is recorded", async () => {
     const html = await render({
       counts: counts(),
-      learners: [{ id: "l1", publicAlias: "TL-ABCDEFGH", fullName: "Synthetic Person", status: "LEFT", programme: null, placeCode: null, assignmentId: null, completedHifdhOn: "2026-06-15" }],
-      places: [{ id: "p1", placeCode: "TP-ABCDEF", status: "MAINTAINED", holderAlias: null, assignmentId: null }],
+      learners: [{ id: "l1", publicAlias: "TL-ABCDEFGH", fullName: "Synthetic Person", status: "LEFT", programme: null, placeCode: null, assignmentId: null, openAssignmentPlaceCode: null, openAssignmentStartsOn: null, hasBlockingAssignment: false, completedHifdhOn: "2026-06-15" }],
+      places: [{ id: "p1", placeCode: "TP-ABCDEF", status: "MAINTAINED", holderAlias: null, assignmentId: null, hasBlockingAssignment: false }],
     });
     expect(html).not.toContain("Assign this place");
     expect(html).not.toContain("Record Hifdh completion");
     expect(html).toContain("Hifdh completed 2026-06-15");
   });
 
+  it("distinguishes scheduled and current assignments, and does not offer a reserved place to a different learner", async () => {
+    const html = await render({
+      counts: counts(),
+      learners: [
+        { id: "l1", publicAlias: "TL-ABCDEFGH", fullName: "Synthetic Future Holder", status: "ACTIVE", programme: "QAIDA", placeCode: null, assignmentId: "future", openAssignmentPlaceCode: "TP-ABCDEF", openAssignmentStartsOn: "2026-11-27", hasBlockingAssignment: true, completedHifdhOn: null },
+        { id: "l2", publicAlias: "TL-BCDEFGHJ", fullName: "Synthetic Other Learner", status: "ACTIVE", programme: "QAIDA", placeCode: null, assignmentId: null, openAssignmentPlaceCode: null, openAssignmentStartsOn: null, hasBlockingAssignment: false, completedHifdhOn: null },
+      ],
+      places: [{ id: "p1", placeCode: "TP-ABCDEF", status: "MAINTAINED", holderAlias: null, assignmentId: "future", hasBlockingAssignment: true }],
+    });
+    expect(html).toContain("Vacant today — future assignment recorded");
+    expect(html).toContain("Scheduled from 2026-11-27: TP-ABCDEF");
+    expect(html).toContain("End open assignment for TP-ABCDEF on");
+    expect(html).not.toContain("Assign this place");
+  });
+
   it("makes the scrollable places table a labelled, keyboard-focusable region", async () => {
-    const html = await render({ counts: counts(), learners: [], places: [{ id: "p1", placeCode: "TP-ABCDEF", status: "MAINTAINED", holderAlias: null, assignmentId: null }] });
+    const html = await render({ counts: counts(), learners: [], places: [{ id: "p1", placeCode: "TP-ABCDEF", status: "MAINTAINED", holderAlias: null, assignmentId: null, hasBlockingAssignment: false }] });
     expect(html).toMatch(/<div class="admin-table-wrap" tabindex="0" role="region" aria-label="Sponsored places and who holds each today">/);
   });
 
   it("labels every form control", async () => {
     const html = await render({
       counts: counts(),
-      learners: [{ id: "l1", publicAlias: "TL-ABCDEFGH", fullName: "Synthetic Person", status: "ACTIVE", programme: "QAIDA", placeCode: null, assignmentId: null, completedHifdhOn: null }],
-      places: [{ id: "p1", placeCode: "TP-ABCDEF", status: "MAINTAINED", holderAlias: null, assignmentId: null }],
+      learners: [{ id: "l1", publicAlias: "TL-ABCDEFGH", fullName: "Synthetic Person", status: "ACTIVE", programme: "QAIDA", placeCode: null, assignmentId: null, openAssignmentPlaceCode: null, openAssignmentStartsOn: null, hasBlockingAssignment: false, completedHifdhOn: null }],
+      places: [{ id: "p1", placeCode: "TP-ABCDEF", status: "MAINTAINED", holderAlias: null, assignmentId: null, hasBlockingAssignment: false }],
     });
     const controls = [...html.matchAll(/<(?:input|select|textarea)\b[^>]*>/g)].map(match => match[0]).filter(tag => !/type="hidden"/.test(tag));
     expect(controls.length).toBeGreaterThan(8);
