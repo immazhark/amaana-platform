@@ -52,6 +52,7 @@ jobs:
         run: |
           node --check scripts/diagnose-resend-dns.mjs
           node --test scripts/test-backlog-queue.mjs
+          node --test scripts/test-taleem-reservation-model.mjs
           node scripts/check-backlog-queue.mjs
           node --test scripts/test-ci-plan.mjs scripts/test-ci-concurrency.mjs scripts/test-ci-verification.mjs scripts/test-railway-watch-contract.mjs scripts/test-railway-iac-parity.mjs
           node scripts/ci-plan.mjs
