@@ -1,6 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { prisma } from "./prisma";
+import { Prisma } from "@prisma/client";
+import { loadRetentionScheduleSummary } from "./retention-review";
 import { AssistanceRejectionError, rejectAssistanceRequest } from "./assistance-rejection-service";
 
 // A real PostgreSQL test, deliberately unavailable to hosted and production DBs. Synthetic data only.
@@ -57,6 +59,30 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("assistance reject
     await prisma.assistanceRequest.deleteMany({ where: { id: { in: requestIds } } });
     await prisma.appeal.deleteMany({ where: { id: { in: appealIds } } });
     await prisma.user.deleteMany({ where: { id: { in: [actorId, otherActorId] } } });
+  });
+
+  it("groups the latest document-scoped retention decisions without treating due reminders as hold release", async () => {
+    const request = await makeRequest();
+    const unrelated = await makeRequest();
+    const rollback = new Error("synthetic retention review rollback");
+    await expect(prisma.$transaction(async tx => {
+      const today = "2026-11-26";
+      const before = await loadRetentionScheduleSummary(tx, today);
+      const doc = async (suffix: string) => tx.assistanceDocument.create({ data: { assistanceRequestId: request.id, originalName: "synthetic.pdf", mimeType: "application/pdf", sizeBytes: 10, objectKey: "synthetic/" + tag + suffix } });
+      const [held, released, unscheduled, unreviewed, invalid] = await Promise.all(["held", "released", "unscheduled", "unreviewed", "invalid"].map(doc));
+      if (!held || !released || !unscheduled || !unreviewed || !invalid) throw new Error("Missing synthetic document");
+      const event = (documentId: string, action: string, reviewAfter: string | null, day: number, entityId = request.id) => tx.auditEvent.create({ data: { actorId, entityType: "AssistanceRequest", entityId, action: "assistance." + action, createdAt: new Date(Date.UTC(2026, 10, day)), metadata: { documentId, reviewAfter, reason: "Synthetic only" } } });
+      await event(held.id, "document_legal_hold_placed", "2026-11-26T00:00:00.000Z", 20);
+      await event(held.id, "document_legal_hold_released", null, 25, unrelated.id);
+      await event(released.id, "document_legal_hold_placed", "2026-11-25T00:00:00.000Z", 20);
+      await event(released.id, "document_legal_hold_released", "2026-12-01T00:00:00.000Z", 21);
+      await event(unscheduled.id, "document_retention_reviewed", "2026-11-25T00:00:00.000Z", 20);
+      await event(unscheduled.id, "document_retention_reviewed", null, 21);
+      await event(invalid.id, "document_retention_reviewed", "2026-02-30T00:00:00.000Z", 21);
+      const after = await loadRetentionScheduleSummary(tx, today);
+      expect(after).toEqual({ total: before.total + 5, held: before.held + 1, due: before.due + 1, upcoming: before.upcoming + 1, unreviewed: before.unreviewed + 1, unscheduled: before.unscheduled + 1, invalid: before.invalid + 1 });
+      throw rollback;
+    }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead })).rejects.toBe(rollback);
   });
 
   it("1. rejects an untouched SUBMITTED request with no verification record, using only a reason", async () => {
