@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { prisma } from "@/lib/prisma";
 import { loadFundsLedger } from "@/lib/funds-ledger";
+import { financeReviewPeriod, loadAnnualFinanceReview } from "@/lib/annual-finance-review";
 import { loadDonationReconciliationReport, loadDonationReconciliationTotals } from "@/lib/donation-reconciliation-totals";
 
 class Rollback extends Error {}
@@ -233,6 +234,27 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("designated giving
     expect(result.razorpay).toEqual({ grossCaptured: 300, refunded: 105, netRetained: 195, pendingAmount: 0, pendingCount: 0 });
     expect(result.upi).toEqual({ grossCaptured: 200, refunded: 0, netRetained: 200, pendingAmount: 80, pendingCount: 1 });
     expect(result.bank).toEqual({ grossCaptured: 0, refunded: 0, netRetained: 0, pendingAmount: 150, pendingCount: 1 });
+  });
+
+  it("reconciles an Indian financial-year cohort without pending, void or out-of-year contamination", async () => {
+    const row = await probe(async tx => {
+      const f = await fund(tx);
+      const owner = await user(tx);
+      const period = financeReviewPeriod("2026-27", new Date("2026-11-26T00:00:00Z"));
+      const gift = (over: Partial<Prisma.DonationUncheckedCreateInput>) => tx.donation.create({ data: donation(f.id, { status: "CAPTURED", capturedAt: period.start, createdAt: period.start, givingIntent: "ZAKAT", ...over }) });
+      await gift({ amount: 100, feeContributionAmount: 12, refundedAmount: 50 });
+      await gift({ amount: 100, feeContributionAmount: 12, refundedAmount: 12 });
+      await gift({ amount: 999, capturedAt: period.end, createdAt: period.end });
+      await gift({ amount: 999, status: "FAILED", capturedAt: null });
+      await gift({ amount: 80, status: "PENDING_VERIFICATION", capturedAt: null, paymentMethod: "DIRECT_UPI", provider: null, providerOrderId: null, transferReference: next(), transferredAt: period.start });
+      const spending = { fundId: f.id, createdById: owner.id, pool: "ZAKAT" as const, spentOn: new Date("2026-11-12"), financialYear: "2026-27", title: "Synthetic review", zakatEligibilityConfirmedAt: new Date(), zakatEligibilityBasis: "Synthetic verified eligibility" };
+      await tx.fundDisbursement.create({ data: { ...spending, amount: 20, status: "DRAFT" } });
+      await tx.fundDisbursement.create({ data: { ...spending, amount: 30.25, status: "PUBLISHED" } });
+      await tx.fundDisbursement.create({ data: { ...spending, amount: 999, status: "VOID", voidedAt: new Date(), voidReason: "Synthetic duplicate" } });
+      await tx.fundDisbursement.create({ data: { ...spending, amount: 999, financialYear: "2025-26", spentOn: new Date("2025-11-12"), status: "PUBLISHED" } });
+      return (await loadAnnualFinanceReview(tx, period)).find(item => item.fundSlug === f.slug && item.pool === "ZAKAT");
+    }, Prisma.TransactionIsolationLevel.RepeatableRead);
+    expect(row).toMatchObject({ destination: "fund", grossPaise: 20000, refundedPaise: 3800, retainedPaise: 16200, pendingPaise: 8000, pendingCount: 1, draftPaise: 2000, publishedPaise: 3025 });
   });
 
   it("caps a recorded refund at the whole charge: the gift plus any covered gateway fee", async () => {

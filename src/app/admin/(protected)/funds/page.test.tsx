@@ -1,11 +1,12 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ permission: vi.fn(), ledger: vi.fn(), report: vi.fn() }));
+const mocks = vi.hoisted(() => ({ permission: vi.fn(), ledger: vi.fn(), report: vi.fn(), annual: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ requirePermission: mocks.permission }));
 vi.mock("@/lib/prisma", () => ({ prisma: {} }));
 vi.mock("@/lib/funds-ledger", () => ({ getFundsLedger: mocks.ledger }));
 vi.mock("@/lib/taleem-sponsorship-report", () => ({ loadTaleemSponsorshipReport: mocks.report }));
+vi.mock("@/lib/annual-finance-review", async importOriginal => ({ ...await importOriginal<typeof import("@/lib/annual-finance-review")>(), loadAnnualFinanceReview: mocks.annual }));
 
 import FundsLedgerPage from "./page";
 
@@ -14,15 +15,17 @@ beforeEach(() => {
   mocks.permission.mockResolvedValue({ id: "synthetic-viewer" });
   mocks.ledger.mockResolvedValue({ funds: [], byFund: {}, zakatAccount: { receivedPaise: 0, pendingPaise: 0, refundedPaise: 0, spentPaise: 0, publishedSpentPaise: 0, balancePaise: 0 } });
   mocks.report.mockResolvedValue([]);
+  mocks.annual.mockResolvedValue([]);
 });
 
 describe("private Taleem reconciliation", () => {
   it("does not query the ledger or sponsorship report if viewing is denied", async () => {
     mocks.permission.mockRejectedValue(new Error("denied"));
-    await expect(FundsLedgerPage()).rejects.toThrow("denied");
+    await expect(FundsLedgerPage({ searchParams: Promise.resolve({ fy: "2020-21" }) })).rejects.toThrow("denied");
     expect(mocks.permission).toHaveBeenCalledWith("donation.view");
     expect(mocks.ledger).not.toHaveBeenCalled();
     expect(mocks.report).not.toHaveBeenCalled();
+    expect(mocks.annual).not.toHaveBeenCalled();
   });
 
   it("renders historic rates, retained principal and unverified claims separately", async () => {
@@ -30,7 +33,7 @@ describe("private Taleem reconciliation", () => {
       { programme: "qaida", monthlyRate: 900, rateVersion: "historic", verifiedCount: 1, grossCaptured: 900, principalRefunded: 0, netRetained: 900, pendingCount: 0, pendingAmount: 0 },
       { programme: "qaida", monthlyRate: 1000, rateVersion: "current", verifiedCount: 3, grossCaptured: 3000, principalRefunded: 1100, netRetained: 1900, pendingCount: 1, pendingAmount: 3000 },
     ]);
-    const html = renderToStaticMarkup(await FundsLedgerPage());
+    const html = renderToStaticMarkup(await FundsLedgerPage({ searchParams: Promise.resolve({ fy: "2020-21" }) }));
     expect(html).toContain("Taleem sponsorship reconciliation");
     expect(html).toContain("₹900 per unit/month · historic");
     expect(html).toContain("₹1,000 per unit/month · current");
@@ -40,6 +43,25 @@ describe("private Taleem reconciliation", () => {
   });
 
   it("renders an explicit empty state", async () => {
-    expect(renderToStaticMarkup(await FundsLedgerPage())).toContain("No verified sponsorship gifts or pending claims recorded.");
+    expect(renderToStaticMarkup(await FundsLedgerPage({ searchParams: Promise.resolve({ fy: "2020-21" }) }))).toContain("No verified sponsorship gifts or pending claims recorded.");
+  });
+});
+
+describe("annual finance review", () => {
+  it("selects an Indian financial year and exposes aggregate CSV only after authorization", async () => {
+    mocks.annual.mockResolvedValue([{ destination: "fund", fundSlug: "taleem", pool: "ZAKAT", grossPaise: 10001, refundedPaise: 1, retainedPaise: 10000, pendingPaise: 0, pendingCount: 0, draftPaise: 0, publishedPaise: 1250 }]);
+    const html = renderToStaticMarkup(await FundsLedgerPage({ searchParams: Promise.resolve({ fy: "2020-21" }) }));
+    expect(mocks.annual).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ label: "2020-21", start: new Date("2020-03-31T18:30:00Z"), end: new Date("2021-03-31T18:30:00Z") }));
+    expect(html).toContain("amaana-application-finance-review-2020-21.csv");
+    expect(html).toContain("₹100.01");
+    expect(html).toContain("not refund-date cash flows");
+    expect(html).toContain("not bank statements, statutory tax filings");
+    expect(html).not.toContain("donorEmail");
+  });
+
+  it("does not imply zero foundation activity when no matching records exist", async () => {
+    const html = renderToStaticMarkup(await FundsLedgerPage({ searchParams: Promise.resolve({ fy: "2020-21" }) }));
+    expect(html).toContain("This does not establish zero foundation activity.");
+    expect(html).not.toContain("Download aggregate CSV");
   });
 });
