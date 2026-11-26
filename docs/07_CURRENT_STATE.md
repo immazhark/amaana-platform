@@ -1,5 +1,7 @@
 # Amaana Foundation — current verified state
 
+**26 November 2026 IST — additional candidate checkpoint:** Main `0f50d8a87224c55249759d6bae8af9132fe3aa05`; Railway source-only merge SKIPPED, last successful website deployment `92c2d983988439b3053ad0fcf3ff1dfadd3b35d6`; independent public runtime recheck outstanding. #1174 and #1177 full draft CI green, #1178/#1179/#1180 acceptance in progress at observation. #1179 current offline migration snapshot; actual authenticated IaC plan/apply remains blocked. New AF-SETTLEMENT payment-channel reporting candidate: local synthetic SQL probe passed, real isolated PostgreSQL and hosted full acceptance pending. No live changes or canonical promotions. See active writer record for exact task scope.
+
 **26 November 2026 IST — current release checkpoint, not a live feed.** Sole writer `CHATGPT_ACTIVE`. Reverify source, PRs, CI, Railway and runtime before action.
 
 | Boundary | Verified evidence |

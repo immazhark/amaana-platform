@@ -1,33 +1,72 @@
-import type { Prisma } from "@prisma/client";
+import type { DonationPaymentMethod, Prisma } from "@prisma/client";
 
-/**
- * Read-only totals of charitable principal, in INR. Provider refunds include any
- * returned fee contribution, which is not part of the gift. Apply the existing
- * fee-first rule to each captured/refunded row before summing, in one snapshot.
- * No donor details, payment identifiers or individual amounts leave the query.
- */
-export async function loadDonationReconciliationTotals(client: Pick<Prisma.TransactionClient, "$queryRaw">) {
-  const [totals] = await client.$queryRaw<{
+type ReconciliationAmounts = {
+  grossCaptured: number;
+  refunded: number;
+  netRetained: number;
+  pendingAmount: number;
+  pendingCount: number;
+};
+type ReconciliationRow = ReconciliationAmounts & { paymentMethod: DonationPaymentMethod | null };
+
+/** One database snapshot for private reconciliation, grouped by payment method.
+ * Captured/refunded principal excludes returned processing fees per donation.
+ * Unverified direct transfer claims are separate, never included as receipts.
+ * These are application records, not provider or bank settlement statements. */
+export async function loadDonationReconciliationReport(client: Pick<Prisma.TransactionClient, "$queryRaw">) {
+  const rows = await client.$queryRaw<{
+    paymentMethod: DonationPaymentMethod | null;
     grossCaptured: Prisma.Decimal;
     refunded: Prisma.Decimal;
     netRetained: Prisma.Decimal;
+    pendingAmount: Prisma.Decimal;
+    pendingCount: bigint;
   }[]>`
-    WITH totals AS (
-      SELECT COALESCE(SUM("amount"), 0) AS "grossCaptured",
-             COALESCE(SUM(GREATEST("refundedAmount" - "feeContributionAmount", 0)), 0) AS "refunded"
+    WITH methods AS (
+      SELECT CAST("paymentMethod" AS TEXT) AS "paymentMethod",
+             COALESCE(SUM("amount") FILTER (WHERE "status" IN ('CAPTURED', 'REFUNDED')), 0) AS "grossCaptured",
+             COALESCE(SUM(GREATEST("refundedAmount" - "feeContributionAmount", 0)) FILTER (WHERE "status" IN ('CAPTURED', 'REFUNDED')), 0) AS "refunded",
+             COALESCE(SUM("amount") FILTER (WHERE "status" = 'PENDING_VERIFICATION'), 0) AS "pendingAmount",
+             COUNT(*) FILTER (WHERE "status" = 'PENDING_VERIFICATION') AS "pendingCount"
       FROM "Donation"
       WHERE "status" IN ('CAPTURED', 'REFUNDED')
+         OR ("status" = 'PENDING_VERIFICATION' AND "paymentMethod" IN ('DIRECT_UPI', 'BANK_TRANSFER'))
+      GROUP BY "paymentMethod"
+    ), totals AS (
+      SELECT CAST(NULL AS TEXT) AS "paymentMethod",
+             COALESCE(SUM("grossCaptured"), 0) AS "grossCaptured",
+             COALESCE(SUM("refunded"), 0) AS "refunded",
+             COALESCE(SUM("pendingAmount"), 0) AS "pendingAmount",
+             CAST(COALESCE(SUM("pendingCount"), 0) AS BIGINT) AS "pendingCount"
+      FROM methods
+    ), combined AS (
+      SELECT * FROM totals UNION ALL SELECT * FROM methods
     )
-    SELECT "grossCaptured", "refunded",
-           GREATEST("grossCaptured" - "refunded", 0) AS "netRetained"
-    FROM totals
+    SELECT "paymentMethod", "grossCaptured", "refunded",
+           GREATEST("grossCaptured" - "refunded", 0) AS "netRetained",
+           "pendingAmount", "pendingCount"
+    FROM combined
   `;
-  if (!totals) throw new Error("Donation reconciliation totals unavailable");
+  const mapped: ReconciliationRow[] = rows.map(row => ({
+    paymentMethod: row.paymentMethod,
+    grossCaptured: row.grossCaptured.toNumber(),
+    refunded: row.refunded.toNumber(),
+    netRetained: row.netRetained.toNumber(),
+    pendingAmount: row.pendingAmount.toNumber(),
+    pendingCount: Number(row.pendingCount),
+  }));
+  const total = mapped.find(row => row.paymentMethod === null);
+  if (!total) throw new Error("Donation reconciliation totals unavailable");
+  const totals = { grossCaptured: total.grossCaptured, refunded: total.refunded, netRetained: total.netRetained, pendingAmount: total.pendingAmount, pendingCount: total.pendingCount };
   return {
-    grossCaptured: totals.grossCaptured.toNumber(),
-    refunded: totals.refunded.toNumber(),
-    netRetained: totals.netRetained.toNumber(),
+    totals,
+    methods: mapped.filter((row): row is ReconciliationRow & { paymentMethod: DonationPaymentMethod } => row.paymentMethod !== null),
   };
+}
+
+export async function loadDonationReconciliationTotals(client: Pick<Prisma.TransactionClient, "$queryRaw">) {
+  const { totals: { grossCaptured, refunded, netRetained } } = await loadDonationReconciliationReport(client);
+  return { grossCaptured, refunded, netRetained };
 }
 
 const reportINR = new Intl.NumberFormat("en-IN", {

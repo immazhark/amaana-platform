@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { prisma } from "@/lib/prisma";
 import { loadFundsLedger } from "@/lib/funds-ledger";
-import { loadDonationReconciliationTotals } from "@/lib/donation-reconciliation-totals";
+import { loadDonationReconciliationReport, loadDonationReconciliationTotals } from "@/lib/donation-reconciliation-totals";
 
 class Rollback extends Error {}
 class NotRefused extends Error {}
@@ -193,6 +193,46 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("designated giving
     expect(result.refunds).toBeCloseTo(130, 2);
     expect(result.retained).toBeCloseTo(370, 2);
     expect(result.ledger).toMatchObject({ refundedPaise: 13000, receivedPaise: 37000 });
+  });
+
+  it("separates verified principal, fee-first refunds and pending claims by payment channel in one snapshot", async () => {
+    const result = await probe(async tx => {
+      const f = await fund(tx);
+      const before = await loadDonationReconciliationReport(tx);
+      const capturedAt = new Date("2026-11-10T06:00:00Z");
+      const gift = (over: Partial<Prisma.DonationUncheckedCreateInput>) => tx.donation.create({
+        data: donation(f.id, { status: "CAPTURED", capturedAt, ...over }),
+      });
+      const direct = (paymentMethod: "DIRECT_UPI" | "BANK_TRANSFER", over: Partial<Prisma.DonationUncheckedCreateInput>) => gift({
+        paymentMethod, provider: null, providerOrderId: null, transferReference: next(), transferredAt: capturedAt, ...over,
+      });
+      await gift({ feeContributionAmount: 12, refundedAmount: 5 });
+      await gift({ feeContributionAmount: 2, refundedAmount: 7 });
+      await gift({ status: "REFUNDED", feeContributionAmount: 12, refundedAmount: 112, refundedAt: capturedAt });
+      await gift({ status: "FAILED", capturedAt: null, amount: 900 });
+      await direct("DIRECT_UPI", { amount: 200 });
+      await direct("DIRECT_UPI", { status: "PENDING_VERIFICATION", capturedAt: null, amount: 80 });
+      await direct("BANK_TRANSFER", { status: "PENDING_VERIFICATION", capturedAt: null, amount: 150 });
+      await direct("BANK_TRANSFER", { status: "REJECTED", capturedAt: null, amount: 500 });
+      const after = await loadDonationReconciliationReport(tx);
+      const delta = (method?: "RAZORPAY" | "DIRECT_UPI" | "BANK_TRANSFER") => {
+        const first = method ? before.methods.find(row => row.paymentMethod === method) : before.totals;
+        const last = method ? after.methods.find(row => row.paymentMethod === method) : after.totals;
+        if (!last) throw new Error("Missing reconciliation row");
+        return {
+          grossCaptured: last.grossCaptured - (first?.grossCaptured ?? 0),
+          refunded: last.refunded - (first?.refunded ?? 0),
+          netRetained: last.netRetained - (first?.netRetained ?? 0),
+          pendingAmount: last.pendingAmount - (first?.pendingAmount ?? 0),
+          pendingCount: last.pendingCount - (first?.pendingCount ?? 0),
+        };
+      };
+      return { total: delta(), razorpay: delta("RAZORPAY"), upi: delta("DIRECT_UPI"), bank: delta("BANK_TRANSFER") };
+    }, Prisma.TransactionIsolationLevel.RepeatableRead);
+    expect(result.total).toEqual({ grossCaptured: 500, refunded: 105, netRetained: 395, pendingAmount: 230, pendingCount: 2 });
+    expect(result.razorpay).toEqual({ grossCaptured: 300, refunded: 105, netRetained: 195, pendingAmount: 0, pendingCount: 0 });
+    expect(result.upi).toEqual({ grossCaptured: 200, refunded: 0, netRetained: 200, pendingAmount: 80, pendingCount: 1 });
+    expect(result.bank).toEqual({ grossCaptured: 0, refunded: 0, netRetained: 0, pendingAmount: 150, pendingCount: 1 });
   });
 
   it("caps a recorded refund at the whole charge: the gift plus any covered gateway fee", async () => {
