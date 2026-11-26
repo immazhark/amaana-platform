@@ -91,7 +91,7 @@ export default function Page({ searchParams }: { searchParams: Promise<{ fund?: 
   // Checked before streaming starts so a closed page is a real HTTP 404, not a 200 that renders a not-found body.
   if (!isFundGivingEnabled()) notFound();
   return (
-    <Suspense fallback={<PublicRouteLoading route="donate" />}>
+    <Suspense fallback={<PublicRouteLoading route="give" />}>
       <GiveContent fundParam={searchParams} />
     </Suspense>
   );

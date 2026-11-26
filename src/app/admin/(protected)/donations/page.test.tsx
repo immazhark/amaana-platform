@@ -29,6 +29,10 @@ vi.mock("@/lib/prisma", () => ({
 import DonationsPage from "./page";
 
 const money = (rupees: number) => ({ toNumber: () => rupees });
+const reportRow = (paymentMethod: string | null, gross: number, refunded: number, pendingAmount = 0, pendingCount = 0) => ({
+  paymentMethod, grossCaptured: money(gross), refunded: money(refunded), netRetained: money(gross - refunded),
+  pendingAmount: money(pendingAmount), pendingCount: BigInt(pendingCount),
+});
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -38,7 +42,7 @@ beforeEach(() => {
   mocks.donationAggregate.mockResolvedValue({
     _sum: { amount: money(250), refundedAmount: money(0) },
   });
-  mocks.donationTotalsQuery.mockResolvedValue([{ grossCaptured: money(250), refunded: money(0), netRetained: money(250) }]);
+  mocks.donationTotalsQuery.mockResolvedValue([reportRow(null, 250, 0), reportRow("RAZORPAY", 250, 0)]);
   mocks.donationGroups.mockResolvedValue([]);
   mocks.paymentCount.mockResolvedValue(0);
   mocks.paymentFind.mockResolvedValue([]);
@@ -198,12 +202,53 @@ describe("admin donation summary excludes refunded processing fees", () => {
     // reduces the donations themselves.
     mocks.donationFind.mockResolvedValue([]);
     mocks.donationAggregate.mockResolvedValue({ _sum: { amount: money(200), refundedAmount: money(12) } });
-    mocks.donationTotalsQuery.mockResolvedValue([{ grossCaptured: money(200), refunded: money(5), netRetained: money(195) }]);
+    mocks.donationTotalsQuery.mockResolvedValue([reportRow(null, 200, 5), reportRow("RAZORPAY", 200, 5)]);
     const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({}) }));
     expect(html).toContain("Gross captured: ₹200");
     expect(html).toContain("Refunded: ₹5");
     expect(html).toContain("Net retained: ₹195");
     expect(html).toContain("Total returned (incl. fees)");
     expect(html).not.toContain("Net retained: ₹188");
+  });
+});
+
+describe("private payment channel reconciliation", () => {
+  it("reports verified principal and unverified claims separately and links to filtered records", async () => {
+    mocks.donationFind.mockResolvedValue([]);
+    mocks.donationTotalsQuery.mockResolvedValue([
+      reportRow(null, 500, 105, 230, 2),
+      reportRow("RAZORPAY", 300, 105),
+      reportRow("DIRECT_UPI", 200, 0, 80, 1),
+      reportRow("BANK_TRANSFER", 0, 0, 150, 1),
+    ]);
+    const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({}) }));
+    expect(html).toContain("Payment channel reconciliation");
+    expect(html).toContain("not bank balances or provider settlement statements");
+    expect(html).toContain('href="/admin/donations?method=BANK_TRANSFER&amp;status=PENDING_VERIFICATION"');
+    expect(html).toContain('href="/admin/donations?method=DIRECT_UPI&amp;status=PENDING_VERIFICATION"');
+    expect(html).toContain("Net retained: ₹395");
+    expect(html).toContain("₹230");
+    expect(mocks.donationTotalsQuery).toHaveBeenCalledOnce();
+  });
+
+  it("preserves method and status filters in the record scope, counts and pagination without filtering the global report", async () => {
+    mocks.donationFind.mockResolvedValue([]);
+    mocks.donationCount.mockResolvedValue(101);
+    const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({ method: "BANK_TRANSFER", status: "PENDING_VERIFICATION", intent: "SADAQAH", page: "2" }) }));
+    const where = { paymentMethod: "BANK_TRANSFER", status: "PENDING_VERIFICATION", givingIntent: "SADAQAH" };
+    expect(mocks.donationFind).toHaveBeenCalledWith(expect.objectContaining({ where, skip: 50, take: 50 }));
+    expect(mocks.donationCount).toHaveBeenCalledWith({ where });
+    expect(mocks.donationGroups).toHaveBeenCalledWith(expect.objectContaining({ by: ["status"], where: { paymentMethod: "BANK_TRANSFER", givingIntent: "SADAQAH" } }));
+    expect(mocks.donationGroups).toHaveBeenCalledWith(expect.objectContaining({ by: ["givingIntent"], where: { paymentMethod: "BANK_TRANSFER", status: "PENDING_VERIFICATION" } }));
+    expect(html).toContain('href="/admin/donations?status=PENDING_VERIFICATION&amp;intent=SADAQAH&amp;method=BANK_TRANSFER&amp;page=3"');
+    expect(html).toContain('href="/admin/donations?status=PENDING_VERIFICATION&amp;intent=SADAQAH&amp;method=DIRECT_UPI"');
+    expect(html).toContain('href="/admin/donations?method=RAZORPAY"');
+    expect(mocks.donationTotalsQuery).toHaveBeenCalledOnce();
+  });
+
+  it.each(["unknown", "razorpay", ["DIRECT_UPI", "BANK_TRANSFER"]])("ignores unsupported payment method %s", async method => {
+    mocks.donationFind.mockResolvedValue([]);
+    await DonationsPage({ searchParams: Promise.resolve({ method: method as string }) });
+    expect(mocks.donationFind).toHaveBeenCalledWith(expect.objectContaining({ where: {} }));
   });
 });

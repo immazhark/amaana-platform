@@ -1,37 +1,44 @@
 import Link from "next/link";
-import { DonationIntent, DonationStatus, Prisma } from "@prisma/client";
+import { DonationIntent, DonationPaymentMethod, DonationStatus, Prisma } from "@prisma/client";
 import { AdminDonationFunnel } from "@/components/admin-donation-funnel";
 import { summariseDonationFunnel } from "@/lib/donation-funnel";
 import { requirePermission } from "@/lib/auth";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { donationIntentLabel } from "@/lib/donation-intent";
-import { formatDonationReportINR, loadDonationReconciliationTotals } from "@/lib/donation-reconciliation-totals";
+import { formatDonationReportINR, loadDonationReconciliationReport } from "@/lib/donation-reconciliation-totals";
 import { prisma } from "@/lib/prisma";
 import { donationOperationalState } from "@/lib/operational-signals";
 
 const FUNNEL_WINDOW_DAYS = 90;
 const funnelSince = () => new Date(Date.now() - FUNNEL_WINDOW_DAYS * 24 * 60 * 60 * 1000);
 
-type Props = { searchParams: Promise<{ status?: string; intent?: string; page?: string }> };
+const PAYMENT_METHOD_LABELS: Record<DonationPaymentMethod, string> = {
+  RAZORPAY: "Razorpay",
+  DIRECT_UPI: "Direct UPI",
+  BANK_TRANSFER: "Bank transfer",
+};
+type Props = { searchParams: Promise<{ status?: string; intent?: string; method?: string; page?: string }> };
 
 export default async function DonationsPage({ searchParams }: Props) {
   await requirePermission("donation.view");
-  const { status, intent, page: pageParam } = await searchParams;
+  const { status, intent, method, page: pageParam } = await searchParams;
   const selected = Object.values(DonationStatus).includes(status as DonationStatus)
     ? status as DonationStatus
     : undefined;
   const selectedIntent = Object.values(DonationIntent).includes(intent as DonationIntent)
     ? intent as DonationIntent
     : undefined;
+  const selectedMethod = Object.values(DonationPaymentMethod).includes(method as DonationPaymentMethod) ? method as DonationPaymentMethod : undefined;
+  const methodScope = selectedMethod ? { paymentMethod: selectedMethod } : {};
   const where: Prisma.DonationWhereInput = {
+    ...methodScope,
     ...(selected ? { status: selected } : {}),
     ...(selectedIntent ? { givingIntent: selectedIntent } : {}),
   };
 
-  const [totalItems, reconciliation, pendingDirectTransfers, unmatchedCriticalEventCount, unmatchedCriticalEvents, missingAcknowledgements, refundedWithoutCompletionTime, statusGroups, intentGroups, funnelGroups] = await Promise.all([
+  const [totalItems, reconciliation, unmatchedCriticalEventCount, unmatchedCriticalEvents, missingAcknowledgements, refundedWithoutCompletionTime, statusGroups, intentGroups, funnelGroups] = await Promise.all([
     prisma.donation.count({ where }),
-    loadDonationReconciliationTotals(prisma),
-    prisma.donation.count({ where: { status: DonationStatus.PENDING_VERIFICATION, paymentMethod: { in: ["DIRECT_UPI", "BANK_TRANSFER"] } } }),
+    loadDonationReconciliationReport(prisma),
     prisma.paymentEvent.count({
       where: {
         donationId: null,
@@ -66,12 +73,12 @@ export default async function DonationsPage({ searchParams }: Props) {
     }),
     prisma.donation.groupBy({
       by: ["status"],
-      where: selectedIntent ? { givingIntent: selectedIntent } : undefined,
+      where: { ...methodScope, ...(selectedIntent ? { givingIntent: selectedIntent } : {}) },
       _count: { _all: true },
     }),
     prisma.donation.groupBy({
       by: ["givingIntent"],
-      where: selected ? { status: selected } : undefined,
+      where: { ...methodScope, ...(selected ? { status: selected } : {}) },
       _count: { _all: true },
     }),
     // Aggregate counts only: no donor row, amount, reference or contact detail leaves the database for this card.
@@ -106,7 +113,7 @@ export default async function DonationsPage({ searchParams }: Props) {
 
   const statusCounts = new Map(statusGroups.map(item => [item.status, item._count._all]));
   const intentCounts = new Map(intentGroups.map(item => [item.givingIntent, item._count._all]));
-  const { grossCaptured, refunded, netRetained } = reconciliation;
+  const { grossCaptured, refunded, netRetained, pendingCount: pendingDirectTransfers } = reconciliation.totals;
   const operational = donationOperationalState({
     unmatchedCriticalEvents: unmatchedCriticalEventCount,
     missingAcknowledgements,
@@ -117,6 +124,7 @@ export default async function DonationsPage({ searchParams }: Props) {
     query: {
       ...(selected ? { status: selected } : {}),
       ...(selectedIntent ? { intent: selectedIntent } : {}),
+      ...(selectedMethod ? { method: selectedMethod } : {}),
       page: targetPage,
     },
   });
@@ -124,6 +132,7 @@ export default async function DonationsPage({ searchParams }: Props) {
     pathname: "/admin/donations",
     query: {
       ...(nextStatus ? { status: nextStatus } : {}),
+      ...(selectedMethod ? { method: selectedMethod } : {}),
       ...(selectedIntent ? { intent: selectedIntent } : {}),
     },
   });
@@ -132,6 +141,16 @@ export default async function DonationsPage({ searchParams }: Props) {
     query: {
       ...(selected ? { status: selected } : {}),
       ...(nextIntent ? { intent: nextIntent } : {}),
+      ...(selectedMethod ? { method: selectedMethod } : {}),
+    },
+  });
+
+  const methodHref = (nextMethod?: DonationPaymentMethod) => ({
+    pathname: "/admin/donations",
+    query: {
+      ...(selected ? { status: selected } : {}),
+      ...(selectedIntent ? { intent: selectedIntent } : {}),
+      ...(nextMethod ? { method: nextMethod } : {}),
     },
   });
 
@@ -162,6 +181,27 @@ export default async function DonationsPage({ searchParams }: Props) {
         <article className="card"><strong>{operational.refundedWithoutCompletionTime}</strong><p>Refunded donations missing completion time</p></article>
       </div>
     </section>
+    <section className="admin-card" aria-labelledby="payment-channel-heading" style={{ marginBottom: "1.25rem" }}>
+      <h2 id="payment-channel-heading">Payment channel reconciliation</h2>
+      <p className="muted">All recorded donations, independent of the list filters. Verified principal excludes processing fees; unverified transfer claims are not receipts. These application totals are not bank balances or provider settlement statements.</p>
+      <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Payment channel reconciliation totals">
+        <table>
+          <thead><tr><th scope="col">Payment channel</th><th scope="col">Gross verified</th><th scope="col">Principal refunded</th><th scope="col">Net retained</th><th scope="col">Unverified claims</th><th scope="col">Claim amount</th></tr></thead>
+          <tbody>{Object.values(DonationPaymentMethod).map(channel => {
+            const row = reconciliation.methods.find(item => item.paymentMethod === channel);
+            return <tr key={channel}>
+              <th scope="row"><Link href={{ pathname: "/admin/donations", query: { method: channel } }}>{PAYMENT_METHOD_LABELS[channel]} records</Link></th>
+              <td>{formatDonationReportINR(row?.grossCaptured ?? 0)}</td>
+              <td>{formatDonationReportINR(row?.refunded ?? 0)}</td>
+              <td>{formatDonationReportINR(row?.netRetained ?? 0)}</td>
+              <td>{row?.pendingCount ? <Link href={{ pathname: "/admin/donations", query: { method: channel, status: "PENDING_VERIFICATION" } }}>{row.pendingCount} pending</Link> : "0"}</td>
+              <td>{formatDonationReportINR(row?.pendingAmount ?? 0)}</td>
+            </tr>;
+          })}</tbody>
+          <tfoot><tr><th scope="row">All channels</th><td>{formatDonationReportINR(grossCaptured)}</td><td>{formatDonationReportINR(refunded)}</td><td>{formatDonationReportINR(netRetained)}</td><td>{pendingDirectTransfers}</td><td>{formatDonationReportINR(reconciliation.totals.pendingAmount)}</td></tr></tfoot>
+        </table>
+      </div>
+    </section>
     <AdminDonationFunnel rows={funnel} windowDays={FUNNEL_WINDOW_DAYS} />
     {unmatchedCriticalEvents.length > 0 && <section className="admin-card" style={{ marginBottom: "1.25rem" }}>
       <div className="admin-heading">
@@ -190,6 +230,11 @@ export default async function DonationsPage({ searchParams }: Props) {
       <Link href={intentHref()} aria-current={!selectedIntent ? "page" : undefined}>All</Link>
       {Object.values(DonationIntent).map(item => <Link key={item} href={intentHref(item)} aria-current={selectedIntent === item ? "page" : undefined}>{donationIntentLabel(item)} ({intentCounts.get(item) ?? 0})</Link>)}
     </div>
+    <div className="filter-row" role="group" aria-label="Payment method filter">
+      <strong>Payment method:</strong>
+      <Link href={methodHref()} aria-current={!selectedMethod ? "page" : undefined}>All</Link>
+      {Object.values(DonationPaymentMethod).map(channel => <Link key={channel} href={methodHref(channel)} aria-current={selectedMethod === channel ? "page" : undefined}>{PAYMENT_METHOD_LABELS[channel]}</Link>)}
+    </div>
     <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Donation records">
       <table>
         <thead><tr><th>Reference</th><th>Donor</th><th>Appeal</th><th>Intent</th><th>Method</th><th>Amount</th><th>Total returned (incl. fees)</th><th>Status</th><th>Date</th></tr></thead>
@@ -198,7 +243,7 @@ export default async function DonationsPage({ searchParams }: Props) {
           <td>{donation.donorName}<br/><small>{donation.donorEmail}</small></td>
           <td>{donation.appeal?.title ?? donation.fund?.name ?? "—"}</td>
           <td>{donationIntentLabel(donation.givingIntent)}</td>
-          <td>{donation.paymentMethod === "DIRECT_UPI" ? "Direct UPI" : donation.paymentMethod === "BANK_TRANSFER" ? "Bank transfer" : "Razorpay"}</td>
+          <td>{PAYMENT_METHOD_LABELS[donation.paymentMethod]}</td>
           <td>{formatDonationReportINR(donation.amount.toNumber())}</td>
           <td>{formatDonationReportINR(donation.refundedAmount.toNumber())}</td>
           <td><span className="status-badge">{donation.status}</span></td>
