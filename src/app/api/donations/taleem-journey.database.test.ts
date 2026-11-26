@@ -20,6 +20,10 @@ vi.mock("@/lib/request-security", async importOriginal => ({
 import { prisma } from "@/lib/prisma";
 import { reconcileDirectDonation } from "@/lib/direct-donation-reconciliation";
 import { POST as acknowledgement } from "./acknowledgement/route";
+import { POST as acknowledgementPdf } from "./acknowledgement/pdf/route";
+import { reissueReceiptLink } from "@/lib/receipt-link-reissue";
+import { parsePrivateDonationAcknowledgementLocation } from "@/lib/private-donation-ack-location";
+import { hashReceiptToken } from "@/lib/donations";
 import { POST as order } from "./order/route";
 import { POST as directTransfer } from "./direct-transfer/route";
 import { POST as webhook } from "../webhooks/razorpay/route";
@@ -88,6 +92,41 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("Taleem programme 
   const ask = () => acknowledgement(json("/api/donations/acknowledgement", { reference: state.reference, token: state.receiptToken }));
   const rowsFor = () => prisma.donation.count({ where: { donorEmail: email } });
 
+  const pdfFor = (reference: string, token: string) => acknowledgementPdf(new Request(
+    `${ORIGIN}/api/donations/acknowledgement/pdf`, {
+      method: "POST", headers: { origin: ORIGIN, "content-type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ reference, token }),
+    },
+  ));
+  async function expectNoPdf(reference: string, token: string) {
+    const response = await pdfFor(reference, token);
+    expect(response.status).toBe(404);
+    expect(response.headers.get("cache-control")).toBe("no-store, private");
+    expect(await response.json()).toEqual({ found: false });
+  }
+  async function expectSponsorshipPdf(reference: string, token: string, receiptNumber: string, refunded = 0) {
+    const response = await pdfFor(reference, token);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("application/pdf");
+    expect(response.headers.get("content-disposition")).toBe(`attachment; filename="amaana-acknowledgement-${reference}.pdf"`);
+    expect(response.headers.get("cache-control")).toBe("no-store, private");
+    expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+    expect(response.headers.get("x-robots-tag")).toContain("noindex");
+    const body = Buffer.from(await response.arrayBuffer()).toString("latin1");
+    expect(body.startsWith("%PDF-1.4")).toBe(true);
+    expect(body).toContain(`Reference: ${reference}`);
+    expect(body).toContain(`Acknowledgement number: ${receiptNumber}`);
+    expect(body).toContain("Contribution received: INR 6,000.00");
+    expect(body).toContain("Qaida: 2 units x 3 months x INR 1,000.00 a month.");
+    expect(body).toContain("does not name or reserve a student");
+    expect(body).toContain("not Form 10BE");
+    expect(body).not.toContain(token);
+    expect(body).not.toContain("approved-2026-11");
+    if (refunded) expect(body).toContain("Refunded to you: INR 1,000.00");
+    else expect(body).not.toContain("Refunded to you:");
+    return body;
+  }
+
   it.each([
     ["fund giving open, Taleem switch off", { FUND_GIVING_ENABLED: "true", TALEEM_SPONSORSHIP_ENABLED: "false" }],
     ["Taleem switch on, fund giving closed", { FUND_GIVING_ENABLED: "false", TALEEM_SPONSORSHIP_ENABLED: "true" }],
@@ -127,6 +166,7 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("Taleem programme 
     });
     expect(row.amount.toNumber()).toBe(6000);
     expect(row.sponsorshipMonthlyRate?.toNumber()).toBe(1000);
+    await expectNoPdf(state.reference!, state.receiptToken!);
   });
 
   it("does not mark a payment captured when the provider amount differs from the order", async () => {
@@ -153,6 +193,9 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("Taleem programme 
     const body = await response.json();
     expect(body.donation).toMatchObject({ amount: 6000, refundedAmount: 0, sponsorship: { programme: "Qaida", units: 2, months: 3, monthlyRate: 1000 } });
     expect(JSON.stringify(body)).not.toContain("approved-2026-11");
+    expect(body.donation.receiptNumber).toBeTruthy();
+    await expectSponsorshipPdf(state.reference!, state.receiptToken!, body.donation.receiptNumber);
+    await expectNoPdf(state.reference!, randomUUID());
   });
 
   it("records a partial refund once and keeps the sponsorship on the acknowledgement", async () => {
@@ -164,6 +207,21 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("Taleem programme 
     expect(await prisma.refundLedger.count({ where: { donationId: state.donationId! } })).toBe(1);
     const body = await (await ask()).json();
     expect(body.donation).toMatchObject({ refundedAmount: 1000, sponsorship: { programme: "Qaida", units: 2, months: 3, monthlyRate: 1000 } });
+    await expectSponsorshipPdf(state.reference!, state.receiptToken!, row.receiptNumber!, 1000);
+  });
+
+  it("withdraws the PDF after a full refund while preserving the private record and quote", async () => {
+    const refund = { id: `${ids.refund}FINAL`, payment_id: ids.payment, amount: 500_000, currency: "INR", status: "processed" };
+    expect((await sendWebhook("refund.processed", refund, "final-refund")).status).toBe(200);
+    expect((await sendWebhook("refund.processed", refund, "final-refund")).status).toBe(200);
+    const row = await prisma.donation.findUniqueOrThrow({ where: { id: state.donationId! } });
+    expect(row.status).toBe("REFUNDED");
+    expect(row.refundedAmount.toNumber()).toBe(6000);
+    expect(await prisma.refundLedger.count({ where: { donationId: row.id } })).toBe(2);
+    const response = await ask();
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ found: true, donation: { refundedAmount: 6000, sponsorship: { programme: "Qaida", units: 2, months: 3, monthlyRate: 1000 } } });
+    await expectNoPdf(state.reference!, state.receiptToken!);
   });
 
   describe("direct transfer sponsorship claims", () => {
@@ -238,6 +296,9 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("Taleem programme 
       expect(denied.status).toBe(404);
       expect(await denied.json()).toEqual({ found: false });
 
+      await expectNoPdf(payload.referenceNumber, payload.receiptToken);
+      await expectNoPdf(payload.referenceNumber, randomUUID());
+
       const duplicate = await makeClaim(reference, { paymentMethod });
       expect(duplicate.status).toBe(409);
       expect(await rowsFor()).toBe(count + 1);
@@ -299,6 +360,53 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("Taleem programme 
           programme: "Qaida", units: 2, months: 3, monthlyRate: 1000,
         } },
       });
+      await expectSponsorshipPdf(payload.referenceNumber, payload.receiptToken, verified.receiptNumber!);
+    });
+
+    it("verifies a Taleem bank claim and recovers its PDF through audited link reissue", async () => {
+      const { row, reviewer, payload } = await reconciliationClaim("verify-bank-recovery", "BANK_TRANSFER");
+      await expectNoPdf(payload.referenceNumber, payload.receiptToken);
+      await expect(reconcileDirectDonation({ donationId: row.id, actorId: reviewer.id, decision: "VERIFY", notes: "Synthetic bank match" })).resolves.toMatchObject({ status: "CAPTURED" });
+      const verified = await prisma.donation.findUniqueOrThrow({ where: { id: row.id } });
+      expect(verified.receiptNumber).toBe(`ACK-${row.referenceNumber}`);
+      const before = await expectSponsorshipPdf(payload.referenceNumber, payload.receiptToken, verified.receiptNumber!);
+      const beforeJson = await acknowledgement(json("/api/donations/acknowledgement", { reference: payload.referenceNumber, token: payload.receiptToken }));
+      expect(beforeJson.status).toBe(200);
+      const originalRecord = await beforeJson.json();
+
+      const reason = "Synthetic: donor lost acknowledgement link";
+      const result = await reissueReceiptLink({ donationId: row.id, actorId: reviewer.id, reason });
+      const freshToken = parsePrivateDonationAcknowledgementLocation("", result.path.slice(result.path.indexOf("#")));
+      expect(freshToken).toBeTruthy();
+      expect(freshToken).not.toBe(payload.receiptToken);
+      expect(result.referenceNumber).toBe(payload.referenceNumber);
+      await expectNoPdf(payload.referenceNumber, payload.receiptToken);
+      const revoked = await acknowledgement(json("/api/donations/acknowledgement", { reference: payload.referenceNumber, token: payload.receiptToken }));
+      expect(revoked.status).toBe(404);
+      expect(await revoked.json()).toEqual({ found: false });
+      expect(await expectSponsorshipPdf(payload.referenceNumber, freshToken!, verified.receiptNumber!)).toBe(before);
+      const fresh = await acknowledgement(json("/api/donations/acknowledgement", { reference: payload.referenceNumber, token: freshToken }));
+      expect(fresh.status).toBe(200);
+      expect(await fresh.json()).toEqual(originalRecord);
+
+      const stored = await prisma.donation.findUniqueOrThrow({ where: { id: row.id } });
+      expect(stored).toMatchObject({
+        status: verified.status, amount: verified.amount, refundedAmount: verified.refundedAmount,
+        receiptNumber: verified.receiptNumber, capturedAt: verified.capturedAt, paymentMethod: "BANK_TRANSFER",
+        sponsorshipProgramme: verified.sponsorshipProgramme, sponsorshipUnits: verified.sponsorshipUnits,
+        sponsorshipMonths: verified.sponsorshipMonths, sponsorshipMonthlyRate: verified.sponsorshipMonthlyRate,
+        sponsorshipRateVersion: verified.sponsorshipRateVersion, receiptTokenHash: hashReceiptToken(freshToken!),
+      });
+      expect(stored.receiptTokenHash).not.toBe(verified.receiptTokenHash);
+      expect(await prisma.notification.count({ where: { donationId: row.id } })).toBe(1);
+      const events = await prisma.auditEvent.findMany({ where: { entityType: "Donation", entityId: row.id } });
+      expect(events).toHaveLength(2);
+      expect(events).toEqual(expect.arrayContaining([
+        expect.objectContaining({ action: "donation.transfer.verify", actorId: reviewer.id }),
+        expect.objectContaining({ action: "donation.receipt_link.reissue", actorId: reviewer.id, metadata: { reason } }),
+      ]));
+      expect(JSON.stringify(events)).not.toContain(freshToken!);
+      expect(JSON.stringify(events)).not.toContain(hashReceiptToken(freshToken!));
     });
 
     it("rejects an unmatched Taleem bank claim without issuing a receipt or acknowledgement email", async () => {
@@ -322,6 +430,7 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("Taleem programme 
       const body = await receipt.json();
       expect(body).toMatchObject({ found: true, presentation: { tone: "failed", statusLabel: "Transfer not verified" }, donation: { receiptNumber: null } });
       expect(JSON.stringify(body)).not.toContain(input.notes);
+      await expectNoPdf(payload.referenceNumber, payload.receiptToken);
     });
   });
 });
