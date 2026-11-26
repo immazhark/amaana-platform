@@ -1,3 +1,5 @@
+import { randomInt } from "node:crypto";
+import { setTimeout as sleep } from "node:timers/promises";
 import {
   AssistanceStatus, NotificationChannel,
   type AssistanceVerificationDecision, type ConfidentialityLevel, type ConsentDecision, type ZakatReviewStatus,
@@ -151,7 +153,9 @@ export async function approveAssistanceRequest(input: ApprovalInput): Promise<Ap
     }
 
     return { outcome: "approved", status: "APPROVED", route: input.route, approvedAt, reviewerName: reviewer?.name ?? null };
-  });
+    // On contention, allow the competing serializable acceptance to finish before re-reading capacity.
+    // Five total attempts, at most 475 ms of jittered waits; no retry of domain or other database errors.
+  }, 5, failedAttempts => sleep(25 * 2 ** (failedAttempts - 1) + randomInt(0, 26)));
 }
 
 export type ApprovalDraftInput = Omit<ApprovalInput, "route"> & {
