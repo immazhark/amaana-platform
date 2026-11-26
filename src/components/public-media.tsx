@@ -1,7 +1,8 @@
 import Image from "next/image";
 import { getPublicImageDimensions } from "@/lib/public-image-dimensions";
 import { isValidPlaceholder } from "@/lib/image-placeholder-validate";
-import { canRenderPublicMedia, getPublicImageOptimizationUrl, resolvePublicMediaUrl } from "@/lib/public-media";
+import { canRenderPublicMedia, getPublicImageOptimizationUrl, getRelativePublicMediaUrl, resolvePublicMediaUrl } from "@/lib/public-media";
+import { managedImageSrcSet } from "@/lib/managed-image-variants";
 
 type PublicMediaAsset = {
   id: string;
@@ -46,6 +47,7 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
   if (asset.kind === "IMAGE") {
     const { width, height } = getPublicImageDimensions(asset);
     const optimizedUrl = getPublicImageOptimizationUrl(url);
+    const srcSet = managedImageSrcSet(getRelativePublicMediaUrl(url) ?? "", asset.width, asset.height);
     // Only reached after canRenderPublicMedia, so the preview never outlives publication.
     const blurDataURL = asset.placeholder && isValidPlaceholder(asset.placeholder) ? asset.placeholder : undefined;
     const image = optimizedUrl ? (
@@ -62,10 +64,13 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
         blurDataURL={blurDataURL}
       />
     ) : (
-      // External approved assets may live on multiple S3-compatible/CDN hosts; keep this direct until hosts are explicitly allowlisted for Next's optimizer.
+      // Revocable managed images and reviewed external assets stay direct.
+      // Never place consent-gated bytes in the shared optimizer cache.
       // eslint-disable-next-line @next/next/no-img-element
       <img
         src={url}
+        srcSet={srcSet}
+        sizes={srcSet ? sizes : undefined}
         alt={asset.altText ?? ""}
         width={width}
         height={height}
@@ -78,7 +83,7 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
     const caption = asset.caption?.trim();
     return (
       <figure className="v2-media-item">
-        {/* Local approved campaign media uses Next's responsive optimizer. External approved HTTPS media stays direct until hosts are explicitly allowlisted. */}
+        {/* Static artwork is optimized; managed and external media use direct reviewed sources. */}
         {image}
         {(caption || asset.sourceYear) && (
           <figcaption>{caption}{caption && asset.sourceYear ? " · " : ""}{asset.sourceYear ?? ""}</figcaption>
