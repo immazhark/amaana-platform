@@ -41,6 +41,7 @@ describe("private spending history", () => {
     expect(mocks.groups).toHaveBeenCalledWith({ by: ["status"], where, _count: { _all: true }, _sum: { amount: true } });
     expect(mocks.entries).toHaveBeenCalledWith(expect.objectContaining({ where, skip: 50, take: 50, orderBy: [{ spentOn: "desc" }, { createdAt: "desc" }, { id: "desc" }] }));
     expect(html).toContain("Page 2 of 3 · 132 records");
+    expect(html).toContain('role="group" aria-label="Filtered spending totals"');
     expect(html).toContain("₹310.4");
     expect(html).toContain("₹7.01");
     expect(html).toContain("Void entries (excluded from spending)");

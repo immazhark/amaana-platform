@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { requirePermission } from "@/lib/auth";
+import { annualFinanceCsv, financeReviewPeriod, loadAnnualFinanceReview } from "@/lib/annual-finance-review";
 import { formatINR } from "@/lib/appeals";
 import { getFundsLedger } from "@/lib/funds-ledger";
 import { loadTaleemSponsorshipReport } from "@/lib/taleem-sponsorship-report";
@@ -14,9 +15,14 @@ const rupees = (paise: number) => formatINR(paise / 100);
 const ZAKAT_LABEL = { ACCEPTED: "Zakat accepted", NOT_ACCEPTED: "Zakat not accepted", UNDER_REVIEW: "Zakat under review" } as const;
 const EMPTY: PoolTotals = { receivedPaise: 0, pendingPaise: 0, refundedPaise: 0, spentPaise: 0, publishedSpentPaise: 0, balancePaise: 0 };
 
-export default async function FundsLedgerPage() {
+type Props = { searchParams: Promise<{ fy?: string | string[] }> };
+
+export default async function FundsLedgerPage({ searchParams }: Props) {
   await requirePermission("donation.view");
-  const [{ funds, byFund, zakatAccount }, sponsorships] = await Promise.all([getFundsLedger(), loadTaleemSponsorshipReport(prisma)]);
+  const period = financeReviewPeriod((await searchParams).fy);
+  const [{ funds, byFund, zakatAccount }, sponsorships, annual] = await Promise.all([getFundsLedger(), loadTaleemSponsorshipReport(prisma), loadAnnualFinanceReview(prisma, period)]);
+  const fundNames = new Map(funds.map(fund => [fund.slug, fund.name]));
+  const csvHref = "data:text/csv;charset=utf-8," + encodeURIComponent(annualFinanceCsv(period.label, annual));
   const appealTotals = byFund[APPEAL_BUCKET]?.total ?? EMPTY;
   return <>
     <div className="admin-heading">
@@ -63,6 +69,27 @@ export default async function FundsLedgerPage() {
           </tr>
         </tbody>
       </table>
+    </section>
+    <section className="admin-card" aria-labelledby="annual-finance-heading">
+      <h2 id="annual-finance-heading">Financial-year reconciliation review</h2>
+      <p className="muted">Private application-record extract for accountant review. Indian financial year: 1 April to 31 March. Receipts are grouped by capture date; refunds are cumulative principal refunds as currently recorded for those receipts, not refund-date cash flows. Pending claims are grouped by creation date and are not receipts. Spending uses the recorded financial year; drafts and published entries are separate, voids excluded. Appeal spending and offline historical records are not included. Missing capture dates are excluded. These are not bank statements, statutory tax filings, audited accounts or tax certificates.</p>
+      <form action="/admin/funds" method="get" className="form-grid" aria-label="Select reconciliation financial year">
+        <div className="field"><label htmlFor="finance-fy">Financial year</label><select id="finance-fy" name="fy" defaultValue={period.label}>{period.labels.map(label => <option key={label} value={label}>{label}</option>)}</select></div>
+        <div className="field"><button type="submit" className="button">Review year</button></div>
+      </form>
+      {annual.length === 0 ? <p>No matching application records for {period.label}. This does not establish zero foundation activity.</p> : <>
+        <p><a className="button" href={csvHref} download={`amaana-application-finance-review-${period.label}.csv`}>Download aggregate CSV for review</a></p>
+        <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Financial-year reconciliation review">
+          <table className="admin-table">
+            <thead><tr><th scope="col">Destination / pool</th><th scope="col">Gross verified</th><th scope="col">Cumulative principal refunded</th><th scope="col">Retained principal</th><th scope="col">Pending claims</th><th scope="col">Pending amount</th><th scope="col">Fund drafts</th><th scope="col">Fund published spending</th></tr></thead>
+            <tbody>{annual.map(row => <tr key={JSON.stringify([row.destination, row.fundSlug, row.pool])}>
+              <th scope="row">{row.destination === "appeals" ? "Appeals (combined)" : fundNames.get(row.fundSlug ?? "") ?? row.fundSlug ?? "Unknown fund"}<br /><small>{row.pool === "ZAKAT" ? "Zakat" : "Non-Zakat"}</small></th>
+              <td>{formatDonationReportINR(row.grossPaise / 100)}</td><td>{formatDonationReportINR(row.refundedPaise / 100)}</td><td>{formatDonationReportINR(row.retainedPaise / 100)}</td><td>{row.pendingCount}</td><td>{formatDonationReportINR(row.pendingPaise / 100)}</td>
+              <td>{row.destination === "fund" ? formatDonationReportINR(row.draftPaise / 100) : "—"}</td><td>{row.destination === "fund" ? formatDonationReportINR(row.publishedPaise / 100) : "—"}</td>
+            </tr>)}</tbody>
+          </table>
+        </div>
+      </>}
     </section>
     <section className="admin-card" aria-labelledby="taleem-report-heading">
       <h2 id="taleem-report-heading">Taleem sponsorship reconciliation</h2>

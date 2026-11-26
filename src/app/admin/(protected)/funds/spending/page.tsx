@@ -78,7 +78,7 @@ export default async function FundSpendingPage({ searchParams }: Props) {
         <div className="field"><label htmlFor="review-status">Entry status</label><select id="review-status" name="status" defaultValue={selected.status}><option value="">All statuses</option><option value="DRAFT">Draft</option><option value="PUBLISHED">Published</option><option value="VOID">Void</option></select></div>
         <div className="field full"><button className="button" type="submit">Apply filters</button> <Link href={PATH}>Reset filters</Link></div>
       </form>
-      <div className="card-grid" aria-label="Filtered spending totals">
+      <div className="card-grid" role="group" aria-label="Filtered spending totals">
         <article className="card"><strong>{rupees(totals.recordedPaise)}</strong><p>Recorded spending (draft and published)</p></article>
         <article className="card"><strong>{rupees(totals.draftPaise)}</strong><p>Draft spending</p></article>
         <article className="card"><strong>{rupees(totals.publishedPaise)}</strong><p>Published spending</p></article>
