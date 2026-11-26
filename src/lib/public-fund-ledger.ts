@@ -72,17 +72,18 @@ export function shapePublicFundLedger(input: {
 type DecimalLike = { mul: (n: number) => { toNumber: () => number } };
 
 export async function getPublicFundLedger(range: FinancialYearRange) {
-  const [funds, inYear, toDate, published] = await Promise.all([
-    prisma.fund.findMany({ where: { status: "ACTIVE" }, orderBy: [{ sortOrder: "asc" }, { name: "asc" }], select: { id: true, slug: true, name: true, summary: true, zakatPolicy: true } }),
-    loadFundsLedger(prisma, { capturedIn: range, spentIn: range }),
-    loadFundsLedger(prisma),
-    prisma.fundDisbursement.findMany({
+  // Keep annual and all-time totals and the published entries on one database snapshot.
+  const [funds, inYear, toDate, published] = await prisma.$transaction(async tx => Promise.all([
+    tx.fund.findMany({ where: { status: "ACTIVE" }, orderBy: [{ sortOrder: "asc" }, { name: "asc" }], select: { id: true, slug: true, name: true, summary: true, zakatPolicy: true } }),
+    loadFundsLedger(tx, { capturedIn: range, spentIn: range }),
+    loadFundsLedger(tx),
+    tx.fundDisbursement.findMany({
       where: { status: "PUBLISHED", spentOn: { gte: range.start, lt: range.end } },
       orderBy: [{ spentOn: "desc" }, { createdAt: "desc" }],
       take: MAX_ENTRIES,
       select: { id: true, fundId: true, title: true, publicSummary: true, amount: true, spentOn: true, pool: true },
     }),
-  ]);
+  ]), { isolationLevel: "RepeatableRead" });
   const entries: PublicSpendEntry[] = published.map(row => ({
     id: row.id, fundId: row.fundId, title: row.title, publicSummary: row.publicSummary,
     amountPaise: Math.round((row.amount as unknown as DecimalLike).mul(100).toNumber()),

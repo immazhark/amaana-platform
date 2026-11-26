@@ -1,5 +1,4 @@
 import type { Prisma } from "@prisma/client";
-import { unstable_cache } from "next/cache";
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { isAppealOpenForDonations } from "@/lib/appeals";
@@ -213,11 +212,9 @@ export async function getFeaturedFaithContent() {
  * this projection narrow lowers database work, serialization and server render
  * cost while preserving the publication/privacy gates used elsewhere.
  */
-const getHomepageAppealsCached = unstable_cache(async () => {
+async function readHomepageAppeals() {
   const appeals = await prisma.appeal.findMany({
-    // Exclude permanently ineligible and synthetic records at retrieval.
-    // The request-time check below still rejects an appeal that expires while
-    // this 300-second record projection remains cached.
+    // Read current eligibility: status and funding can change independently of a cache invalidation.
     where: {
       status: "PUBLISHED",
       amountRaised: { lt: prisma.appeal.fields.goalAmount },
@@ -243,12 +240,11 @@ const getHomepageAppealsCached = unstable_cache(async () => {
   });
 
   return (Array.isArray(appeals) ? appeals : []).filter(appeal => canExposePublicAppeal(appeal) && !isSyntheticStagingAppeal(appeal));
-}, ["homepage-appeals"], { revalidate: 300, tags: ["appeals"] });
+}
 
 export async function getHomepageAppeals(limit = 3) {
-  // Keep clock-sensitive eligibility outside the bounded DB result cache.
-  // Recheck on each render even when an earlier cached query included a now-expired appeal.
-  const publicAppeals = await getHomepageAppealsCached();
+  // Recheck the clock and payable amount after the fresh database read.
+  const publicAppeals = await readHomepageAppeals();
   return publicAppeals
     .filter(appeal => isAppealOpenForDonations(appeal))
     .slice(0, Math.min(20, Math.max(1, limit)));

@@ -8,6 +8,7 @@ import { donationIntentLabel } from "@/lib/donation-intent";
 import { formatDonationReportINR, loadDonationReconciliationReport } from "@/lib/donation-reconciliation-totals";
 import { prisma } from "@/lib/prisma";
 import { donationOperationalState } from "@/lib/operational-signals";
+import { donationReviewFilters, loadPendingTransferReview } from "@/lib/pending-transfer-review";
 
 const FUNNEL_WINDOW_DAYS = 90;
 const funnelSince = () => new Date(Date.now() - FUNNEL_WINDOW_DAYS * 24 * 60 * 60 * 1000);
@@ -17,11 +18,14 @@ const PAYMENT_METHOD_LABELS: Record<DonationPaymentMethod, string> = {
   DIRECT_UPI: "Direct UPI",
   BANK_TRANSFER: "Bank transfer",
 };
-type Props = { searchParams: Promise<{ status?: string; intent?: string; method?: string; page?: string }> };
+type Props = { searchParams: Promise<{ status?: string; intent?: string; method?: string; page?: string; reference?: string | string[]; sort?: string | string[] }> };
 
 export default async function DonationsPage({ searchParams }: Props) {
   await requirePermission("donation.view");
-  const { status, intent, method, page: pageParam } = await searchParams;
+  const { status, intent, method, page: pageParam, reference, sort } = await searchParams;
+  const review = donationReviewFilters(reference, sort);
+  const referenceScope: Prisma.DonationWhereInput = review.invalidReference ? { id: { in: [] } } : review.reference ? { referenceNumber: review.reference } : {};
+  const reviewQuery = { ...(review.reference ? { reference: review.reference } : {}), ...(review.direction === "asc" ? { sort: "oldest" } : {}) };
   const selected = Object.values(DonationStatus).includes(status as DonationStatus)
     ? status as DonationStatus
     : undefined;
@@ -32,11 +36,12 @@ export default async function DonationsPage({ searchParams }: Props) {
   const methodScope = selectedMethod ? { paymentMethod: selectedMethod } : {};
   const where: Prisma.DonationWhereInput = {
     ...methodScope,
+    ...referenceScope,
     ...(selected ? { status: selected } : {}),
     ...(selectedIntent ? { givingIntent: selectedIntent } : {}),
   };
 
-  const [totalItems, reconciliation, unmatchedCriticalEventCount, unmatchedCriticalEvents, missingAcknowledgements, refundedWithoutCompletionTime, statusGroups, intentGroups, funnelGroups] = await Promise.all([
+  const [totalItems, reconciliation, unmatchedCriticalEventCount, unmatchedCriticalEvents, missingAcknowledgements, refundedWithoutCompletionTime, statusGroups, intentGroups, funnelGroups, pendingReview] = await Promise.all([
     prisma.donation.count({ where }),
     loadDonationReconciliationReport(prisma),
     prisma.paymentEvent.count({
@@ -73,12 +78,12 @@ export default async function DonationsPage({ searchParams }: Props) {
     }),
     prisma.donation.groupBy({
       by: ["status"],
-      where: { ...methodScope, ...(selectedIntent ? { givingIntent: selectedIntent } : {}) },
+      where: { ...methodScope, ...referenceScope, ...(selectedIntent ? { givingIntent: selectedIntent } : {}) },
       _count: { _all: true },
     }),
     prisma.donation.groupBy({
       by: ["givingIntent"],
-      where: { ...methodScope, ...(selected ? { status: selected } : {}) },
+      where: { ...methodScope, ...referenceScope, ...(selected ? { status: selected } : {}) },
       _count: { _all: true },
     }),
     // Aggregate counts only: no donor row, amount, reference or contact detail leaves the database for this card.
@@ -87,6 +92,7 @@ export default async function DonationsPage({ searchParams }: Props) {
       where: { createdAt: { gte: funnelSince() } },
       _count: { _all: true },
     }),
+    loadPendingTransferReview(prisma),
   ]);
   const funnel = summariseDonationFunnel(funnelGroups);
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
@@ -106,7 +112,7 @@ export default async function DonationsPage({ searchParams }: Props) {
       appeal: { select: { title: true } },
       fund: { select: { name: true } },
     },
-    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    orderBy: [{ createdAt: review.direction }, { id: review.direction }],
     skip: pagination.skip,
     take: pagination.pageSize,
   });
@@ -125,6 +131,7 @@ export default async function DonationsPage({ searchParams }: Props) {
       ...(selected ? { status: selected } : {}),
       ...(selectedIntent ? { intent: selectedIntent } : {}),
       ...(selectedMethod ? { method: selectedMethod } : {}),
+      ...reviewQuery,
       page: targetPage,
     },
   });
@@ -134,6 +141,7 @@ export default async function DonationsPage({ searchParams }: Props) {
       ...(nextStatus ? { status: nextStatus } : {}),
       ...(selectedMethod ? { method: selectedMethod } : {}),
       ...(selectedIntent ? { intent: selectedIntent } : {}),
+      ...reviewQuery,
     },
   });
   const intentHref = (nextIntent?: DonationIntent) => ({
@@ -142,6 +150,7 @@ export default async function DonationsPage({ searchParams }: Props) {
       ...(selected ? { status: selected } : {}),
       ...(nextIntent ? { intent: nextIntent } : {}),
       ...(selectedMethod ? { method: selectedMethod } : {}),
+      ...reviewQuery,
     },
   });
 
@@ -151,8 +160,11 @@ export default async function DonationsPage({ searchParams }: Props) {
       ...(selected ? { status: selected } : {}),
       ...(selectedIntent ? { intent: selectedIntent } : {}),
       ...(nextMethod ? { method: nextMethod } : {}),
+      ...reviewQuery,
     },
   });
+
+  const listScope = { ...(selected ? { status: selected } : {}), ...(selectedIntent ? { intent: selectedIntent } : {}), ...(selectedMethod ? { method: selectedMethod } : {}), ...(review.reference ? { reference: review.reference } : {}) };
 
   return <>
     <div className="admin-heading">
@@ -202,6 +214,20 @@ export default async function DonationsPage({ searchParams }: Props) {
         </table>
       </div>
     </section>
+    <section className="admin-card" aria-labelledby="pending-review-heading" style={{ marginBottom: "1.25rem" }}>
+      <h2 id="pending-review-heading">Direct-transfer review workbench</h2>
+      <p className="muted">All pending UPI and bank-transfer claims, independent of the list filters. Age is time since the claim was submitted, not the bank credit date or a promised verification time. Review the independent bank credit before deciding; these claims are not receipts.</p>
+      <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Pending transfer claim age">
+        <table>
+          <thead><tr><th scope="col">Method</th><th scope="col">Under 24 hours</th><th scope="col">1–7 days</th><th scope="col">Over 7 days</th><th scope="col">Future timestamp</th><th scope="col">Review queue</th></tr></thead>
+          <tbody>{pendingReview.map(row => <tr key={row.paymentMethod}>
+            <th scope="row">{PAYMENT_METHOD_LABELS[row.paymentMethod]}</th>
+            <td>{row.underDay}</td><td>{row.oneToSevenDays}</td><td>{row.overSevenDays}</td><td>{row.future}</td>
+            <td>{row.total ? <Link href={{ pathname: "/admin/donations", query: { method: row.paymentMethod, status: "PENDING_VERIFICATION", sort: "oldest" } }}>{row.total} pending, oldest first</Link> : "0"}</td>
+          </tr>)}</tbody>
+        </table>
+      </div>
+    </section>
     <AdminDonationFunnel rows={funnel} windowDays={FUNNEL_WINDOW_DAYS} />
     {unmatchedCriticalEvents.length > 0 && <section className="admin-card" style={{ marginBottom: "1.25rem" }}>
       <div className="admin-heading">
@@ -220,6 +246,20 @@ export default async function DonationsPage({ searchParams }: Props) {
         </li>)}
       </ol>
     </section>}
+    <section className="admin-card" aria-labelledby="donation-lookup-heading">
+      <h2 id="donation-lookup-heading">Find a donation</h2>
+      <form method="get" action="/admin/donations" className="form-grid" aria-label="Exact donation reference lookup">
+        {selected && <input type="hidden" name="status" value={selected}/>}
+        {selectedIntent && <input type="hidden" name="intent" value={selectedIntent}/>}
+        {selectedMethod && <input type="hidden" name="method" value={selectedMethod}/>}
+        {review.direction === "asc" && <input type="hidden" name="sort" value="oldest"/>}
+        <div className="field"><label htmlFor="donation-reference">Donation reference</label><input id="donation-reference" name="reference" defaultValue={review.reference ?? ""} maxLength={17} pattern="[Aa][Ff][Dd]-[0-9]{4}-[0-9]{8}" placeholder="AFD-2026-12345678" aria-describedby="donation-reference-hint"/><small id="donation-reference-hint">Enter only the Amaana donation reference, not a bank reference, receipt token, email or phone number.</small></div>
+        <div className="field"><button type="submit" className="button">Find exact reference</button></div>
+      </form>
+      {review.invalidReference && <p role="status">Enter a valid Amaana donation reference. No records were matched.</p>}
+      {(review.reference || review.invalidReference) && <Link href={{ pathname: "/admin/donations", query: { ...(selected ? { status: selected } : {}), ...(selectedIntent ? { intent: selectedIntent } : {}), ...(selectedMethod ? { method: selectedMethod } : {}), ...(review.direction === "asc" ? { sort: "oldest" } : {}) } }}>Clear reference lookup</Link>}
+    </section>
+    <div className="filter-row" role="group" aria-label="Donation ordering"><strong>Received:</strong><Link href={{ pathname: "/admin/donations", query: listScope }} aria-current={review.direction === "desc" ? "page" : undefined}>Newest first</Link><Link href={{ pathname: "/admin/donations", query: { ...listScope, sort: "oldest" } }} aria-current={review.direction === "asc" ? "page" : undefined}>Oldest first</Link></div>
     <div className="filter-row" role="group" aria-label="Donation status filter">
       <strong>Status:</strong>
       <Link href={statusHref()} aria-current={!selected ? "page" : undefined}>All</Link>

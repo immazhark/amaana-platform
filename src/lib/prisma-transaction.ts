@@ -10,6 +10,7 @@ export function isPrismaSerializableConflict(error: unknown) {
 export async function withSerializableTransactionRetry<T>(
   operation: (tx: Prisma.TransactionClient) => Promise<T>,
   maxAttempts = DEFAULT_MAX_ATTEMPTS,
+  beforeRetry?: (failedAttempts: number) => Promise<void>,
 ) {
   if (!Number.isInteger(maxAttempts) || maxAttempts < 1) {
     throw new RangeError("maxAttempts must be a positive integer");
@@ -25,6 +26,7 @@ export async function withSerializableTransactionRetry<T>(
     } catch (error) {
       if (!isPrismaSerializableConflict(error)) throw error;
       lastConflict = error;
+      if (beforeRetry && attempt + 1 < maxAttempts) await beforeRetry(attempt + 1);
     }
   }
 
