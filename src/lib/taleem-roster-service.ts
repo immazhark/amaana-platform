@@ -1,5 +1,6 @@
 import { Prisma, type TaleemLearnerStatus, type TaleemPlaceStatus, type TaleemProgrammeKind } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { milestoneConfirmationPlan } from "@/lib/taleem-roster-review";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 import {
   newLearnerAlias, newPlaceCode, overlapsExisting, parseCalendarDate, rosterCounts, type RosterCounts,
@@ -175,9 +176,38 @@ export async function recordHifdhCompletion(
   }
 }
 
+/** Confirm existing evidence only. The record, completion date, assignments and public facts are unchanged. */
+export async function confirmHifdhEvidence(learnerId: string, flags: { verified: boolean; supportAssociated: boolean }, actorId: string) {
+  return withSerializableTransactionRetry(async tx => {
+    const milestone = await tx.taleemMilestone.findUnique({
+      where: { learnerId_kind: { learnerId, kind: "HIFDH_COMPLETION" } },
+      select: { id: true, completedOn: true, verifiedAt: true, supportAssociated: true },
+    });
+    if (!milestone) throw new RosterError("No Hifdh completion is recorded for this learner.");
+    const now = new Date();
+    const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Kolkata" }).format(now);
+    const plan = milestoneConfirmationPlan({
+      completedOn: milestone.completedOn.toISOString().slice(0, 10),
+      verified: milestone.verifiedAt !== null,
+      supportAssociated: milestone.supportAssociated,
+    }, flags, today);
+    if (plan.kind === "empty") throw new RosterError("Select at least one evidence confirmation.");
+    if (plan.kind === "future") throw new RosterError("Confirm a completion only on or after its recorded date.");
+    if (plan.kind === "unchanged") return "unchanged" as const;
+    if (plan.kind !== "update") throw new RosterError("Evidence could not be confirmed.");
+    const changed = await tx.taleemMilestone.updateMany({
+      where: { id: milestone.id, verifiedAt: milestone.verifiedAt, supportAssociated: milestone.supportAssociated, completedOn: milestone.completedOn },
+      data: { verifiedAt: milestone.verifiedAt ?? (plan.verified ? now : null), supportAssociated: plan.supportAssociated },
+    });
+    if (changed.count !== 1) throw new RosterError("The milestone changed; reload and try again.");
+    await audit(tx, actorId, "taleem.milestone.confirm", "TaleemMilestone", milestone.id, { verified: plan.verified, supportAssociated: plan.supportAssociated });
+    return "confirmed" as const;
+  });
+}
+
 export type RosterView = {
   counts: RosterCounts;
-  learners: { id: string; publicAlias: string; fullName: string; status: TaleemLearnerStatus; programme: TaleemProgrammeKind | null; placeCode: string | null; assignmentId: string | null; openAssignmentPlaceCode: string | null; openAssignmentStartsOn: string | null; hasBlockingAssignment: boolean; completedHifdhOn: string | null }[];
+  learners: { id: string; publicAlias: string; fullName: string; status: TaleemLearnerStatus; programme: TaleemProgrammeKind | null; placeCode: string | null; assignmentId: string | null; openAssignmentPlaceCode: string | null; openAssignmentStartsOn: string | null; hasBlockingAssignment: boolean; completedHifdhOn: string | null; completionReview: { verified: boolean; supportAssociated: boolean } | null }[];
   places: { id: string; placeCode: string; status: TaleemPlaceStatus; holderAlias: string | null; assignmentId: string | null; hasBlockingAssignment: boolean }[];
 };
 
@@ -221,16 +251,18 @@ export async function loadRoster(asOf: Date = new Date()): Promise<RosterView> {
   const programmeOf = new Map(enrolments.map(enrolment => [enrolment.learnerId, enrolment.programme]));
   const placeById = new Map(places.map(place => [place.id, place]));
   const learnerById = new Map(learners.map(learner => [learner.id, learner]));
-  const doneOn = new Map(milestones.map(milestone => [milestone.learnerId, milestone.completedOn.toISOString().slice(0, 10)]));
+  const milestoneByLearner = new Map(milestones.map(milestone => [milestone.learnerId, milestone]));
   return {
     counts,
     learners: learners.map(learner => {
       const held = currentByLearner.get(learner.id);
       const open = openByLearner.get(learner.id);
+      const milestone = milestoneByLearner.get(learner.id);
       return { ...learner, programme: programmeOf.get(learner.id) ?? null, placeCode: held ? placeById.get(held.placeId)?.placeCode ?? null : null,
         assignmentId: open?.id ?? null, openAssignmentPlaceCode: open ? placeById.get(open.placeId)?.placeCode ?? null : null,
         openAssignmentStartsOn: open?.startedOn.toISOString().slice(0, 10) ?? null, hasBlockingAssignment: blockedLearners.has(learner.id),
-        completedHifdhOn: doneOn.get(learner.id) ?? null };
+        completedHifdhOn: milestone?.completedOn.toISOString().slice(0, 10) ?? null,
+        completionReview: milestone ? { verified: milestone.verifiedAt !== null, supportAssociated: milestone.supportAssociated } : null };
     }),
     places: places.map(place => {
       const held = currentByPlace.get(place.id);

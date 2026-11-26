@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requirePermission } from "@/lib/auth";
 import {
-  RosterError, assignLearner, createLearner, createPlace, endAssignment, recordHifdhCompletion, setLearnerStatus, setPlaceStatus, startEnrolment,
+  RosterError, assignLearner, confirmHifdhEvidence, createLearner, createPlace, endAssignment, recordHifdhCompletion, setLearnerStatus, setPlaceStatus, startEnrolment,
 } from "@/lib/taleem-roster-service";
 
 const ROSTER_PATH = "/admin/taleem";
@@ -97,5 +97,18 @@ export async function recordHifdhCompletionAction(formData: FormData) {
       verified: field(formData, "verified") === "yes",
     }, user.id);
     return "Hifdh completion recorded. It does not end any support; do that separately if appropriate.";
+  });
+}
+
+export async function confirmHifdhEvidenceAction(formData: FormData) {
+  const user = await requirePermission("assistance.approve");
+  return finish(async () => {
+    const verified = field(formData, "verified");
+    const supportAssociated = field(formData, "supportAssociated");
+    if (![verified, supportAssociated].every(value => value === "" || value === "on")) throw new RosterError("Choose valid evidence confirmations.");
+    const result = await confirmHifdhEvidence(field(formData, "learnerId"), {
+      verified: verified === "on", supportAssociated: supportAssociated === "on",
+    }, user.id);
+    return result === "unchanged" ? "That evidence was already confirmed." : "Hifdh evidence confirmed. No public figure or assignment was changed.";
   });
 }
