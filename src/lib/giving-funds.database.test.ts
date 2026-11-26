@@ -258,6 +258,55 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("designated giving
     expect(row).toMatchObject({ destination: "fund", grossPaise: 20000, refundedPaise: 3800, retainedPaise: 16200, pendingPaise: 8000, pendingCount: 1, draftPaise: 2000, publishedPaise: 3025 });
   });
 
+  it("separates adjacent Indian financial years, later refunds, missing dates, payment channels and money pools", async () => {
+    const result = await probe(async tx => {
+      const f = await fund(tx);
+      const owner = await user(tx);
+      const now = new Date("2027-04-01T00:00:00Z");
+      const period = financeReviewPeriod("2026-27", now);
+      const prior = new Date(period.start.getTime() - 1);
+      const last = new Date(period.end.getTime() - 1);
+      const gift = (over: Partial<Prisma.DonationUncheckedCreateInput>) => tx.donation.create({ data: donation(f.id, {
+        status: "CAPTURED", givingIntent: "SADAQAH", capturedAt: period.start, createdAt: prior, ...over,
+      }) });
+      await gift({ amount: 999.99, capturedAt: prior });
+      await gift({ amount: 100.25, feeContributionAmount: 12, refundedAmount: 5 });
+      await gift({ amount: 200.75, capturedAt: last, feeContributionAmount: 12, refundedAmount: 62.25, refundedAt: period.end });
+      await gift({ amount: 60.5, givingIntent: "ZAKAT" });
+      await gift({ amount: 777, capturedAt: null });
+      await gift({ amount: 88.1, capturedAt: period.end });
+      const direct = (method: "DIRECT_UPI" | "BANK_TRANSFER", over: Partial<Prisma.DonationUncheckedCreateInput>) => gift({
+        status: "PENDING_VERIFICATION", capturedAt: null, paymentMethod: method, provider: null, providerOrderId: null,
+        transferredAt: prior, transferReference: next(), ...over,
+      });
+      await direct("BANK_TRANSFER", { amount: 31.25, createdAt: period.start });
+      await direct("DIRECT_UPI", { amount: 44.5, createdAt: last });
+      await direct("BANK_TRANSFER", { amount: 90, createdAt: period.end });
+      await direct("BANK_TRANSFER", { amount: 888, createdAt: period.start, status: "REJECTED" });
+      // Existing legacy Razorpay-shaped pending record must not count as a direct claim.
+      await gift({ amount: 123, status: "PENDING_VERIFICATION", capturedAt: null, createdAt: period.start });
+      await gift({ amount: 333, status: "FAILED", capturedAt: null, createdAt: period.start });
+      const spend = (over: Partial<Prisma.FundDisbursementUncheckedCreateInput>) => tx.fundDisbursement.create({ data: {
+        fundId: f.id, createdById: owner.id, pool: "NON_ZAKAT", amount: 10.25, spentOn: new Date("2026-11-12"),
+        financialYear: "2026-27", title: "Synthetic annual review", status: "DRAFT", ...over,
+      } });
+      await spend({});
+      await spend({ amount: 20.5, status: "PUBLISHED" });
+      await spend({ amount: 999, status: "VOID", voidedAt: now, voidReason: "Synthetic duplicate" });
+      await spend({ amount: 1000, status: "PUBLISHED", financialYear: "2025-26", spentOn: new Date("2025-11-12") });
+      await spend({ amount: 5.75, status: "PUBLISHED", pool: "ZAKAT", zakatEligibilityConfirmedAt: now, zakatEligibilityBasis: "Synthetic verified eligibility" });
+      const rows = async (label: string) => (await loadAnnualFinanceReview(tx, financeReviewPeriod(label, now))).filter(row => row.fundSlug === f.slug);
+      return { previous: await rows("2025-26"), current: await rows("2026-27"), next: await rows("2027-28") };
+    }, Prisma.TransactionIsolationLevel.RepeatableRead);
+    expect(result.previous).toHaveLength(1);
+    expect(result.previous[0]).toMatchObject({ pool: "NON_ZAKAT", grossPaise: 99999, refundedPaise: 0, retainedPaise: 99999, pendingPaise: 0, pendingCount: 0, draftPaise: 0, publishedPaise: 100000 });
+    expect(result.current).toHaveLength(2);
+    expect(result.current.find(row => row.pool === "NON_ZAKAT")).toMatchObject({ grossPaise: 30100, refundedPaise: 5025, retainedPaise: 25075, pendingPaise: 7575, pendingCount: 2, draftPaise: 1025, publishedPaise: 2050 });
+    expect(result.current.find(row => row.pool === "ZAKAT")).toMatchObject({ grossPaise: 6050, refundedPaise: 0, retainedPaise: 6050, pendingPaise: 0, pendingCount: 0, draftPaise: 0, publishedPaise: 575 });
+    expect(result.next).toHaveLength(1);
+    expect(result.next[0]).toMatchObject({ pool: "NON_ZAKAT", grossPaise: 8810, refundedPaise: 0, retainedPaise: 8810, pendingPaise: 9000, pendingCount: 1, draftPaise: 0, publishedPaise: 0 });
+  });
+
   it("partitions pending direct claims at exact elapsed-time boundaries and excludes captured gifts", async () => {
     await probe(async tx => {
       const now = new Date("2026-11-26T10:00:00Z");
