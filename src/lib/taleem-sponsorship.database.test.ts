@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { prisma } from "@/lib/prisma";
+import { loadTaleemSponsorshipReport } from "@/lib/taleem-sponsorship-report";
 
 class Rollback extends Error {}
 class NotRefused extends Error {}
@@ -21,10 +22,10 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("Taleem sponsorshi
   });
   afterAll(async () => { await prisma.$disconnect(); });
 
-  async function probe<T>(work: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T> {
+  async function probe<T>(work: (tx: Prisma.TransactionClient) => Promise<T>, isolationLevel?: Prisma.TransactionIsolationLevel): Promise<T> {
     let result: T | undefined;
     try {
-      await prisma.$transaction(async tx => { result = await work(tx); throw new Rollback(); });
+      await prisma.$transaction(async tx => { result = await work(tx); throw new Rollback(); }, { isolationLevel });
     } catch (error) { if (!(error instanceof Rollback)) throw error; }
     return result as T;
   }
@@ -103,5 +104,32 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("Taleem sponsorshi
       // 2 x Rs 1,000 as a campaign gift and 2 units x 1 month x Rs 1,000 as a sponsorship: both exact, so only the exclusivity rule can refuse it.
       await tx.donation.create({ data: donation({ fundId: f.id, amount: 2_000, campaignId: campaign.id, units: 2, unitPrice: 1000, sponsorshipProgramme: "qaida", sponsorshipUnits: 2, sponsorshipMonths: 1, sponsorshipMonthlyRate: 1000, sponsorshipRateVersion: "v" }) });
     });
+  });
+
+  it("reports historical quote cohorts, refunds and unverified claims without mixing ordinary or unrelated gifts", async () => {
+    const result = await probe(async tx => {
+      const taleem = await tx.fund.findUniqueOrThrow({ where: { slug: "taleem" } });
+      const other = await fund(tx);
+      const version = `synthetic-${prefix}`;
+      const capturedAt = new Date("2026-11-21T06:00:00Z");
+      const gift = (over: Partial<Prisma.DonationUncheckedCreateInput>) => tx.donation.create({ data: donation({
+        fundId: taleem.id, amount: 1000, status: "CAPTURED", capturedAt,
+        sponsorshipProgramme: "qaida", sponsorshipUnits: 1, sponsorshipMonths: 1,
+        sponsorshipMonthlyRate: 1000, sponsorshipRateVersion: version, ...over,
+      }) });
+      await gift({ amount: 900, sponsorshipMonthlyRate: 900 });
+      await gift({ feeContributionAmount: 12, refundedAmount: 5 });
+      await gift({ feeContributionAmount: 12, refundedAmount: 112 });
+      await gift({ status: "REFUNDED", feeContributionAmount: 12, refundedAmount: 1012, refundedAt: capturedAt });
+      await gift({ status: "PENDING_VERIFICATION", capturedAt: null, amount: 3000, sponsorshipMonths: 3,
+        paymentMethod: "DIRECT_UPI", provider: null, providerOrderId: null, transferReference: next(), transferredAt: capturedAt });
+      await gift({ status: "FAILED", capturedAt: null });
+      await gift({ fundId: other.id });
+      await tx.donation.create({ data: donation({ fundId: taleem.id, amount: 999, status: "CAPTURED", capturedAt }) });
+      return (await loadTaleemSponsorshipReport(tx)).filter(row => row.rateVersion === version);
+    }, Prisma.TransactionIsolationLevel.RepeatableRead);
+    expect(result).toHaveLength(2);
+    expect(result[0]).toMatchObject({ programme: "qaida", monthlyRate: 900, verifiedCount: 1, grossCaptured: 900, principalRefunded: 0, netRetained: 900, pendingCount: 0, pendingAmount: 0 });
+    expect(result[1]).toMatchObject({ programme: "qaida", monthlyRate: 1000, verifiedCount: 3, grossCaptured: 3000, principalRefunded: 1100, netRetained: 1900, pendingCount: 1, pendingAmount: 3000 });
   });
 });
