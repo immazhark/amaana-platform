@@ -264,3 +264,19 @@ test("client scanner rejects forbidden credential names in asset paths", () => {
   assert.equal(result.status, 1);
   assert.match(result.stderr, /DATABASE_URL/);
 });
+
+test("AF-R005 dedicated media access ID is scanned as a value, not just a variable name", () => {
+  const value = "synthetic-media-access-id-20261127";
+  const env = { MEDIA_S3_ACCESS_KEY_ID: value };
+  for (const root of [".next/static", "public"]) {
+    for (const inPath of [false, true]) {
+      const result = runScanner(inPath ? "Reviewed public fixture" : value, env, inPath ? value + ".js" : "fixture.js", root);
+      assert.equal(result.status, 1, "Dedicated media credential must not reach public artifacts");
+      assert.equal((result.stderr + result.stdout).includes(value), false);
+      assert.match(result.stderr, /REDACTED SECRET VALUE/);
+      if (inPath) assert.match(result.stderr, /REDACTED ASSET PATH/);
+    }
+    const clean = runScanner("Reviewed public fixture", env, "fixture.js", root);
+    assert.equal(clean.status, 0, clean.stderr);
+  }
+});
