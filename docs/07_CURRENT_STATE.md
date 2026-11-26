@@ -1,5 +1,48 @@
 # Amaana Foundation — current verified state
 
+**26 November 2026 IST — current release checkpoint, not a live feed.** Sole writer `CHATGPT_ACTIVE`. Reverify source, PRs, CI, Railway and runtime before action.
+
+| Boundary | Verified evidence |
+|---|---|
+| Main | `92c2d983988439b3053ad0fcf3ff1dfadd3b35d6` from #1171, full 45703035438 seven green; 1716 Chromium passed and one recovered flaky Lenis assertion, 24 cross-browser, synthetic home blocking 58 ms. Separate promotion 45732549092 green; exact accepted tree verified. #1172/#1173 superseded after exact inclusion. |
+| Production | Railway a421addb-fe00-4a9c-a0a4-8cb00601d27e BUILDING at observation. Last independently verified runtime 6cf0687086b84c96c1d1c2e30a9775607aa37ecd. |
+| #1175 | Original `5521dbf2bc94923ff024daf44a7400f34f611d5f` run 45704184707 all seven green; 1717 Chromium, 24 cross-browser; synthetic home blocking 103 ms. Exact compatible source/test/CI blobs reconciled to current main. Fresh full checks and separate promotion required. |
+| #1174 | Original 45703555611 attempt1 browser 1718/24 passed; database 129/130 failed assistance capacity concurrency assertion, error code not logged. One controlled failed-job repeat active; no waiver or root cause claim. |
+| Canonical 149 | 59 Completed / 7 Implemented / 64 Partial / 16 Not started / 1 Superseded / 2 Not applicable. No promotions. |
+| Blocker | #446 authenticated Railway configuration plan unavailable; no apply. Production image-cache headers still unverified. |
+| Next | Verify new runtime; investigate #1174 repeat; full current-base acceptance and separate promotion of #1175. |
+
+## Earlier release checkpoint — 26 November 2026
+
+**26 November 2026 IST — current release checkpoint, not a live feed.** Sole writer `CHATGPT_ACTIVE`. Reverify source, PRs, CI, Railway and runtime before action.
+
+| Boundary | Verified evidence |
+|---|---|
+| Protected main | `6cf0687086b84c96c1d1c2e30a9775607aa37ecd` from #1170; full 45691771288 seven green, separate promotion 45696113903 green, SHA-guarded squash; #1168 closed after exact inclusion. |
+| Production | Railway 4f71613f-2592-418c-8c67-e639cd8f814a SUCCESS; independent fresh public version exact main and readiness ready. No live payment or real-device acceptance implied. |
+| Candidates | #1171 45696471355 seven green; #1172 45697919188 five required jobs green; browser/final verification outstanding; #1173 45698293749 five required jobs green; browser/final verification outstanding. Original heads preserved; six substantive source/test/config blobs combined on #1171. Fresh full exact-head checks, resolution of any original failures, separate promotion required. |
+| Focused evidence | Donation-funnel 20/20; synthetic attestation 15/15; CSS scope 9/9 and pinned Stylelint. #1171 full suite 1717 Chromium, 24 cross-browser, 130 PostgreSQL; JS 817819/819200 B; CSS 345042/364544 B; synthetic home 45/200 ms. |
+| AF-R055 | Live binary AVIF/WebP width negotiation measured; source cache-policy tests pass on #1171, live cache headers not accessible by direct DNS. Remains Implemented. |
+| Canonical 149 | 59 Completed / 7 Implemented / 64 Partial / 16 Not started / 1 Superseded / 2 Not applicable. 87 actionable; 146 applicable. No promotions. |
+| Blocker | #446 authenticated Railway configuration plan/preview unavailable; no infrastructure apply, forced rollout or live transaction. |
+| Next | Complete original and combined acceptance, separate promotion, protected merge, verify exact deployed runtime; close #1172/#1173 only after proven byte-for-byte inclusion. Preserve factual/privacy/financial locks. |
+
+## Earlier release checkpoint — 26 November 2026
+
+**26 November 2026 IST — current release checkpoint, not a live feed.** Sole writer `CHATGPT_ACTIVE`. Reverify source, PRs, CI, Railway and public runtime before action.
+
+| Boundary | Verified evidence |
+|---|---|
+| Main | `6cf0687086b84c96c1d1c2e30a9775607aa37ecd` from #1170; full 45691771288 (1717 Chromium, 24 cross-browser, 130 PostgreSQL); separate ready-state 45696113903; SHA-guarded squash, identical tree. #1168 closed as superseded after exact inclusion; ref preserved. |
+| Production | Railway `4f71613f-2592-418c-8c67-e639cd8f814a` BUILDING at observation. Previous `5d3f5ca9-0d11-44c3-909e-9ff32af89692` SUCCESS and independently live-verified SHA `415a41026849344aaa7e725168d42bbbb7442f91`. Verify new runtime before claiming deployment acceptance. |
+| Engineering | Combined schema audit and carousel correction accepted; build JS 817819/819200 B, CSS 345042/364544 B, synthetic home blocking 52/200 ms. These are not field CWV. |
+| Next candidate | #1171 original `c7b99c6ddd39241953862a2ec75c54437778fdc9` 45692336675 seven green, 1717 Chromium/24 cross-browser, home 0 ms synthetic; exact compatible source/test blobs reconciled onto current main. Fresh exact-head full acceptance then separate promotion. |
+| Canonical 149 | 59 Completed / 7 Implemented / 64 Partial / 16 Not started / 1 Superseded / 2 Not applicable. 87 actionable; 146 applicable. No promotions. |
+| Blocker | #446 authenticated Railway configuration plan/preview unavailable; no infrastructure apply, forced rollout or live transaction. |
+| Next | Verify #1170 deployed runtime; accept #1171 on current base and guarded merge only after promotion. Keep factual/privacy/financial locks. |
+
+## Earlier verified checkpoint — 26 November 2026
+
 **26 November 2026 IST — current release checkpoint, not a live feed.** Sole writer `CHATGPT_ACTIVE`. Reverify source, PRs, CI, Railway and public runtime before action.
 
 | Boundary | Verified evidence |

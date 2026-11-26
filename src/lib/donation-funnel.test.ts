@@ -67,6 +67,31 @@ describe("donation funnel aggregate", () => {
     expect(counts(row!).confirmed).toBe(5);
   });
 
+  it.each([0, 1, 4, 4.5, Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY, -1, 5.5, Number.MAX_SAFE_INTEGER + 1])(
+    "rejects an unsafe privacy threshold %s before producing any report",
+    threshold => {
+      expect(() => summariseDonationFunnel([
+        g("RAZORPAY", "CAPTURED", 20), g("DIRECT_UPI", "CAPTURED", 2),
+      ], threshold)).toThrow(RangeError);
+    },
+  );
+
+  it("retains default and explicit minimum suppression, including the combined row", () => {
+    const groups = [g("RAZORPAY", "CAPTURED", 20), g("DIRECT_UPI", "CAPTURED", 2)];
+    for (const rows of [summariseDonationFunnel(groups), summariseDonationFunnel(groups, MIN_REPORTABLE_CELL)]) {
+      expect(rows.map(row => row.method)).toEqual(["DIRECT_UPI", "RAZORPAY"]);
+      expect(rows[0]!.cells.confirmed).toEqual({ suppressed: true });
+      expect(rows[0]!.confirmedShare).toBeNull();
+    }
+  });
+
+  it("allows a caller to strengthen the minimum without exposing a derived total", () => {
+    const [row] = summariseDonationFunnel([g("RAZORPAY", "CAPTURED", 6)], 10);
+    expect(row!.cells.confirmed).toEqual({ suppressed: true });
+    expect(row!.cells.started).toEqual({ suppressed: true });
+    expect(row!.confirmedShare).toBeNull();
+  });
+
   it("can only see grouped counts: no donor, reference, amount, contact or token field is read", () => {
     const source = readFileSync(new URL("./donation-funnel.ts", import.meta.url), "utf8").replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, "");
     for (const field of [/donorName/, /donorEmail/, /donorPhone/, /referenceNumber/, /receiptTokenHash/, /\bamount\b/, /ipAddress/, /userAgent/, /providerPaymentId/]) {
