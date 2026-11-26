@@ -37,7 +37,7 @@ export async function GET(request: Request) {
     return new Response(new Uint8Array(syntheticPng), { headers: {
       "Content-Type": "image/png",
       "Content-Length": String(syntheticPng.byteLength),
-      "Cache-Control": boundedCache,
+      "Cache-Control": "private, no-store, max-age=0",
       "X-Content-Type-Options": "nosniff",
     } });
   }

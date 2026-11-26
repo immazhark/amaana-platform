@@ -62,15 +62,37 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
-    // The acceptance-only pattern must preserve all local artwork paths as well as fixtures.
-    ...(browserAcceptance ? { localPatterns: [{ pathname: "/**" }] } : {}),
+    // Only static artwork can use the shared optimizer cache. The two-segment
+    // /media/year/key route must check publication and consent on each read.
+    localPatterns: [
+      { pathname: "/brand/**", search: "" },
+      { pathname: "/hero/**", search: "" },
+      { pathname: "/programme-artwork/**", search: "" },
+      { pathname: "/media/*", search: "" },
+      ...(browserAcceptance ? [
+        { pathname: "/browser-acceptance/image-cache-source", search: "?policy=bounded" },
+        { pathname: "/browser-acceptance/image-cache-source", search: "?policy=immutable" },
+      ] : []),
+    ],
     formats: ["image/avif", "image/webp"],
     deviceSizes: [360, 412, 640, 768, 1024, 1280, 1536, 1920],
     imageSizes: [32, 48, 64, 96, 128, 256, 384],
-    // Managed media can lose publication/consent approval; honor its short upstream policy.
-    // Static brand/artwork sources below retain their existing long-lived cache policy.
+    // Static brand/artwork sources retain their existing long-lived cache policy.
+    // Revocable media is never eligible for this cache.
     minimumCacheTTL: 60,
     maximumResponseBody: 5 * 1024 * 1024,
+  },
+  async rewrites() {
+    if (!browserAcceptance) return [];
+    // Exact synthetic keys only; no real storage or publication records are used.
+    return {
+      beforeFiles: Array.from({ length: 4 }, (_, index) => ({
+        source: `/media/2099/00000000-0000-4000-8000-00000000000${index + 1}.jpg`,
+        destination: `/browser-acceptance/managed-image-source?item=${index + 1}`,
+      })),
+      afterFiles: [],
+      fallback: [],
+    };
   },
   async headers() {
     return [

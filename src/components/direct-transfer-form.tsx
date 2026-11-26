@@ -117,7 +117,7 @@ export function DirectTransferForm({ appealId, fundSlug, extraFields, campaign, 
           <button type="button" className={styles.copyButton} onClick={() => copyPaymentDetail(paymentDetails.upi.id, "UPI ID")} aria-label="Copy UPI ID" title="Copy UPI ID"><CopyIcon /></button>
         </div>
         <p className={styles.upiLink}>{upiUri ? <a className="v2-text-link" href={upiUri}>Open UPI app with ₹{Number(upiAmount).toLocaleString("en-IN")}</a> : <span className="muted">Enter your donation amount below to open a UPI app.</span>}</p>
-        {paymentDetails.upi.qrImageUrl ? <Image src={paymentDetails.upi.qrImageUrl} alt="Amaana Foundation verified UPI payment QR code" width={240} height={240} priority={false} /> : copy.qrMissing}
+        {paymentDetails.upi.qrImageUrl ? <Image src={paymentDetails.upi.qrImageUrl} alt="Amaana Foundation verified UPI payment QR code" width={240} height={240} priority={false} unoptimized /> : copy.qrMissing}
       </section>
     ) : paymentDetails.bank ? (
       <section className={`card ${styles.paymentCard}`} aria-label="Verified bank transfer details">

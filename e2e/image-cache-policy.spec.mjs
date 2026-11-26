@@ -77,43 +77,45 @@ test('optimizer negotiates AVIF and WebP at the requested responsive dimensions'
   }
 });
 
-// Diagnostic, not a revocation acceptance gate: a successful diagnostic can
-// still prove that optimized bytes remain exposed after origin withdrawal.
-test('AF-N22 measures warmed optimizer exposure after same-URL synthetic withdrawal', async ({ request }, testInfo) => {
+// The preceding accepted diagnostic showed origin 404 but optimizer 200 HIT.
+test('AF-N22 refuses optimizer access to an approved revocable fixture before and after withdrawal', async ({ request }) => {
   const id = randomUUID().replaceAll('-', '');
   const source = '/browser-acceptance/image-cache-source?policy=revocable&id=' + id;
   const target = optimized(source, 32);
   const options = { headers: { accept: 'image/webp' } };
   const before = await request.get(source);
   expect(before.status()).toBe(200);
-  expect(before.headers()['content-type']).toBe('image/png');
-  const warmed = await request.get(target, options);
-  expect(warmed.status()).toBe(200);
-  expect(warmed.headers()['content-type']).toMatch(/^image\//);
-  const bytes = await warmed.body();
-  expect(bytes.byteLength).toBeGreaterThan(0);
-  const withdrawal = await request.post(source);
-  expect(withdrawal.status()).toBe(204);
-  const originAfter = await request.get(source);
-  expect(originAfter.status()).toBe(404);
-  expect(originAfter.headers()['cache-control']).toBe('no-store');
-  expect((await originAfter.body()).byteLength).toBe(0);
-  const after = await request.get(target, options);
-  const evidence = {
-    originStatus: originAfter.status(),
-    optimizerStatus: after.status(),
-    optimizerCacheStatus: after.headers()['x-nextjs-cache'] ?? null,
-    optimizerCacheControl: after.headers()['cache-control'] ?? null,
-    cachedBytesStillServed: after.status() === 200,
-    sameBytes: after.status() === 200 ? (await after.body()).equals(bytes) : null,
-    revocationAccepted: false,
-    scope: 'isolated synthetic Next optimizer; not a CDN/browser-cache or production withdrawal acceptance',
-  };
-  await testInfo.attach('media-withdrawal-cache-diagnostic', { body: JSON.stringify(evidence, null, 2), contentType: 'application/json' });
-  console.log('AF-N22 synthetic same-key withdrawal diagnostic: ' + JSON.stringify(evidence));
-  expect([200, 400, 404]).toContain(after.status());
-  if (after.status() === 200) {
-    expect(evidence.sameBytes).toBe(true);
-    expect(maxAge(after)).toBeLessThanOrEqual(300);
+  expect(before.headers()['cache-control']).toContain('no-store');
+  expect((await before.body()).byteLength).toBeGreaterThan(0);
+  const denied = await request.get(target, options);
+  expect(denied.status()).toBe(400);
+  expect(await denied.text()).toContain('parameter is not allowed');
+  expect((await request.post(source)).status()).toBe(204);
+  const after = await request.get(source);
+  expect(after.status()).toBe(404);
+  expect(after.headers()['cache-control']).toBe('no-store');
+  expect((await after.body()).byteLength).toBe(0);
+  const optimizerAfter = await request.get(target, options);
+  expect(optimizerAfter.status()).toBe(400);
+  expect(await optimizerAfter.text()).toContain('parameter is not allowed');
+});
+
+test('AF-N22 rejects managed year/key, private route and unknown optimizer paths', async ({ request }) => {
+  for (const source of [
+    '/media/2026/123e4567-e89b-12d3-a456-426614174000.webp',
+    '/media/2026/123e4567-e89b-12d3-a456-426614174000.webp?variant=1',
+    '/team/photo/fixture',
+    '/api/admin/media',
+    '/admin/donations',
+    '/unknown.webp',
+  ]) {
+    const response = await request.get(optimized(source), { headers: { accept: 'image/webp' } });
+    expect(response.status(), source).toBe(400);
+    expect(await response.text(), source).toContain('parameter is not allowed');
+  }
+  for (const source of ['/media/2026%2F123e4567-e89b-12d3-a456-426614174000.webp', '/media/2026%252F123e4567-e89b-12d3-a456-426614174000.webp']) {
+    const response = await request.get(optimized(source), { headers: { accept: 'image/webp' } });
+    expect(response.status(), source).toBeGreaterThanOrEqual(400);
+    expect(response.headers()['content-type'] ?? '', source).not.toMatch(/^image\//);
   }
 });

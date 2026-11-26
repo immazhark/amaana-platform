@@ -37,6 +37,7 @@ const routes = [
   "give-sponsorship",
   "funds-ledger",
   "gallery",
+  "managed-image-gallery",
   "home-hero",
   "mobile-support",
   "portfolio",
@@ -86,6 +87,13 @@ await mkdir(galleryImageTarget, { recursive: true });
 await copyFile(
   path.join(sourceRoot, "browser-acceptance", "gallery-image", "route.ts.fixture"),
   path.join(galleryImageTarget, "route.ts"),
+);
+
+const managedImageTarget = path.join(appTarget, "managed-image-source");
+await mkdir(managedImageTarget, { recursive: true });
+await copyFile(
+  path.join(sourceRoot, "browser-acceptance", "managed-image-source", "route.ts.fixture"),
+  path.join(managedImageTarget, "route.ts"),
 );
 
 console.log(`Materialized ${routes.length} isolated browser-acceptance pages and the image-cache test source.`);

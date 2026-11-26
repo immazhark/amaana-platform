@@ -1,42 +1,47 @@
-import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { test } from "node:test";
-
-// AF-N22: withdrawn public media must stop being served within a bounded time. The managed media
-// route sets the source cache policy; the Next image optimizer caches optimized output for
-// max(upstream max-age, images.minimumCacheTTL). The optimizer floor therefore must never exceed
-// the edge window, or an optimizer entry could outlive the approval it was created under.
-const ROOT = new URL("../", import.meta.url).pathname.replace(/^[/]([A-Za-z]:)/, "$1");
-const read = (file) => readFileSync(`${ROOT}${file}`, "utf8");
-
-export function optimizerFloorSeconds(config) {
-  const match = config.match(/minimumCacheTTL\s*:\s*(\d+)/);
-  return match ? Number(match[1]) : null;
+import assert from 'node:assert/strict';
+import { test } from 'node:test';
+import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+const root = new URL('../', import.meta.url);
+function config(acceptance) {
+  const r = spawnSync(process.execPath, ['--experimental-strip-types', '--input-type=module', '-e', 'import c from "./next.config.ts"; console.log(JSON.stringify(c.images))'], { cwd: root, env: {...process.env, AMAANA_BROWSER_ACCEPTANCE: String(acceptance)}, encoding: 'utf8' });
+  assert.equal(r.status, 0, r.stderr);
+  return JSON.parse(r.stdout);
 }
-
-export function routeCachePolicy(source) {
-  const match = source.match(/"Cache-Control":\s*"public,\s*max-age=(\d+),\s*s-maxage=(\d+)[^"]*"/);
-  return match ? { maxAge: Number(match[1]), sMaxAge: Number(match[2]) } : null;
-}
-
-test("the helpers read the optimizer floor and the route cache policy", () => {
-  assert.equal(optimizerFloorSeconds("images: { minimumCacheTTL: 60 }"), 60);
-  assert.equal(optimizerFloorSeconds("images: {}"), null);
-  assert.deepEqual(routeCachePolicy('"Cache-Control": "public, max-age=60, s-maxage=300, must-revalidate"'), { maxAge: 60, sMaxAge: 300 });
-  assert.equal(routeCachePolicy('"Cache-Control": "no-store"'), null);
+const staticPatterns = [
+  { pathname: '/brand/**', search: '' },
+  { pathname: '/hero/**', search: '' },
+  { pathname: '/programme-artwork/**', search: '' },
+  { pathname: '/media/*', search: '' },
+];
+test('production optimizer is limited to static namespaces; no year/key or arbitrary route', () => {
+  const images = config(false);
+  assert.deepEqual(images.localPatterns, staticPatterns);
+  assert.equal(images.minimumCacheTTL, 60);
 });
-
-test("the optimizer floor cannot outlive the managed media edge window", () => {
-  const floor = optimizerFloorSeconds(read("next.config.ts"));
-  const policy = routeCachePolicy(read("src/app/media/[year]/[filename]/route.ts"));
-  assert.notEqual(floor, null, "next.config.ts must set images.minimumCacheTTL explicitly");
-  assert.ok(policy, "the managed media route must declare a bounded public cache policy");
-  assert.ok(policy.maxAge <= 300 && policy.sMaxAge <= 300, `managed media cache must stay within five minutes, got ${JSON.stringify(policy)}`);
-  assert.ok(floor <= policy.sMaxAge, `optimizer floor ${floor}s must not exceed the ${policy.sMaxAge}s edge window`);
+test('browser acceptance adds only the two nonrevocable fixture query variants', () => {
+  assert.deepEqual(config(true).localPatterns, [...staticPatterns,
+    { pathname: '/browser-acceptance/image-cache-source', search: '?policy=bounded' },
+    { pathname: '/browser-acceptance/image-cache-source', search: '?policy=immutable' },
+  ]);
 });
-
-test("the managed media route only serves assets that are both public and privacy-approved", () => {
-  const source = read("src/app/media/[year]/[filename]/route.ts");
+test('managed media route keeps publication and approval gates and no-store success policy', () => {
+  const source = readFileSync(new URL('src/app/media/[year]/[filename]/route.ts', root), 'utf8');
   assert.match(source, /isPublic:\s*true/);
   assert.match(source, /privacyApprovedAt:\s*\{\s*not:\s*null\s*\}/);
+  assert.match(source, /const headers = new Headers\(\{\s*"Cache-Control": "private, no-store, max-age=0"/);
+  assert.doesNotMatch(source, /"Cache-Control":\s*"public,/);
 });
+
+function rewrites(acceptance) {
+  const r = spawnSync(process.execPath, ['--experimental-strip-types', '--input-type=module', '-e', 'import c from "./next.config.ts"; console.log(JSON.stringify(await c.rewrites?.() ?? []))'], { cwd: root, env: {...process.env, AMAANA_BROWSER_ACCEPTANCE: String(acceptance)}, encoding: 'utf8' });
+  assert.equal(r.status, 0, r.stderr);
+  return JSON.parse(r.stdout);
+}
+test('production has no synthetic media rewrite', () => assert.deepEqual(rewrites(false), []));
+test('acceptance has four exact synthetic image routes only', () => assert.deepEqual(rewrites(true), {
+  beforeFiles: Array.from({length: 4}, (_, i) => ({
+    source: `/media/2099/00000000-0000-4000-8000-00000000000${i+1}.jpg`,
+    destination: `/browser-acceptance/managed-image-source?item=${i+1}`,
+  })), afterFiles: [], fallback: [],
+}));
