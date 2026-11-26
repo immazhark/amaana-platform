@@ -24,7 +24,7 @@ export default async function TaleemRosterPage({ searchParams }: Props) {
   const today = todayInIndia();
   const roster = await loadRoster(parseCalendarDate(today) ?? new Date());
   const { counts } = roster;
-  const vacant = roster.places.filter(place => place.status === "MAINTAINED" && place.holderAlias === null);
+  const vacant = roster.places.filter(place => place.status === "MAINTAINED" && place.holderAlias === null && !place.hasBlockingAssignment);
   const baseline = TALEEM_FACTS.sponsoredStudents;
 
   return <>
@@ -59,7 +59,7 @@ export default async function TaleemRosterPage({ searchParams }: Props) {
         <tbody>{roster.places.map(place => <tr key={place.id}>
           <th scope="row">{place.placeCode}</th>
           <td>{PLACE_STATUS_LABEL[place.status]}</td>
-          <td>{place.holderAlias ?? <span className="muted">Vacant</span>}</td>
+          <td>{place.holderAlias ?? <span className="muted">{place.hasBlockingAssignment ? "Vacant today — future assignment recorded" : "Vacant"}</span>}</td>
           <td><form action={setPlaceStatusAction} className="admin-inline-form">
             <input type="hidden" name="placeId" value={place.id} />
             <label htmlFor={`pstatus-${place.id}`} className="sr-only">Status for {place.placeCode}</label>
@@ -78,7 +78,7 @@ export default async function TaleemRosterPage({ searchParams }: Props) {
     <section className="card" aria-labelledby="learners-heading">
       <h2 id="learners-heading">Learners</h2>
       {roster.learners.length === 0 ? <p className="muted">No learners yet.</p> : roster.learners.map(learner => <details key={learner.id} className="card">
-        <summary><strong>{learner.fullName}</strong> <small>{learner.publicAlias} · {LEARNER_STATUS_LABEL[learner.status]} · {learner.programme ? PROGRAMME_LABEL[learner.programme] : "No programme recorded"} · {learner.placeCode ?? "No place"}{learner.completedHifdhOn ? ` · Hifdh completed ${learner.completedHifdhOn}` : ""}</small></summary>
+        <summary><strong>{learner.fullName}</strong> <small>{learner.publicAlias} · {LEARNER_STATUS_LABEL[learner.status]} · {learner.programme ? PROGRAMME_LABEL[learner.programme] : "No programme recorded"} · {learner.placeCode ?? "No place today"}{learner.openAssignmentStartsOn && learner.openAssignmentStartsOn > counts.asOf ? ` · Scheduled from ${learner.openAssignmentStartsOn}: ${learner.openAssignmentPlaceCode ?? "place recorded"}` : ""}{learner.completedHifdhOn ? ` · Hifdh completed ${learner.completedHifdhOn}` : ""}</small></summary>
         <form action={setLearnerStatusAction} className="form-grid">
           <input type="hidden" name="learnerId" value={learner.id} />
           <div className="field"><label htmlFor={`lstatus-${learner.id}`}>Status</label><select id={`lstatus-${learner.id}`} name="status" defaultValue={learner.status}>{Object.entries(LEARNER_STATUS_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
@@ -92,15 +92,16 @@ export default async function TaleemRosterPage({ searchParams }: Props) {
         </form>
         {learner.assignmentId ? <form action={endAssignmentAction} className="form-grid">
           <input type="hidden" name="assignmentId" value={learner.assignmentId} />
-          <div className="field"><label htmlFor={`end-${learner.id}`}>End place {learner.placeCode} on</label><input id={`end-${learner.id}`} name="endedOn" type="date" defaultValue={today} required /></div>
+          <div className="field"><label htmlFor={`end-${learner.id}`}>End open assignment for {learner.openAssignmentPlaceCode ?? "recorded place"} on</label><input id={`end-${learner.id}`} name="endedOn" type="date" defaultValue={today} required /></div>
           <div className="field"><label htmlFor={`endwhy-${learner.id}`}>Reason <span className="muted">optional, private</span></label><input id={`endwhy-${learner.id}`} name="reason" maxLength={300} /></div>
           <div className="field full"><button className="button" type="submit">End this assignment (history is kept)</button></div>
-        </form> : vacant.length > 0 && (learner.status === "ACTIVE" || learner.status === "ON_BREAK") ? <form action={assignLearnerAction} className="form-grid">
+        </form> : !learner.hasBlockingAssignment && vacant.length > 0 && (learner.status === "ACTIVE" || learner.status === "ON_BREAK") ? <form action={assignLearnerAction} className="form-grid">
           <input type="hidden" name="learnerId" value={learner.id} />
           <div className="field"><label htmlFor={`place-${learner.id}`}>Vacant place</label><select id={`place-${learner.id}`} name="placeId" required>{vacant.map(place => <option key={place.id} value={place.id}>{place.placeCode}</option>)}</select></div>
           <div className="field"><label htmlFor={`pstart-${learner.id}`}>From</label><input id={`pstart-${learner.id}`} name="startedOn" type="date" defaultValue={today} required /></div>
           <div className="field full"><button className="button" type="submit">Assign this place</button></div>
         </form> : null}
+        {!learner.assignmentId && learner.hasBlockingAssignment ? <p className="muted">A current or future dated assignment is already recorded. A new open assignment would overlap.</p> : null}
         {learner.completedHifdhOn ? null : <form action={recordHifdhCompletionAction} className="form-grid">
           <input type="hidden" name="learnerId" value={learner.id} />
           <div className="field"><label htmlFor={`done-${learner.id}`}>Hifdh completed on</label><input id={`done-${learner.id}`} name="completedOn" type="date" required /></div>

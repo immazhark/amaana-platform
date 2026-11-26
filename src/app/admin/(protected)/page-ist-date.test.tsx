@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   groupBy: vi.fn(),
   findMany: vi.fn(),
   findFirst: vi.fn(),
+  decisions: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({
@@ -24,6 +25,8 @@ vi.mock("@/lib/prisma", () => ({
   }, assistanceIntakeSetting: { findUnique: async () => null } },
 }));
 
+vi.mock("@/lib/assistance-decision-report", async importOriginal => ({ ...await importOriginal<typeof import("@/lib/assistance-decision-report")>(), loadAssistanceDecisionReport: mocks.decisions }));
+
 import AdminQueuePage from "./page";
 
 beforeEach(() => {
@@ -34,6 +37,7 @@ beforeEach(() => {
   mocks.count.mockResolvedValue(1);
   mocks.groupBy.mockResolvedValue([]);
   mocks.findFirst.mockResolvedValue(null);
+  mocks.decisions.mockResolvedValue({ received: 0, recorded: 0, withinDay: 0, withinWeek: 0, overWeek: 0, openWithoutDecision: 0, otherWithoutDecision: 0 });
 });
 
 afterEach(() => vi.unstubAllEnvs());
@@ -144,7 +148,7 @@ describe("assistance queue assignment filter", () => {
     { view: "tests", referenceNumber: "AF-STAGING-ACCEPTANCE" },
   ])("narrows existing visibility scope and status counts to unassigned cases", async ({ view, referenceNumber }) => {
     mocks.count.mockResolvedValue(101);
-    mocks.groupBy.mockResolvedValue([{ status: "SUBMITTED", _count: { _all: 101 } }, { status: "UNDER_VERIFICATION", _count: { _all: 4 } }]);
+    mocks.groupBy.mockImplementation(async args => args._min ? [] : [{ status: "SUBMITTED", _count: { _all: 101 } }, { status: "UNDER_VERIFICATION", _count: { _all: 4 } }]);
     mocks.findMany.mockResolvedValue([]);
     const html = renderToStaticMarkup(await AdminQueuePage({ searchParams: Promise.resolve({
       view, status: "SUBMITTED", assignment: "unassigned", sort: "oldest", page: "2",
@@ -191,31 +195,82 @@ describe("assistance queue triage authorization boundary", () => {
     expect(mocks.count).not.toHaveBeenCalled();
     expect(mocks.groupBy).not.toHaveBeenCalled();
     expect(mocks.findMany).not.toHaveBeenCalled();
+    expect(mocks.decisions).not.toHaveBeenCalled();
   });
 });
 
 describe("assistance workload labels and record visibility", () => {
-  it("reports current submitted status and receipt age, without claiming an unseen first review", async () => {
-    mocks.count.mockImplementation(async ({ where }) => {
-      if (where.acceptedAt) return 0;
-      if (where.status === "SUBMITTED") return 4;
-      if (where.assignedToId === null) return 3;
-      return 9;
-    });
-    mocks.findFirst.mockResolvedValue({ createdAt: new Date(Date.now() - 3.5 * 86_400_000) });
+  it("reports current stage and receipt age without claiming an unseen first review", async () => {
+    mocks.count.mockResolvedValue(0);
+    const received = new Date(Date.now() - 3.5 * 86_400_000);
+    mocks.groupBy.mockImplementation(async args => args._min ? [
+      { status: "SUBMITTED", assignedToId: null, _count: { _all: 3 }, _min: { createdAt: received } },
+      { status: "SUBMITTED", assignedToId: "synthetic-operator", _count: { _all: 1 }, _min: { createdAt: received } },
+      { status: "DOCUMENTS_REQUESTED", assignedToId: "synthetic-other", _count: { _all: 5 }, _min: { createdAt: received } },
+    ] : []);
     mocks.findMany.mockResolvedValue([]);
     const html = renderToStaticMarkup(await AdminQueuePage({ searchParams: Promise.resolve({ view: "tests", assignment: "unassigned" }) }));
     expect(html).toContain("4 submitted requests");
     expect(html).toContain("oldest received 3 days ago");
     expect(html).toContain("3 of 9 open requests have no assignee");
+    expect(html).toContain("1 open request assigned to you");
+    expect(html).toContain("Reviewer workbench");
+    expect(html).toContain("Receipt age is not time in the current stage");
     expect(html).not.toContain("awaiting a first review");
-    expect(mocks.findFirst).toHaveBeenCalledWith({
-      where: { referenceNumber: "AF-STAGING-ACCEPTANCE", status: "SUBMITTED" },
-      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-      select: { createdAt: true },
+    expect(html).not.toContain("synthetic-other");
+    expect(html).not.toContain("synthetic-operator");
+    expect(html).toContain('href="/admin?view=tests&amp;sort=oldest&amp;assignment=mine&amp;status=SUBMITTED"');
+    expect(html).toContain('href="/admin?view=tests&amp;sort=oldest&amp;assignment=unassigned&amp;status=SUBMITTED"');
+    expect(mocks.groupBy).toHaveBeenCalledWith({
+      by: ["status", "assignedToId"], where: { referenceNumber: "AF-STAGING-ACCEPTANCE", status: { in: ["SUBMITTED", "DOCUMENTS_REQUESTED", "UNDER_VERIFICATION"] } },
+      _count: { _all: true }, _min: { createdAt: true },
     });
-    expect(mocks.count).toHaveBeenCalledWith({
-      where: { referenceNumber: "AF-STAGING-ACCEPTANCE", status: { in: ["SUBMITTED", "DOCUMENTS_REQUESTED", "UNDER_VERIFICATION"] }, assignedToId: null },
-    });
+  });
+
+  it.each([
+    { view: undefined, referenceNumber: { not: "AF-STAGING-ACCEPTANCE" } },
+    { view: "tests", referenceNumber: "AF-STAGING-ACCEPTANCE" },
+  ])("narrows personal queue and stage counts to the authenticated reviewer, preserving record visibility", async ({ view, referenceNumber }) => {
+    mocks.count.mockResolvedValue(101);
+    mocks.findMany.mockResolvedValue([]);
+    const html = renderToStaticMarkup(await AdminQueuePage({ searchParams: Promise.resolve({
+      view, assignment: "mine", status: "UNDER_VERIFICATION", sort: "oldest", page: "2",
+    }) }));
+    const scope = { referenceNumber, assignedToId: "synthetic-operator" };
+    expect(mocks.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { ...scope, status: "UNDER_VERIFICATION" }, orderBy: [{ createdAt: "asc" }, { id: "asc" }], skip: 50, take: 50,
+    }));
+    expect(mocks.groupBy).toHaveBeenCalledWith({ by: ["status"], where: scope, _count: { _all: true } });
+    expect(html).toMatch(/<a[^>]*aria-current="page"[^>]*>Assigned to me<\/a>/);
+    expect(html).toContain("assignment=mine&amp;status=UNDER_VERIFICATION&amp;page=3");
+    expect(html).toContain("assignment=mine&amp;status=SUBMITTED");
+  });
+
+  it("does not accept a repeated personal assignment parameter", async () => {
+    mocks.findMany.mockResolvedValue([]);
+    await AdminQueuePage({ searchParams: Promise.resolve({ assignment: ["mine", "unassigned"] }) });
+    expect(mocks.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { referenceNumber: { not: "AF-STAGING-ACCEPTANCE" } },
+    }));
+  });
+});
+
+describe("assistance recorded decision reporting", () => {
+  it("shows evidence-based counts in the selected record view without a promised SLA", async () => {
+    mocks.findMany.mockResolvedValue([]);
+    mocks.decisions.mockResolvedValue({ received: 8, recorded: 4, withinDay: 1, withinWeek: 2, overWeek: 1, openWithoutDecision: 2, otherWithoutDecision: 2 });
+    const html = renderToStaticMarkup(await AdminQueuePage({ searchParams: Promise.resolve({ view: "tests", status: "SUBMITTED" }) }));
+    expect(mocks.decisions).toHaveBeenCalledWith(expect.anything(), "tests");
+    expect(html).toContain("4 of 8");
+    expect(html).toContain("Decision after 24 hours, within 7 days");
+    expect(html).toContain("Other status, no recorded decision");
+    expect(html).toContain("not first-review time, case resolution, disbursement, or a promised response time");
+    expect(html).not.toContain("SLA achieved");
+  });
+  it("does not present missing records as zero turnaround", async () => {
+    mocks.findMany.mockResolvedValue([]);
+    const html = renderToStaticMarkup(await AdminQueuePage({ searchParams: Promise.resolve({}) }));
+    expect(html).toContain("No requests in this receipt cohort.");
+    expect(html).not.toContain("Decision within 24 hours");
   });
 });

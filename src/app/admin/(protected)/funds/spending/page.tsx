@@ -1,27 +1,47 @@
 import Link from "next/link";
 import { hasPermission, requirePermission } from "@/lib/auth";
-import { formatINR } from "@/lib/appeals";
+import { formatDonationReportINR } from "@/lib/donation-reconciliation-totals";
+import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
+import { spendingFilters, summarizeSpending, type SpendingParams } from "@/lib/fund-spending-review";
 import { prisma } from "@/lib/prisma";
 import { publishDisbursementAction, recordDisbursementAction, voidDisbursementAction } from "../actions";
 
 export const dynamic = "force-dynamic";
 
-type Props = { searchParams: Promise<{ notice?: string }> };
+type Props = { searchParams: Promise<SpendingParams & { notice?: string; page?: string | string[] }> };
+const PATH = "/admin/funds/spending";
+const rupees = (paise: number) => formatDonationReportINR(paise / 100);
 
 const POOL_LABEL = { ZAKAT: "Zakat", NON_ZAKAT: "Non-Zakat" } as const;
 
 export default async function FundSpendingPage({ searchParams }: Props) {
   const user = await requirePermission("donation.view");
   const canRecord = hasPermission(user, "donation.reconcile");
-  const { notice } = await searchParams;
-  const [funds, entries] = await Promise.all([
+  const params = await searchParams;
+  const { notice } = params;
+  const [funds, years] = await Promise.all([
     prisma.fund.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }], select: { id: true, name: true } }),
-    prisma.fundDisbursement.findMany({
-      orderBy: [{ spentOn: "desc" }, { createdAt: "desc" }],
-      take: 100,
-      select: { id: true, pool: true, amount: true, spentOn: true, financialYear: true, title: true, publicSummary: true, status: true, voidReason: true, fund: { select: { name: true } } },
-    }),
+    prisma.fundDisbursement.groupBy({ by: ["financialYear"], orderBy: { financialYear: "desc" } }),
   ]);
+  const where = spendingFilters(params, funds.map(fund => fund.id), years.map(year => year.financialYear));
+  const groups = await prisma.fundDisbursement.groupBy({ by: ["status"], where, _count: { _all: true }, _sum: { amount: true } });
+  const totals = summarizeSpending(groups);
+  const pagination = getAdminPagination(totals.totalItems, parseAdminPage(params.page));
+  const entries = await prisma.fundDisbursement.findMany({
+    where,
+    orderBy: [{ spentOn: "desc" }, { createdAt: "desc" }, { id: "desc" }],
+    skip: pagination.skip,
+    take: pagination.pageSize,
+    select: { id: true, pool: true, amount: true, spentOn: true, financialYear: true, title: true, status: true, voidReason: true, fund: { select: { name: true } } },
+  });
+  const selected = {
+    fund: typeof where.fundId === "string" ? where.fundId : "",
+    fy: typeof where.financialYear === "string" ? where.financialYear : "",
+    pool: typeof where.pool === "string" ? where.pool : "",
+    status: typeof where.status === "string" ? where.status : "",
+  };
+  const query = Object.fromEntries(Object.entries(selected).filter(([, value]) => value !== ""));
+  const pageHref = (page: number) => ({ pathname: PATH, query: { ...query, page } });
   return <>
     <div className="admin-heading">
       <div>
@@ -49,23 +69,44 @@ export default async function FundSpendingPage({ searchParams }: Props) {
       </form>
     </section> : <p className="muted">Your account can view spending but cannot record it.</p>}
     <section className="admin-card" aria-labelledby="entries-heading">
-      <h2 id="entries-heading">Recent entries</h2>
+      <h2 id="entries-heading">Spending history</h2>
+      <p className="muted">Review all recorded spending, including draft and void entries. Filter the history by financial year, fund, money pool or status. Totals cover every matching record, not just the displayed page. Void entries are excluded from recorded spending. These are application records, not bank statements.</p>
+      <form action={PATH} method="get" className="form-grid" aria-label="Filter spending history">
+        <div className="field"><label htmlFor="review-fund">Fund</label><select id="review-fund" name="fund" defaultValue={selected.fund}><option value="">All funds</option>{funds.map(fund => <option key={fund.id} value={fund.id}>{fund.name}</option>)}</select></div>
+        <div className="field"><label htmlFor="review-year">Financial year (India)</label><select id="review-year" name="fy" defaultValue={selected.fy}><option value="">All years</option>{years.map(year => <option key={year.financialYear} value={year.financialYear}>{year.financialYear}</option>)}</select></div>
+        <div className="field"><label htmlFor="review-pool">Money pool</label><select id="review-pool" name="pool" defaultValue={selected.pool}><option value="">All pools</option>{Object.entries(POOL_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
+        <div className="field"><label htmlFor="review-status">Entry status</label><select id="review-status" name="status" defaultValue={selected.status}><option value="">All statuses</option><option value="DRAFT">Draft</option><option value="PUBLISHED">Published</option><option value="VOID">Void</option></select></div>
+        <div className="field full"><button className="button" type="submit">Apply filters</button> <Link href={PATH}>Reset filters</Link></div>
+      </form>
+      <div className="card-grid" role="group" aria-label="Filtered spending totals">
+        <article className="card"><strong>{rupees(totals.recordedPaise)}</strong><p>Recorded spending (draft and published)</p></article>
+        <article className="card"><strong>{rupees(totals.draftPaise)}</strong><p>Draft spending</p></article>
+        <article className="card"><strong>{rupees(totals.publishedPaise)}</strong><p>Published spending</p></article>
+        <article className="card"><strong>{rupees(totals.voidPaise)}</strong><p>Void entries (excluded from spending)</p></article>
+      </div>
+      <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Spending history records">
       <table className="admin-table">
         <thead><tr><th scope="col">Fund</th><th scope="col">Entry</th><th scope="col">Amount</th><th scope="col">Status</th>{canRecord ? <th scope="col">Actions</th> : null}</tr></thead>
         <tbody>
           {entries.map(entry => <tr key={entry.id}>
             <th scope="row">{entry.fund.name}<br /><small>{POOL_LABEL[entry.pool]} · FY {entry.financialYear}</small></th>
             <td>{entry.title}<br /><small>{entry.spentOn.toISOString().slice(0, 10)}</small></td>
-            <td>{formatINR(entry.amount.toNumber())}</td>
+            <td>{formatDonationReportINR(entry.amount.toNumber())}</td>
             <td>{entry.status}{entry.status === "VOID" && entry.voidReason ? <><br /><small>{entry.voidReason}</small></> : null}</td>
             {canRecord ? <td>
               {entry.status === "DRAFT" ? <form action={publishDisbursementAction}><input type="hidden" name="id" value={entry.id} /><button className="button" type="submit">Publish</button></form> : null}
               {entry.status !== "VOID" ? <form action={voidDisbursementAction}><input type="hidden" name="id" value={entry.id} /><label htmlFor={`reason-${entry.id}`} className="muted">Reason to void</label><input id={`reason-${entry.id}`} name="reason" minLength={5} maxLength={500} required /><button className="text-button" type="submit">Void</button></form> : null}
             </td> : null}
           </tr>)}
-          {entries.length === 0 ? <tr><td colSpan={canRecord ? 5 : 4}>No spending recorded yet.</td></tr> : null}
+          {entries.length === 0 ? <tr><td colSpan={canRecord ? 5 : 4}>No spending records match this view.</td></tr> : null}
         </tbody>
       </table>
+      </div>
+      <nav className="filter-row" aria-label="Spending history pagination">
+        {pagination.hasPrevious && <Link href={pageHref(pagination.page - 1)}>Previous</Link>}
+        <span>Page {pagination.page} of {pagination.totalPages} · {pagination.totalItems} records</span>
+        {pagination.hasNext && <Link href={pageHref(pagination.page + 1)}>Next</Link>}
+      </nav>
     </section>
   </>;
 }

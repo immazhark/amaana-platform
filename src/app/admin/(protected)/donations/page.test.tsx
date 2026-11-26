@@ -10,6 +10,7 @@ const mocks = vi.hoisted(() => ({
   donationGroups: vi.fn(),
   paymentCount: vi.fn(),
   paymentFind: vi.fn(),
+  pendingReview: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({ requirePermission: mocks.permission }));
@@ -25,6 +26,8 @@ vi.mock("@/lib/prisma", () => ({
     paymentEvent: { count: mocks.paymentCount, findMany: mocks.paymentFind },
   },
 }));
+
+vi.mock("@/lib/pending-transfer-review", async importOriginal => ({ ...await importOriginal<typeof import("@/lib/pending-transfer-review")>(), loadPendingTransferReview: mocks.pendingReview }));
 
 import DonationsPage from "./page";
 
@@ -46,6 +49,7 @@ beforeEach(() => {
   mocks.donationGroups.mockResolvedValue([]);
   mocks.paymentCount.mockResolvedValue(0);
   mocks.paymentFind.mockResolvedValue([]);
+  mocks.pendingReview.mockResolvedValue([]);
 });
 
 afterEach(() => vi.unstubAllEnvs());
@@ -83,6 +87,7 @@ describe("admin donation list IST dates", () => {
     expect(mocks.donationTotalsQuery).not.toHaveBeenCalled();
     expect(mocks.donationFind).not.toHaveBeenCalled();
     expect(mocks.paymentFind).not.toHaveBeenCalled();
+    expect(mocks.pendingReview).not.toHaveBeenCalled();
   });
 });
 
@@ -250,5 +255,37 @@ describe("private payment channel reconciliation", () => {
     mocks.donationFind.mockResolvedValue([]);
     await DonationsPage({ searchParams: Promise.resolve({ method: method as string }) });
     expect(mocks.donationFind).toHaveBeenCalledWith(expect.objectContaining({ where: {} }));
+  });
+});
+
+describe("direct transfer review workbench", () => {
+  it("shows claim age and oldest-first review links without promising a verification time", async () => {
+    mocks.donationFind.mockResolvedValue([]);
+    mocks.pendingReview.mockResolvedValue([{ paymentMethod: "DIRECT_UPI", underDay: 1, oneToSevenDays: 2, overSevenDays: 3, future: 1, total: 7 }]);
+    const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({}) }));
+    expect(html).toContain("Direct-transfer review workbench");
+    expect(html).toContain("Future timestamp");
+    expect(html).toContain("7 pending, oldest first");
+    expect(html).toContain('href="/admin/donations?method=DIRECT_UPI&amp;status=PENDING_VERIFICATION&amp;sort=oldest"');
+    expect(html).toContain("not the bank credit date or a promised verification time");
+  });
+  it("uses the exact reference and preserves sorting and filters", async () => {
+    mocks.donationFind.mockResolvedValue([]);
+    const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({ reference: "afd-2026-12345678", status: "PENDING_VERIFICATION", method: "BANK_TRANSFER", sort: "oldest" }) }));
+    expect(mocks.donationFind).toHaveBeenCalledWith(expect.objectContaining({ where: { referenceNumber: "AFD-2026-12345678", status: "PENDING_VERIFICATION", paymentMethod: "BANK_TRANSFER" }, orderBy: [{ createdAt: "asc" }, { id: "asc" }] }));
+    expect(mocks.donationCount).toHaveBeenCalledWith({ where: { referenceNumber: "AFD-2026-12345678", status: "PENDING_VERIFICATION", paymentMethod: "BANK_TRANSFER" } });
+    expect(html).toContain("reference=AFD-2026-12345678");
+    expect(html).toContain("sort=oldest");
+    expect(html).toContain("Clear reference lookup");
+  });
+  it("does not broaden invalid reference lookup or render raw input", async () => {
+    mocks.donationFind.mockResolvedValue([]);
+    for (const reference of [["AFD-2026-12345678"], "private@example.test", "AFD-2026-12345678#token=private"]) {
+      const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({ reference }) }));
+      expect(mocks.donationFind).toHaveBeenLastCalledWith(expect.objectContaining({ where: { id: { in: [] } } }));
+      expect(html).toContain("No records were matched.");
+      expect(html).not.toContain("private@example.test");
+      expect(html).not.toContain("#token=private");
+    }
   });
 });
