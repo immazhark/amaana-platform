@@ -54,3 +54,8 @@ describe("legacy queue assignment filter", () => {
     },
   );
 });
+
+it("retains the personal assignment filter along with all accepted queue filters", async () => {
+  await expect(AdminRequestsAlias(props({ status: "SUBMITTED", view: "tests", page: "3", sort: "oldest", assignment: "mine" })))
+    .rejects.toThrow("REDIRECT:/admin?status=SUBMITTED&view=tests&page=3&sort=oldest&assignment=mine");
+});

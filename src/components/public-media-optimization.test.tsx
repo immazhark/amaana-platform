@@ -103,4 +103,24 @@ describe("public media image optimization", () => {
     expect(html).toContain('loading="lazy"');
     expect(html).not.toContain("/_next/image?");
   });
+  it("uses responsive gated URLs only for canonical managed images with known dimensions", () => {
+    const path = "/media/2026/123e4567-e89b-12d3-a456-426614174000.webp";
+    const html = renderToStaticMarkup(PublicMedia({ asset: { ...asset, publicUrl: path, width: 2400, height: 1600 } }));
+    expect(html).toContain(path + "?w=384 384w");
+    expect(html).toContain(path + "?w=1280 1280w");
+    expect(html).not.toContain("/_next/image?");
+    expect(renderToStaticMarkup(PublicMedia({ asset: { ...asset, publicUrl: path, width: null, height: null } }))).not.toContain("?w=");
+  });
+
+  it("never embeds managed year/key media in the optimizer or inline placeholder", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const html = renderToStaticMarkup(PublicMedia({ asset: {
+      ...asset, publicUrl: "/media/2026/approved.webp",
+      placeholder: "data:image/webp;base64,AAAA",
+    } }));
+    expect(html).toContain('src="/media/2026/approved.webp"');
+    expect(html).not.toContain("/_next/image?");
+    expect(html).not.toContain("data:image/webp");
+    expect(html).toContain('loading="lazy"');
+  });
 });

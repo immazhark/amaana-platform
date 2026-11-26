@@ -7,6 +7,7 @@ vi.mock("@/lib/request-security", () => ({ isSameOrigin: () => true, enforceAckn
 import { hashReceiptToken } from "@/lib/donations";
 import { isAcknowledgementResponse } from "@/lib/private-record-response";
 import { POST } from "./route";
+import { POST as PDF } from "./pdf/route";
 
 const token = "receipt-token-at-least-twenty-characters";
 const dec = (n: number) => ({ toNumber: () => n });
@@ -72,5 +73,33 @@ describe("receipts for seasonal-campaign donations", () => {
   it("reports no campaign line when the donation recorded no units, rather than inventing one", async () => {
     mocks.findUnique.mockResolvedValue(campaignRow({ units: null, unitPrice: null }));
     expect((await (await ask()).json()).donation.campaign).toBeNull();
+  });
+});
+
+describe("on-screen and downloadable acknowledgement record-date parity", () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  it.each([
+    { name: "partial principal refund across IST midnight", refundedAmount: 129.5, fee: 29.5, capturedAt: new Date("2026-11-21T18:29:59Z"), refundedAt: new Date("2026-11-21T18:30:00Z"), expected: "22 November 2026", iso: "2026-11-21T18:30:00.000Z" },
+    { name: "fee-only refund", refundedAmount: 29.5, fee: 29.5, capturedAt: new Date("2026-11-21T18:29:59Z"), refundedAt: new Date("2026-11-23T18:30:00Z"), expected: "24 November 2026", iso: "2026-11-23T18:30:00.000Z" },
+    { name: "verified capture", refundedAmount: 0, fee: 0, capturedAt: new Date("2026-11-21T18:29:59Z"), refundedAt: null, expected: "21 November 2026", iso: "2026-11-21T18:29:59.000Z" },
+    { name: "legacy verified record without a capture timestamp", refundedAmount: 0, fee: 0, capturedAt: null, refundedAt: null, expected: "21 November 2026", iso: "2026-11-20T18:30:00.000Z" },
+  ])("uses the same recorded date for $name", async scenario => {
+    const record = row({ refundedAmount: dec(scenario.refundedAmount), feeContributionAmount: dec(scenario.fee), capturedAt: scenario.capturedAt, refundedAt: scenario.refundedAt, createdAt: new Date("2026-11-20T18:30:00Z") });
+    mocks.findUnique.mockResolvedValue(record);
+    const screen = await ask();
+    expect(screen.status).toBe(200);
+    const body = await screen.json();
+    expect(body.donation.recordDate).toBe(scenario.iso);
+    const response = await PDF(new Request("https://amaana.example/api/donations/acknowledgement/pdf", { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ reference: record.referenceNumber as string, token }) }));
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toBe("no-store, private");
+    const pdf = Buffer.from(await response.arrayBuffer()).toString("latin1");
+    expect(pdf).toContain("Date recorded: " + scenario.expected);
+    expect(pdf).not.toContain(token);
+    expect(mocks.findUnique).toHaveBeenCalledTimes(2);
+    for (const [query] of mocks.findUnique.mock.calls) {
+      expect(query.select).toMatchObject({ createdAt: true, capturedAt: true, refundedAt: true });
+    }
   });
 });

@@ -1,4 +1,5 @@
 import { TALEEM_CATALOGUE } from "@/content/taleem-catalogue";
+import { acknowledgementRecordDate } from "@/lib/acknowledgement-record-date";
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -62,7 +63,7 @@ export async function POST(request: Request) {
       where: { referenceNumber: parsed.data.reference },
       select: {
         receiptTokenHash: true, status: true, amount: true, refundedAmount: true, feeContributionAmount: true, receiptNumber: true,
-        referenceNumber: true, donorName: true, givingIntent: true, capturedAt: true, createdAt: true,
+        referenceNumber: true, donorName: true, givingIntent: true, capturedAt: true, refundedAt: true, createdAt: true,
         appeal: { select: { title: true } }, fund: { select: { name: true } },
         units: true, unitPrice: true, campaign: { select: { title: true, unitLabel: true, unitLabelPlural: true } },
         sponsorshipProgramme: true, sponsorshipUnits: true, sponsorshipMonths: true, sponsorshipMonthlyRate: true,
@@ -98,7 +99,7 @@ export async function POST(request: Request) {
       amount,
       refundedAmount: donationRefunded,
       feeContributionAmount: feeContribution,
-      recordDate: donation.capturedAt ?? donation.createdAt,
+      recordDate: acknowledgementRecordDate(donation),
       purposeLines: acknowledgementPurposeLines({
         givingIntentLabel: donationIntentLabel(donation.givingIntent),
         appeal: donation.appeal, fund: donation.fund, campaign, sponsorship,

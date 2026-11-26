@@ -8,7 +8,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const projectRoot = fileURLToPath(new URL('../', import.meta.url));
 
-async function fixture({ stripTimestamps = false, initiativeCount = 2 } = {}) {
+async function fixture({ stripTimestamps = false, initiativeCount = 2, unbatchAssets = false } = {}) {
   const directory = await mkdtemp(path.join(tmpdir(), 'amaana-import-assets-'));
   const suffix = randomUUID().replaceAll('-', '');
   const slugs = Array.from({ length: initiativeCount }, (_, index) => 'synthetic-' + index + '-' + suffix);
@@ -29,6 +29,22 @@ async function fixture({ stripTimestamps = false, initiativeCount = 2 } = {}) {
       const assignment = ', "updatedAt" = (clock_timestamp() AT TIME ZONE \'UTC\')';
       assert.equal(source.split(assignment).length - 1, 4);
       await writeFile(importerFile, source.replaceAll(assignment, ''));
+    } else if (unbatchAssets) {
+      // Deliberate query-amplification counterexample, confined to the temp copy.
+      const source = await readFile(sourceFile, 'utf8');
+      const batch = `await tx.mediaAsset.findMany({
+            where: {
+              initiativeId: { in: initiativeIds },
+              publicUrl: { in: assetUrls },
+            },
+            select: { initiativeId: true, publicUrl: true },
+          })`;
+      assert.equal(source.split(batch).length - 1, 1);
+      const unbatched = `(await Promise.all(initiativeIds.map(initiativeId => tx.mediaAsset.findMany({
+            where: { initiativeId, publicUrl: { in: assetUrls } },
+            select: { initiativeId: true, publicUrl: true },
+          })))).flat()`;
+      await writeFile(importerFile, source.replace(batch, unbatched));
     } else {
       await copyFile(sourceFile, importerFile);
     }
@@ -255,4 +271,85 @@ test('AF-R046 import read and bulk-write operations do not grow with the number 
   assert.equal(large.initiativeUpserts, 40);
   assert.equal(large.causeUpserts, small.causeUpserts);
   assert.equal(large.assets, 40);
+});
+
+/** Capture only statement counts, never SQL parameters or database row contents.
+ * Prisma operation mocks cannot prove native database query amplification.
+ * Native upsert implementation can legitimately vary by Prisma version; keep
+ * separate counters for direct media reads, inserts and total statements.
+ */
+function recordImporterQuery(counts, query) {
+  counts.statements++;
+  if (/^\s*SELECT\b[\s\S]*?\bFROM\s+(?:"[^"]+"\.)?"MediaAsset"(?:\s|$)/i.test(query)) counts.mediaReads++;
+  if (/^\s*INSERT\s+INTO\s+(?:"[^"]+"\.)?"MediaAsset"(?:\s|\()/i.test(query)) counts.mediaInserts++;
+}
+
+test('SQL statement counter counts physical media reads/inserts without retaining queries', () => {
+  const counts = { statements: 0, mediaReads: 0, mediaInserts: 0 };
+  for (const query of [
+    'SELECT "public"."MediaAsset"."initiativeId" FROM "public"."MediaAsset" WHERE 1=1',
+    'INSERT INTO "public"."MediaAsset" ("id") VALUES ($1)',
+    'UPDATE "public"."MediaAsset" SET "initiativeId" = $1',
+    'SELECT "public"."Initiative"."id" FROM "public"."Initiative"',
+    'SELECT pg_advisory_xact_lock(2026091501)',
+    'SELECT "MediaAsset"."id" FROM "MediaAsset" WHERE 1=1',
+  ]) recordImporterQuery(counts, query);
+  assert.deepEqual(counts, { statements: 6, mediaReads: 2, mediaInserts: 1 });
+});
+
+async function measurePhysicalImport(initiativeCount, unbatchAssets = false) {
+  const database = new URL(process.env.DATABASE_URL ?? '');
+  assert.ok(['localhost', '127.0.0.1', '[::1]'].includes(database.hostname) && database.pathname === '/amaana',
+    'Importer SQL measurement requires the isolated loopback amaana database');
+  const { PrismaClient } = await import('@prisma/client');
+  const prisma = new PrismaClient({ log: [{ emit: 'event', level: 'query' }] });
+  const f = await fixture({ initiativeCount, unbatchAssets });
+  const counts = { statements: 0, mediaReads: 0, mediaInserts: 0 };
+  let recording = false;
+  prisma.$on('query', event => {
+    if (recording) recordImporterQuery(counts, event.query);
+  });
+  const rollback = new Error('synthetic query measurement rollback');
+  try {
+    // Two entries per initiative, deliberately deduplicated by the importer.
+    await f.writeAssets(f.slugs.flatMap(slug => [f.asset(slug), f.asset(slug, 'Duplicate')]));
+    await assert.rejects(f.applyMasterContent({
+      $transaction: (operation, options) => prisma.$transaction(async tx => {
+        recording = true;
+        try { assert.equal(await operation(tx), initiativeCount); }
+        finally { recording = false; }
+        const persisted = await tx.mediaAsset.findMany({
+          where: { initiative: { slug: { in: f.slugs } } },
+          select: { initiativeId: true, altText: true },
+        });
+        assert.equal(persisted.length, initiativeCount);
+        assert.equal(new Set(persisted.map(row => row.initiativeId)).size, initiativeCount);
+        assert.ok(persisted.every(row => row.altText === 'First entry'));
+        throw rollback;
+      }, options),
+    }), error => error === rollback);
+    assert.equal(await prisma.initiative.count({ where: { slug: { in: f.slugs } } }), 0);
+    assert.equal(await prisma.cause.count({ where: { slug: f.categorySlug } }), 0);
+    return counts;
+  } finally {
+    recording = false;
+    await prisma.$disconnect();
+    await f.dispose();
+  }
+}
+
+test('AF-R046 PostgreSQL physical media reads and bulk inserts stay constant across input sizes', {
+  skip: process.env.AMAANA_DATABASE_TESTS !== 'true',
+}, async () => {
+  const small = await measurePhysicalImport(2);
+  const large = await measurePhysicalImport(40);
+  const control = await measurePhysicalImport(40, true);
+  console.log('AF-R046 isolated importer SQL counts:', JSON.stringify({ small, large, unbatchedControl: control }));
+  assert.equal(small.mediaReads, 1);
+  assert.equal(large.mediaReads, 1);
+  assert.equal(small.mediaInserts, 1);
+  assert.equal(large.mediaInserts, 1);
+  assert.equal(control.mediaReads, 40);
+  assert.equal(control.mediaInserts, 1);
+  assert.ok(control.statements >= large.statements + 39, 'unbatched control must expose additional SQL');
 });

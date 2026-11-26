@@ -1,5 +1,6 @@
 import { copyFile, mkdir, rm } from "node:fs/promises";
 import path from "node:path";
+import { materializeManagedImageAcceptance } from "./materialize-managed-image-acceptance.mjs";
 
 const root = process.cwd();
 const sourceRoot = path.join(root, "e2e", "fixtures");
@@ -15,6 +16,8 @@ await rm(componentTarget, { force: true });
 await rm(galleryTarget, { force: true });
 await rm(navigationReturnTarget, { force: true });
 await rm(appealShareTarget, { force: true });
+
+await materializeManagedImageAcceptance(root, enabled);
 
 if (!enabled) {
   console.log("Browser-acceptance routes excluded from this build.");
@@ -37,6 +40,7 @@ const routes = [
   "give-sponsorship",
   "funds-ledger",
   "gallery",
+  "managed-image-gallery",
   "home-hero",
   "mobile-support",
   "portfolio",

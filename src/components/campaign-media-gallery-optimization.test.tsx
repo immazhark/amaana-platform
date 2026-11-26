@@ -53,23 +53,36 @@ describe("campaign gallery managed image optimization", () => {
 
   afterEach(() => vi.unstubAllEnvs());
 
-  it("optimizes approved first-party absolute images with responsive lazy thumbnails", () => {
+  it("projects known managed dimensions into consent-gated responsive gallery thumbnails", () => {
+    const path = "/media/2026/123e4567-e89b-12d3-a456-426614174000.webp";
+    const items = toPublicGalleryItems([{ ...reviewedItem, publicUrl: path, width: 2400, height: 1600 }]);
+    expect(items[0]).toMatchObject({ managedRenditions: true });
+    const html = renderToStaticMarkup(<CampaignMediaGallery items={items} />);
+    expect(html).toContain(path + "?w=384 384w");
+    expect(html).toContain(path + "?w=1280 1280w");
+    expect(html).not.toContain("/_next/image?");
+    const unknown = toPublicGalleryItems([{ ...reviewedItem, publicUrl: path, width: null, height: null }]);
+    expect(renderToStaticMarkup(<CampaignMediaGallery items={unknown} />)).not.toContain("?w=");
+  });
+
+  it("renders approved first-party managed images directly with lazy thumbnails", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
     const html = renderToStaticMarkup(<CampaignMediaGallery items={toPublicGalleryItems([reviewedItem])} />);
-    expect(html).toContain("/_next/image?url=%2Fmedia%2F2026%2Foutreach.webp");
+    expect(html).toContain('src="/media/2026/outreach.webp"');
+    expect(html).not.toContain("/_next/image?");
     expect(html).toContain('loading="lazy"');
     expect(html).toContain('alt="Volunteers preparing community relief supplies"');
   });
 
-  it("optimizes an approved directly supplied first-party absolute managed image", () => {
+  it("renders a directly supplied first-party absolute managed image without shared optimization", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
     vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "");
     const html = renderToStaticMarkup(<CampaignMediaGallery items={[
       { id: "direct-managed", url: "https://amaanafoundation.org/media/2026/approved.webp",
         alt: "Reviewed distribution supplies", width: 1200, height: 800 },
     ]} />);
-    expect(html).toContain("/_next/image?url=%2Fmedia%2F2026%2Fapproved.webp");
-    expect(html).not.toContain('src="https://amaanafoundation.org/media/2026/approved.webp"');
+    expect(html).not.toContain("/_next/image?");
+    expect(html).toContain('src="https://amaanafoundation.org/media/2026/approved.webp"');
     expect(html).toContain('alt="Reviewed distribution supplies"');
   });
 

@@ -42,3 +42,14 @@ it("shows nothing when no other request shares the contact details", async () =>
   mocks.dupes.mockResolvedValue([]);
   expect(await render()).not.toContain("Possible duplicates");
 });
+
+it("returns to the same validated queue and preserves context on related case links", async () => {
+  mocks.dupes.mockResolvedValue([{ id: "other-request", referenceNumber: "AF-2026-111111", status: "REJECTED", createdAt: new Date("2026-10-01T00:00:00Z") }]);
+  const html = renderToStaticMarkup(await RequestDetailPage({
+    params: Promise.resolve({ id: "synthetic-request" }),
+    searchParams: Promise.resolve({ queueStatus: "SUBMITTED", queueView: "tests", queuePage: "2", queueSort: "oldest", queueAssignment: "mine", returnTo: "https://outside.example" }),
+  }));
+  expect(html).toContain('href="/admin?status=SUBMITTED&amp;view=tests&amp;page=2&amp;sort=oldest&amp;assignment=mine"');
+  expect(html).toContain('href="/admin/requests/other-request?queueStatus=SUBMITTED&amp;queueView=tests&amp;queuePage=2&amp;queueSort=oldest&amp;queueAssignment=mine"');
+  expect(html).not.toContain("https://outside.example");
+});
