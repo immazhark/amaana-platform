@@ -28,6 +28,7 @@ const safe = (value: bigint) => {
 const CHANNELS = ["RAZORPAY", "DIRECT_UPI", "BANK_TRANSFER"] as const;
 type Channel = typeof CHANNELS[number];
 export type AnnualFinanceChannel = Pick<AnnualFinanceRow, "grossPaise" | "refundedPaise" | "retainedPaise" | "pendingPaise" | "pendingCount"> & { paymentMethod: Channel };
+export type AnnualFinanceCrossRow = AnnualFinanceChannel & Pick<AnnualFinanceRow, "destination" | "fundSlug" | "pool">;
 const amounts = ["grossPaise", "refundedPaise", "retainedPaise", "pendingPaise", "pendingCount", "draftPaise", "publishedPaise"] as const;
 type RawAmounts = Pick<RawRow, typeof amounts[number]>;
 const empty = (): RawAmounts => ({ grossPaise: 0n, refundedPaise: 0n, retainedPaise: 0n, pendingPaise: 0n, pendingCount: 0n, draftPaise: 0n, publishedPaise: 0n });
@@ -40,7 +41,7 @@ function receipts(row: RawAmounts) {
 
 /** One aggregate snapshot for both dimensions. Spending is never attributed to a payment channel.
  * Refunds are current cumulative principal against the capture cohort, not refund-date cash flows. */
-export async function loadAnnualFinanceBreakdown(client: Pick<Prisma.TransactionClient, "$queryRaw">, period: Period): Promise<{ destinations: AnnualFinanceRow[]; channels: AnnualFinanceChannel[] }> {
+export async function loadAnnualFinanceBreakdown(client: Pick<Prisma.TransactionClient, "$queryRaw">, period: Period): Promise<{ destinations: AnnualFinanceRow[]; channels: AnnualFinanceChannel[]; byDestinationAndChannel: AnnualFinanceCrossRow[] }> {
   const rows = await client.$queryRaw<RawRow[]>`
     WITH activity AS (
       SELECT CASE WHEN d."fundId" IS NULL THEN 'appeals' ELSE 'fund' END AS "destination",
@@ -76,6 +77,7 @@ export async function loadAnnualFinanceBreakdown(client: Pick<Prisma.Transaction
   `;
   const destinations = new Map<string, Omit<RawRow, "paymentMethod">>();
   const channels = new Map<string, RawAmounts>();
+  const byDestinationAndChannel: AnnualFinanceCrossRow[] = [];
   for (const row of rows) {
     const key = JSON.stringify([row.destination, row.fundSlug, row.pool]);
     let destination = destinations.get(key);
@@ -84,8 +86,13 @@ export async function loadAnnualFinanceBreakdown(client: Pick<Prisma.Transaction
       destinations.set(key, destination);
     }
     addAmounts(destination, row);
-    if (row.paymentMethod === null) continue;
-    if (!CHANNELS.some(method => method === row.paymentMethod)) throw new Error("Unknown annual finance payment method");
+    if (row.paymentMethod === null) {
+      if (row.grossPaise !== 0n || row.refundedPaise !== 0n || row.retainedPaise !== 0n || row.pendingPaise !== 0n || row.pendingCount !== 0n) throw new Error("Missing annual finance payment method");
+      continue;
+    }
+    const paymentMethod = CHANNELS.find(method => method === row.paymentMethod);
+    if (!paymentMethod) throw new Error("Unknown annual finance payment method");
+    byDestinationAndChannel.push({ destination: row.destination, fundSlug: row.fundSlug, pool: row.pool, paymentMethod, ...receipts(row) });
     let channel = channels.get(row.paymentMethod);
     if (!channel) { channel = empty(); channels.set(row.paymentMethod, channel); }
     addAmounts(channel, row);
@@ -93,6 +100,7 @@ export async function loadAnnualFinanceBreakdown(client: Pick<Prisma.Transaction
   return {
     destinations: [...destinations.values()].map(row => ({ destination: row.destination, fundSlug: row.fundSlug, pool: row.pool,
       ...receipts(row), draftPaise: safe(row.draftPaise), publishedPaise: safe(row.publishedPaise) })),
+    byDestinationAndChannel,
     channels: CHANNELS.flatMap(paymentMethod => {
       const row = channels.get(paymentMethod);
       return row ? [{ paymentMethod, ...receipts(row) }] : [];
@@ -110,4 +118,10 @@ const money = (paise: number) => `${Math.floor(paise / 100)}.${String(paise % 10
 export function annualFinanceCsv(label: string, rows: readonly AnnualFinanceRow[]) {
   const header = "financial_year,destination,fund_slug,pool,capture_cohort_gross_inr,capture_cohort_cumulative_principal_refunded_inr,capture_cohort_retained_inr,pending_claims_created_inr,pending_claim_count,fund_draft_spending_inr,fund_published_spending_inr";
   return [header, ...rows.map(row => [csvText(label), csvText(row.destination), csvText(row.fundSlug ?? ""), csvText(row.pool), money(row.grossPaise), money(row.refundedPaise), money(row.retainedPaise), money(row.pendingPaise), row.pendingCount, money(row.draftPaise), money(row.publishedPaise)].join(","))].join("\r\n") + "\r\n";
+}
+
+/** Joint receipt/claim rows only. These are the same records as the two summary dimensions, not extra income. */
+export function annualFinanceCrossCsv(label: string, rows: readonly AnnualFinanceCrossRow[]) {
+  const header = "financial_year,destination,fund_slug,pool,payment_method,capture_cohort_gross_inr,capture_cohort_cumulative_principal_refunded_inr,capture_cohort_retained_inr,pending_claims_created_inr,pending_claim_count";
+  return [header, ...rows.map(row => [csvText(label), csvText(row.destination), csvText(row.fundSlug ?? ""), csvText(row.pool), csvText(row.paymentMethod), money(row.grossPaise), money(row.refundedPaise), money(row.retainedPaise), money(row.pendingPaise), row.pendingCount].join(","))].join("\r\n") + "\r\n";
 }

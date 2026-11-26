@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requirePermission } from "@/lib/auth";
-import { annualFinanceCsv, financeReviewPeriod, loadAnnualFinanceBreakdown } from "@/lib/annual-finance-review";
+import { annualFinanceCrossCsv, annualFinanceCsv, financeReviewPeriod, loadAnnualFinanceBreakdown } from "@/lib/annual-finance-review";
 import { formatINR } from "@/lib/appeals";
 import { getFundsLedger } from "@/lib/funds-ledger";
 import { loadTaleemSponsorshipReport } from "@/lib/taleem-sponsorship-report";
@@ -21,9 +21,10 @@ type Props = { searchParams: Promise<{ fy?: string | string[] }> };
 export default async function FundsLedgerPage({ searchParams }: Props) {
   await requirePermission("donation.view");
   const period = financeReviewPeriod((await searchParams).fy);
-  const [{ funds, byFund, zakatAccount }, sponsorships, { destinations: annual, channels }] = await Promise.all([getFundsLedger(), loadTaleemSponsorshipReport(prisma), loadAnnualFinanceBreakdown(prisma, period)]);
+  const [{ funds, byFund, zakatAccount }, sponsorships, { destinations: annual, channels, byDestinationAndChannel }] = await Promise.all([getFundsLedger(), loadTaleemSponsorshipReport(prisma), loadAnnualFinanceBreakdown(prisma, period)]);
   const fundNames = new Map(funds.map(fund => [fund.slug, fund.name]));
   const csvHref = "data:text/csv;charset=utf-8," + encodeURIComponent(annualFinanceCsv(period.label, annual));
+  const crossCsvHref = "data:text/csv;charset=utf-8," + encodeURIComponent(annualFinanceCrossCsv(period.label, byDestinationAndChannel));
   const appealTotals = byFund[APPEAL_BUCKET]?.total ?? EMPTY;
   return <>
     <div className="admin-heading">
@@ -101,6 +102,22 @@ export default async function FundsLedgerPage({ searchParams }: Props) {
           <tbody>{channels.map(row => <tr key={row.paymentMethod}><th scope="row">{CHANNEL_LABEL[row.paymentMethod]}</th><td>{formatDonationReportINR(row.grossPaise / 100)}</td><td>{formatDonationReportINR(row.refundedPaise / 100)}</td><td>{formatDonationReportINR(row.retainedPaise / 100)}</td><td>{row.pendingCount}</td><td>{formatDonationReportINR(row.pendingPaise / 100)}</td></tr>)}</tbody>
         </table>
       </div>}
+    </section>
+    <section className="admin-card" aria-labelledby="annual-cross-heading">
+      <h2 id="annual-cross-heading">Payment-channel reconciliation by destination and pool</h2>
+      <p className="muted">FY {period.label}. Use this joint breakdown to match the destination and channel summaries above. These rows represent the same receipts and claims, not additional income. No spending, bank credit or settlement is inferred.</p>
+      {byDestinationAndChannel.length === 0 ? <p>No matching receipt or claim intersections for this year.</p> : <>
+        <p><a className="button" href={crossCsvHref} download={`amaana-application-channel-review-${period.label}.csv`}>Download destination and channel CSV</a></p>
+        <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Financial-year destination and channel reconciliation">
+          <table className="admin-table">
+            <thead><tr><th scope="col">Destination / pool</th><th scope="col">Channel</th><th scope="col">Gross verified</th><th scope="col">Cumulative principal refunded</th><th scope="col">Retained principal</th><th scope="col">Pending claims</th><th scope="col">Pending amount</th></tr></thead>
+            <tbody>{byDestinationAndChannel.map(row => <tr key={JSON.stringify([row.destination, row.fundSlug, row.pool, row.paymentMethod])}>
+              <th scope="row">{row.destination === "appeals" ? "Appeals (combined)" : fundNames.get(row.fundSlug ?? "") ?? row.fundSlug ?? "Unknown fund"}<br /><small>{row.pool === "ZAKAT" ? "Zakat" : "Non-Zakat"}</small></th>
+              <td>{CHANNEL_LABEL[row.paymentMethod]}</td><td>{formatDonationReportINR(row.grossPaise / 100)}</td><td>{formatDonationReportINR(row.refundedPaise / 100)}</td><td>{formatDonationReportINR(row.retainedPaise / 100)}</td><td>{row.pendingCount}</td><td>{formatDonationReportINR(row.pendingPaise / 100)}</td>
+            </tr>)}</tbody>
+          </table>
+        </div>
+      </>}
     </section>
     <section className="admin-card" aria-labelledby="taleem-report-heading">
       <h2 id="taleem-report-heading">Taleem sponsorship reconciliation</h2>
