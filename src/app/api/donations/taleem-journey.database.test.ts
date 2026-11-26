@@ -118,7 +118,8 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("Taleem programme 
     expect(body).toContain(`Acknowledgement number: ${receiptNumber}`);
     expect(body).toContain("Contribution received: INR 6,000.00");
     expect(body).toContain("Qaida: 2 units x 3 months x INR 1,000.00 a month.");
-    expect(body).toContain("does not name or reserve a student");
+    const visibleText = [...body.matchAll(/ Td \((.*)\) Tj ET/g)].map(match => match[1]).join(" ");
+    expect(visibleText).toContain("does not name or reserve a student, and it is paid once.");
     expect(body).toContain("not Form 10BE");
     expect(body).not.toContain(token);
     expect(body).not.toContain("approved-2026-11");
