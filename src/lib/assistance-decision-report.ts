@@ -44,8 +44,9 @@ export async function loadAssistanceDecisionReport(
       COUNT(CASE WHEN "decisionAt" IS NULL AND status NOT IN ('SUBMITTED', 'DOCUMENTS_REQUESTED', 'UNDER_VERIFICATION') THEN 1 END)::bigint AS "otherWithoutDecision"
     FROM durations
   `;
-  if (rows.length !== 1) throw new Error("Inconsistent assistance decision report");
-  const report = Object.fromEntries(fields.map(field => [field, Number(rows[0][field])])) as AssistanceDecisionReport;
+  const row = rows[0];
+  if (rows.length !== 1 || !row) throw new Error("Inconsistent assistance decision report");
+  const report = Object.fromEntries(fields.map(field => [field, Number(row[field])])) as AssistanceDecisionReport;
   if (fields.some(field => !Number.isSafeInteger(report[field]) || report[field] < 0) ||
       report.recorded !== report.withinDay + report.withinWeek + report.overWeek ||
       report.received !== report.recorded + report.openWithoutDecision + report.otherWithoutDecision) {
