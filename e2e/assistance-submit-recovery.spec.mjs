@@ -117,3 +117,54 @@ test("uncertain assistance alert receives focus after React commit even when an 
   await expect(page.locator('input[name="applicantName"]')).toHaveValue("Synthetic Recovery Applicant");
   await expect(page.locator('input[name="consent"]')).toBeChecked();
 });
+
+test("revisiting contact cannot skip a newly invalid need or submit before confirmation", async ({ page }) => {
+  let calls = 0;
+  await page.route("**/api/assistance", route => {
+    calls++;
+    return route.fulfill({ status: 400, contentType: "application/json", body: JSON.stringify({ error: "Synthetic review" }) });
+  });
+  await prepare(page);
+  await page.getByRole("button", { name: /Need/ }).click();
+  await page.getByLabel("Describe the need").fill("");
+  await page.getByRole("button", { name: /Contact/ }).click();
+  await page.getByRole("button", { name: /Confirm/ }).click();
+  await expect(page.locator("#assistance-step-2")).toBeVisible();
+  await expect(page.getByLabel("Describe the need")).toBeFocused();
+  await expect(page.locator("#description-error")).toBeVisible();
+  await page.getByLabel("Describe the need").fill("Synthetic review of corrected assistance details, no actual beneficiary or submission.");
+  await page.locator("form.v2-assistance-form").evaluate(form => form.requestSubmit());
+  await expect(page.locator("#assistance-step-3")).toBeVisible();
+  expect(calls).toBe(0);
+  await page.getByRole("button", { name: "Continue to confirm →" }).click();
+  await expect(page.locator("#assistance-step-4")).toBeVisible();
+  expect(calls).toBe(0);
+});
+
+test("server residence validation focuses the checked radio and associates the group error", async ({ page }) => {
+  await page.route("**/api/assistance", route => route.fulfill({
+    status: 400, contentType: "application/json", body: JSON.stringify({
+      error: "Review the beneficiary residence.", fields: { beneficiaryResidence: ["Confirm the beneficiary service area."] },
+    }),
+  }));
+  await prepare(page);
+  await page.getByRole("button", { name: "Submit private request →" }).click();
+  await expect(page.locator("#assistance-step-1")).toBeVisible();
+  await expect(page.getByLabel("In our Hyderabad service area")).toBeFocused();
+  const group = page.getByRole("group", { name: "Where does the person who needs help live?" });
+  await expect(group).toHaveAttribute("aria-invalid", "true");
+  await expect(group).toHaveAttribute("aria-describedby", "residence-help residence-error");
+  await expect(page.locator("#residence-error")).toHaveText("Confirm the beneficiary service area.");
+});
+
+test("outside-area rejection returns to the residence notice even without field errors", async ({ page }) => {
+  await page.route("**/api/assistance", route => route.fulfill({
+    status: 403, contentType: "application/json", body: JSON.stringify({ error: "Synthetic outside area", code: "outside_service_area" }),
+  }));
+  await prepare(page);
+  await page.getByRole("button", { name: "Submit private request →" }).click();
+  await expect(page.locator("#assistance-step-1")).toBeVisible();
+  await expect(page.locator("#outside-area-notice")).toBeFocused();
+  await expect(page.getByLabel("Somewhere else")).toBeChecked();
+  await expect(page.getByRole("button", { name: "Continue to need →" })).toBeDisabled();
+});
