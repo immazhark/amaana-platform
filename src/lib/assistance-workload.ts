@@ -7,18 +7,44 @@ const DAY_MS = 86_400_000;
 
 export const waitDays = (from: Date, now: Date) => Math.max(0, Math.floor((now.getTime() - from.getTime()) / DAY_MS));
 
-export type AssistanceWorkload = { submitted: number; oldestSubmittedAgeDays: number | null; openUnassigned: number; open: number };
+type StageCount = { count: number; oldestAgeDays: number | null };
+export type AssistanceStageWorkload = { status: typeof OPEN[number]; total: StageCount; mine: StageCount; unassigned: StageCount };
+export type AssistanceWorkload = { submitted: number; oldestSubmittedAgeDays: number | null; openUnassigned: number; openMine: number; open: number; stages: AssistanceStageWorkload[] };
 
+const empty = (): StageCount => ({ count: 0, oldestAgeDays: null });
+
+function include(target: StageCount, count: number, oldest: Date | null, now: Date) {
+  target.count += count;
+  if (oldest) target.oldestAgeDays = Math.max(target.oldestAgeDays ?? 0, waitDays(oldest, now));
+}
+
+/** One grouped snapshot for the current authorized record view. Staff IDs are used only to classify groups
+ * as mine/unassigned/other and never returned. No applicant records or details are selected. */
 export async function assistanceWorkload(
-  db: Pick<Prisma.TransactionClient, "assistanceRequest">, scope: Prisma.AssistanceRequestWhereInput, now = new Date(),
+  db: Pick<Prisma.TransactionClient, "assistanceRequest">, scope: Prisma.AssistanceRequestWhereInput, reviewerId: string, now = new Date(),
 ): Promise<AssistanceWorkload> {
-  const submittedScope = { ...scope, status: "SUBMITTED" as const };
-  const open = { ...scope, status: { in: [...OPEN] } };
-  const [submitted, oldest, openUnassigned, openCount] = await Promise.all([
-    db.assistanceRequest.count({ where: submittedScope }),
-    db.assistanceRequest.findFirst({ where: submittedScope, orderBy: [{ createdAt: "asc" }, { id: "asc" }], select: { createdAt: true } }),
-    db.assistanceRequest.count({ where: { ...open, assignedToId: null } }),
-    db.assistanceRequest.count({ where: open }),
-  ]);
-  return { submitted, oldestSubmittedAgeDays: oldest ? waitDays(oldest.createdAt, now) : null, openUnassigned, open: openCount };
+  const groups = await db.assistanceRequest.groupBy({
+    by: ["status", "assignedToId"],
+    where: { ...scope, status: { in: [...OPEN] } },
+    _count: { _all: true },
+    _min: { createdAt: true },
+  });
+  const stages: AssistanceStageWorkload[] = OPEN.map(status => ({ status, total: empty(), mine: empty(), unassigned: empty() }));
+  for (const group of groups) {
+    const stage = stages.find(item => item.status === group.status);
+    if (!stage) continue;
+    const count = group._count._all;
+    const oldest = group._min.createdAt;
+    include(stage.total, count, oldest, now);
+    if (group.assignedToId === null) include(stage.unassigned, count, oldest, now);
+    else if (group.assignedToId === reviewerId) include(stage.mine, count, oldest, now);
+  }
+  return {
+    submitted: stages[0]!.total.count,
+    oldestSubmittedAgeDays: stages[0]!.total.oldestAgeDays,
+    openUnassigned: stages.reduce((sum, stage) => sum + stage.unassigned.count, 0),
+    openMine: stages.reduce((sum, stage) => sum + stage.mine.count, 0),
+    open: stages.reduce((sum, stage) => sum + stage.total.count, 0),
+    stages,
+  };
 }

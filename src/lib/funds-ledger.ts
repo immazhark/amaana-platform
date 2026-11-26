@@ -54,9 +54,13 @@ export async function loadFundsLedger(client: Client, scope: LedgerScope = {}) {
 }
 
 export async function getFundsLedger() {
-  const [funds, ledger] = await Promise.all([
-    prisma.fund.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }], select: { id: true, slug: true, name: true, status: true, zakatPolicy: true } }),
-    loadFundsLedger(prisma),
-  ]);
-  return { funds, ...ledger };
+  // The unrefunded and refunded partitions must observe the same database snapshot.
+  // A concurrent refund must not move a donation between them during a report read.
+  return prisma.$transaction(async tx => {
+    const [funds, ledger] = await Promise.all([
+      tx.fund.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }], select: { id: true, slug: true, name: true, status: true, zakatPolicy: true } }),
+      loadFundsLedger(tx),
+    ]);
+    return { funds, ...ledger };
+  }, { isolationLevel: "RepeatableRead" });
 }

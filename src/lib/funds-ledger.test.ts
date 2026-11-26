@@ -1,8 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@/lib/prisma", () => ({ prisma: {} }));
+const mockPrisma = vi.hoisted(() => ({
+  fund: { findMany: vi.fn() },
+  donation: { groupBy: vi.fn(), findMany: vi.fn() },
+  fundDisbursement: { groupBy: vi.fn() },
+  $transaction: vi.fn(),
+}));
+vi.mock("@/lib/prisma", () => ({ prisma: mockPrisma }));
 
-import { loadFundsLedger } from "./funds-ledger";
+import { getFundsLedger, loadFundsLedger } from "./funds-ledger";
 
 const dec = (rupees: number) => ({ mul: (n: number) => ({ toNumber: () => rupees * n }) });
 
@@ -53,5 +59,53 @@ describe("loadFundsLedger", () => {
     const { byFund } = await loadFundsLedger(c as never);
     expect(byFund.orphan?.total).toMatchObject({ receivedPaise: 7_000, pendingPaise: 5_000 });
     expect(c.donation.groupBy.mock.calls[0]?.[0].where.status).toEqual({ in: ["CAPTURED", "REFUNDED", "PENDING_VERIFICATION"] });
+  });
+});
+
+describe("admin fund ledger consistent refund snapshot", () => {
+  function fixture(order: "double" | "missed", initialRefund = 0) {
+    let refund = initialRefund;
+    let release: () => void = () => undefined;
+    const gate = new Promise<void>(resolve => { release = resolve; });
+    const fund = { id: "synthetic", slug: "synthetic", name: "Synthetic", status: "ACTIVE", zakatPolicy: "ACCEPTED" };
+    const snapshotClient = (snapshot?: number) => ({
+      fund: { findMany: async () => [fund] },
+      donation: {
+        groupBy: async () => {
+          if (order === "missed") await gate;
+          const observed = snapshot ?? refund;
+          if (order === "double") refund = 30;
+          return observed === 0 ? [{ fundId: fund.id, givingIntent: "ZAKAT", status: "CAPTURED", _sum: { amount: dec(100) } }] : [];
+        },
+        findMany: async () => {
+          const observed = snapshot ?? refund;
+          if (order === "missed") { refund = 30; release(); }
+          return observed > 0 ? [{ fundId: fund.id, givingIntent: "ZAKAT", status: "CAPTURED", amount: dec(100), refundedAmount: dec(observed), feeContributionAmount: dec(0) }] : [];
+        },
+      },
+      fundDisbursement: { groupBy: async () => [{ fundId: fund.id, pool: "ZAKAT", status: "DRAFT", _sum: { amount: dec(20) } }] },
+    });
+    const live = snapshotClient();
+    mockPrisma.fund.findMany.mockImplementation(live.fund.findMany);
+    mockPrisma.donation.groupBy.mockImplementation(live.donation.groupBy);
+    mockPrisma.donation.findMany.mockImplementation(live.donation.findMany);
+    mockPrisma.fundDisbursement.groupBy.mockImplementation(live.fundDisbursement.groupBy);
+    mockPrisma.$transaction.mockImplementation(async (work: (tx: ReturnType<typeof snapshotClient>) => Promise<unknown>, options: { isolationLevel: string }) => {
+      expect(options.isolationLevel).toBe("RepeatableRead");
+      return work(snapshotClient(refund));
+    });
+  }
+
+  it.each(["double", "missed"] as const)("prevents the %s refund-partition race from corrupting the displayed balance", async order => {
+    fixture(order);
+    const report = await getFundsLedger();
+    expect(report.zakatAccount).toMatchObject({ receivedPaise: 10_000, spentPaise: 2_000, balancePaise: 8_000 });
+    expect(report.byFund.synthetic?.total.balancePaise).toBe(8_000);
+  });
+
+  it("preserves a previously partially refunded gift and draft spending", async () => {
+    fixture("double", 30);
+    const report = await getFundsLedger();
+    expect(report.zakatAccount).toMatchObject({ receivedPaise: 7_000, refundedPaise: 3_000, spentPaise: 2_000, balancePaise: 5_000 });
   });
 });

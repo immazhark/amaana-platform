@@ -67,7 +67,7 @@ export function rosterCounts(
   const maintained = new Set(input.places.filter(place => place.status === "MAINTAINED").map(place => place.id));
   const current = input.assignments.filter(assignment => covers(assignment, day));
   const occupied = new Set(current.filter(assignment => maintained.has(assignment.placeId)).map(assignment => assignment.placeId));
-  const counted = input.milestones.filter(milestone => milestone.verified && milestone.supportAssociated);
+  const counted = input.milestones.filter(milestone => milestone.verified && milestone.supportAssociated && milestone.completedOn.getTime() <= day);
   const year = asOf.getUTCFullYear();
   return {
     asOf: new Date(day).toISOString().slice(0, 10),
@@ -75,7 +75,7 @@ export function rosterCounts(
     occupiedPlaces: occupied.size,
     vacantPlaces: maintained.size - occupied.size,
     currentlySupportedStudents: new Set(current.map(assignment => assignment.learnerId)).size,
-    studentsSupportedSinceInception: new Set(input.assignments.map(assignment => assignment.learnerId)).size,
+    studentsSupportedSinceInception: new Set(input.assignments.filter(assignment => assignment.startedOn.getTime() <= day).map(assignment => assignment.learnerId)).size,
     // One learner can complete Hifdh once: the database has a unique (learner, kind) guard; the Set mirrors it here.
     hifdhCompletionsInYear: new Set(counted.filter(milestone => milestone.completedOn.getUTCFullYear() === year).map(milestone => milestone.learnerId)).size,
     hifdhCompletionsAllTime: new Set(counted.map(milestone => milestone.learnerId)).size,
