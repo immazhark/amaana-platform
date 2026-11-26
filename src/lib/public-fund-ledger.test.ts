@@ -1,9 +1,15 @@
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@/lib/prisma", () => ({ prisma: {} }));
+const mockPrisma = vi.hoisted(() => ({
+  fund: { findMany: vi.fn() },
+  donation: { groupBy: vi.fn(), findMany: vi.fn() },
+  fundDisbursement: { groupBy: vi.fn(), findMany: vi.fn() },
+  $transaction: vi.fn(),
+}));
+vi.mock("@/lib/prisma", () => ({ prisma: mockPrisma }));
 
 import type { FundTotals } from "./giving-funds";
-import { financialYearRange, resolveFinancialYear, selectableFinancialYears, shapePublicFundLedger } from "./public-fund-ledger";
+import { financialYearRange, getPublicFundLedger, resolveFinancialYear, selectableFinancialYears, shapePublicFundLedger } from "./public-fund-ledger";
 
 const pool = (over: Partial<FundTotals["total"]> = {}) => ({ receivedPaise: 0, pendingPaise: 0, refundedPaise: 0, spentPaise: 0, publishedSpentPaise: 0, balancePaise: 0, ...over });
 const totals = (over: Partial<FundTotals["total"]>): FundTotals => ({ zakat: pool(), nonZakat: pool(), total: pool(over) });
@@ -61,5 +67,72 @@ describe("shapePublicFundLedger", () => {
       entries: [{ id: "e1", fundId: "f1", title: "x", publicSummary: null, amountPaise: 1, spentOn: "2026-11-01", pool: "ZAKAT" }],
     });
     expect(rows[0]?.entries).toEqual([]);
+  });
+});
+
+describe("public ledger consistent snapshot", () => {
+  const dec = (rupees: number) => ({ mul: (n: number) => ({ toNumber: () => rupees * n }) });
+  const range = { label: "2026-27", start: new Date("2026-03-31T18:30:00Z"), end: new Date("2027-03-31T18:30:00Z") };
+  type State = { refund: number; status: "DRAFT" | "PUBLISHED" };
+
+  function fixture(change: "refund" | "publish" | "none", initialRefund = 0, initialStatus: State["status"] = "DRAFT") {
+    let live: State = { refund: initialRefund, status: initialStatus };
+    const client = (snapshot?: State) => ({
+      fund: { findMany: async () => [orphan] },
+      donation: {
+        groupBy: async () => {
+          const { refund } = snapshot ?? live;
+          if (change === "refund") live = { ...live, refund: 30 };
+          return refund === 0 ? [{ fundId: orphan.id, givingIntent: "ZAKAT", status: "CAPTURED", _sum: { amount: dec(100) } }] : [];
+        },
+        findMany: async () => {
+          const { refund } = snapshot ?? live;
+          return refund > 0 ? [{ fundId: orphan.id, givingIntent: "ZAKAT", status: "CAPTURED", amount: dec(100), refundedAmount: dec(refund), feeContributionAmount: dec(0) }] : [];
+        },
+      },
+      fundDisbursement: {
+        groupBy: async () => {
+          const { status } = snapshot ?? live;
+          if (change === "publish") live = { ...live, status: "PUBLISHED" };
+          return [{ fundId: orphan.id, pool: "ZAKAT", status, _sum: { amount: dec(20) } }];
+        },
+        findMany: async (args: { where: { status: string } }) => {
+          expect(args.where.status).toBe("PUBLISHED");
+          return (snapshot ?? live).status === "PUBLISHED" ? [{ id: "entry", fundId: orphan.id, title: "Synthetic spending", publicSummary: "Synthetic only", amount: dec(20), spentOn: new Date("2026-11-20"), pool: "ZAKAT" }] : [];
+        },
+      },
+    });
+    const current = client();
+    mockPrisma.fund.findMany.mockImplementation(current.fund.findMany);
+    mockPrisma.donation.groupBy.mockImplementation(current.donation.groupBy);
+    mockPrisma.donation.findMany.mockImplementation(current.donation.findMany);
+    mockPrisma.fundDisbursement.groupBy.mockImplementation(current.fundDisbursement.groupBy);
+    mockPrisma.fundDisbursement.findMany.mockImplementation(current.fundDisbursement.findMany);
+    mockPrisma.$transaction.mockImplementation(async (work: (tx: ReturnType<typeof client>) => Promise<unknown>, options: { isolationLevel: string }) => {
+      expect(options.isolationLevel).toBe("RepeatableRead");
+      return work(client({ ...live }));
+    });
+  }
+
+  it("keeps annual receipts and held funds consistent during a concurrent refund", async () => {
+    fixture("refund");
+    const report = await getPublicFundLedger(range);
+    expect(report.totals).toEqual({ receivedPaise: 10_000, spentPaise: 0, heldPaise: 10_000 });
+    expect(report.rows[0]?.entries).toEqual([]);
+  });
+
+  it("does not mix pre-publication totals with a newly published entry", async () => {
+    fixture("publish");
+    const report = await getPublicFundLedger(range);
+    expect(report.totals).toEqual({ receivedPaise: 10_000, spentPaise: 0, heldPaise: 10_000 });
+    expect(report.rows[0]?.entries).toEqual([]);
+  });
+
+  it("preserves previously published spending and partial refunds", async () => {
+    fixture("none", 30, "PUBLISHED");
+    const report = await getPublicFundLedger(range);
+    expect(report.totals).toEqual({ receivedPaise: 7_000, spentPaise: 2_000, heldPaise: 5_000 });
+    expect(report.rows[0]?.entries).toHaveLength(1);
+    expect(report.rows[0]?.entries[0]?.amountPaise).toBe(2_000);
   });
 });
