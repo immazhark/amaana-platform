@@ -1,5 +1,5 @@
 import { getPublicImageDimensions } from "./public-image-dimensions";
-import { canRenderPublicMedia, getPublicImageOptimizationUrl, resolvePublicMediaUrl, type PublicMediaCandidate } from "./public-media";
+import { canRenderPublicMedia, getRelativePublicMediaUrl, resolvePublicMediaUrl, type PublicMediaCandidate } from "./public-media";
 import { isCampaignGraphicDescriptor } from "./campaign-artwork-descriptor";
 
 /** Project already publication/privacy-approved records into public image cards. */
@@ -26,7 +26,7 @@ export function toPublicGalleryItems<T extends PublicMediaCandidate & {
         !canRenderPublicMedia(asset)) return [];
     const url = resolvePublicMediaUrl(asset);
     if (!url) return [];
-    const displayUrl = getPublicImageOptimizationUrl(url) ?? url;
+    const displayUrl = getRelativePublicMediaUrl(url) ?? url;
     if (urls.has(displayUrl) || ids.has(asset.id)) return [];
     urls.add(displayUrl);
     ids.add(asset.id);

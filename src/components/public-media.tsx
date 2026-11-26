@@ -62,7 +62,8 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
         blurDataURL={blurDataURL}
       />
     ) : (
-      // External approved assets may live on multiple S3-compatible/CDN hosts; keep this direct until hosts are explicitly allowlisted for Next's optimizer.
+      // Revocable managed images and reviewed external assets stay direct.
+      // Never place consent-gated bytes in the shared optimizer cache.
       // eslint-disable-next-line @next/next/no-img-element
       <img
         src={url}
@@ -78,7 +79,7 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
     const caption = asset.caption?.trim();
     return (
       <figure className="v2-media-item">
-        {/* Local approved campaign media uses Next's responsive optimizer. External approved HTTPS media stays direct until hosts are explicitly allowlisted. */}
+        {/* Static artwork is optimized; managed and external media use direct reviewed sources. */}
         {image}
         {(caption || asset.sourceYear) && (
           <figcaption>{caption}{caption && asset.sourceYear ? " · " : ""}{asset.sourceYear ?? ""}</figcaption>

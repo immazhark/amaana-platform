@@ -76,7 +76,7 @@ describe("approved public media delivery", () => {
     expect(mocks.getPublicMediaObject).not.toHaveBeenCalled();
   });
 
-  it("serves approved media with bounded caching so later unpublication can revoke access", async () => {
+  it("serves approved media without shared caching so every new request rechecks approval", async () => {
     mocks.findFirst.mockResolvedValue(approvedAsset());
     mocks.getPublicMediaObject.mockResolvedValue({
       bytes: new Uint8Array([82, 73, 70, 70]),
@@ -90,11 +90,27 @@ describe("approved public media delivery", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("image/webp");
     expect(response.headers.get("content-length")).toBe("4");
-    expect(response.headers.get("cache-control")).toBe("public, max-age=60, s-maxage=300, must-revalidate");
+    expect(response.headers.get("cache-control")).toBe("private, no-store, max-age=0");
     expect(response.headers.get("cache-control")).not.toMatch(/immutable/i);
     expect(response.headers.get("etag")).toBe('"abc123"');
     expect(await response.arrayBuffer()).toEqual(new Uint8Array([82, 73, 70, 70]).buffer);
     expect(mocks.getPublicMediaObject).toHaveBeenCalledWith(objectKey);
+  });
+
+  it("rechecks the same key after withdrawal rather than reading its stored bytes", async () => {
+    mocks.findFirst.mockResolvedValueOnce(approvedAsset()).mockResolvedValueOnce(null);
+    mocks.getPublicMediaObject.mockResolvedValue({
+      bytes: new Uint8Array([82, 73, 70, 70]), contentType: "image/webp", etag: null, lastModified: null,
+    });
+    const before = await GET(request(), context());
+    expect(before.status).toBe(200);
+    expect(before.headers.get("cache-control")).toBe("private, no-store, max-age=0");
+    const after = await GET(request(), context());
+    expect(after.status).toBe(404);
+    expect(after.headers.get("cache-control")).toBe("no-store");
+    expect(await after.text()).toBe("");
+    expect(mocks.findFirst).toHaveBeenCalledTimes(2);
+    expect(mocks.getPublicMediaObject).toHaveBeenCalledTimes(1);
   });
 
   it("serves an approved managed PDF through the same gated proxy", async () => {
@@ -120,6 +136,7 @@ describe("approved public media delivery", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("application/pdf");
+    expect(response.headers.get("cache-control")).toBe("private, no-store, max-age=0");
     expect(response.headers.get("content-disposition")).toBe("inline");
     expect(response.headers.get("x-content-type-options")).toBe("nosniff");
     expect(mocks.getPublicMediaObject).toHaveBeenCalledWith(pdfKey);

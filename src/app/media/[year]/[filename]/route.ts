@@ -62,7 +62,7 @@ export async function GET(
     }
 
     const headers = new Headers({
-      "Cache-Control": "public, max-age=60, s-maxage=300, must-revalidate",
+      "Cache-Control": "private, no-store, max-age=0",
       "Content-Disposition": "inline",
       "Content-Length": String(object.bytes.byteLength),
       "Content-Type": expectedContentType,

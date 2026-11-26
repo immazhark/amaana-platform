@@ -103,4 +103,15 @@ describe("public media image optimization", () => {
     expect(html).toContain('loading="lazy"');
     expect(html).not.toContain("/_next/image?");
   });
+  it("never embeds managed year/key media in the optimizer or inline placeholder", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const html = renderToStaticMarkup(PublicMedia({ asset: {
+      ...asset, publicUrl: "/media/2026/approved.webp",
+      placeholder: "data:image/webp;base64,AAAA",
+    } }));
+    expect(html).toContain('src="/media/2026/approved.webp"');
+    expect(html).not.toContain("/_next/image?");
+    expect(html).not.toContain("data:image/webp");
+    expect(html).toContain('loading="lazy"');
+  });
 });
