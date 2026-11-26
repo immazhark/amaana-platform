@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import "../../forms-experience.css";
 import "../../donate-wow.css";
 import { DonatePageView } from "@/app/donate/donate-page-view";
+import { VerifiedImpactStrip } from "@/components/verified-impact-strip";
 import { donationFormCopy } from "@/components/donation-form-copy";
 
 export const dynamic = "force-dynamic";
@@ -27,7 +28,7 @@ export default async function DonateLandingAcceptance({ searchParams }: { search
   ].slice(0, count);
   return <DonatePageView
     choices={choices}
-    impactItems={impactItems}
+    impactEvidence={<VerifiedImpactStrip items={impactItems} headingId="donate-published-outcomes" />}
     paymentDetails={{ upi: { id: "mab.037347029220157@axisbank", qrImageUrl: null }, bank: null }}
     fundGivingEnabled={false}
   />;

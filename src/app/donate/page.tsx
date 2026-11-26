@@ -6,7 +6,7 @@ import { getDonationCheckoutRemainingAmount } from "@/lib/donation-checkout-bala
 import { getDonationPaymentDetails } from "@/lib/donation-payment-details";
 import type { ReviewedAppealChoice } from "@/components/donation-methods";
 import { donationFormCopy } from "@/components/donation-form-copy";
-import type { VerifiedImpactItem } from "@/components/verified-impact-strip";
+import { VerifiedImpactStrip, type VerifiedImpactItem } from "@/components/verified-impact-strip";
 import { isFundGivingEnabled } from "@/lib/fund-giving-flag";
 import { logServerError } from "@/lib/server-log";
 import { DonatePageView } from "./donate-page-view";
@@ -35,21 +35,24 @@ export const metadata: Metadata = {
 // Always recheck current checkout eligibility and verified balances per request.
 export const dynamic = "force-dynamic";
 
-async function DonatePageContent() {
-  const [reviewedAppeals, publishedInitiatives] = await Promise.all([
-    getReviewedDonationPageData(),
-    getDonationImpactHighlights().catch(error => {
-      logServerError("donation.published_impact_unavailable", {
-        errorName: error instanceof Error ? error.name : "unknown",
-      });
-      return [];
-    }),
-  ]);
+// Optional published evidence must not block the giving interface.
+async function DonateImpactEvidence() {
+  const publishedInitiatives = await getDonationImpactHighlights().catch(error => {
+    logServerError("donation.published_impact_unavailable", {
+      errorName: error instanceof Error ? error.name : "unknown",
+    });
+    return [];
+  });
   const impactItems: VerifiedImpactItem[] = publishedInitiatives.flatMap(item =>
     item.primaryMetric && item.primaryMetricLabel
       ? [{ slug: item.slug, title: item.title, value: item.primaryMetric, label: item.primaryMetricLabel }]
       : [],
   );
+  return impactItems.length ? <VerifiedImpactStrip items={impactItems} headingId="donate-published-outcomes" /> : null;
+}
+
+async function DonatePageContent() {
+  const reviewedAppeals = await getReviewedDonationPageData();
   // These server-approved records still need a final checkout balance check.
   // The reviewed projection already preserves priority and excludes unpayable
   // records. Keep the live amount guard and display only four destinations.
@@ -68,7 +71,7 @@ async function DonatePageContent() {
   return (
     <DonatePageView
       choices={eligibleChoices}
-      impactItems={impactItems}
+      impactEvidence={<Suspense fallback={null}><DonateImpactEvidence /></Suspense>}
       paymentDetails={getDonationPaymentDetails()}
       fundGivingEnabled={isFundGivingEnabled()}
     />
