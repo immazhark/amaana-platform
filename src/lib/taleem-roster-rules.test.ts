@@ -96,6 +96,32 @@ describe("rosterCounts", () => {
     expect(counts.hifdhCompletionsAllTime).toBe(5);
   });
 
+  it("counts a scheduled learner in lifetime support only on or after the assignment starts", () => {
+    const input = {
+      places: places(2),
+      assignments: [hold("p1", "a", "2026-01-01", "2026-11-26"), hold("p1", "b", "2026-11-27"), hold("p2", "c", "2027-01-01")],
+      milestones: [],
+    };
+    expect(rosterCounts(input, d("2026-11-26"))).toMatchObject({ currentlySupportedStudents: 1, studentsSupportedSinceInception: 1 });
+    expect(rosterCounts(input, d("2026-11-27"))).toMatchObject({ currentlySupportedStudents: 1, studentsSupportedSinceInception: 2 });
+    expect(rosterCounts(input, d("2027-01-01"))).toMatchObject({ currentlySupportedStudents: 2, studentsSupportedSinceInception: 3 });
+  });
+
+  it("excludes future-dated completions from the year's and lifetime verified impact until the completion day", () => {
+    const m = (learnerId: string, completedOn: string, verified = true, supportAssociated = true) =>
+      ({ learnerId, completedOn: d(completedOn), verified, supportAssociated });
+    const input = {
+      places: [], assignments: [],
+      milestones: [
+        m("a", "2026-11-26"), m("b", "2026-11-27"), m("c", "2027-01-01"),
+        m("x", "2026-11-25", false), m("y", "2026-11-25", true, false),
+      ],
+    };
+    expect(rosterCounts(input, d("2026-11-26"))).toMatchObject({ hifdhCompletionsInYear: 1, hifdhCompletionsAllTime: 1 });
+    expect(rosterCounts(input, d("2026-11-27"))).toMatchObject({ hifdhCompletionsInYear: 2, hifdhCompletionsAllTime: 2 });
+    expect(rosterCounts(input, d("2027-01-01"))).toMatchObject({ hifdhCompletionsInYear: 1, hifdhCompletionsAllTime: 3 });
+  });
+
   it("returns every figure as a separate field so they cannot be summed by accident into one claim", () => {
     const counts = rosterCounts({ places: places(26), assignments: [hold("p1", "a", "2025-01-01")], milestones: [] }, asOf);
     expect(Object.keys(counts).sort()).toEqual(["asOf", "currentlySupportedStudents", "hifdhCompletionsAllTime", "hifdhCompletionsInYear", "maintainedPlaces", "occupiedPlaces", "studentsSupportedSinceInception", "vacantPlaces"]);

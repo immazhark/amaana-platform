@@ -152,6 +152,30 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("Taleem roster Pos
     await expect(prisma.taleemLearner.delete({ where: { id: a.id } })).rejects.toThrow();
   });
 
+  it("shows the current calendar-day holder and programme while retaining future reservations", async () => {
+    const [a, b, c] = [await learner(), await learner(), await learner()];
+    const [p1, p2] = [await place(), await place()];
+    const first = await assignLearner(p1.id, a.id, "2026-01-01", actorId);
+    await endAssignment(first.id, "2026-11-26", null, actorId);
+    const next = await assignLearner(p1.id, b.id, "2026-11-27", actorId);
+    const future = await assignLearner(p2.id, c.id, "2026-12-01", actorId);
+    await endAssignment(future.id, "2026-12-31", null, actorId);
+    await startEnrolment(a.id, "QAIDA", "2026-01-01", actorId);
+    await startEnrolment(a.id, "NAZIRA", "2026-11-27", actorId);
+
+    const today = await loadRoster(new Date("2026-11-26T00:00:00Z"));
+    expect(today.places.find(row => row.id === p1.id)).toMatchObject({ holderAlias: a.publicAlias, assignmentId: next.id, hasBlockingAssignment: true });
+    expect(today.places.find(row => row.id === p2.id)).toMatchObject({ holderAlias: null, assignmentId: null, hasBlockingAssignment: true });
+    expect(today.learners.find(row => row.id === a.id)).toMatchObject({ programme: "QAIDA", placeCode: p1.placeCode, assignmentId: null, hasBlockingAssignment: true });
+    expect(today.learners.find(row => row.id === b.id)).toMatchObject({ placeCode: null, assignmentId: next.id, openAssignmentPlaceCode: p1.placeCode, openAssignmentStartsOn: "2026-11-27", hasBlockingAssignment: true });
+    expect(today.learners.find(row => row.id === c.id)).toMatchObject({ placeCode: null, assignmentId: null, hasBlockingAssignment: true });
+
+    const tomorrow = await loadRoster(new Date("2026-11-27T00:00:00Z"));
+    expect(tomorrow.places.find(row => row.id === p1.id)).toMatchObject({ holderAlias: b.publicAlias, assignmentId: next.id });
+    expect(tomorrow.learners.find(row => row.id === a.id)).toMatchObject({ programme: "NAZIRA", placeCode: null, assignmentId: null, hasBlockingAssignment: false });
+    expect(tomorrow.learners.find(row => row.id === b.id)).toMatchObject({ placeCode: p1.placeCode, assignmentId: next.id });
+  });
+
   it("reports separate counts that agree with the records", async () => {
     const roster = await loadRoster(new Date("2026-11-22T00:00:00Z"));
     const mine = roster.learners.filter(item => learnerIds.includes(item.id));

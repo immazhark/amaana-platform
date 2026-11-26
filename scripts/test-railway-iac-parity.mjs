@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { compareMigrationInventory } from './railway-iac-parity.mjs';
@@ -101,4 +103,17 @@ test('rejects auxiliary secret-bearing properties but accepts harmless JSON key 
   const reordered = clone();
   reordered.auxiliaryServices[0] = Object.fromEntries(Object.entries(reordered.auxiliaryServices[0]).reverse());
   assert.deepEqual(compareMigrationInventory(reference, reordered), []);
+});
+
+const run = name => spawnSync(process.execPath, [fileURLToPath(new URL('./railway-iac-parity.mjs', import.meta.url)), fileURLToPath(new URL(name, import.meta.url))], { encoding: 'utf8' });
+test('CLI accepts the freshly observed active worker baseline', () => {
+  const result = run('./railway-iac-observed-2026-11-26.json');
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /2026-11-26/);
+});
+test('CLI rejects the superseded dormant worker configuration', () => {
+  const result = run('./railway-iac-observed-2026-10-25.json');
+  assert.equal(result.status, 1, result.stdout);
+  assert.match(result.stderr, /auxiliary\.amaana-notification-cron\.startCommand/);
+  assert.match(result.stderr, /auxiliary\.amaana-notification-cron\.cronSchedule/);
 });

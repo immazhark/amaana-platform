@@ -53,3 +53,30 @@ it("AF-R071 donation loading is accessible, nontransactional, and wired", () => 
   expect(html).toContain('aria-live="polite"');
   expect(html).not.toMatch(/<main\b|<button\b|<a\b|<img\b|<video\b|\b₹\s*\d/i);
 });
+
+
+it.each([
+  ["funds", "Our Funds", "Loading published fund records", "Checking published fund information."],
+  ["give", "Give to a Fund", "Checking currently available funds", "Checking current fund-giving availability."],
+] as const)("AF-R071 %s retains a distinct, nontransactional loading state", (route, title, message, intro) => {
+  const html = renderToStaticMarkup(<PublicRouteLoading route={route} />);
+  expect(html).toContain(title);
+  expect(html).toContain(message);
+  expect(html).toContain(intro);
+  expect(html).toContain('class="page-hero__shell"');
+  expect(html).toContain("canonical-body");
+  expect(html).toContain('role="status"');
+  expect(html).toContain('aria-live="polite"');
+  expect(html).not.toContain("Domestic Donations");
+  expect(html).not.toMatch(/<h1\b|<main\b|<button\b|<a\b|<img\b|<video\b|\b₹\s*\d/i);
+
+  // Only inspect the exported page: /give has a separate evidence Suspense.
+  const source = readFileSync(join(process.cwd(), "src/app", route, "page.tsx"), "utf8");
+  const page = source.split("export default function Page(")[1];
+  expect(page).toBeDefined();
+  const gate = page!.indexOf("if (!isFundGivingEnabled()) notFound();");
+  const fallback = page!.indexOf("<Suspense fallback=");
+  expect(gate).toBeGreaterThanOrEqual(0);
+  expect(fallback).toBeGreaterThan(gate);
+  expect(page).toContain('<PublicRouteLoading route="' + route + '" />');
+});
