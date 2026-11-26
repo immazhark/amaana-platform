@@ -95,14 +95,14 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     process.exitCode = 2;
   } else {
     try {
-      const baseline = JSON.parse(readFileSync(new URL('./railway-iac-observed-2026-10-25.json', import.meta.url), 'utf8'));
+      const baseline = JSON.parse(readFileSync(new URL('./railway-iac-observed-2026-11-26.json', import.meta.url), 'utf8'));
       const proposal = JSON.parse(readFileSync(proposalPath, 'utf8'));
       const issues = compareMigrationInventory(baseline, proposal);
       if (issues.length) {
         for (const finding of issues) console.error(finding.code + ': ' + finding.message);
         process.exitCode = 1;
       } else {
-        console.log('Offline parity OK against dated baseline; live Railway config plan is still required.');
+        console.log('Offline parity OK against ' + baseline.capturedAt + ' baseline; live Railway config plan is still required.');
       }
     } catch (error) {
       console.error('Unable to read or validate sanitized proposal:', error.code || 'INVALID_JSON');
