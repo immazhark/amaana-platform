@@ -8,7 +8,9 @@ type PublicLoadingRoute =
   | "impact-compare"
   | "appeals"
   | "faith-and-reflections"
-  | "donate";
+  | "donate"
+  | "funds"
+  | "give";
 
 const routeCopy: Record<PublicLoadingRoute, { title: string; message: string }> = {
   "stories": { title: "Stories of Amanah", message: "Loading published stories…" },
@@ -18,6 +20,8 @@ const routeCopy: Record<PublicLoadingRoute, { title: string; message: string }> 
   "appeals": { title: "Verified Appeals", message: "Checking current public appeals…" },
   "faith-and-reflections": { title: "Faith & Reflections", message: "Loading the reviewed library…" },
   "donate": { title: "Domestic Donations", message: "Checking currently approved giving routes…" },
+  "funds": { title: "Our Funds", message: "Loading published fund records…" },
+  "give": { title: "Give to a Fund", message: "Checking currently available funds…" },
 };
 
 /** An App Router transition fallback. Never render provisional database facts,
@@ -26,13 +30,13 @@ export function PublicRouteLoading({ route }: { route: PublicLoadingRoute }) {
   const { title, message } = routeCopy[route];
   // Keep the matched donation page's standard hero/body geometry available
   // while current checkout eligibility and verified balances are resolved.
-  if (route === "donate") {
+  if (route === "donate" || route === "funds" || route === "give") {
     return (
       <div className={styles.reserve}>
         <CanonicalArticle
           title={title}
-          eyebrow="Donate · Amaana Foundation"
-          intro="Checking current domestic giving availability."
+          eyebrow={`${route === "funds" ? "Our funds" : route === "give" ? "Give" : "Donate"} · Amaana Foundation`}
+          intro={route === "funds" ? "Checking published fund information." : route === "give" ? "Checking current fund-giving availability." : "Checking current domestic giving availability."}
           heroVariant="action"
           heroTitleAs="p"
           heroVisualTitle={title}
