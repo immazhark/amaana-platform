@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { evaluateHold } from './taleem-reservation-model.mjs';
+import { evaluateHold, evaluateReservationTransition } from './taleem-reservation-model.mjs';
 const now = 1000;
 const request = { id: 'new', programme: 'qaida', startMonth: '2026-12', months: 3, units: 2, expiresAt: 2000 };
 const capacities = ['2026-12','2027-01','2027-02'].map(month => ({ programme: 'qaida', month, units: 3 }));
@@ -38,4 +38,37 @@ test('invalid request and clock do not create a candidate', () => {
 test('candidate is a pure advisory result and does not mutate inputs', () => {
   const rows = [hold()]; const before = JSON.stringify({rows,capacities,request});
   assert.equal(run(rows).outcome,'candidate'); assert.equal(JSON.stringify({rows,capacities,request}),before);
+});
+
+const transitionRequest = { id: 'synthetic-01', programme: 'qaida', startMonth: '2026-12', months: 3, units: 2, expiresAt: 2000 };
+const transitionRow = (state = 'held') => ({ ...transitionRequest, state });
+const transition = (action, state = 'held', now = 1000, expected = transitionRequest) => evaluateReservationTransition({ reservation: transitionRow(state), expected, action, now });
+test('a live hold can become a committed candidate, without changing its immutable terms', () => {
+  assert.deepEqual(transition('confirm'), { outcome: 'candidate', nextState: 'committed' });
+  assert.deepEqual(transition('confirm', 'held', 1999), { outcome: 'candidate', nextState: 'committed' });
+});
+test('confirmation at or after expiry requires separate review; no revived capacity', () => {
+  for (const now of [2000, 2001]) assert.deepEqual(transition('confirm', 'held', now), { outcome: 'late_confirmation' });
+  assert.deepEqual(transition('confirm', 'released', 1000), { outcome: 'released_confirmation' });
+});
+test('expiry and release cannot cancel committed inventory; repeat confirmation is idempotent', () => {
+  assert.deepEqual(transition('confirm', 'committed', 5000), { outcome: 'unchanged' });
+  assert.deepEqual(transition('expire', 'committed', 5000), { outcome: 'unchanged' });
+  assert.deepEqual(transition('release', 'committed'), { outcome: 'committed_release_review' });
+});
+test('uncommitted expiry is inclusive and release is idempotent', () => {
+  assert.deepEqual(transition('expire', 'held', 1999), { outcome: 'unchanged' });
+  assert.deepEqual(transition('expire', 'held', 2000), { outcome: 'candidate', nextState: 'released' });
+  assert.deepEqual(transition('release'), { outcome: 'candidate', nextState: 'released' });
+  for (const action of ['release', 'expire']) assert.deepEqual(transition(action, 'released'), { outcome: 'unchanged' });
+});
+test('mismatched immutable evidence, malformed state, clock and private extras fail closed', () => {
+  for (const change of [{ id: 'different' }, { programme: 'nazira' }, { startMonth: '2027-01' }, { months: 6 }, { units: 3 }, { expiresAt: 3000 }]) assert.deepEqual(transition('confirm', 'held', 1000, { ...transitionRequest, ...change }), { outcome: 'id_conflict' });
+  for (const result of [transition('other'), transition('confirm', 'unknown'), transition('confirm', 'held', NaN), transition('confirm', 'held', 1000, { ...transitionRequest, private: 'synthetic' }), evaluateReservationTransition(null)]) assert.deepEqual(result, { outcome: 'invalid_transition' });
+});
+test('a candidate never mutates its supplied reservation or expected request', () => {
+  const reservation = transitionRow(); const input = { reservation, expected: transitionRequest, action: 'confirm', now: 1000 };
+  const before = JSON.stringify(input);
+  assert.equal(evaluateReservationTransition(input).outcome, 'candidate');
+  assert.equal(JSON.stringify(input), before);
 });
