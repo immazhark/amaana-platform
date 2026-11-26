@@ -8,7 +8,7 @@ import { ASSISTANCE_FIELDS as assistanceFieldOrder, classifyAssistanceResponse, 
 import { OUTSIDE_SERVICE_AREA_MESSAGE, type AssistanceResidence } from "@/lib/assistance-policy";
 import styles from "./assistance-form.module.css";
 
-type AssistanceStep = 1 | 2 | 3 | 4;
+import { assistanceFieldFocusTarget, firstInvalidAssistanceStep, type AssistanceStep } from "@/lib/assistance-step-review";
 const fieldStep: Record<AssistanceField, AssistanceStep> = {
   beneficiaryResidence: 1, applicantName: 1, phone: 1, email: 1, city: 1,
   category: 2, description: 2,
@@ -81,7 +81,8 @@ export function AssistanceForm({ copy }: { copy: AssistanceCopy }) {
   }
 
   function navigateToStep(target: AssistanceStep) {
-    if ((outsideArea && target > 1) || (target > step && !validateStep(step))) return;
+    if (submissionLocked.current || (outsideArea && target > 1)) return;
+    if (firstInvalidAssistanceStep(step, target, validateStep) !== null) return;
     goToStep(target);
   }
 
@@ -90,6 +91,7 @@ export function AssistanceForm({ copy }: { copy: AssistanceCopy }) {
       const issue = currentDocumentIssue();
       setDocumentError(issue);
       if (issue) {
+        setStep(current);
         focusDocuments();
         return false;
       }
@@ -99,6 +101,7 @@ export function AssistanceForm({ copy }: { copy: AssistanceCopy }) {
     const controls = Array.from(fieldset.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>("input, select, textarea"));
     const invalid = controls.find(control => !control.checkValidity());
     if (!invalid) return true;
+    setStep(current);
     const field = invalid.name as AssistanceField;
     if (assistanceFieldOrder.includes(field)) {
       setFieldErrors(current => ({ ...current, [field]: [invalid.validationMessage || "Please check this field."] }));
@@ -117,13 +120,18 @@ export function AssistanceForm({ copy }: { copy: AssistanceCopy }) {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (submissionLocked.current) return;
+    if (step !== 4) {
+      advance();
+      return;
+    }
     const form = event.currentTarget;
     // The beneficiary answer gates everything after it: take the person back to it instead of silently ignoring Submit.
     if (outsideArea || !residence) {
       setStep(1);
       if (!residence) setFieldErrors({ beneficiaryResidence: ["Tell us where the person who needs help lives."] });
       requestAnimationFrame(() => requestAnimationFrame(() => {
-        (outsideArea ? document.getElementById("outside-area-notice") : form.querySelector<HTMLInputElement>('input[name="beneficiaryResidence"]'))?.focus();
+        const target = outsideArea ? document.getElementById("outside-area-notice") : assistanceFieldFocusTarget(form, "beneficiaryResidence");
+        if (target instanceof HTMLElement) target.focus();
       }));
       return;
     }
@@ -169,7 +177,8 @@ export function AssistanceForm({ copy }: { copy: AssistanceCopy }) {
       const response = await fetch("/api/assistance", { method: "POST", body: values });
       const result = classifyAssistanceResponse(response.status, await response.json());
       if (result.kind === "rejected") {
-        if (result.code === "outside_service_area") setResidence("OUTSIDE_SERVICE_AREA");
+        const outsideRejection = result.code === "outside_service_area";
+        if (outsideRejection) setResidence("OUTSIDE_SERVICE_AREA");
         const nextFieldErrors = result.fields;
         const message = result.message;
         setFieldErrors(nextFieldErrors);
@@ -177,12 +186,15 @@ export function AssistanceForm({ copy }: { copy: AssistanceCopy }) {
         submissionLocked.current = false;
         setPhase("ready");
         const firstInvalidField = assistanceFieldOrder.find(field => nextFieldErrors[field]?.length);
-        if (firstInvalidField) {
+        if (outsideRejection) {
+          setStep(1);
+          requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById("outside-area-notice")?.focus()));
+        } else if (firstInvalidField) {
           const targetStep = fieldStep[firstInvalidField];
           setStep(targetStep);
           setMaxVisitedStep(current => Math.max(current, targetStep) as AssistanceStep);
           requestAnimationFrame(() => requestAnimationFrame(() => {
-            const control = form.elements.namedItem(firstInvalidField);
+            const control = assistanceFieldFocusTarget(form, firstInvalidField);
             if (control instanceof HTMLElement) control.focus();
           }));
         } else {
@@ -210,7 +222,7 @@ export function AssistanceForm({ copy }: { copy: AssistanceCopy }) {
     </nav>
     {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}{phase === "followup" && <p><a className="v2-text-link" href="/contact" target="_blank" rel="noreferrer">Contact Amaana about this request<span className="sr-only"> (opens in a new tab)</span></a></p>}</div>}
     <fieldset id="assistance-step-1" data-assistance-step="1" tabIndex={-1} hidden={step !== 1} disabled={locked}><legend><span>01</span> Contact</legend><div className="form-grid">
-      <div className="field full"><fieldset className="v2-form-choice" aria-describedby={residenceError ? "residence-help residence-error" : "residence-help"}><legend>Where does the person who needs help live?</legend><small id="residence-help">Answer for the beneficiary, not for the person filling in the form. A family member or friend living elsewhere may apply for someone who lives in our Hyderabad service area.</small>
+      <div className="field full"><fieldset className="v2-form-choice" aria-invalid={Boolean(residenceError) || undefined} aria-describedby={residenceError ? "residence-help residence-error" : "residence-help"}><legend>Where does the person who needs help live?</legend><small id="residence-help">Answer for the beneficiary, not for the person filling in the form. A family member or friend living elsewhere may apply for someone who lives in our Hyderabad service area.</small>
         <label className="checkbox"><input type="radio" name="beneficiaryResidence" value="HYDERABAD_SERVICE_AREA" required aria-describedby={outsideArea ? "outside-area-notice" : undefined} checked={residence === "HYDERABAD_SERVICE_AREA"} onChange={() => { setResidence("HYDERABAD_SERVICE_AREA"); clearFieldError("beneficiaryResidence"); }} /><span>In our Hyderabad service area</span></label>
         <label className="checkbox"><input type="radio" name="beneficiaryResidence" value="OUTSIDE_SERVICE_AREA" required aria-describedby={outsideArea ? "outside-area-notice" : undefined} checked={outsideArea} onChange={() => { setResidence("OUTSIDE_SERVICE_AREA"); clearFieldError("beneficiaryResidence"); }} /><span>Somewhere else</span></label>
         {residenceError && <small id="residence-error" className="v2-field-error">{residenceError}</small>}
