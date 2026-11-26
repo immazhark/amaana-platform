@@ -5,7 +5,7 @@ import { prisma } from "./prisma";
 import { rejectAssistanceRequest } from "./assistance-rejection-service";
 import { capacityUsed, capacityYearBounds, countedCaseWhere } from "./assistance-capacity";
 import { INDIVIDUAL_CASE_ANNUAL_CAPACITY } from "./assistance-policy";
-import { loadAssistanceDecisionReport } from "./assistance-decision-report";
+import { loadAssistanceDecisionBreakdown, loadAssistanceDecisionReport } from "./assistance-decision-report";
 import { AssistanceApprovalError, approveAssistanceRequest, saveApprovalDraft, type ApprovalInput } from "./assistance-approval-service";
 
 // A real PostgreSQL test, deliberately unavailable to hosted and production DBs. Synthetic data only.
@@ -297,6 +297,7 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("assistance approv
     const at = (days: number, extra = 0) => new Date(received.getTime() + days * day + extra);
     const cases = await Promise.all([makeRequest({ status: "APPROVED" }), makeRequest({ status: "REJECTED" }), makeRequest({ status: "UNDER_VERIFICATION" }), makeRequest({ status: "SUBMITTED" }), makeRequest({ status: "CLOSED" }), makeRequest({ status: "APPROVED" }), makeRequest({ status: "REJECTED" })]);
     await prisma.assistanceRequest.updateMany({ where: { id: { in: cases.map(item => item.id) } }, data: { createdAt: received } });
+    await prisma.assistanceRequest.updateMany({ where: { id: { in: cases.slice(4).map(item => item.id) } }, data: { category: "EDUCATION" } });
     await prisma.assistanceRequest.update({ where: { id: cases[0].id }, data: { acceptedAt: at(1) } });
     await prisma.assistanceRequest.update({ where: { id: cases[5].id }, data: { acceptedAt: at(-1) } });
     for (const [index, rejectedAt] of [[1, at(7)], [2, at(9)], [6, at(7, 1)]] as const) {
@@ -323,6 +324,12 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("assistance approv
     }
     expect(await loadAssistanceDecisionReport(prisma, "live", now)).toEqual({ received: 7, recorded: 4, withinDay: 1, withinWeek: 2, overWeek: 1, openWithoutDecision: 1, otherWithoutDecision: 2, verificationRecorded: 4, verificationWithinDay: 2, verificationWithinWeek: 1, verificationOverWeek: 1, verificationMissing: 3 });
     expect(await loadAssistanceDecisionReport(prisma, "tests", now)).toEqual({ received: 0, recorded: 0, withinDay: 0, withinWeek: 0, overWeek: 0, openWithoutDecision: 0, otherWithoutDecision: 0, verificationRecorded: 0, verificationWithinDay: 0, verificationWithinWeek: 0, verificationOverWeek: 0, verificationMissing: 0 });
+    const breakdown = await loadAssistanceDecisionBreakdown(prisma, "live", now);
+    expect(breakdown.categories).toEqual([
+      { category: "MEDICAL", received: 4, recorded: 3, withinDay: 1, withinWeek: 2, overWeek: 0, openWithoutDecision: 1, otherWithoutDecision: 0, verificationRecorded: 3, verificationWithinDay: 1, verificationWithinWeek: 1, verificationOverWeek: 1, verificationMissing: 1 },
+      { category: "EDUCATION", received: 3, recorded: 1, withinDay: 0, withinWeek: 0, overWeek: 1, openWithoutDecision: 0, otherWithoutDecision: 2, verificationRecorded: 1, verificationWithinDay: 1, verificationWithinWeek: 0, verificationOverWeek: 0, verificationMissing: 2 },
+    ]);
+    expect((await loadAssistanceDecisionBreakdown(prisma, "tests", now)).categories).toEqual([]);
   });
 
   describe("annual individual-case capacity", () => {

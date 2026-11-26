@@ -25,7 +25,7 @@ vi.mock("@/lib/prisma", () => ({
   }, assistanceIntakeSetting: { findUnique: async () => null } },
 }));
 
-vi.mock("@/lib/assistance-decision-report", async importOriginal => ({ ...await importOriginal<typeof import("@/lib/assistance-decision-report")>(), loadAssistanceDecisionReport: mocks.decisions }));
+vi.mock("@/lib/assistance-decision-report", async importOriginal => ({ ...await importOriginal<typeof import("@/lib/assistance-decision-report")>(), loadAssistanceDecisionBreakdown: mocks.decisions }));
 
 import AdminQueuePage from "./page";
 
@@ -37,7 +37,7 @@ beforeEach(() => {
   mocks.count.mockResolvedValue(1);
   mocks.groupBy.mockResolvedValue([]);
   mocks.findFirst.mockResolvedValue(null);
-  mocks.decisions.mockResolvedValue({ received: 0, recorded: 0, withinDay: 0, withinWeek: 0, overWeek: 0, openWithoutDecision: 0, otherWithoutDecision: 0, verificationRecorded: 0, verificationWithinDay: 0, verificationWithinWeek: 0, verificationOverWeek: 0, verificationMissing: 0 });
+  mocks.decisions.mockResolvedValue({ totals: { received: 0, recorded: 0, withinDay: 0, withinWeek: 0, overWeek: 0, openWithoutDecision: 0, otherWithoutDecision: 0, verificationRecorded: 0, verificationWithinDay: 0, verificationWithinWeek: 0, verificationOverWeek: 0, verificationMissing: 0 }, categories: [] });
 });
 
 afterEach(() => vi.unstubAllEnvs());
@@ -258,7 +258,8 @@ describe("assistance workload labels and record visibility", () => {
 describe("assistance recorded decision reporting", () => {
   it("shows evidence-based counts in the selected record view without a promised SLA", async () => {
     mocks.findMany.mockResolvedValue([]);
-    mocks.decisions.mockResolvedValue({ received: 8, recorded: 4, withinDay: 1, withinWeek: 2, overWeek: 1, openWithoutDecision: 2, otherWithoutDecision: 2, verificationRecorded: 5, verificationWithinDay: 2, verificationWithinWeek: 2, verificationOverWeek: 1, verificationMissing: 3 });
+    const totals = { received: 8, recorded: 4, withinDay: 1, withinWeek: 2, overWeek: 1, openWithoutDecision: 2, otherWithoutDecision: 2, verificationRecorded: 5, verificationWithinDay: 2, verificationWithinWeek: 2, verificationOverWeek: 1, verificationMissing: 3 };
+    mocks.decisions.mockResolvedValue({ totals, categories: [{ category: "MEDICAL", ...totals }] });
     const html = renderToStaticMarkup(await AdminQueuePage({ searchParams: Promise.resolve({ view: "tests", status: "SUBMITTED" }) }));
     expect(mocks.decisions).toHaveBeenCalledWith(expect.anything(), "tests");
     expect(html).toContain("4 of 8");
@@ -266,6 +267,10 @@ describe("assistance recorded decision reporting", () => {
     expect(html).toContain("Other status, no recorded decision");
     expect(html).toContain("not first-review time, case resolution, disbursement, or a promised response time");
     expect(html).not.toContain("SLA achieved");
+    expect(html).toContain("Request categories and evidence coverage");
+    expect(html).toContain("<th scope=\"row\">MEDICAL</th><td>8</td><td>4</td><td>2</td><td>2</td><td>5</td><td>3</td>");
+    expect(html).toContain("Missing decision and verification counts can overlap.");
+    expect(mocks.decisions).toHaveBeenCalledTimes(1);
     expect(html).toContain("Recorded verification activity");
     expect(html).toContain("5 of 8");
     expect(html).toContain("No recorded verification evidence");
