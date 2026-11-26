@@ -2,12 +2,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
 const mocks = vi.hoisted(() => ({
-  permission: vi.fn(), count: vi.fn(), documents: vi.fn(), events: vi.fn(),
+  permission: vi.fn(), count: vi.fn(), documents: vi.fn(), events: vi.fn(), schedule: vi.fn(),
 }));
 vi.mock("@/lib/auth", () => ({ requirePermission: mocks.permission }));
 vi.mock("@/lib/prisma", () => ({ prisma: {
   assistanceDocument: { count: mocks.count, findMany: mocks.documents },
   auditEvent: { findMany: mocks.events },
+  $queryRaw: mocks.schedule,
 } }));
 vi.mock("./actions", () => ({ reviewDocumentRetention: vi.fn() }));
 
@@ -34,6 +35,7 @@ beforeEach(() => {
   mocks.count.mockResolvedValue(2);
   mocks.documents.mockResolvedValue(documentRows);
   mocks.events.mockResolvedValue([]);
+  mocks.schedule.mockResolvedValue([{ held: false, recorded: false, reviewAfter: null, count: 2n }]);
 });
 
 describe("private retention form accessible names", () => {
@@ -152,6 +154,7 @@ describe("private retention page authorization precedes all evidence queries", (
 
     expect(mocks.permission).toHaveBeenCalledExactlyOnceWith("assistance.approve");
     expect(mocks.count).not.toHaveBeenCalled();
+    expect(mocks.schedule).not.toHaveBeenCalled();
     expect(mocks.documents).not.toHaveBeenCalled();
     expect(mocks.events).not.toHaveBeenCalled();
   });
@@ -167,6 +170,7 @@ describe("private retention page authorization precedes all evidence queries", (
     const render = RetentionReviewPage({ searchParams: Promise.resolve({ state: "eligible" }) });
 
     expect(mocks.count).not.toHaveBeenCalled();
+    expect(mocks.schedule).not.toHaveBeenCalled();
     expect(mocks.documents).not.toHaveBeenCalled();
     expect(mocks.events).not.toHaveBeenCalled();
 
@@ -176,7 +180,23 @@ describe("private retention page authorization precedes all evidence queries", (
 
     expect(mocks.permission).toHaveBeenCalledExactlyOnceWith("assistance.approve");
     expect(mocks.count).toHaveBeenCalledTimes(3);
+    expect(mocks.schedule).toHaveBeenCalledTimes(1);
     expect(mocks.documents).toHaveBeenCalledTimes(1);
     expect(mocks.events).not.toHaveBeenCalled();
   });
+});
+
+it("renders the independent reminder snapshot using the real aggregate mapper", async () => {
+  mocks.schedule.mockResolvedValue([
+    { held: true, recorded: true, reviewAfter: "2000-01-01T00:00:00.000Z", count: 2n },
+    { held: false, recorded: true, reviewAfter: "invalid", count: 1n },
+  ]);
+  const html = renderToStaticMarkup(await RetentionReviewPage({ searchParams: Promise.resolve({ state: "eligible" }) }));
+  expect(mocks.schedule).toHaveBeenCalledTimes(1);
+  expect(html).toContain("Retention review reminders");
+  expect(html).toContain("<strong>2</strong><small>Review due today or earlier</small>");
+  expect(html).toContain("<strong>1</strong><small>Invalid review date evidence</small>");
+  expect(html).toContain("<strong>2</strong><small>Under hold (overlaps reminder categories)</small>");
+  expect(html).toContain("3 documents in the reminder snapshot");
+  expect(html).toContain("a due reminder never releases a hold or authorises deletion");
 });

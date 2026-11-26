@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-  permission: vi.fn(), count: vi.fn(), docs: vi.fn(), history: vi.fn(),
+  permission: vi.fn(), count: vi.fn(), docs: vi.fn(), history: vi.fn(), schedule: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({ requirePermission: mocks.permission }));
@@ -10,6 +10,7 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     assistanceDocument: { count: mocks.count, findMany: mocks.docs },
     auditEvent: { findMany: mocks.history },
+    $queryRaw: mocks.schedule,
   },
 }));
 vi.mock("./actions", () => ({ reviewDocumentRetention: vi.fn() }));
@@ -32,6 +33,7 @@ beforeEach(() => {
   mocks.count.mockResolvedValue(1);
   mocks.docs.mockResolvedValue([syntheticDoc]);
   mocks.history.mockResolvedValue([]);
+  mocks.schedule.mockResolvedValue([{ held: false, recorded: false, reviewAfter: null, count: 1n }]);
 });
 afterEach(() => vi.unstubAllEnvs());
 
@@ -67,6 +69,7 @@ describe("private retention review IST audit timestamps", () => {
     await expect(RetentionReviewPage({ searchParams: Promise.resolve({}) }))
       .rejects.toThrow("assistance.approve required");
     expect(mocks.count).not.toHaveBeenCalled();
+    expect(mocks.schedule).not.toHaveBeenCalled();
     expect(mocks.docs).not.toHaveBeenCalled();
     expect(mocks.history).not.toHaveBeenCalled();
   });

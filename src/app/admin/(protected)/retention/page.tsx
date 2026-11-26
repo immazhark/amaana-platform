@@ -4,6 +4,11 @@ import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { reviewDocumentRetention } from "./actions";
+import { classifyRetentionSchedule, indiaCalendarDay, loadRetentionScheduleSummary, type RetentionSchedule } from "@/lib/retention-review";
+
+const scheduleLabels: Record<RetentionSchedule, string> = {
+  due: "Review reminder due", upcoming: "Upcoming review reminder", unreviewed: "No recorded retention decision", unscheduled: "No review date recorded", invalid: "Review date evidence needs checking",
+};
 
 type EventMetadata = { documentId?: string; decision?: string; reason?: string; reviewAfter?: string | null };
 
@@ -24,10 +29,12 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
     : selectedState === "active"
       ? { NOT: terminalWhere }
       : undefined;
-  const [totalItems, totalDocuments, eligibleDocuments] = await Promise.all([
+  const today = indiaCalendarDay(new Date());
+  const [totalItems, totalDocuments, eligibleDocuments, schedule] = await Promise.all([
     prisma.assistanceDocument.count({ where }),
     prisma.assistanceDocument.count(),
     prisma.assistanceDocument.count({ where: terminalWhere }),
+    loadRetentionScheduleSummary(prisma, today),
   ]);
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
   const documents = await prisma.assistanceDocument.findMany({
@@ -101,6 +108,20 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
       </div>
     </section>
 
+    <section className="admin-card" aria-labelledby="retention-schedule-heading" style={{ marginBottom: "2rem" }}>
+      <h2 id="retention-schedule-heading">Retention review reminders</h2>
+      <p className="muted">All stored assistance documents, independent of the list filter. Review dates are Indian calendar days. The latest recorded retain or hold decision supplies its reminder, not a statutory deletion deadline. Held documents may also need review; a due reminder never releases a hold or authorises deletion.</p>
+      <div className="admin-media-readiness">
+        <div><strong>{schedule.due}</strong><small>Review due today or earlier</small></div>
+        <div><strong>{schedule.upcoming}</strong><small>Upcoming review date</small></div>
+        <div><strong>{schedule.unreviewed}</strong><small>No recorded retention decision</small></div>
+        <div><strong>{schedule.unscheduled}</strong><small>Recorded decision without a review date</small></div>
+        <div><strong>{schedule.invalid}</strong><small>Invalid review date evidence</small></div>
+        <div><strong>{schedule.held}</strong><small>Under hold (overlaps reminder categories)</small></div>
+      </div>
+      <p className="muted">{schedule.total} documents in the reminder snapshot. Check the reminder beside each file below. The existing list order and filters are unchanged.</p>
+    </section>
+
     <section className="admin-card">
       <div className="admin-heading"><div><p className="eyebrow">Private evidence</p><h2>Assistance documents</h2></div><span className="status-badge">{pagination.totalItems} in view</span></div>
       <div className="filter-row" role="group" aria-label="Retention eligibility filter">
@@ -114,6 +135,9 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
         const latestHoldEvent = history.find(event => ["assistance.document_legal_hold_placed", "assistance.document_legal_hold_released"].includes(event.action));
         const held = latestHoldEvent?.action === "assistance.document_legal_hold_placed";
         const latestReview = history.find(event => event.action === "assistance.document_retention_reviewed");
+        const latestDecision = history.find(event => ["assistance.document_retention_reviewed", "assistance.document_legal_hold_placed", "assistance.document_legal_hold_released"].includes(event.action));
+        const reminderDate = (latestDecision?.metadata as EventMetadata | null | undefined)?.reviewAfter;
+        const reminder = classifyRetentionSchedule(Boolean(latestDecision), reminderDate, today);
         const reviewMeta = (latestReview?.metadata ?? {}) as EventMetadata;
         const terminal = ["CLOSED", "REJECTED"].includes(document.assistanceRequest.status) || document.assistanceRequest.appeal?.status === "CLOSED";
         const fieldPrefix = `retention-${document.id}`;
@@ -126,6 +150,7 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
             <small>Request status: {document.assistanceRequest.status.replaceAll("_", " ")}{document.assistanceRequest.appeal ? ` · linked appeal ${document.assistanceRequest.appeal.status}` : ""}</small>
             <div style={{ marginTop: "0.75rem" }}><a href={`/admin/documents/${document.id}`} target="_blank" rel="noreferrer">Open private document ↗<span className="sr-only"> (opens in a new tab)</span></a></div>
             {latestReview && <div className="admin-media-review-summary"><strong>Last retention review</strong><small>{latestReview.actor.name} · {latestReview.createdAt.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} · {reviewMeta.reason ?? "Reason recorded"}{reviewMeta.reviewAfter ? ` · review after ${new Date(reviewMeta.reviewAfter).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })}` : ""}</small></div>}
+            <p><strong>{scheduleLabels[reminder]}</strong>{(reminder === "due" || reminder === "upcoming") && typeof reminderDate === "string" ? ` · ${reminderDate.slice(0, 10)}` : ""}</p>
             {held && latestHoldEvent && <div className="admin-media-review-summary"><strong>Deletion suspended by hold</strong><small>Placed by {latestHoldEvent.actor.name} on {latestHoldEvent.createdAt.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}.</small></div>}
           </div>
 
