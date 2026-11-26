@@ -177,17 +177,18 @@ export async function recordHifdhCompletion(
 
 export type RosterView = {
   counts: RosterCounts;
-  learners: { id: string; publicAlias: string; fullName: string; status: TaleemLearnerStatus; programme: TaleemProgrammeKind | null; placeCode: string | null; assignmentId: string | null; completedHifdhOn: string | null }[];
-  places: { id: string; placeCode: string; status: TaleemPlaceStatus; holderAlias: string | null; assignmentId: string | null }[];
+  learners: { id: string; publicAlias: string; fullName: string; status: TaleemLearnerStatus; programme: TaleemProgrammeKind | null; placeCode: string | null; assignmentId: string | null; openAssignmentPlaceCode: string | null; openAssignmentStartsOn: string | null; hasBlockingAssignment: boolean; completedHifdhOn: string | null }[];
+  places: { id: string; placeCode: string; status: TaleemPlaceStatus; holderAlias: string | null; assignmentId: string | null; hasBlockingAssignment: boolean }[];
 };
 
 /** Everything the admin roster shows, as of a date. Private: names appear here and nowhere public. */
 export async function loadRoster(asOf: Date = new Date()): Promise<RosterView> {
+  const day = new Date(Date.UTC(asOf.getUTCFullYear(), asOf.getUTCMonth(), asOf.getUTCDate()));
   const [learners, places, assignments, enrolments, milestones] = await Promise.all([
     prisma.taleemLearner.findMany({ orderBy: { createdAt: "asc" }, select: { id: true, publicAlias: true, fullName: true, status: true } }),
     prisma.taleemPlace.findMany({ orderBy: { createdAt: "asc" }, select: { id: true, placeCode: true, status: true } }),
     prisma.taleemPlaceAssignment.findMany({ select: { id: true, placeId: true, learnerId: true, startedOn: true, endedOn: true } }),
-    prisma.taleemEnrolment.findMany({ where: { endedOn: null }, select: { learnerId: true, programme: true } }),
+    prisma.taleemEnrolment.findMany({ where: { startedOn: { lte: day }, OR: [{ endedOn: null }, { endedOn: { gte: day } }] }, select: { learnerId: true, programme: true } }),
     prisma.taleemMilestone.findMany({ select: { learnerId: true, completedOn: true, supportAssociated: true, verifiedAt: true } }),
   ]);
   const counts = rosterCounts({
@@ -195,7 +196,28 @@ export async function loadRoster(asOf: Date = new Date()): Promise<RosterView> {
     assignments,
     milestones: milestones.map(milestone => ({ learnerId: milestone.learnerId, completedOn: milestone.completedOn, supportAssociated: milestone.supportAssociated, verified: milestone.verifiedAt !== null })),
   }, asOf);
-  const open = assignments.filter(assignment => assignment.endedOn === null);
+  // Calendar-day occupancy is distinct from an open (editable) period. A future booking
+  // must not appear as today's holder, but it must still block an overlapping new assignment.
+  const currentByLearner = new Map<string, typeof assignments[number]>();
+  const currentByPlace = new Map<string, typeof assignments[number]>();
+  const openByLearner = new Map<string, typeof assignments[number]>();
+  const openByPlace = new Map<string, typeof assignments[number]>();
+  const blockedLearners = new Set<string>();
+  const blockedPlaces = new Set<string>();
+  for (const assignment of assignments) {
+    if (assignment.endedOn === null || assignment.endedOn >= day) {
+      blockedLearners.add(assignment.learnerId);
+      blockedPlaces.add(assignment.placeId);
+      if (assignment.startedOn <= day) {
+        currentByLearner.set(assignment.learnerId, assignment);
+        currentByPlace.set(assignment.placeId, assignment);
+      }
+    }
+    if (assignment.endedOn === null) {
+      openByLearner.set(assignment.learnerId, assignment);
+      openByPlace.set(assignment.placeId, assignment);
+    }
+  }
   const programmeOf = new Map(enrolments.map(enrolment => [enrolment.learnerId, enrolment.programme]));
   const placeById = new Map(places.map(place => [place.id, place]));
   const learnerById = new Map(learners.map(learner => [learner.id, learner]));
@@ -203,12 +225,16 @@ export async function loadRoster(asOf: Date = new Date()): Promise<RosterView> {
   return {
     counts,
     learners: learners.map(learner => {
-      const held = open.find(assignment => assignment.learnerId === learner.id);
-      return { ...learner, programme: programmeOf.get(learner.id) ?? null, placeCode: held ? placeById.get(held.placeId)?.placeCode ?? null : null, assignmentId: held?.id ?? null, completedHifdhOn: doneOn.get(learner.id) ?? null };
+      const held = currentByLearner.get(learner.id);
+      const open = openByLearner.get(learner.id);
+      return { ...learner, programme: programmeOf.get(learner.id) ?? null, placeCode: held ? placeById.get(held.placeId)?.placeCode ?? null : null,
+        assignmentId: open?.id ?? null, openAssignmentPlaceCode: open ? placeById.get(open.placeId)?.placeCode ?? null : null,
+        openAssignmentStartsOn: open?.startedOn.toISOString().slice(0, 10) ?? null, hasBlockingAssignment: blockedLearners.has(learner.id),
+        completedHifdhOn: doneOn.get(learner.id) ?? null };
     }),
     places: places.map(place => {
-      const held = open.find(assignment => assignment.placeId === place.id);
-      return { ...place, holderAlias: held ? learnerById.get(held.learnerId)?.publicAlias ?? null : null, assignmentId: held?.id ?? null };
+      const held = currentByPlace.get(place.id);
+      return { ...place, holderAlias: held ? learnerById.get(held.learnerId)?.publicAlias ?? null : null, assignmentId: openByPlace.get(place.id)?.id ?? null, hasBlockingAssignment: blockedPlaces.has(place.id) };
     }),
   };
 }
