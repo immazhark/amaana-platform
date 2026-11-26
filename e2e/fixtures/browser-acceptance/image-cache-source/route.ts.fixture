@@ -7,6 +7,7 @@ export const dynamic = "force-dynamic";
 const revoked = new Set<string>();
 const maxRevocations = 128;
 const syntheticPng = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAUUlEQVR42u3PMQ0AMAgAMJg47OALlVPBQdI6aFZPXPbiOAEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAYF9H2lwAd9qmKEQAAAAAElFTkSuQmCC", "base64");
+const boundedCache = "public, max-age=60, s-maxage=300, must-revalidate";
 const unavailable = (status = 404) => new Response(null, { status, headers: { "Cache-Control": "no-store" } });
 
 function revocableId(params: URLSearchParams) {
