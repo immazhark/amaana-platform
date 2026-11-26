@@ -13,6 +13,7 @@ import {
 } from "@/lib/assistance-approval";
 import { parseRejectionNotice, rejectionDraftCookieName, rejectionDraftFromCookie, rejectionEligibility } from "@/lib/assistance-rejection";
 import { hasPermission, requirePermission } from "@/lib/auth";
+import { assistanceCaseHref, assistanceQueueHref, assistanceReturnFilters } from "@/lib/assistance-queue-navigation";
 import { prisma } from "@/lib/prisma";
 import { assignRequest, convertToAppeal, updateRequestWithFeedback } from "./actions";
 import { approveRequestAction, approveRequestWithFeedback, saveReviewProgressWithFeedback } from "./approval-actions";
@@ -45,10 +46,13 @@ const residenceLabel = (value: string | null | undefined): string => {
 export default async function RequestDetailPage({ params, searchParams }: Props) {
   const user = await requirePermission("assistance.view");
   const { id } = await params;
-  const notice = parseRejectionNotice(await (searchParams ?? Promise.resolve({})));
+  const search = await (searchParams ?? Promise.resolve({}));
+  const returnFilters = assistanceReturnFilters(search);
+  const queueHref = assistanceQueueHref(returnFilters);
+  const notice = parseRejectionNotice(search);
   // What the reviewer typed before an error, held privately in a short-lived cookie (never in the address), read only then.
   const draftName = notice?.kind === "error" ? rejectionDraftCookieName(id) : null;
-  const approvalNotice = parseApprovalNotice(await (searchParams ?? Promise.resolve({})));
+  const approvalNotice = parseApprovalNotice(search);
   const approvalProblems: ApprovalProblem[] = approvalNotice?.kind === "error" ? approvalNotice.problems : [];
   // The text of an amount that was not a valid amount cannot be saved, so it is held briefly in a private cookie, read only then.
   const approvalDraftName = approvalProblems.some(problem => problem.endsWith("_format")) ? approvalDraftCookieName(id) : null;
@@ -126,6 +130,7 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
       <span className="status-badge">{request.status.replaceAll("_", " ")}</span>
     </div>
 
+    <Link className="button secondary" href={queueHref}>Return to assistance queue</Link>
     <div className="admin-detail-grid">
       <div className="grid">
         <details className="card">
@@ -148,7 +153,7 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
             <div className="full"><dt>Description</dt><dd>{request.description}</dd></div>
             <div><dt>Beneficiary lives (self-declared)</dt><dd>{residenceLabel(request.beneficiaryResidence)}</dd></div>
           </dl>
-          {possibleDuplicates.length > 0 && <aside aria-label="Possible duplicate requests"><p><strong>Possible duplicates.</strong> Another request shares this phone number or email. This is a prompt for your judgement, not proof: compare before deciding, and do not decline on a match alone.</p><ul>{possibleDuplicates.map(other => <li key={other.id}><a href={`/admin/requests/${other.id}`}>{other.referenceNumber}</a> · {other.status} · {other.createdAt.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })}</li>)}</ul></aside>}
+          {possibleDuplicates.length > 0 && <aside aria-label="Possible duplicate requests"><p><strong>Possible duplicates.</strong> Another request shares this phone number or email. This is a prompt for your judgement, not proof: compare before deciding, and do not decline on a match alone.</p><ul>{possibleDuplicates.map(other => <li key={other.id}><a href={assistanceCaseHref(other.id, returnFilters)}>{other.referenceNumber}</a> · {other.status} · {other.createdAt.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })}</li>)}</ul></aside>}
         </section>
 
         <section className="card">
@@ -167,7 +172,7 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
           {rejection === "already_rejected" && <>
             {notice?.kind === "done" && <div role="status">
               <p><strong>{notice.outcome === "rejected" ? "The request has been rejected." : "This request was already rejected."}</strong> {request.referenceNumber} is now Rejected. Your reason is kept privately with the request and is not sent to the applicant.</p>
-              <Link className="button secondary" href="/admin">Back to the queue</Link>
+              <Link className="button secondary" href={queueHref}>Back to the queue</Link>
             </div>}
             {latestRejection
               ? <dl className="details">

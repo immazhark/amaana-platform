@@ -7,6 +7,7 @@ import { adminRecordView, assistanceAdminWhere } from "@/lib/admin-record-visibi
 import { hasPermission, permissionKeys, requireAuthenticatedUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { assistanceWorkload } from "@/lib/assistance-workload";
+import { assistanceCaseHref } from "@/lib/assistance-queue-navigation";
 import { DECISION_COHORT_DAYS, loadAssistanceDecisionReport } from "@/lib/assistance-decision-report";
 import { capacityRemaining, capacityUsed, isIntakePaused } from "@/lib/assistance-capacity";
 import { INDIVIDUAL_CASE_ANNUAL_CAPACITY } from "@/lib/assistance-policy";
@@ -57,6 +58,7 @@ export default async function AdminQueuePage({ searchParams }: Props) {
   const statusQuery = selected ? { status: selected } : {};
   const assignmentQuery = unassignedOnly ? { assignment: "unassigned" } : mineOnly ? { assignment: "mine" } : {};
   const filterQuery = { ...viewQuery, ...sortQuery, ...assignmentQuery };
+  const caseFilters = { ...filterQuery, ...statusQuery, ...(pagination.page > 1 ? { page: String(pagination.page) } : {}) };
   const pageHref = (targetPage: number) => ({
     pathname: "/admin",
     query: { ...filterQuery, ...statusQuery, page: targetPage },
@@ -94,6 +96,17 @@ export default async function AdminQueuePage({ searchParams }: Props) {
         </table>
       </div>
     </section>
+    <div className="filter-row" role="group" aria-label="Record visibility"><strong>Records:</strong><Link href={{ pathname: "/admin", query: { ...sortQuery, ...assignmentQuery } }} aria-current={view === "live" ? "page" : undefined}>Live records</Link><Link href={{ pathname: "/admin", query: { ...sortQuery, ...assignmentQuery, view: "tests" } }} aria-current={view === "tests" ? "page" : undefined}>Historical tests</Link></div>
+    {view === "tests" && <p className="muted">Retained staging acceptance records only. Related payment and refund history remains available for audit.</p>}
+    <div className="filter-row" role="group" aria-label="Assistance request status filter"><strong>Status:</strong><Link href={{ pathname: "/admin", query: filterQuery }} aria-current={!selected ? "page" : undefined}>All</Link>{allowed.map(item => <Link key={item} href={{ pathname: "/admin", query: { ...filterQuery, status: item } }} aria-current={selected === item ? "page" : undefined}>{item.replaceAll("_", " ")} ({counts.get(item) ?? 0})</Link>)}</div>
+    <div className="filter-row" role="group" aria-label="Assistance request ordering"><strong>Received:</strong><Link href={{ pathname: "/admin", query: { ...viewQuery, ...assignmentQuery, ...statusQuery } }} aria-current={!oldestFirst ? "page" : undefined}>Newest first</Link><Link href={{ pathname: "/admin", query: { ...viewQuery, ...assignmentQuery, ...statusQuery, sort: "oldest" } }} aria-current={oldestFirst ? "page" : undefined}>Oldest first</Link></div>
+    <div className="filter-row" role="group" aria-label="Assistance request assignment filter"><strong>Assignment:</strong><Link href={{ pathname: "/admin", query: { ...viewQuery, ...sortQuery, ...statusQuery } }} aria-current={!unassignedOnly && !mineOnly ? "page" : undefined}>All assignments</Link><Link href={{ pathname: "/admin", query: { ...viewQuery, ...sortQuery, ...statusQuery, assignment: "mine" } }} aria-current={mineOnly ? "page" : undefined}>Assigned to me</Link><Link href={{ pathname: "/admin", query: { ...viewQuery, ...sortQuery, ...statusQuery, assignment: "unassigned" } }} aria-current={unassignedOnly ? "page" : undefined}>Unassigned only</Link></div>
+    <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Operational records"><table><thead><tr><th>Reference</th><th>Applicant</th><th>Category</th><th>Status</th><th>Assigned to</th><th>Documents</th><th>Received</th></tr></thead><tbody>{requests.map(item => <tr key={item.id}><td><Link href={assistanceCaseHref(item.id, caseFilters)}><strong>{item.referenceNumber}</strong></Link></td><td>{item.applicantName}<br/><small>{item.city}</small></td><td>{item.category.replaceAll("_", " ")}</td><td><span className="status-badge">{item.status.replaceAll("_", " ")}</span></td><td>{item.assignedTo?.name ?? "Unassigned"}</td><td>{item._count.documents}</td><td>{item.createdAt.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })}</td></tr>)}</tbody></table>{requests.length === 0 && <p className="empty-state">{view === "tests" ? "No historical test requests match this view." : "No requests match this view."}</p>}</div>
+    <nav className="filter-row" aria-label="Assistance request pagination">
+      {pagination.hasPrevious && <Link href={pageHref(pagination.page - 1)}>Previous</Link>}
+      <span>Page {pagination.page} of {pagination.totalPages} · {pagination.totalItems} records</span>
+      {pagination.hasNext && <Link href={pageHref(pagination.page + 1)}>Next</Link>}
+    </nav>
     <section className="admin-card" aria-labelledby="decision-report-heading">
       <h2 id="decision-report-heading">Recorded decision turnaround</h2>
       <p className="muted">Requests received in the last {DECISION_COHORT_DAYS} days in the selected record view, before queue filters. Time is measured from receipt to the earliest recorded approval or rejection evidence. This is not first-review time, case resolution, disbursement, or a promised response time. Reopened cases retain their recorded decision history. Older or missing evidence cannot be inferred.</p>
@@ -131,16 +144,5 @@ export default async function AdminQueuePage({ searchParams }: Props) {
         </div>
       </>}
     </section>
-    <div className="filter-row" role="group" aria-label="Record visibility"><strong>Records:</strong><Link href={{ pathname: "/admin", query: { ...sortQuery, ...assignmentQuery } }} aria-current={view === "live" ? "page" : undefined}>Live records</Link><Link href={{ pathname: "/admin", query: { ...sortQuery, ...assignmentQuery, view: "tests" } }} aria-current={view === "tests" ? "page" : undefined}>Historical tests</Link></div>
-    {view === "tests" && <p className="muted">Retained staging acceptance records only. Related payment and refund history remains available for audit.</p>}
-    <div className="filter-row" role="group" aria-label="Assistance request status filter"><strong>Status:</strong><Link href={{ pathname: "/admin", query: filterQuery }} aria-current={!selected ? "page" : undefined}>All</Link>{allowed.map(item => <Link key={item} href={{ pathname: "/admin", query: { ...filterQuery, status: item } }} aria-current={selected === item ? "page" : undefined}>{item.replaceAll("_", " ")} ({counts.get(item) ?? 0})</Link>)}</div>
-    <div className="filter-row" role="group" aria-label="Assistance request ordering"><strong>Received:</strong><Link href={{ pathname: "/admin", query: { ...viewQuery, ...assignmentQuery, ...statusQuery } }} aria-current={!oldestFirst ? "page" : undefined}>Newest first</Link><Link href={{ pathname: "/admin", query: { ...viewQuery, ...assignmentQuery, ...statusQuery, sort: "oldest" } }} aria-current={oldestFirst ? "page" : undefined}>Oldest first</Link></div>
-    <div className="filter-row" role="group" aria-label="Assistance request assignment filter"><strong>Assignment:</strong><Link href={{ pathname: "/admin", query: { ...viewQuery, ...sortQuery, ...statusQuery } }} aria-current={!unassignedOnly && !mineOnly ? "page" : undefined}>All assignments</Link><Link href={{ pathname: "/admin", query: { ...viewQuery, ...sortQuery, ...statusQuery, assignment: "mine" } }} aria-current={mineOnly ? "page" : undefined}>Assigned to me</Link><Link href={{ pathname: "/admin", query: { ...viewQuery, ...sortQuery, ...statusQuery, assignment: "unassigned" } }} aria-current={unassignedOnly ? "page" : undefined}>Unassigned only</Link></div>
-    <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Operational records"><table><thead><tr><th>Reference</th><th>Applicant</th><th>Category</th><th>Status</th><th>Assigned to</th><th>Documents</th><th>Received</th></tr></thead><tbody>{requests.map(item => <tr key={item.id}><td><Link href={`/admin/requests/${item.id}`}><strong>{item.referenceNumber}</strong></Link></td><td>{item.applicantName}<br/><small>{item.city}</small></td><td>{item.category.replaceAll("_", " ")}</td><td><span className="status-badge">{item.status.replaceAll("_", " ")}</span></td><td>{item.assignedTo?.name ?? "Unassigned"}</td><td>{item._count.documents}</td><td>{item.createdAt.toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })}</td></tr>)}</tbody></table>{requests.length === 0 && <p className="empty-state">{view === "tests" ? "No historical test requests match this view." : "No requests match this view."}</p>}</div>
-    <nav className="filter-row" aria-label="Assistance request pagination">
-      {pagination.hasPrevious && <Link href={pageHref(pagination.page - 1)}>Previous</Link>}
-      <span>Page {pagination.page} of {pagination.totalPages} · {pagination.totalItems} records</span>
-      {pagination.hasNext && <Link href={pageHref(pagination.page + 1)}>Next</Link>}
-    </nav>
   </>;
 }
