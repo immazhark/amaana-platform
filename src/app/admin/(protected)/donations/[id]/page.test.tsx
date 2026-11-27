@@ -56,8 +56,8 @@ function donation(overrides: Record<string, unknown> = {}) {
   };
 }
 
-async function renderDonation() {
-  const element = await DonationDetailPage({ params: Promise.resolve({ id: "synthetic-donation" }) });
+async function renderDonation(search: Record<string, string | string[] | undefined> = {}) {
+  const element = await DonationDetailPage({ params: Promise.resolve({ id: "synthetic-donation" }), searchParams: Promise.resolve(search) });
   return renderToStaticMarkup(element);
 }
 
@@ -285,6 +285,7 @@ describe("donation detail minimum linked-record projections", () => {
         events: {
           select: { id: true, eventType: true, providerEventId: true, processedAt: true },
           orderBy: [{ processedAt: "desc" }, { id: "desc" }],
+          take: 51,
         },
         reconciledBy: { select: { name: true } },
       }),
@@ -336,6 +337,7 @@ it("reads only displayed private Donation detail fields and the existing bounded
       events: {
         select: { id: true, eventType: true, providerEventId: true, processedAt: true },
         orderBy: [{ processedAt: "desc" }, { id: "desc" }],
+          take: 51,
       },
       reconciledBy: { select: { name: true } },
     },
@@ -385,5 +387,36 @@ describe("private donation detail separates charitable principal and provider re
     mocks.findDonation.mockResolvedValueOnce(donation({ status, amount: amount(100) }));
     const html = await renderDonation();
     expect(html).toContain("<dt>Net retained</dt><dd>₹0</dd>");
+  });
+});
+
+describe("private donation reviewer navigation and bounded history", () => {
+  it("returns to the validated queue and never reflects contacts or a foreign URL", async () => {
+    const html = await renderDonation({ queueStatus: "PENDING_VERIFICATION", queueMethod: "DIRECT_UPI", queueSort: "oldest", queuePage: "2", returnTo: "https://outside.invalid", queueReference: "private@example.invalid" });
+    expect(html).toContain('href="/admin/donations?status=PENDING_VERIFICATION&amp;method=DIRECT_UPI&amp;reference=invalid&amp;sort=oldest&amp;page=2"');
+    expect(html).not.toContain("outside.invalid");
+    expect(html).not.toContain("private@example.invalid");
+  });
+  it("shows 50 events, excluding the sentinel, and preserves queue context", async () => {
+    const time = new Date("2026-11-27T00:00:00.000Z");
+    mocks.findDonation.mockResolvedValueOnce(donation({ paymentMethod: "RAZORPAY", events: Array.from({ length: 51 }, (_, i) => ({
+      id: "event-" + String(51-i).padStart(2, "0"), eventType: "payment.captured", providerEventId: "synthetic-provider-" + String(51-i).padStart(2, "0"), processedAt: time,
+    })) }));
+    const html = await renderDonation({ queueSort: "oldest", queuePage: "2" });
+    expect(html).toContain("Showing 50 most recent payment events");
+    expect(html).not.toContain("synthetic-provider-01");
+    expect(html).toContain("queueSort=oldest&amp;queuePage=2&amp;eventsBefore=2026-11-27T00%3A00%3A00.000Z~event-02#payment-events-heading");
+    expect(html).toContain("Older payment events");
+  });
+  it("scopes older events to this donation and distinguishes an empty older page", async () => {
+    mocks.findDonation.mockResolvedValueOnce(donation({ paymentMethod: "RAZORPAY" }));
+    const html = await renderDonation({ eventsBefore: "2026-11-27T00:00:00.000Z~event-02" });
+    expect(mocks.findDonation).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: "synthetic-donation" },
+      select: expect.objectContaining({ events: expect.objectContaining({ where: { OR: [{ processedAt: { lt: new Date("2026-11-27T00:00:00.000Z") } }, { processedAt: new Date("2026-11-27T00:00:00.000Z"), id: { lt: "event-02" } }] }, take: 51 }) }),
+    }));
+    expect(html).toContain("No older payment events on this page.");
+    expect(html).toContain("Newest payment events");
+    expect(html).not.toContain("No webhook events recorded yet.");
   });
 });

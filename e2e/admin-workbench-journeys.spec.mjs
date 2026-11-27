@@ -95,3 +95,17 @@ test('financial-year control totals reconcile rendered destination rows and keep
   expect(decoded).toContain('pending_claims_created_inr');
   expect(decoded).not.toMatch(/donorEmail|donorName|ui-audit@example\.invalid|Synthetic donor/);
 });
+
+test('donation reviewer returns to the same filtered queue', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await open(page, '/admin/donations?status=PENDING_VERIFICATION&method=DIRECT_UPI&sort=oldest');
+  const records = page.getByRole('region', { name: 'Donation records', exact: true });
+  await records.getByRole('link', { name: 'AFD-UI-AUDIT', exact: true }).click();
+  await expect(page).toHaveURL(/queueStatus=PENDING_VERIFICATION/);
+  await expect(page.getByRole('heading', { name: 'Reconcile transfer' })).toBeVisible();
+  const back = page.getByRole('link', { name: 'Return to donation queue' });
+  await expect(back).toHaveAttribute('href', '/admin/donations?status=PENDING_VERIFICATION&method=DIRECT_UPI&sort=oldest');
+  await back.click();
+  await expect(records.getByRole('link', { name: 'AFD-UI-AUDIT', exact: true })).toBeVisible();
+  await expect(page.getByRole('group', { name: 'Donation ordering' }).getByRole('link', { name: 'Oldest first' })).toHaveAttribute('aria-current', 'page');
+});

@@ -5,6 +5,7 @@ import { summariseDonationFunnel } from "@/lib/donation-funnel";
 import { requirePermission } from "@/lib/auth";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { donationIntentLabel } from "@/lib/donation-intent";
+import { donationDetailHref } from "@/lib/donation-review-navigation";
 import { summariseDonationQueueCounts } from "@/lib/donation-queue-counts";
 import { donationExceptionFilter, donationExceptionWhere } from "@/lib/donation-exception-review";
 import { formatDonationReportINR, loadDonationReconciliationReport } from "@/lib/donation-reconciliation-totals";
@@ -277,7 +278,7 @@ export default async function DonationsPage({ searchParams }: Props) {
       <table>
         <thead><tr><th>Reference</th><th>Donor</th><th>Appeal</th><th>Intent</th><th>Method</th><th>Amount</th><th>Total returned (incl. fees)</th><th>Status</th><th>Date</th></tr></thead>
         <tbody>{donations.map(donation => <tr key={donation.id}>
-          <td><Link href={`/admin/donations/${donation.id}`}><strong>{donation.referenceNumber}</strong></Link></td>
+          <td><Link href={donationDetailHref(donation.id, { ...listScope, ...(review.direction === "asc" ? { sort: "oldest" } : {}), page: String(pagination.page) })}><strong>{donation.referenceNumber}</strong></Link></td>
           <td>{donation.donorName}<br/><small>{donation.donorEmail}</small></td>
           <td>{donation.appeal?.title ?? donation.fund?.name ?? "—"}</td>
           <td>{donationIntentLabel(donation.givingIntent)}</td>

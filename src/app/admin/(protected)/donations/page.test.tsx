@@ -413,3 +413,10 @@ describe("joint scoped donation counts", () => {
     expect(mocks.donationCount).toHaveBeenCalledTimes(2);
   });
 });
+
+it("carries validated status, method, sort and clamped page into a private record link", async () => {
+  mocks.donationGroups.mockImplementation(async (args: { by: string[] }) => args.by.includes("givingIntent") ? [{ status: "PENDING_VERIFICATION", givingIntent: "GENERAL", _count: { _all: 51 } }] : []);
+  mocks.donationFind.mockResolvedValueOnce([{ id: "synthetic-navigation", referenceNumber: "AFD-2026-12345678", donorName: "Synthetic donor", donorEmail: "synthetic@example.invalid", givingIntent: "GENERAL", paymentMethod: "DIRECT_UPI", amount: money(100), refundedAmount: money(0), status: "PENDING_VERIFICATION", createdAt: new Date("2026-11-27T00:00:00Z"), appeal: null, fund: null }]);
+  const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({ status: "PENDING_VERIFICATION", method: "DIRECT_UPI", sort: "oldest", page: "99" }) }));
+  expect(html).toContain('href="/admin/donations/synthetic-navigation?queueStatus=PENDING_VERIFICATION&amp;queueMethod=DIRECT_UPI&amp;queueSort=oldest&amp;queuePage=2"');
+});

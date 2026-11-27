@@ -4,19 +4,23 @@ import { hasPermission, requirePermission } from "@/lib/auth";
 import { donationRecordAmounts, formatDonationReportINR } from "@/lib/donation-reconciliation-totals";
 import { formatINR } from "@/lib/appeals";
 import { donationIntentLabel } from "@/lib/donation-intent";
+import { donationDetailHref, donationQueueHref, donationReturnFilters, parsePaymentEventBoundary, paymentEventPage, paymentEventSelection } from "@/lib/donation-review-navigation";
 import { prisma } from "@/lib/prisma";
 import { getDonationEvidenceUrl } from "@/lib/storage";
 import { logServerError } from "@/lib/server-log";
 import { reconcileDonationAction, reissueReceiptLinkAction } from "../actions";
 import { AdminActionFeedbackForm } from "@/components/admin-action-feedback-form";
 
-type Props = { params: Promise<{ id: string }> };
+type Props = { params: Promise<{ id: string }>; searchParams?: Promise<Record<string, string | string[] | undefined>> };
 const formatDateTime = (value: Date | null) => value ? value.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) : "Not recorded";
 const methodLabel = (value: string) => value === "DIRECT_UPI" ? "Direct UPI" : value === "BANK_TRANSFER" ? "Bank transfer" : "Razorpay";
 
-export default async function DonationDetailPage({ params }: Props) {
+export default async function DonationDetailPage({ params, searchParams }: Props) {
   const user = await requirePermission("donation.view");
   const { id } = await params;
+  const search: Record<string, string | string[] | undefined> = await (searchParams ?? Promise.resolve({}));
+  const returnFilters = donationReturnFilters(search);
+  const eventBoundary = parsePaymentEventBoundary(search.eventsBefore);
   const donation = await prisma.donation.findUnique({
     where: { id },
     select: {
@@ -50,14 +54,12 @@ export default async function DonationDetailPage({ params }: Props) {
       sponsorshipMonths: true,
       sponsorshipMonthlyRate: true,
       sponsorshipRateVersion: true,
-      events: {
-        select: { id: true, eventType: true, providerEventId: true, processedAt: true },
-        orderBy: [{ processedAt: "desc" }, { id: "desc" }],
-      },
+      events: paymentEventSelection(eventBoundary),
       reconciledBy: { select: { name: true } },
     },
   });
   if (!donation) notFound();
+  const history = paymentEventPage(donation.events);
   const canReconcile = hasPermission(user, "donation.reconcile");
   const direct = donation.paymentMethod !== "RAZORPAY";
   let evidenceUrl: string | null = null;
@@ -73,6 +75,7 @@ export default async function DonationDetailPage({ params }: Props) {
 
   return <>
     <div className="admin-heading"><div><p className="eyebrow">{donation.referenceNumber}</p><h1>{formatDonationReportINR(amount)}</h1><p className="muted">{donation.appeal?.title ?? donation.fund?.name ?? "—"}</p></div><span className="status-badge">{donation.status}</span></div>
+    <a className="button secondary" href={donationQueueHref(returnFilters)}>Return to donation queue</a>
     <div className="admin-detail-grid">
       <section className="card"><h2>Donation record</h2><dl className="details">
         <div><dt>Donor</dt><dd>{donation.donorName}</dd></div><div><dt>Public anonymity</dt><dd>{donation.isAnonymous ? "Anonymous" : "Name may be shown"}</dd></div>
@@ -83,7 +86,14 @@ export default async function DonationDetailPage({ params }: Props) {
         <div><dt>Created</dt><dd>{formatDateTime(donation.createdAt)}</dd></div><div><dt>Captured</dt><dd>{formatDateTime(donation.capturedAt)}</dd></div><div><dt>Failed</dt><dd>{formatDateTime(donation.failedAt)}</dd></div><div><dt>Fully refunded</dt><dd>{formatDateTime(donation.refundedAt)}</dd></div>
       </dl></section>
       <aside className="card">
-        {direct && donation.status === "PENDING_VERIFICATION" ? <><h2>Reconcile transfer</h2><p className="muted">Verify against Amaana&apos;s bank/UPI statement before approving. A donor-entered UTR or screenshot is evidence to review, not proof of receipt.</p>{canReconcile ? <form action={reconcileDonationAction} className="form-grid"><input type="hidden" name="donationId" value={donation.id}/><div className="field full"><label htmlFor="notes">Reconciliation notes</label><textarea id="notes" name="notes" minLength={3} maxLength={1000} required /></div><div className="field full"><button className="button" type="submit" name="decision" value="VERIFY">Verify received transfer</button> <button className="text-button" type="submit" name="decision" value="REJECT">Reject claim</button></div></form> : <p className="muted">Your account can view this record but cannot reconcile donations.</p>}</> : <><h2>Payment events</h2>{donation.events.length ? <ol className="history">{donation.events.map(event => <li key={event.id}><strong>{event.eventType}</strong><span>{formatDateTime(event.processedAt)}</span><small>{event.providerEventId}</small></li>)}</ol> : <p className="muted">{direct ? "Direct transfers do not generate Razorpay webhook events." : "No webhook events recorded yet."}</p>}</>}
+        {direct && donation.status === "PENDING_VERIFICATION" ? <><h2>Reconcile transfer</h2><p className="muted">Verify against Amaana&apos;s bank/UPI statement before approving. A donor-entered UTR or screenshot is evidence to review, not proof of receipt.</p>{canReconcile ? <form action={reconcileDonationAction} className="form-grid"><input type="hidden" name="donationId" value={donation.id}/><div className="field full"><label htmlFor="notes">Reconciliation notes</label><textarea id="notes" name="notes" minLength={3} maxLength={1000} required /></div><div className="field full"><button className="button" type="submit" name="decision" value="VERIFY">Verify received transfer</button> <button className="text-button" type="submit" name="decision" value="REJECT">Reject claim</button></div></form> : <p className="muted">Your account can view this record but cannot reconcile donations.</p>}</> : <><h2 id="payment-events-heading">Payment events</h2>{history.events.length ? <>
+          <p className="muted">Showing {history.events.length} {eventBoundary ? "older" : "most recent"} payment events, newest first.</p>
+          <ol className="history">{history.events.map(event => <li key={event.id}><strong>{event.eventType}</strong><span>{formatDateTime(event.processedAt)}</span><small>{event.providerEventId}</small></li>)}</ol>
+        </> : <p className="muted">{eventBoundary ? "No older payment events on this page." : direct ? "Direct transfers do not generate Razorpay webhook events." : "No webhook events recorded yet."}</p>}
+        {(eventBoundary || history.older) && <nav className="filter-row" aria-label="Payment event history navigation">
+          {eventBoundary && <a href={donationDetailHref(id, returnFilters) + "#payment-events-heading"}>Newest payment events</a>}
+          {history.older && <a href={donationDetailHref(id, returnFilters, history.older) + "#payment-events-heading"}>Older payment events</a>}
+        </nav>}</>}
         {canReconcile ? <AdminActionFeedbackForm action={reissueReceiptLinkAction} className="form-grid">
           <input type="hidden" name="donationId" value={donation.id} />
           <div className="field full"><h2>Private acknowledgement link</h2><p className="muted">If a donor lost their link, reissue it. The old link stops working immediately. Send the new one only through a channel you have verified for this donor, such as the phone number or email on this record.</p></div>
