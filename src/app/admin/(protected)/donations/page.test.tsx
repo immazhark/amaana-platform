@@ -241,13 +241,20 @@ describe("private payment channel reconciliation", () => {
 
   it("preserves method and status filters in the record scope, counts and pagination without filtering the global report", async () => {
     mocks.donationFind.mockResolvedValue([]);
-    mocks.donationCount.mockResolvedValue(101);
+    mocks.donationGroups.mockImplementation(async (args: { by: string[] }) => args.by.includes("givingIntent") ? [
+      { status: "PENDING_VERIFICATION", givingIntent: "SADAQAH", _count: { _all: 101 } },
+      { status: "CAPTURED", givingIntent: "SADAQAH", _count: { _all: 4 } },
+      { status: "PENDING_VERIFICATION", givingIntent: "GENERAL", _count: { _all: 5 } },
+    ] : []);
     const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({ method: "BANK_TRANSFER", status: "PENDING_VERIFICATION", intent: "SADAQAH", page: "2" }) }));
     const where = { paymentMethod: "BANK_TRANSFER", status: "PENDING_VERIFICATION", givingIntent: "SADAQAH" };
     expect(mocks.donationFind).toHaveBeenCalledWith(expect.objectContaining({ where, skip: 50, take: 50 }));
-    expect(mocks.donationCount).toHaveBeenCalledWith({ where });
-    expect(mocks.donationGroups).toHaveBeenCalledWith(expect.objectContaining({ by: ["status"], where: { paymentMethod: "BANK_TRANSFER", givingIntent: "SADAQAH" } }));
-    expect(mocks.donationGroups).toHaveBeenCalledWith(expect.objectContaining({ by: ["givingIntent"], where: { paymentMethod: "BANK_TRANSFER", status: "PENDING_VERIFICATION" } }));
+    expect(mocks.donationCount).toHaveBeenCalledTimes(2);
+    expect(mocks.donationGroups).toHaveBeenCalledWith({ by: ["status", "givingIntent"], where: { paymentMethod: "BANK_TRANSFER" }, _count: { _all: true } });
+    expect(mocks.donationGroups).toHaveBeenCalledTimes(2); // joint filters and global outcome cohort
+    expect(html).toContain("Page 2 of 3 · 101 records");
+    expect(html).toContain("CAPTURED (4)");
+    expect(html).toContain("PENDING_VERIFICATION (101)");
     expect(html).toContain('href="/admin/donations?status=PENDING_VERIFICATION&amp;intent=SADAQAH&amp;method=BANK_TRANSFER&amp;page=3"');
     expect(html).toContain('href="/admin/donations?status=PENDING_VERIFICATION&amp;intent=SADAQAH&amp;method=DIRECT_UPI"');
     expect(html).toContain('href="/admin/donations?method=RAZORPAY"');
@@ -276,7 +283,8 @@ describe("direct transfer review workbench", () => {
     mocks.donationFind.mockResolvedValue([]);
     const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({ reference: "afd-2026-12345678", status: "PENDING_VERIFICATION", method: "BANK_TRANSFER", sort: "oldest" }) }));
     expect(mocks.donationFind).toHaveBeenCalledWith(expect.objectContaining({ where: { referenceNumber: "AFD-2026-12345678", status: "PENDING_VERIFICATION", paymentMethod: "BANK_TRANSFER" }, orderBy: [{ createdAt: "asc" }, { id: "asc" }] }));
-    expect(mocks.donationCount).toHaveBeenCalledWith({ where: { referenceNumber: "AFD-2026-12345678", status: "PENDING_VERIFICATION", paymentMethod: "BANK_TRANSFER" } });
+    expect(mocks.donationGroups).toHaveBeenCalledWith({ by: ["status", "givingIntent"], where: { referenceNumber: "AFD-2026-12345678", paymentMethod: "BANK_TRANSFER" }, _count: { _all: true } });
+    expect(mocks.donationCount).toHaveBeenCalledTimes(2);
     expect(html).toContain("reference=AFD-2026-12345678");
     expect(html).toContain("sort=oldest");
     expect(html).toContain("Clear reference lookup");
@@ -306,14 +314,17 @@ describe("operational reconciliation exception drill-down", () => {
     ["missing-refund-time", { status: "REFUNDED", refundedAt: null }],
   ] as const)("intersects %s with existing filters and uses the same predicate for global counts", async (issue, predicate) => {
     mocks.donationFind.mockResolvedValue([]);
-    mocks.donationCount.mockResolvedValue(101);
-    const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({ issue, status: "CAPTURED", method: "BANK_TRANSFER", intent: "SADAQAH", reference: "AFD-2026-12345678", sort: "oldest", page: "2" }) }));
-    const where = { paymentMethod: "BANK_TRANSFER", referenceNumber: "AFD-2026-12345678", status: "CAPTURED", givingIntent: "SADAQAH", AND: [predicate] };
+    const status = issue === "missing-refund-time" ? "REFUNDED" : "CAPTURED";
+    mocks.donationGroups.mockImplementation(async (args: { by: string[] }) => args.by.includes("givingIntent") ? [
+      { status, givingIntent: "SADAQAH", _count: { _all: 101 } },
+    ] : []);
+    const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({ issue, status, method: "BANK_TRANSFER", intent: "SADAQAH", reference: "AFD-2026-12345678", sort: "oldest", page: "2" }) }));
+    const scope = { paymentMethod: "BANK_TRANSFER", referenceNumber: "AFD-2026-12345678", AND: [predicate] };
+    const where = { ...scope, status, givingIntent: "SADAQAH" };
     expect(mocks.donationFind).toHaveBeenCalledWith(expect.objectContaining({ where, orderBy: [{ createdAt: "asc" }, { id: "asc" }], skip: 50, take: 50 }));
-    expect(mocks.donationCount).toHaveBeenCalledWith({ where });
+    expect(mocks.donationCount).toHaveBeenCalledTimes(2);
     expect(mocks.donationCount).toHaveBeenCalledWith({ where: predicate });
-    expect(mocks.donationGroups).toHaveBeenCalledWith(expect.objectContaining({ by: ["status"], where: { paymentMethod: "BANK_TRANSFER", referenceNumber: "AFD-2026-12345678", givingIntent: "SADAQAH", AND: [predicate] } }));
-    expect(mocks.donationGroups).toHaveBeenCalledWith(expect.objectContaining({ by: ["givingIntent"], where: { paymentMethod: "BANK_TRANSFER", referenceNumber: "AFD-2026-12345678", status: "CAPTURED", AND: [predicate] } }));
+    expect(mocks.donationGroups).toHaveBeenCalledWith({ by: ["status", "givingIntent"], where: scope, _count: { _all: true } });
     expect(html).toContain(`name="issue" value="${issue}"`);
     expect(html).toContain(`issue=${issue}&amp;page=3`);
     expect(html).toContain("Clear exception review");
@@ -373,7 +384,10 @@ describe("independent donation report failures", () => {
     expect(mocks.logServerError).toHaveBeenCalledWith("donation.outcomes_report_unavailable");
   });
   it("still propagates a failed core queue read rather than inventing an empty queue", async () => {
-    mocks.donationCount.mockRejectedValueOnce(new Error("core queue unavailable"));
+    mocks.donationGroups.mockImplementation(async (args: { by: string[] }) => {
+      if (args.by.includes("givingIntent")) throw new Error("core queue unavailable");
+      return [];
+    });
     await expect(DonationsPage({ searchParams: Promise.resolve({}) })).rejects.toThrow("core queue unavailable");
     expect(mocks.donationFind).not.toHaveBeenCalled();
   });
@@ -381,5 +395,21 @@ describe("independent donation report failures", () => {
     mocks.paymentCount.mockRejectedValueOnce(new Error("critical evidence unavailable"));
     await expect(DonationsPage({ searchParams: Promise.resolve({}) })).rejects.toThrow("critical evidence unavailable");
     expect(mocks.donationFind).not.toHaveBeenCalled();
+  });
+});
+
+describe("joint scoped donation counts", () => {
+  it("clamps an incompatible exception and status to zero without broadening the scope", async () => {
+    mocks.donationFind.mockResolvedValue([]);
+    mocks.donationGroups.mockImplementation(async (args: { by: string[] }) => args.by.includes("givingIntent") ? [
+      { status: "REFUNDED", givingIntent: "GENERAL", _count: { _all: 60 } },
+    ] : []);
+    const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({ issue: "missing-refund-time", status: "CAPTURED", page: "3" }) }));
+    const scope = { AND: [{ status: "REFUNDED", refundedAt: null }] };
+    expect(mocks.donationGroups).toHaveBeenCalledWith({ by: ["status", "givingIntent"], where: scope, _count: { _all: true } });
+    expect(mocks.donationFind).toHaveBeenCalledWith(expect.objectContaining({ where: { ...scope, status: "CAPTURED" }, skip: 0, take: 50 }));
+    expect(html).toContain("Page 1 of 1 · 0 records");
+    expect(html).toContain("REFUNDED (60)");
+    expect(mocks.donationCount).toHaveBeenCalledTimes(2);
   });
 });

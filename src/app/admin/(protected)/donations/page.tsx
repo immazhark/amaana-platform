@@ -5,6 +5,7 @@ import { summariseDonationFunnel } from "@/lib/donation-funnel";
 import { requirePermission } from "@/lib/auth";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { donationIntentLabel } from "@/lib/donation-intent";
+import { summariseDonationQueueCounts } from "@/lib/donation-queue-counts";
 import { donationExceptionFilter, donationExceptionWhere } from "@/lib/donation-exception-review";
 import { formatDonationReportINR, loadDonationReconciliationReport } from "@/lib/donation-reconciliation-totals";
 import { prisma } from "@/lib/prisma";
@@ -47,8 +48,7 @@ export default async function DonationsPage({ searchParams }: Props) {
     ...(selectedIntent ? { givingIntent: selectedIntent } : {}),
   };
 
-  const [totalItems, reconciliation, unmatchedCriticalEventCount, unmatchedCriticalEvents, missingAcknowledgements, refundedWithoutCompletionTime, statusGroups, intentGroups, funnel, pendingReview] = await Promise.all([
-    prisma.donation.count({ where }),
+  const [reconciliation, unmatchedCriticalEventCount, unmatchedCriticalEvents, missingAcknowledgements, refundedWithoutCompletionTime, queueGroups, funnel, pendingReview] = await Promise.all([
     readDonationReport(() => loadDonationReconciliationReport(prisma), () => logServerError("donation.reconciliation_report_unavailable")),
     prisma.paymentEvent.count({
       where: {
@@ -73,13 +73,8 @@ export default async function DonationsPage({ searchParams }: Props) {
     prisma.donation.count({ where: donationExceptionWhere("missing-acknowledgement") }),
     prisma.donation.count({ where: donationExceptionWhere("missing-refund-time") }),
     prisma.donation.groupBy({
-      by: ["status"],
-      where: { ...methodScope, ...referenceScope, ...exception.scope, ...(selectedIntent ? { givingIntent: selectedIntent } : {}) },
-      _count: { _all: true },
-    }),
-    prisma.donation.groupBy({
-      by: ["givingIntent"],
-      where: { ...methodScope, ...referenceScope, ...exception.scope, ...(selected ? { status: selected } : {}) },
+      by: ["status", "givingIntent"],
+      where: { ...methodScope, ...referenceScope, ...exception.scope },
       _count: { _all: true },
     }),
     // Aggregate counts only: no donor row, amount, reference or contact detail leaves the database for this card.
@@ -93,6 +88,7 @@ export default async function DonationsPage({ searchParams }: Props) {
     }, () => logServerError("donation.outcomes_report_unavailable")),
     readDonationReport(() => loadPendingTransferReview(prisma), () => logServerError("donation.pending_transfer_report_unavailable")),
   ]);
+  const { statusCounts, intentCounts, totalItems } = summariseDonationQueueCounts(queueGroups, selected, selectedIntent);
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
   const donations = await prisma.donation.findMany({
     where,
@@ -115,8 +111,6 @@ export default async function DonationsPage({ searchParams }: Props) {
     take: pagination.pageSize,
   });
 
-  const statusCounts = new Map(statusGroups.map(item => [item.status, item._count._all]));
-  const intentCounts = new Map(intentGroups.map(item => [item.givingIntent, item._count._all]));
   const totals = reconciliation?.totals;
   const operational = donationOperationalState({
     unmatchedCriticalEvents: unmatchedCriticalEventCount,

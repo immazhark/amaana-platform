@@ -83,3 +83,30 @@ describe("/donate optional reviewed outcomes", () => {
     expect(logServerError).toHaveBeenCalledWith("donation.published_impact_unavailable", { errorName: "Error" });
   });
 });
+
+describe("/donate appeal availability failure", () => {
+  const renderLanding = async () => {
+    const outer = Page() as ReactElement<{ children: ReactNode }>;
+    const node = deferred(outer.props.children);
+    return await node.type(node.props) as ReactElement<{ choices: unknown[]; appealsUnavailable: boolean; fundGivingEnabled: boolean }>;
+  };
+
+  it("keeps independent giving routes available without a checkout when the appeal lookup fails", async () => {
+    vi.mocked(getReviewedDonationPageData).mockRejectedValueOnce(new Error("PRIVATE_SYNTHETIC_DIAGNOSTIC"));
+    const result = await renderLanding();
+    expect(result.type).toBe(DonatePageView);
+    expect(result.props.choices).toEqual([]);
+    expect(result.props.appealsUnavailable).toBe(true);
+    expect(result.props.fundGivingEnabled).toBe(true);
+    expect(getDonationCheckoutRemainingAmount).not.toHaveBeenCalled();
+    expect(logServerError).toHaveBeenCalledExactlyOnceWith("donation.reviewed_appeals_unavailable");
+  });
+
+  it("distinguishes a successful empty lookup from an unavailable lookup", async () => {
+    vi.mocked(getReviewedDonationPageData).mockResolvedValueOnce([]);
+    const result = await renderLanding();
+    expect(result.props.choices).toEqual([]);
+    expect(result.props.appealsUnavailable).toBe(false);
+    expect(logServerError).not.toHaveBeenCalled();
+  });
+});
