@@ -43,3 +43,37 @@ describe("Hifdh evidence confirmation", () => {
     expect(milestoneConfirmationPlan({ ...initial, verified: true }, { verified: true, supportAssociated: false }, "2026-11-27")).toEqual({ kind: "unchanged" });
   });
 });
+
+describe("private programme and status reconciliation", () => {
+  it("partitions matched maintained places by current programme and learner status without changing the baseline comparison", () => {
+    const review = rosterReview([
+      learner("a", "QAIDA", "p1"), learner("b", "NAZIRA", "p2", { status: "ON_BREAK" }),
+      learner("c", "HIFDH", "p3", { status: "GRADUATED" }), learner("d", null, "p4", { status: "LEFT" }),
+      learner("e", "NAZIRA", null),
+    ], [place("p1", "a"), place("p2", "b"), place("p3", "c"), place("p4", "d")]);
+    expect(review.naziraHifdhStudents).toBe(2);
+    expect(review.programmeStatus).toEqual([
+      { programme: "QAIDA", active: 1, onBreak: 0, inactive: 0, unknownStatus: 0 },
+      { programme: "NAZIRA", active: 0, onBreak: 1, inactive: 0, unknownStatus: 0 },
+      { programme: "HIFDH", active: 0, onBreak: 0, inactive: 1, unknownStatus: 0 },
+      { programme: "UNCLASSIFIED", active: 0, onBreak: 0, inactive: 1, unknownStatus: 0 },
+    ]);
+  });
+  it("flags occupied maintained places without a matching reverse link and never counts them as vacancies", () => {
+    const review = rosterReview([learner("a", "HIFDH", "p2"), learner("b", "NAZIRA", "p3")],
+      [place("p1", "missing"), place("p2", "a"), place("p3", "a"), place("p4", null),
+        place("p5", null, { hasBlockingAssignment: true }), place("p6", "missing", { status: "RETIRED" })]);
+    expect(review.unmatchedOccupiedPlaces).toEqual(["p1", "p3"]);
+    expect(review.placeConflicts).toEqual(["b"]);
+    expect(review.assignableVacancies).toEqual(["p4"]);
+    expect(review.reservedVacancies).toEqual(["p5"]);
+    expect(review.naziraHifdhStudents).toBe(1);
+  });
+  it("shows unknown status and programme separately and excludes suspended places", () => {
+    const review = rosterReview([learner("a", "UNKNOWN", "p1", { status: "UNKNOWN" }), learner("b", "HIFDH", "p2")],
+      [place("p1", "a"), place("p2", "b", { status: "SUSPENDED" })]);
+    expect(review.programmeStatus.at(-1)).toEqual({ programme: "UNCLASSIFIED", active: 0, onBreak: 0, inactive: 0, unknownStatus: 1 });
+    expect(review.naziraHifdhStudents).toBe(0);
+    expect(review.placeConflicts).toEqual(["b"]);
+  });
+});

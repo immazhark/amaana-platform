@@ -38,6 +38,33 @@ function index(rows, key) {
   return map;
 }
 const uniqueMatch = (a, b, row) => a?.count === 1 && b?.count === 1 && b.row.amountPaise === row.amountPaise;
+// Internal report projection over already validated inputs. Capture and refund remain separate
+// positive whole-payment amounts; these buckets are not bank credit or donation principal.
+export function applicationEvidenceReport(application, matchedSettlementById, settlements) {
+  const outcomeBySettlement = new Map(settlements.map(row => [row.id, row.outcome]));
+  const empty = () => ({ count: 0, amountPaise: 0 });
+  const partition = () => ({ total: empty(), candidate_settlement: empty(), exception_settlement: empty(), unmatched_movement: empty() });
+  const applicationSummary = { capture: partition(), refund: partition() };
+  const include = (bucket, amountPaise) => {
+    bucket.count++;
+    bucket.amountPaise = add(bucket.amountPaise, amountPaise);
+  };
+  const applicationEvidence = application.map(({ id, kind, amountPaise }) => {
+    const settlementId = matchedSettlementById.get(id);
+    let outcome = 'unmatched_movement';
+    if (settlementId !== undefined) {
+      const state = outcomeBySettlement.get(settlementId);
+      if (state !== 'candidate' && state !== 'exception') throw new Error('Inconsistent application settlement evidence');
+      outcome = state === 'candidate' ? 'candidate_settlement' : 'exception_settlement';
+    }
+    const summary = applicationSummary[kind];
+    include(summary.total, amountPaise);
+    include(summary[outcome], amountPaise);
+    return { id, kind, amountPaise, outcome, ...(settlementId !== undefined ? { settlementId } : {}) };
+  });
+  return { applicationEvidence, applicationSummary };
+}
+
 export function reviewSettlements(input) {
   if (!exact(input, ['version', 'currency', 'application', 'movements', 'settlements', 'credits']) || input.version !== 1 || input.currency !== 'INR') {
     throw new Error('Expected normalized version 1 INR settlement batch');
@@ -50,7 +77,7 @@ export function reviewSettlements(input) {
   const payouts = index(input.settlements, r => r.reference);
   const credits = index(input.credits, r => r.reference);
   const groups = new Map(input.settlements.map(r => [r.id, { count: 0, net: 0, mismatch: false, adjustment: false }]));
-  const represented = new Set();
+  const represented = new Map();
   const candidateCredits = new Set();
   const unlinkedMovementIds = [];
   for (const row of input.movements) {
@@ -61,7 +88,7 @@ export function reviewSettlements(input) {
     if (APP.has(row.kind)) {
       const key = appKey(row);
       const local = application.get(key);
-      if (uniqueMatch(provider.get(key), local, row)) represented.add(local.row.id);
+      if (uniqueMatch(provider.get(key), local, row)) represented.set(local.row.id, row.settlementId);
       else group.mismatch = true;
     }
     if (row.kind.startsWith('adjustment_')) group.adjustment = true;
@@ -91,6 +118,7 @@ export function reviewSettlements(input) {
   return { version: 1, currency: 'INR', authoritative: false, settlements, unlinkedMovementIds,
     unmatchedApplicationIds: input.application.filter(row => !represented.has(row.id)).map(row => row.id),
     unmatchedCreditIds: input.credits.filter(row => !candidateCredits.has(row.id)).map(row => row.id),
+    ...applicationEvidenceReport(input.application, represented, settlements),
     summary: { settlementCount: settlements.length, candidateCount, candidatePaise } };
 }
 

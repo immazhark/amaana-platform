@@ -1,3 +1,4 @@
+import './test-taleem-reservation-batch.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { evaluateHold, evaluateReservationTransition } from './taleem-reservation-model.mjs';

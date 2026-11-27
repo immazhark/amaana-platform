@@ -34,6 +34,7 @@ export default async function TaleemRosterPage({ searchParams }: Props) {
     { label: "Assigned learners without a recorded current programme", values: review.missingProgramme, target: "learner" },
     { label: "Assigned learners marked Left or Graduated", values: review.inactiveHolders, target: "learner" },
     { label: "Assignments needing place-status or holder reconciliation", values: review.placeConflicts, target: "learner" },
+    { label: "Occupied maintained places without a matching learner", values: review.unmatchedOccupiedPlaces, target: "place" },
     { label: "Recorded Hifdh milestones with evidence not fully confirmed", values: review.pendingMilestones, target: "learner" },
   ];
 
@@ -70,6 +71,17 @@ export default async function TaleemRosterPage({ searchParams }: Props) {
         <div><dt>Published Hifdh completions in {TALEEM_HIFDH_COMPLETIONS.year}</dt><dd>{TALEEM_HIFDH_COMPLETIONS.sponsored} ({TALEEM_HIFDH_COMPLETIONS.asOf.label})</dd></div>
         {counts.asOf.startsWith(String(TALEEM_HIFDH_COMPLETIONS.year) + "-") && <div><dt>Recorded verified, support-associated completions this year</dt><dd>{counts.hifdhCompletionsInYear} — {counts.hifdhCompletionsInYear === TALEEM_HIFDH_COMPLETIONS.sponsored ? "numerical match only" : "review difference from the dated completion baseline"}</dd></div>}
       </dl>
+      <h3>Programme and learner status</h3>
+      <p className="muted">Matched maintained places today, grouped by the learner&apos;s recorded programme and status. Left or graduated learners with a recorded place are shown separately for review. Unmatched occupied places are excluded from this table and listed below. These counts are not funded capacity, verified programme impact or new public figures.</p>
+      <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Matched maintained places by programme and learner status">
+        <table>
+          <thead><tr><th scope="col">Programme</th><th scope="col">Active</th><th scope="col">On break</th><th scope="col">Left / graduated</th><th scope="col">Unknown status</th><th scope="col">Matched places</th></tr></thead>
+          <tbody>{review.programmeStatus.map(row => <tr key={row.programme}>
+            <th scope="row">{row.programme === "UNCLASSIFIED" ? "No known programme" : PROGRAMME_LABEL[row.programme]}</th>
+            <td>{row.active}</td><td>{row.onBreak}</td><td>{row.inactive}</td><td>{row.unknownStatus}</td><td>{row.active + row.onBreak + row.inactive + row.unknownStatus}</td>
+          </tr>)}</tbody>
+        </table>
+      </div>
       <p className="muted">Review groups can overlap. A vacancy does not establish available funding; a review prompt does not change a learner, place, or public figure.</p>
       {reviewGroups.map(group => <details key={group.label}>
         <summary>{group.label}: <strong>{group.values.length}</strong></summary>

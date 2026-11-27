@@ -1,6 +1,6 @@
 import { pathToFileURL } from 'node:url';
 import { reviewDirectCredits } from './direct-credit-review.mjs';
-import { reviewSettlements } from './settlement-review.mjs';
+import { applicationEvidenceReport, reviewSettlements } from './settlement-review.mjs';
 
 // Offline only. Both channels must use the same normalized, independently scoped bank-credit feed.
 const fields = ['version', 'currency', 'claims', 'application', 'movements', 'settlements', 'credits'];
@@ -66,9 +66,12 @@ export function reviewCrossChannelCredits(input) {
       creditMatches.size !== summary.directCandidateCount + summary.settlementCandidateCount) {
     throw new Error('Inconsistent shared-credit totals');
   }
+  // Reclassify against the final shared-credit decision, not the provider-only candidate.
+  const matchedSettlementById = new Map(provider.applicationEvidence.filter(row => row.settlementId !== undefined).map(row => [row.id, row.settlementId]));
   return { version, currency, authoritative: false, claims: claimResults, settlements: settlementResults,
     credits: creditResults, unlinkedMovementIds: provider.unlinkedMovementIds,
-    unmatchedApplicationIds: provider.unmatchedApplicationIds, summary };
+    unmatchedApplicationIds: provider.unmatchedApplicationIds,
+    ...applicationEvidenceReport(application, matchedSettlementById, settlementResults), summary };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
