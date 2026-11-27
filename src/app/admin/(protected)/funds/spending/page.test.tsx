@@ -114,7 +114,7 @@ describe("private draft publication review", () => {
 it("uses a single repeatable-read snapshot for filters, totals and the bounded records", async () => {
   const before = { id: "synthetic-draft", pool: "NON_ZAKAT", amount: money(100), spentOn: new Date("2026-11-01T00:00:00Z"), financialYear: "2026-27", title: "Synthetic snapshot entry", status: "DRAFT", voidReason: null, fund: { name: "Synthetic fund" } };
   const after = { ...before, status: "VOID", voidReason: "Synthetic concurrent void" };
-  let current = before;
+  let current: typeof before | typeof after = before;
   mocks.transaction.mockImplementationOnce(async (callback, options) => {
     expect(options).toEqual({ isolationLevel: "RepeatableRead" });
     const snapshot = current;
