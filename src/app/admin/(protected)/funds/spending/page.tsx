@@ -2,7 +2,7 @@ import Link from "next/link";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { formatDonationReportINR } from "@/lib/donation-reconciliation-totals";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
-import { spendingFilters, summarizeSpending, type SpendingParams } from "@/lib/fund-spending-review";
+import { spendingFilters, summarizeSpending, spendingReviewCsv, type SpendingParams } from "@/lib/fund-spending-review";
 import { prisma } from "@/lib/prisma";
 import { spendingPublicationReview } from "@/lib/spending-publication-review";
 import { publishDisbursementAction, recordDisbursementAction, voidDisbursementAction } from "../actions";
@@ -27,7 +27,7 @@ export default async function FundSpendingPage({ searchParams }: Props) {
   const soleOperator = process.env.FUND_SPENDING_SOLE_OPERATOR === "true";
   const params = await searchParams;
   const { notice } = params;
-  const { funds, years, where, totals, pagination, entries } = await prisma.$transaction(async tx => {
+  const { funds, years, where, groups, totals, pagination, entries } = await prisma.$transaction(async tx => {
     const [funds, years] = await Promise.all([
       tx.fund.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }], select: { id: true, name: true } }),
       tx.fundDisbursement.groupBy({ by: ["financialYear"], orderBy: { financialYear: "desc" } }),
@@ -43,7 +43,7 @@ export default async function FundSpendingPage({ searchParams }: Props) {
       take: pagination.pageSize,
       select: { id: true, pool: true, amount: true, spentOn: true, financialYear: true, title: true, status: true, voidReason: true, publicSummary: canRecord, createdById: canRecord, zakatEligibilityConfirmedAt: canRecord, fund: { select: { name: true } } },
     });
-    return { funds, years, where, totals, pagination, entries };
+    return { funds, years, where, groups, totals, pagination, entries };
   }, { isolationLevel: "RepeatableRead" });
   const selected = {
     fund: typeof where.fundId === "string" ? where.fundId : "",
@@ -52,6 +52,7 @@ export default async function FundSpendingPage({ searchParams }: Props) {
     status: typeof where.status === "string" ? where.status : "",
   };
   const query = Object.fromEntries(Object.entries(selected).filter(([, value]) => value !== ""));
+  const spendingCsvHref = totals.totalItems > 0 ? "data:text/csv;charset=utf-8," + encodeURIComponent(spendingReviewCsv(selected, groups)) : undefined;
   const pageHref = (page: number) => ({ pathname: PATH, query: { ...query, page } });
   return <>
     <div className="admin-heading">
@@ -95,6 +96,7 @@ export default async function FundSpendingPage({ searchParams }: Props) {
         <article className="card"><strong>{rupees(totals.publishedPaise)}</strong><p>Published spending</p></article>
         <article className="card"><strong>{rupees(totals.voidPaise)}</strong><p>Void entries (excluded from spending)</p></article>
       </div>
+      {spendingCsvHref && <p><a className="button secondary" href={spendingCsvHref} download="amaana-filtered-spending-review.csv">Download filtered spending totals CSV</a> <span className="muted">Aggregate status totals for all matching records, not just this page. Void amounts are separate; no entry descriptions or staff identities are included.</span></p>}
       <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Spending history records">
       <table className="admin-table">
         <thead><tr><th scope="col">Fund</th><th scope="col">Entry</th><th scope="col">Amount</th><th scope="col">Status</th>{canRecord ? <th scope="col">Actions</th> : null}</tr></thead>

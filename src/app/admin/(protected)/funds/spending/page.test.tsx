@@ -11,7 +11,7 @@ vi.mock("../actions", () => {
 
 import FundSpendingPage from "./page";
 
-const money = (amount: number) => ({ toNumber: () => amount });
+const money = (amount: number) => ({ toNumber: () => amount, toString: () => String(amount) });
 beforeEach(() => {
   vi.resetAllMocks();
   vi.stubEnv("FUND_SPENDING_SOLE_OPERATOR", "false");
@@ -48,6 +48,9 @@ describe("private spending history", () => {
     expect(mocks.groups).toHaveBeenCalledWith({ by: ["status"], where, _count: { _all: true }, _sum: { amount: true } });
     expect(mocks.entries).toHaveBeenCalledWith(expect.objectContaining({ where, skip: 50, take: 50, orderBy: [{ spentOn: "desc" }, { createdAt: "desc" }, { id: "desc" }] }));
     expect(html).toContain("Page 2 of 3 · 132 records");
+    expect(html).toContain('download="amaana-filtered-spending-review.csv"');
+    expect(html).toContain(encodeURIComponent('"f1","2026-27","ZAKAT","all","DRAFT",50,110.25,0.00'));
+    expect(mocks.transaction).toHaveBeenCalledOnce();
     expect(html).toContain('role="group" aria-label="Filtered spending totals"');
     expect(html).toContain("₹310.4");
     expect(html).toContain("₹7.01");
@@ -64,6 +67,7 @@ describe("private spending history", () => {
     expect(mocks.entries).toHaveBeenCalledWith(expect.objectContaining({ where: { status: "VOID" }, skip: 0, take: 50 }));
     expect(html).toContain("<strong>₹0</strong><p>Recorded spending (draft and published)</p>");
     expect(html).toContain("<strong>₹7.01</strong><p>Void entries (excluded from spending)</p>");
+    expect(html).toContain(encodeURIComponent('"all","all","all","VOID","VOID",1,0.00,7.01'));
   });
 });
 
@@ -143,4 +147,16 @@ it("fails closed rather than displaying zero or partial totals when the snapshot
   mocks.transaction.mockRejectedValueOnce(new Error("Synthetic snapshot unavailable"));
   await expect(FundSpendingPage({ searchParams: Promise.resolve({}) })).rejects.toThrow("Synthetic snapshot unavailable");
   expect(mocks.directRead).not.toHaveBeenCalled();
+});
+
+it("withholds the export for empty results", async () => {
+  mocks.groups.mockImplementation(async args => args.by.includes("financialYear") ? [{ financialYear: "2026-27" }] : []);
+  const html = renderToStaticMarkup(await FundSpendingPage({ searchParams: Promise.resolve({}) }));
+  expect(html).not.toContain("Download filtered spending totals CSV");
+  expect(html).toContain("No spending records match this view.");
+});
+it("does not present or paginate corrupt aggregate evidence", async () => {
+  mocks.groups.mockImplementation(async args => args.by.includes("financialYear") ? [{ financialYear: "2026-27" }] : [{ status: "DRAFT", _count: { _all: 1 }, _sum: { amount: money(-1) } }]);
+  await expect(FundSpendingPage({ searchParams: Promise.resolve({}) })).rejects.toThrow("Invalid spending aggregate amount");
+  expect(mocks.entries).not.toHaveBeenCalled();
 });
