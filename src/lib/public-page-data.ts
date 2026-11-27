@@ -62,6 +62,16 @@ export const PUBLIC_GALLERY_MEDIA_PROJECTION = {
  * existing publication/privacy gates in the underlying getters.
  */
 export const getInitiativePageData = getPublishedInitiativeBySlug;
+
+/** Link destinations need publication presence only, not detail or gallery data. */
+export const hasPublishedInitiative = cache(async (slug: string) => {
+  const initiative = await prisma.initiative.findFirst({
+    where: { slug, status: "PUBLISHED", cause: { status: "PUBLISHED" } },
+    select: { slug: true },
+  });
+  return initiative?.slug === slug;
+});
+
 export const getStoryPageData = cache(getPublishedStoryBySlug);
 export const getFaithPageData = cache(getPublishedFaithContentBySlug);
 

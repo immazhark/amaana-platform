@@ -7,7 +7,7 @@ import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { programmeBySlug } from "@/lib/master-copy";
 import { getSponsorEducationHeroMedia } from "@/lib/sponsorship-media";
-import { getInitiativePageData } from "@/lib/public-page-data";
+import { hasPublishedInitiative } from "@/lib/public-page-data";
 import { sponsorshipHrefForSlug } from "@/lib/taleem-sponsorship-link";
 import { INSTITUTIONAL_SPONSORSHIP_PATHS } from "@/lib/sponsorship-enquiry";
 import { TALEEM_HERO_SENTENCE } from "@/content/taleem-facts";
@@ -37,13 +37,13 @@ export default async function SponsorEducationPage({ searchParams = Promise.reso
   // Rendered once and placed first when it exists, so every link to it can rely on the anchor being on the page.
   const sponsorship = await TaleemSponsorshipSection({ programme });
   const programmeOpen = sponsorship !== null;
-  const [heroMedia, taleemInitiative] = await Promise.all([
+  const [heroMedia, taleemPublished] = await Promise.all([
     getSponsorEducationHeroMedia(),
-    getInitiativePageData("taleem"),
+    hasPublishedInitiative("taleem"),
   ]);
-  const taleemHref = taleemInitiative ? "/our-work/taleem" : "/our-work";
-  const taleemActionLabel = taleemInitiative ? "Explore Taleem" : "Explore published education work";
-  const taleemClosingLabel = taleemInitiative ? "Explore the Taleem Initiative →" : "Explore published education work →";
+  const taleemHref = taleemPublished ? "/our-work/taleem" : "/our-work";
+  const taleemActionLabel = taleemPublished ? "Explore Taleem" : "Explore published education work";
+  const taleemClosingLabel = taleemPublished ? "Explore the Taleem Initiative →" : "Explore published education work →";
 
   return (
     <div className="v2-home taleem-sponsor">

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   initiativeFindMany: vi.fn(),
+  initiativeFindFirst: vi.fn(),
   causeFindMany: vi.fn(),
   appealFindMany: vi.fn(),
   logServerError: vi.fn(),
@@ -11,6 +12,7 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     initiative: {
       findMany: mocks.initiativeFindMany,
+      findFirst: mocks.initiativeFindFirst,
     },
     cause: { findMany: mocks.causeFindMany },
     appeal: { findMany: mocks.appealFindMany, fields: { goalAmount: 'appeal.goalAmount' } },
@@ -27,6 +29,7 @@ import {
   getHomepageDiscoveryData,
   getOurWorkIndexData,
   getProgrammeChildMedia,
+  hasPublishedInitiative,
 } from "./public-page-data";
 import { getPublishedInitiativeBySlug } from "./public-content";
 import { getInitiativePageData } from "./public-page-data";
@@ -36,6 +39,7 @@ import { programmeCategoryPath } from "./programme-category-routing";
 describe("public page gallery media query contracts", () => {
   afterEach(() => vi.unstubAllEnvs());
   beforeEach(() => {
+    mocks.initiativeFindFirst.mockReset().mockResolvedValue(null);
     mocks.initiativeFindMany.mockReset();
     mocks.initiativeFindMany.mockResolvedValue([]);
     mocks.causeFindMany.mockReset();
@@ -487,5 +491,30 @@ describe("public page gallery media query contracts", () => {
       status: "PUBLISHED",
       cause: { status: "PUBLISHED" },
     });
+  });
+});
+
+describe("publication-only initiative navigation lookup", () => {
+  beforeEach(() => mocks.initiativeFindFirst.mockReset().mockResolvedValue(null));
+
+  it("selects only the slug, keeping the same initiative and parent publication gates", async () => {
+    mocks.initiativeFindFirst.mockResolvedValueOnce({ slug: "taleem" });
+    expect(await hasPublishedInitiative("taleem")).toBe(true);
+    expect(mocks.initiativeFindFirst).toHaveBeenCalledExactlyOnceWith({
+      where: { slug: "taleem", status: "PUBLISHED", cause: { status: "PUBLISHED" } },
+      select: { slug: true },
+    });
+  });
+
+  it("withholds a link when the published record is missing or the projected slug is wrong", async () => {
+    for (const result of [null, {}, { slug: "other" }]) {
+      mocks.initiativeFindFirst.mockResolvedValueOnce(result);
+      expect(await hasPublishedInitiative("taleem")).toBe(false);
+    }
+  });
+
+  it("preserves an actual database failure rather than misrepresenting it as an absent record", async () => {
+    mocks.initiativeFindFirst.mockRejectedValueOnce(new Error("Synthetic lookup failure"));
+    await expect(hasPublishedInitiative("taleem")).rejects.toThrow("Synthetic lookup failure");
   });
 });
