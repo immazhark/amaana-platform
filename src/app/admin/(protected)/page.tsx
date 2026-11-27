@@ -77,6 +77,7 @@ export default async function AdminQueuePage({ searchParams }: Props) {
     query: { ...viewQuery, ...categoryQuery, sort: "oldest", ...(assignment ? { assignment } : {}), status: stage },
   });
   const stageLabels = { SUBMITTED: "Submitted", DOCUMENTS_REQUESTED: "Documents requested", UNDER_VERIFICATION: "Under verification" } as const;
+  const followUpLabels = { APPROVED: "Approved", CONVERTED_TO_APPEAL: "Converted to appeal" } as const;
   const ageLabel = (days: number | null) => days === null ? "No receipt age" : `Oldest received ${days} ${days === 1 ? "day" : "days"} ago`;
 
   return <>
@@ -98,6 +99,22 @@ export default async function AdminQueuePage({ searchParams }: Props) {
             <th scope="row">{stageLabels[stage.status]}</th>
             {(["total", "mine", "unassigned"] as const).map(kind => <td key={kind}>
               {stage[kind].count > 0 ? <Link href={stageHref(stage.status, kind === "total" ? undefined : kind)} aria-label={`${stage[kind].count} ${stageLabels[stage.status]} requests, ${kind === "total" ? "all assignments" : kind === "mine" ? "assigned to me" : "unassigned"}, oldest first`}>{stage[kind].count}</Link> : "0"}
+              <br /><small>{ageLabel(stage[kind].oldestAgeDays)}</small>
+            </td>)}
+          </tr>)}</tbody>
+        </table>
+      </div>
+    </section>
+    <section className="admin-card" aria-labelledby="post-approval-heading">
+      <h2 id="post-approval-heading">Post-approval follow-up</h2>
+      <p className="muted">These are current request statuses, separate from open reviews. Counts cover the selected record view and category, before status and assignment filters. Approval or conversion does not establish payment, publication, delivery of support or case closure. Open a group to review the oldest received cases first.</p>
+      <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Post-approval assistance follow-up by stage">
+        <table className="admin-table">
+          <thead><tr><th scope="col">Current request status</th><th scope="col">All assignments</th><th scope="col">Assigned to me</th><th scope="col">Unassigned</th></tr></thead>
+          <tbody>{workload.followUpStages.map(stage => <tr key={stage.status}>
+            <th scope="row">{followUpLabels[stage.status]}</th>
+            {(["total", "mine", "unassigned"] as const).map(kind => <td key={kind}>
+              {stage[kind].count > 0 ? <Link href={stageHref(stage.status, kind === "total" ? undefined : kind)} aria-label={`${stage[kind].count} ${followUpLabels[stage.status]} requests, ${kind === "total" ? "all assignments" : kind === "mine" ? "assigned to me" : "unassigned"}, oldest first`}>{stage[kind].count}</Link> : "0"}
               <br /><small>{ageLabel(stage[kind].oldestAgeDays)}</small>
             </td>)}
           </tr>)}</tbody>

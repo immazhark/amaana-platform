@@ -225,7 +225,7 @@ describe("assistance workload labels and record visibility", () => {
     expect(html).toContain('href="/admin?view=tests&amp;sort=oldest&amp;assignment=mine&amp;status=SUBMITTED"');
     expect(html).toContain('href="/admin?view=tests&amp;sort=oldest&amp;assignment=unassigned&amp;status=SUBMITTED"');
     expect(mocks.groupBy).toHaveBeenCalledWith({
-      by: ["status", "assignedToId"], where: { referenceNumber: "AF-STAGING-ACCEPTANCE", status: { in: ["SUBMITTED", "DOCUMENTS_REQUESTED", "UNDER_VERIFICATION"] } },
+      by: ["status", "assignedToId"], where: { referenceNumber: "AF-STAGING-ACCEPTANCE", status: { in: ["SUBMITTED", "DOCUMENTS_REQUESTED", "UNDER_VERIFICATION", "APPROVED", "CONVERTED_TO_APPEAL"] } },
       _count: { _all: true }, _min: { createdAt: true },
     });
   });
@@ -328,7 +328,7 @@ describe("assistance queue requested-category triage", () => {
     const scope = { referenceNumber: "AF-STAGING-ACCEPTANCE", category: "MEDICAL", assignedToId: "synthetic-operator" };
     expect(mocks.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { ...scope, status: "SUBMITTED" }, skip: 50, take: 50 }));
     expect(mocks.groupBy).toHaveBeenCalledWith({ by: ["status"], where: scope, _count: { _all: true } });
-    expect(mocks.groupBy).toHaveBeenCalledWith({ by: ["status", "assignedToId"], where: { referenceNumber: "AF-STAGING-ACCEPTANCE", category: "MEDICAL", status: { in: ["SUBMITTED", "DOCUMENTS_REQUESTED", "UNDER_VERIFICATION"] } }, _count: { _all: true }, _min: { createdAt: true } });
+    expect(mocks.groupBy).toHaveBeenCalledWith({ by: ["status", "assignedToId"], where: { referenceNumber: "AF-STAGING-ACCEPTANCE", category: "MEDICAL", status: { in: ["SUBMITTED", "DOCUMENTS_REQUESTED", "UNDER_VERIFICATION", "APPROVED", "CONVERTED_TO_APPEAL"] } }, _count: { _all: true }, _min: { createdAt: true } });
     expect(mocks.decisions).toHaveBeenCalledExactlyOnceWith(expect.anything(), "tests");
     expect(html).toContain("annual capacity remains foundation-wide");
     expect(html).toContain("before queue filters, including category");
@@ -381,5 +381,27 @@ describe("assistance pagination reuses the scoped grouped status result", () => 
     expect(mocks.count).toHaveBeenCalledOnce();
     expect(mocks.findMany).toHaveBeenCalledWith(expect.objectContaining({ skip: 0, take: 50 }));
     expect(html).toContain("Page 1 of 1 · 0 records");
+  });
+});
+
+
+describe("post-approval assistance follow-up", () => {
+  it("keeps approved and converted records separate from open reviews and preserves the scope in links", async () => {
+    const received = new Date(Date.now() - 20.5 * 86_400_000);
+    mocks.groupBy.mockImplementation(async args => args._min ? [
+      { status: "APPROVED", assignedToId: "synthetic-operator", _count: { _all: 2 }, _min: { createdAt: received } },
+      { status: "CONVERTED_TO_APPEAL", assignedToId: null, _count: { _all: 3 }, _min: { createdAt: received } },
+    ] : []);
+    mocks.findMany.mockResolvedValue([]);
+    const html = renderToStaticMarkup(await AdminQueuePage({ searchParams: Promise.resolve({ view: "tests", category: "MEDICAL" }) }));
+    expect(html).toContain("0 of 0 open requests have no assignee");
+    expect(html).toContain("Post-approval follow-up");
+    expect(html).toContain("Approval or conversion does not establish payment");
+    expect(html).toContain('aria-label="2 Approved requests, assigned to me, oldest first"');
+    expect(html).toContain('aria-label="3 Converted to appeal requests, unassigned, oldest first"');
+    expect(html).toContain('href="/admin?view=tests&amp;category=MEDICAL&amp;sort=oldest&amp;assignment=mine&amp;status=APPROVED"');
+    expect(html).toContain('href="/admin?view=tests&amp;category=MEDICAL&amp;sort=oldest&amp;assignment=unassigned&amp;status=CONVERTED_TO_APPEAL"');
+    expect(html).not.toContain("synthetic-operator");
+    expect(mocks.groupBy).toHaveBeenCalledTimes(2);
   });
 });

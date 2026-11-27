@@ -48,6 +48,26 @@ describe("private Taleem reconciliation", () => {
     expect(html).toContain("not allocated places, unspent balances, fee coverage dates or available sponsorship capacity");
   });
 
+  it("selects a separate sponsorship financial year and preserves the annual report selection", async () => {
+    const html = renderToStaticMarkup(await FundsLedgerPage({ searchParams: Promise.resolve({ fy: "2020-21", taleemFy: "2021-22" }) }));
+    expect(mocks.report).toHaveBeenCalledExactlyOnceWith(expect.anything(), expect.objectContaining({ label: "2021-22", start: new Date("2021-03-31T18:30:00Z"), end: new Date("2022-03-31T18:30:00Z") }));
+    expect(mocks.annual).toHaveBeenCalledExactlyOnceWith(expect.anything(), expect.objectContaining({ label: "2020-21" }));
+    expect(html).toContain('name="fy" value="2020-21"');
+    expect(html).toContain('name="taleemFy" value="2021-22"');
+    expect(html).toContain("No matching verified sponsorship gifts or pending claims for FY 2021-22.");
+    expect(html).toContain("not refund-date cash flows");
+  });
+
+  it("uses the labelled all-time scope for absent, repeated or unknown sponsorship selectors", async () => {
+    for (const taleemFy of [undefined, ["2021-22", "2020-21"], "PRIVATE_SYNTHETIC_INVALID"]) {
+      mocks.report.mockClear();
+      const html = renderToStaticMarkup(await FundsLedgerPage({ searchParams: Promise.resolve({ fy: "2020-21", taleemFy }) }));
+      expect(mocks.report).toHaveBeenCalledExactlyOnceWith(expect.anything(), undefined);
+      expect(html).toContain("All recorded dates");
+      expect(html).not.toContain("PRIVATE_SYNTHETIC_INVALID");
+    }
+  });
+
   it("renders an explicit empty state", async () => {
     expect(renderToStaticMarkup(await FundsLedgerPage({ searchParams: Promise.resolve({ fy: "2020-21" }) }))).toContain("No verified sponsorship gifts or pending claims recorded.");
   });
