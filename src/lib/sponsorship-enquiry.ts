@@ -1,12 +1,21 @@
 import { hasUnsupportedPublicQueryFields } from "./public-navigation-query.mjs";
 /** Fixed-category preparation only. No student inventory, financial promise,
  * personal record or message submission is created here. */
+export const INSTITUTIONAL_SPONSORSHIP_PATHS = {
+  "teacher-day": "Daytime Qur’an teacher support",
+  "teacher-evening": "Post-Maghrib teaching support",
+  imam: "Imam support",
+  muadhin: "Muadhin support",
+  "learning-facilities": "Learning materials and essential utilities",
+} as const;
+
 export const SPONSORSHIP_PATHS = {
   hifdh: "Hifdh education",
   nazira: "Qur’an Nazira education",
   school: "School education (developing pathway)",
   college: "College education (developing pathway)",
   discuss: "Discuss available education needs",
+  ...INSTITUTIONAL_SPONSORSHIP_PATHS,
 } as const;
 export const SPONSORSHIP_SUPPORT = {
   discuss: "Discuss the available support arrangements",
@@ -31,14 +40,16 @@ export function parseSponsorshipEnquiry(input: Record<string, string | string[] 
 export function buildSponsorshipEnquiry(enquiry: SponsorshipEnquiry) {
   const checked = parseSponsorshipEnquiry({ path: enquiry.path, support: enquiry.support, privateName: enquiry.privateName ? "yes" : undefined });
   if (!checked) throw new RangeError("Unsupported sponsorship preferences");
-  const subject = "Amaana Taleem - Education sponsorship enquiry";
+  const institutional = Object.hasOwn(INSTITUTIONAL_SPONSORSHIP_PATHS, checked.path);
+  const subject = institutional ? "Amaana Taleem - Institutional support enquiry" : "Amaana Taleem - Education sponsorship enquiry";
   const body = [
     "Assalamu alaikum Amaana team,", "",
-    `Education interest: ${SPONSORSHIP_PATHS[checked.path]}`,
+    `${institutional ? "Institutional support enquiry" : "Education interest"}: ${SPONSORSHIP_PATHS[checked.path]}`,
     `Support preference: ${SPONSORSHIP_SUPPORT[checked.support]}`,
     ...(checked.privateName ? ["Please keep my name out of public recognition. I understand financial and receipt records may still require my details."] : []),
     "", "Please confirm whether a reviewed need is available, the scope and cost, how support would be used, and which privacy-safe updates can be shared before I decide.",
     "I understand this enquiry does not reserve a student placement or authorize a payment or recurring charge.",
+    ...(institutional ? ["This enquiry does not establish an institutional funding commitment. Please confirm the current purpose and reviewed cost before any contribution."] : []),
     "I will not include student names, identity documents, bank details or other sensitive records in this enquiry.",
   ].join("\n");
   return { body, href: `mailto:amaanafoundation24@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}` };

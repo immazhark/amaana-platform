@@ -1,6 +1,6 @@
 import { hasUnsupportedPublicQueryFields } from "@/lib/public-navigation-query.mjs";
 import Link from "next/link";
-import { buildSponsorshipEnquiry, parseSponsorshipEnquiry, SPONSORSHIP_PATHS, SPONSORSHIP_SUPPORT } from "@/lib/sponsorship-enquiry";
+import { buildSponsorshipEnquiry, parseSponsorshipEnquiry, INSTITUTIONAL_SPONSORSHIP_PATHS, SPONSORSHIP_PATHS, SPONSORSHIP_SUPPORT } from "@/lib/sponsorship-enquiry";
 
 type Preferences = Record<string, string | string[] | undefined>;
 
@@ -17,13 +17,19 @@ export function SponsorshipEnquiry({ preferences }: { preferences: Preferences }
   return <section className="v2-shell taleem-process" id="sponsorship-enquiry" aria-labelledby="sponsorship-enquiry-title">
     <form className="taleem-path taleem-path--form" method="get" action="/get-involved/sponsor-education#sponsorship-enquiry">
       <h2 id="sponsorship-enquiry-title">Prepare your sponsorship enquiry</h2>
-      <p>Choose an education interest and how you may wish to contribute. Amaana must confirm the current need and cost before any decision.</p>
+      <p>Choose a learner or institutional support interest and how you may wish to contribute. Amaana must confirm the current need and cost before any decision.</p>
       {requested && !selection ? <p role="alert">These preferences could not be read. Choose from the options below and review again.</p> : null}
       <label className="taleem-field">
         Education pathway
         <select name="path" defaultValue={selection?.path ?? "discuss"}>
-          {Object.entries(SPONSORSHIP_PATHS).map(([value, label]) =>
-            <option value={value} key={value}>{label}</option>)}
+          <optgroup label="Learner sponsorship">
+            {Object.entries(SPONSORSHIP_PATHS).filter(([value]) => !Object.hasOwn(INSTITUTIONAL_SPONSORSHIP_PATHS, value)).map(([value, label]) =>
+              <option value={value} key={value}>{label}</option>)}
+          </optgroup>
+          <optgroup label="Institutional support — enquiry only">
+            {Object.entries(INSTITUTIONAL_SPONSORSHIP_PATHS).map(([value, label]) =>
+              <option value={value} key={value}>{label}</option>)}
+          </optgroup>
         </select>
       </label>
       <label className="taleem-field">
@@ -46,6 +52,6 @@ export function SponsorshipEnquiry({ preferences }: { preferences: Preferences }
       <a className="v2-button" href={prepared.href}>Open email with these preferences</a>
       <p>Nothing has been sent. Review and send the message in your email application. If it does not open, copy the message above and email <a href="mailto:amaanafoundation24@gmail.com">amaanafoundation24@gmail.com</a>, or use the <Link href="/contact">official contact options</Link>.</p>
     </div> : null}
-    <p>No student placement is reserved and no payment is authorized here. School and college support remain developing pathways. Keep student documents, bank details and photographs out of this enquiry.</p>
+    <p>No student placement is reserved and no payment is authorized here. School and college support remain developing pathways. Institutional support is enquiry-only pending reviewed need and cost. Keep student documents, bank details and photographs out of this enquiry.</p>
   </section>;
 }

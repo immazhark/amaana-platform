@@ -54,3 +54,33 @@ test("education sponsor links ignore campaign-only parameters and retain reviewe
   expect(new URL(href).searchParams.get("body")).toContain("Hifdh education");
   await expect(page.locator("main")).not.toContainText("LINK_TOKEN_493");
 });
+
+test("institutional support is a distinct enquiry path, never a payment or placement", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 740 });
+  await page.goto("/get-involved/sponsor-education");
+  const section = page.getByRole("region", { name: "Support the learning environment." });
+  await expect(section.getByRole("heading", { name: "Teaching support" })).toBeVisible();
+  await expect(section.getByRole("heading", { name: "Learning facilities and services" })).toBeVisible();
+  await section.getByRole("link", { name: /Ask about Daytime Qur’an teacher support/ }).click();
+  await expect(page).toHaveURL(/path=teacher-day&support=discuss/);
+  await expect(page.getByRole("heading", { name: "Review before opening your email" })).toBeVisible();
+  await expect(page.getByLabel("Education pathway")).toHaveValue("teacher-day");
+  await page.getByLabel("Education pathway").selectOption("muadhin");
+  await page.getByLabel("Support preference").selectOption("ongoing");
+  await page.getByRole("button", { name: "Review enquiry" }).click();
+  const href = await page.getByRole("link", { name: "Open email with these preferences" }).getAttribute("href");
+  const url = new URL(href);
+  const body = url.searchParams.get("body");
+  expect(url.protocol).toBe("mailto:");
+  expect(url.pathname).toBe("amaanafoundation24@gmail.com");
+  expect(url.searchParams.get("subject")).toBe("Amaana Taleem - Institutional support enquiry");
+  expect(body).toContain("Muadhin support");
+  expect(body).toContain("does not establish an institutional funding commitment");
+  expect(body).toContain("does not reserve a student placement or authorize a payment or recurring charge");
+  expect(body).toContain("each contribution decided separately");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await page.goto("/get-involved/sponsor-education?path=imam&support=once&amount=PRIVATE_SYNTHETIC");
+  await expect(page.locator('main p[role="alert"]')).toContainText("These preferences could not be read");
+  await expect(page.getByRole("link", { name: "Open email with these preferences" })).toHaveCount(0);
+  await expect(page.locator("main")).not.toContainText("PRIVATE_SYNTHETIC");
+});
