@@ -52,11 +52,17 @@ async function DonateImpactEvidence() {
 }
 
 async function DonatePageContent() {
-  const reviewedAppeals = await getReviewedDonationPageData();
+  const reviewedAppeals = await getReviewedDonationPageData().then(
+    choices => ({ choices, unavailable: false as const }),
+    () => {
+      logServerError("donation.reviewed_appeals_unavailable");
+      return { choices: [], unavailable: true as const };
+    },
+  );
   // These server-approved records still need a final checkout balance check.
   // The reviewed projection already preserves priority and excludes unpayable
   // records. Keep the live amount guard and display only four destinations.
-  const eligibleChoices = reviewedAppeals.flatMap(appeal => {
+  const eligibleChoices = reviewedAppeals.choices.flatMap(appeal => {
     const remaining = getDonationCheckoutRemainingAmount(appeal);
     if (remaining === null) return [];
     return [{
@@ -71,6 +77,7 @@ async function DonatePageContent() {
   return (
     <DonatePageView
       choices={eligibleChoices}
+      appealsUnavailable={reviewedAppeals.unavailable}
       impactEvidence={<Suspense fallback={null}><DonateImpactEvidence /></Suspense>}
       paymentDetails={getDonationPaymentDetails()}
       fundGivingEnabled={isFundGivingEnabled()}
