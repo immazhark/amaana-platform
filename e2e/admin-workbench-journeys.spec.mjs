@@ -109,3 +109,30 @@ test('donation reviewer returns to the same filtered queue', async ({ page }) =>
   await expect(records.getByRole('link', { name: 'AFD-UI-AUDIT', exact: true })).toBeVisible();
   await expect(page.getByRole('group', { name: 'Donation ordering' }).getByRole('link', { name: 'Oldest first' })).toHaveAttribute('aria-current', 'page');
 });
+
+test('payment event history paginates tied timestamps without showing another donation or raw payload', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await open(page, '/admin/donations/'+encodeURIComponent(seed.workbenchPaymentId)+'?queueStatus=CREATED&queueMethod=RAZORPAY&queueSort=oldest');
+  const history = page.locator('aside:has(#payment-events-heading)');
+  const rows = history.locator('ol.history > li');
+  const expected = Array.from({length:51},(_,i)=>'synthetic-workbench-event-'+String(51-i).padStart(2,'0'));
+  const ids = () => rows.locator('small').allTextContents();
+  await expect(rows).toHaveCount(50);
+  expect(await ids()).toEqual(expected.slice(0,50));
+  await expect(history.getByText('synthetic-other-donation-event')).toHaveCount(0);
+  await expect(page.getByText('PRIVATE_SYNTHETIC_EVENT_PAYLOAD')).toHaveCount(0);
+  await history.getByRole('link', { name: 'Older payment events' }).click();
+  await expect(page).toHaveURL(/eventsBefore=/);
+  await expect(rows).toHaveCount(1);
+  expect(await ids()).toEqual(expected.slice(50));
+  await expect(history.getByRole('link', { name: 'Older payment events' })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: 'Return to donation queue' })).toHaveAttribute('href', '/admin/donations?status=CREATED&method=RAZORPAY&sort=oldest');
+  await history.getByRole('link', { name: 'Newest payment events' }).click();
+  await expect(rows).toHaveCount(50);
+  expect(await ids()).toEqual(expected.slice(0,50));
+  // An arbitrary, syntactically valid boundary changes the page, never the donation relation.
+  await open(page, '/admin/donations/'+encodeURIComponent(seed.workbenchPaymentId)+'?eventsBefore=2020-01-02T00%3A00%3A00.000Z~ui-workbench-payment-decoy');
+  await expect(rows).toHaveCount(50);
+  expect(await ids()).toEqual(expected.slice(0,50));
+  await expect(history.getByText('synthetic-other-donation-event')).toHaveCount(0);
+});

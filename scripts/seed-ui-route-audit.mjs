@@ -46,6 +46,20 @@ try {
     const data = {...requestData,phone:'+910000000099',email:null,status:'UNDER_VERIFICATION',assignedToId:null,description:'Synthetic workbench history case; no real person or evidence.'};
     const workbench = await prisma.assistanceRequest.upsert({where:{referenceNumber:'AMA-UI-WORKBENCH'},update:data,create:{referenceNumber:'AMA-UI-WORKBENCH',...data}});
     workbenchIds.workbenchRequestId = workbench.id;
+    // A pair of non-captured, historical synthetic donations, isolated from the current finance/funnel cohort.
+    // No provider IDs, payment attempts, receipts or notifications are generated.
+    const historical = new Date('2020-01-02T00:00:00.000Z');
+    const paymentData = {appealId:appeal.id,donorName:'Synthetic workbench donor',donorEmail:'workbench@example.invalid',domesticConfirmedAt:historical,createdAt:historical,amount:'1',receiptTokenHash:hash('synthetic-workbench-only'),paymentMethod:'RAZORPAY',provider:null,providerOrderId:null,providerPaymentId:null,status:'CREATED'};
+    const payment = await prisma.donation.upsert({where:{referenceNumber:'AFD-2020-99000001'},update:paymentData,create:{referenceNumber:'AFD-2020-99000001',...paymentData}});
+    const otherPayment = await prisma.donation.upsert({where:{referenceNumber:'AFD-2020-99000002'},update:paymentData,create:{referenceNumber:'AFD-2020-99000002',...paymentData}});
+    workbenchIds.workbenchPaymentId = payment.id;
+    await prisma.paymentEvent.createMany({data:[
+      ...Array.from({length:51},(_,i)=>{
+        const suffix=String(i+1).padStart(2,'0');
+        return {id:'ui-workbench-payment-'+suffix,providerEventId:'synthetic-workbench-event-'+suffix,eventType:'payment.authorized',donationId:payment.id,processedAt:historical,payload:{synthetic:'PRIVATE_SYNTHETIC_EVENT_PAYLOAD'}};
+      }),
+      {id:'ui-workbench-payment-decoy',providerEventId:'synthetic-other-donation-event',eventType:'payment.authorized',donationId:otherPayment.id,processedAt:historical,payload:{synthetic:true}},
+    ],skipDuplicates:true});
     const createdAt = new Date('2026-01-01T00:00:00.000Z');
     await prisma.auditEvent.createMany({data:Array.from({length:51},(_,i)=>{
       const suffix=String(i+1).padStart(2,'0');
