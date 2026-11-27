@@ -72,7 +72,7 @@ export default async function TaleemRosterPage({ searchParams }: Props) {
         {counts.asOf.startsWith(String(TALEEM_HIFDH_COMPLETIONS.year) + "-") && <div><dt>Recorded verified, support-associated completions this year</dt><dd>{counts.hifdhCompletionsInYear} — {counts.hifdhCompletionsInYear === TALEEM_HIFDH_COMPLETIONS.sponsored ? "numerical match only" : "review difference from the dated completion baseline"}</dd></div>}
       </dl>
       <h3>Programme and learner status</h3>
-      <p className="muted">Matched maintained places today, grouped by the learner's recorded programme and status. Left or graduated learners with a recorded place are shown separately for review. Unmatched occupied places are excluded from this table and listed below. These counts are not funded capacity, verified programme impact or new public figures.</p>
+      <p className="muted">Matched maintained places today, grouped by the learner&apos;s recorded programme and status. Left or graduated learners with a recorded place are shown separately for review. Unmatched occupied places are excluded from this table and listed below. These counts are not funded capacity, verified programme impact or new public figures.</p>
       <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Matched maintained places by programme and learner status">
         <table>
           <thead><tr><th scope="col">Programme</th><th scope="col">Active</th><th scope="col">On break</th><th scope="col">Left / graduated</th><th scope="col">Unknown status</th><th scope="col">Matched places</th></tr></thead>
