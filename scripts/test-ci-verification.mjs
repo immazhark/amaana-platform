@@ -55,3 +55,4 @@ test("invalid impact selection is rejected on ready transition too", () => check
 
 import "./test-route-build-evidence.mjs";
 import "./test-ui-audit-target.mjs";
+import "./test-admin-workbench-donation-fixtures.mjs";

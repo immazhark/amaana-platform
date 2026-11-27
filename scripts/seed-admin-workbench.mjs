@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { createHash, randomBytes } from 'node:crypto';
 import { assertDisposableUiAuditTarget } from './ui-audit-target.mjs';
+import { workbenchDonationFixtures } from './admin-workbench-donation-fixtures.mjs';
 
 // This suite never resets the shared audit, approval, rejection or public-story fixtures.
 assertDisposableUiAuditTarget(process.env);
@@ -22,12 +23,12 @@ try {
     const data = {...requestData,phone:'+910000000099',email:null,status:'UNDER_VERIFICATION',assignedToId:null,description:'Synthetic workbench history case; no real person or evidence.'};
     const workbench = await prisma.assistanceRequest.upsert({where:{referenceNumber:'AMA-UI-WORKBENCH'},update:data,create:{referenceNumber:'AMA-UI-WORKBENCH',...data}});
     workbenchIds.workbenchRequestId = workbench.id;
-    // A pair of non-captured, historical synthetic donations, isolated from the current finance/funnel cohort.
-    // No provider IDs, payment attempts, receipts or notifications are generated.
-    const historical = new Date('2020-01-02T00:00:00.000Z');
-    const paymentData = {donorName:'Synthetic workbench donor',donorEmail:'workbench@example.invalid',domesticConfirmedAt:historical,createdAt:historical,amount:'1',receiptTokenHash:hash('synthetic-workbench-only'),paymentMethod:'RAZORPAY',provider:null,providerOrderId:null,providerPaymentId:null,status:'CREATED'};
-    const payment = await prisma.donation.upsert({where:{referenceNumber:'AFD-2020-99000001'},update:paymentData,create:{referenceNumber:'AFD-2020-99000001',...paymentData}});
-    const otherPayment = await prisma.donation.upsert({where:{referenceNumber:'AFD-2020-99000002'},update:paymentData,create:{referenceNumber:'AFD-2020-99000002',...paymentData}});
+    // Private draft destination belongs only to this suite; no public appeal or shared seed mutation.
+    const appealData = {title:'Synthetic workbench destination',summary:'Disposable private browser fixture',story:'Synthetic workbench test data only.',category:'OTHER',status:'DRAFT',beneficiaryName:'Synthetic applicant',goalAmount:'1000',publishedAt:null,createdById:user.id};
+    const appeal = await prisma.appeal.upsert({where:{slug:'synthetic-workbench-private-destination'},update:appealData,create:{slug:'synthetic-workbench-private-destination',...appealData}});
+    const {historical, first, second, claim} = workbenchDonationFixtures(appeal.id,now,hash);
+    const payment = await prisma.donation.upsert({where:{referenceNumber:'AFD-2020-99000001'},update:first,create:{referenceNumber:'AFD-2020-99000001',...first}});
+    const otherPayment = await prisma.donation.upsert({where:{referenceNumber:'AFD-2020-99000002'},update:second,create:{referenceNumber:'AFD-2020-99000002',...second}});
     workbenchIds.workbenchPaymentId = payment.id;
     await prisma.paymentEvent.createMany({data:[
       ...Array.from({length:51},(_,i)=>{
@@ -46,9 +47,8 @@ try {
     const place = await prisma.taleemPlace.upsert({where:{placeCode:'TP-WKBCHA'},update:{status:'MAINTAINED'},create:{placeCode:'TP-WKBCHA',status:'MAINTAINED'}});
     const startedOn = new Date('2020-01-01T00:00:00.000Z');
     await prisma.taleemEnrolment.upsert({where:{id:'ui-workbench-enrolment-a'},update:{},create:{id:'ui-workbench-enrolment-a',learnerId:current.id,programme:'NAZIRA',startedOn}});
-    await prisma.taleemEnrolment.upsert({where:{id:'ui-workbench-enrolment-b'},update:{},create:{id:'ui-workbench-enrolment-b',learnerId:other.id,programme:'HIFDH',startedOn}});
+    await prisma.taleemEnrolment.upsert({where:{id:'ui-workbench-enrolment-b'},update:{endedOn:new Date('2020-12-31T00:00:00.000Z')},create:{id:'ui-workbench-enrolment-b',learnerId:other.id,programme:'HIFDH',startedOn,endedOn:new Date('2020-12-31T00:00:00.000Z')}});
     await prisma.taleemPlaceAssignment.upsert({where:{id:'ui-workbench-assignment-a'},update:{},create:{id:'ui-workbench-assignment-a',learnerId:current.id,placeId:place.id,startedOn}});
-  const claimData = {donorName:'Synthetic workbench claimant',donorEmail:'workbench@example.invalid',domesticConfirmedAt:now,amount:'100',receiptTokenHash:hash('synthetic-workbench-claim'),paymentMethod:'DIRECT_UPI',status:'PENDING_VERIFICATION',transferReference:'UI-WORKBENCH-SYNTHETIC-ONLY',transferredAt:now};
-  await prisma.donation.upsert({where:{referenceNumber:'AFD-UI-WORKBENCH'},update:claimData,create:{referenceNumber:'AFD-UI-WORKBENCH',...claimData}});
+  await prisma.donation.upsert({where:{referenceNumber:'AFD-UI-WORKBENCH'},update:claim,create:{referenceNumber:'AFD-UI-WORKBENCH',...claim}});
   process.stdout.write(JSON.stringify({...workbenchIds,token}));
 } finally { await prisma.$disconnect(); }
