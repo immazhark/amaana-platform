@@ -12,7 +12,10 @@ type ReviewPlace = { placeCode: string; status: string; holderAlias: string | nu
 /** Private review prompts, not eligibility decisions or new public impact claims. */
 export function rosterReview(learners: readonly ReviewLearner[], places: readonly ReviewPlace[]) {
   const placeByCode = new Map(places.map(place => [place.placeCode, place]));
+  const learnerByAlias = new Map(learners.map(learner => [learner.publicAlias, learner]));
+  const programmeStatus = (["QAIDA", "NAZIRA", "HIFDH", "UNCLASSIFIED"] as const).map(programme => ({ programme, active: 0, onBreak: 0, inactive: 0, unknownStatus: 0 }));
   const naziraHifdh = new Set<string>();
+  const unmatchedOccupiedPlaces: string[] = [];
   const missingProgramme: string[] = [];
   const inactiveHolders: string[] = [];
   const placeConflicts: string[] = [];
@@ -30,10 +33,23 @@ export function rosterReview(learners: readonly ReviewLearner[], places: readonl
     if (learner.completedHifdhOn !== null && (!learner.completionReview?.verified || !learner.completionReview.supportAssociated)) pendingMilestones.push(learner.publicAlias);
   }
   for (const place of places) {
-    if (place.status !== "MAINTAINED" || place.holderAlias !== null) continue;
+    if (place.status !== "MAINTAINED") continue;
+    if (place.holderAlias !== null) {
+      const learner = learnerByAlias.get(place.holderAlias);
+      if (!learner || learner.placeCode !== place.placeCode) {
+        unmatchedOccupiedPlaces.push(place.placeCode);
+        continue;
+      }
+      const row = programmeStatus.find(item => item.programme === learner.programme) ?? programmeStatus[3]!;
+      if (learner.status === "ACTIVE") row.active += 1;
+      else if (learner.status === "ON_BREAK") row.onBreak += 1;
+      else if (learner.status === "LEFT" || learner.status === "GRADUATED") row.inactive += 1;
+      else row.unknownStatus += 1;
+      continue;
+    }
     (place.hasBlockingAssignment ? reservedVacancies : assignableVacancies).push(place.placeCode);
   }
-  return { naziraHifdhStudents: naziraHifdh.size, missingProgramme, inactiveHolders, placeConflicts, pendingMilestones, assignableVacancies, reservedVacancies };
+  return { programmeStatus, unmatchedOccupiedPlaces, naziraHifdhStudents: naziraHifdh.size, missingProgramme, inactiveHolders, placeConflicts, pendingMilestones, assignableVacancies, reservedVacancies };
 }
 
 type Evidence = { verified: boolean; supportAssociated: boolean };

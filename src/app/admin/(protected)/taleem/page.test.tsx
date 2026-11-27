@@ -136,3 +136,17 @@ it("offers follow-up confirmation only for unresolved evidence on a recorded, no
   const future = await render({ counts: counts(), learners: [{ ...learner, completedHifdhOn: "2026-11-23" }], places: [] });
   expect(future).not.toContain("Confirm selected Hifdh evidence");
 });
+
+it("shows a private programme/status matrix and links unmatched occupied places for reconciliation", async () => {
+  const learner = { id: "l1", publicAlias: "TL-ABCDEFGH", fullName: "Synthetic Person", status: "GRADUATED", programme: "HIFDH", placeCode: "TP-ABCDEF", assignmentId: "a1", openAssignmentPlaceCode: "TP-ABCDEF", openAssignmentStartsOn: "2026-01-01", hasBlockingAssignment: true, completedHifdhOn: null };
+  const html = await render({ counts: counts(), learners: [learner], places: [
+    { id: "p1", placeCode: "TP-ABCDEF", status: "MAINTAINED", holderAlias: learner.publicAlias, assignmentId: "a1", hasBlockingAssignment: true },
+    { id: "p2", placeCode: "TP-BCDEFG", status: "MAINTAINED", holderAlias: "TL-BCDEFGHJ", assignmentId: "a2", hasBlockingAssignment: true },
+  ] });
+  expect(html).toContain('aria-label="Matched maintained places by programme and learner status"');
+  expect(html).toContain("<th scope=\"row\">Hifdh</th><td>0</td><td>0</td><td>1</td><td>0</td><td>1</td>");
+  expect(html).toContain("Occupied maintained places without a matching learner");
+  expect(html).toContain('href="#place-TP-BCDEFG"');
+  expect(html).toContain("not funded capacity, verified programme impact or new public figures");
+  expect(html).not.toContain("Assign this place");
+});
