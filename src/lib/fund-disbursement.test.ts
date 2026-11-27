@@ -20,7 +20,7 @@ describe("parseDisbursementInput", () => {
   });
   it.each([
     [{ fundId: "" }], [{ fundId: "bad id!" }], [{ pool: "OTHER" }], [{ pool: undefined }], [{ amount: "0" }], [{ amount: "12.345" }],
-    [{ spentOn: "2026-11-20" }], [{ spentOn: "2026-02-30" }], [{ spentOn: "2019-12-31" }], [{ spentOn: "19/11/2026" }],
+    [{ spentOn: "2026-11-20" }], [{ spentOn: "2026-02-30" }], [{ spentOn: "2026-13-01" }], [{ spentOn: "2026-00-01" }], [{ spentOn: "2026-01-00" }], [{ spentOn: "2026-01-32" }], [{ spentOn: "2026-02-29" }], [{ spentOn: "2019-12-31" }], [{ spentOn: "19/11/2026" }],
     [{ title: "ab" }], [{ title: "x".repeat(121) }], [{ publicSummary: "y".repeat(401) }],
     [{ title: "Call 9876543210" }], [{ publicSummary: "email donor@example.com" }], [{ publicSummary: "see https://x.example" }],
   ])("rejects %j", override => expect(parseDisbursementInput({ ...base, ...override }, now).ok).toBe(false));
