@@ -11,6 +11,7 @@ export type NotificationOperationalCounts = {
 export type DonationOperationalCounts = {
   unmatchedCriticalEvents: number;
   missingAcknowledgements: number;
+  missingCaptureTimes: number;
   refundedWithoutCompletionTime: number;
 };
 
@@ -32,11 +33,13 @@ export function donationOperationalState(counts: DonationOperationalCounts) {
   const normalized = {
     unmatchedCriticalEvents: Math.max(0, Math.trunc(counts.unmatchedCriticalEvents)),
     missingAcknowledgements: Math.max(0, Math.trunc(counts.missingAcknowledgements)),
+    missingCaptureTimes: Math.max(0, Math.trunc(counts.missingCaptureTimes)),
     refundedWithoutCompletionTime: Math.max(0, Math.trunc(counts.refundedWithoutCompletionTime)),
   };
   const attention =
     normalized.unmatchedCriticalEvents +
     normalized.missingAcknowledgements +
+    normalized.missingCaptureTimes +
     normalized.refundedWithoutCompletionTime;
   return {
     ...normalized,

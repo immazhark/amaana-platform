@@ -7,7 +7,7 @@ import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { donationIntentLabel } from "@/lib/donation-intent";
 import { donationDetailHref } from "@/lib/donation-review-navigation";
 import { summariseDonationQueueCounts } from "@/lib/donation-queue-counts";
-import { donationExceptionFilter, donationExceptionWhere } from "@/lib/donation-exception-review";
+import { donationExceptionFilter, donationExceptionWhere, loadVerifiedEvidenceCounts } from "@/lib/donation-exception-review";
 import { formatDonationReportINR, loadDonationReconciliationReport } from "@/lib/donation-reconciliation-totals";
 import { prisma } from "@/lib/prisma";
 import { readDonationReport } from "@/lib/read-donation-report";
@@ -49,7 +49,7 @@ export default async function DonationsPage({ searchParams }: Props) {
     ...(selectedIntent ? { givingIntent: selectedIntent } : {}),
   };
 
-  const [reconciliation, unmatchedCriticalEventCount, unmatchedCriticalEvents, missingAcknowledgements, refundedWithoutCompletionTime, queueGroups, funnel, pendingReview] = await Promise.all([
+  const [reconciliation, unmatchedCriticalEventCount, unmatchedCriticalEvents, verifiedEvidence, refundedWithoutCompletionTime, queueGroups, funnel, pendingReview] = await Promise.all([
     readDonationReport(() => loadDonationReconciliationReport(prisma), () => logServerError("donation.reconciliation_report_unavailable")),
     prisma.paymentEvent.count({
       where: {
@@ -71,7 +71,7 @@ export default async function DonationsPage({ searchParams }: Props) {
         processedAt: true,
       },
     }),
-    prisma.donation.count({ where: donationExceptionWhere("missing-acknowledgement") }),
+    loadVerifiedEvidenceCounts(prisma),
     prisma.donation.count({ where: donationExceptionWhere("missing-refund-time") }),
     prisma.donation.groupBy({
       by: ["status", "givingIntent"],
@@ -115,7 +115,7 @@ export default async function DonationsPage({ searchParams }: Props) {
   const totals = reconciliation?.totals;
   const operational = donationOperationalState({
     unmatchedCriticalEvents: unmatchedCriticalEventCount,
-    missingAcknowledgements,
+    ...verifiedEvidence,
     refundedWithoutCompletionTime,
   });
   const pageHref = (targetPage: number) => ({
@@ -183,6 +183,7 @@ export default async function DonationsPage({ searchParams }: Props) {
         <article className="card"><strong>{totals?.pendingCount ?? "Unavailable"}</strong><p>Direct UPI/bank transfers awaiting statement verification</p></article>
         <article className="card"><strong>{operational.unmatchedCriticalEvents}</strong><p>Unmatched critical payment events</p>{unmatchedCriticalEvents.length > 0 && <Link href="#unmatched-payment-events">Review latest unmatched events</Link>}</article>
         <article className="card"><strong>{operational.missingAcknowledgements}</strong><p>Captured/refunded donations without acknowledgement numbers</p>{operational.missingAcknowledgements > 0 && <Link href={{ pathname: "/admin/donations", query: { issue: "missing-acknowledgement", sort: "oldest" } }}>Review missing acknowledgements, oldest first</Link>}</article>
+        <article className="card"><strong>{operational.missingCaptureTimes}</strong><p>Verified donations missing capture time (excluded from financial-year receipt reports)</p>{operational.missingCaptureTimes > 0 && <Link href={{ pathname: "/admin/donations", query: { issue: "missing-capture-time", sort: "oldest" } }}>Review missing capture times, oldest first</Link>}</article>
         <article className="card"><strong>{operational.refundedWithoutCompletionTime}</strong><p>Refunded donations missing completion time</p>{operational.refundedWithoutCompletionTime > 0 && <Link href={{ pathname: "/admin/donations", query: { issue: "missing-refund-time", sort: "oldest" } }}>Review missing refund times, oldest first</Link>}</article>
       </div>
     </section>
@@ -241,7 +242,7 @@ export default async function DonationsPage({ searchParams }: Props) {
     </section>}
     {(exception.issue || exception.invalid) && <section className="admin-card" aria-labelledby="donation-exception-heading">
       <h2 id="donation-exception-heading">Reconciliation exception review</h2>
-      {exception.invalid ? <p role="status">Unsupported review filter. No records were matched.</p> : <p role="status">{exception.issue === "missing-acknowledgement" ? "Captured or refunded records with no acknowledgement number." : "Refunded records with no recorded completion timestamp."} Additional filters narrow this list. Review the existing evidence; this view does not repair records or authorize payments.</p>}
+      {exception.invalid ? <p role="status">Unsupported review filter. No records were matched.</p> : <p role="status">{exception.issue === "missing-acknowledgement" ? "Captured or refunded records with no acknowledgement number." : exception.issue === "missing-capture-time" ? "Captured or refunded records with no recorded capture timestamp. They cannot be assigned to a financial year from the available capture evidence." : "Refunded records with no recorded completion timestamp."} Additional filters narrow this list. Review the existing evidence; this view does not repair records or authorize payments.</p>}
       <Link href={{ pathname: "/admin/donations", query: { ...(selected ? { status: selected } : {}), ...(selectedIntent ? { intent: selectedIntent } : {}), ...(selectedMethod ? { method: selectedMethod } : {}), ...referenceQuery, ...(review.direction === "asc" ? { sort: "oldest" } : {}) } }}>Clear exception review</Link>
     </section>}
     <section className="admin-card" aria-labelledby="donation-lookup-heading">

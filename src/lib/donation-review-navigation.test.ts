@@ -25,3 +25,9 @@ describe("donation review navigation", () => {
     expect(paymentEventSelection(rows[49]!)).toEqual({ where: { OR: [{ processedAt: { lt: time } }, { processedAt: time, id: { lt: "event-49" } }] }, select: { id: true, eventType: true, providerEventId: true, processedAt: true }, orderBy: [{ processedAt: "desc" }, { id: "desc" }], take: 51 });
   });
 });
+
+it("round-trips the missing capture evidence review without broadening the queue", () => {
+  const path = donationDetailHref("synthetic", { issue: "missing-capture-time", sort: "oldest" });
+  expect(path).toBe("/admin/donations/synthetic?queueSort=oldest&queueIssue=missing-capture-time");
+  expect(donationQueueHref(donationReturnFilters(Object.fromEntries(new URL(path, "https://example.test").searchParams)))).toBe("/admin/donations?sort=oldest&issue=missing-capture-time");
+});
