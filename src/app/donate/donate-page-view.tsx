@@ -58,15 +58,20 @@ export function donateHeroPanel(openAppealCount: number, fundGivingEnabled = fal
 
 export type DonatePageViewProps = {
   choices: readonly ReviewedAppealChoice[];
+  appealsUnavailable?: boolean;
   impactEvidence: ReactNode;
   paymentDetails: DonationPaymentDetails;
   fundGivingEnabled: boolean;
 };
 
 /** Pure presentation of the donate page. Data loading stays in `page.tsx`. */
-export function DonatePageView({ choices, impactEvidence, paymentDetails, fundGivingEnabled }: DonatePageViewProps) {
+export function DonatePageView({ choices: reviewedChoices, appealsUnavailable = false, impactEvidence, paymentDetails, fundGivingEnabled }: DonatePageViewProps) {
+  // An unavailable eligibility lookup must never surface a checkout or an open-appeal count.
+  const choices = appealsUnavailable ? [] : reviewedChoices;
   const hasOpenAppeals = choices.length > 0;
-  const panel = donateHeroPanel(choices.length, fundGivingEnabled);
+  const panel = appealsUnavailable
+    ? { title: "Appeal availability temporarily unavailable", note: "Current appeal eligibility could not be confirmed. On-page appeal checkout is unavailable; other giving routes are checked separately." }
+    : donateHeroPanel(choices.length, fundGivingEnabled);
   return (
     <CanonicalArticle
       eyebrow="Donate · Amaana Foundation"
@@ -75,7 +80,9 @@ export function DonatePageView({ choices, impactEvidence, paymentDetails, fundGi
       heroVisualTitle={panel.title}
       heroVisualNote={panel.note}
       title={hasOpenAppeals ? "Give With Confidence. Give With Purpose." : fundGivingEnabled ? "Choose a Fund. Give With Purpose." : "Find an Approved Way to Support."}
-      intro={hasOpenAppeals
+      intro={appealsUnavailable
+        ? "We could not confirm current appeal availability. Explore the other routes below or return later; each payment destination must be checked before contributing."
+        : hasOpenAppeals
         ? "Every contribution is an amaana. Choose a specific verified appeal, or support a currently approved programme."
         : fundGivingEnabled
           ? "Fund giving is open. Choose an eligible Amaana fund to give in domestic INR. Appeal checkout appears here only when a specific reviewed appeal is payable."
@@ -89,7 +96,7 @@ export function DonatePageView({ choices, impactEvidence, paymentDetails, fundGi
     >
       <div className={styles.routes} role="group" aria-label="Donation routes">
         {fundGivingEnabled && <article className={`${styles.route} ${styles.routeWide}`}><span>General giving</span><h3>Give to a fund of your choice</h3><p>Choose where your gift goes — General, Taleem, Orphan, Medical and more — with Zakat, Sadaqah or General Charity recorded exactly as you intend.</p><Link className="v2-button" href="/give">Choose a fund</Link><Link className="v2-text-link" href="/funds">See how each fund is used →</Link></article>}
-        <article className={styles.route}><span>Route 01</span><h3>{hasOpenAppeals ? "Support a verified public appeal" : "Public appeals"}</h3><p>{hasOpenAppeals ? `There ${choices.length === 1 ? "is" : "are"} currently ${choices.length} reviewed public ${choices.length === 1 ? "appeal" : "appeals"} accepting support. Review the context and remaining verified target before continuing to secure domestic INR checkout.` : "No reviewed appeal checkout is currently available here. Browse the public appeals for the latest published case information; checkout is offered only for individually verified, payable appeals."}</p>{hasOpenAppeals && <Link className="v2-button" href={CHECKOUT_ANCHOR}>Choose an appeal & give here</Link>}<Link className={hasOpenAppeals ? "v2-text-link" : "v2-button"} href="/appeals">{hasOpenAppeals ? "Review all verified appeals →" : "View appeals and completed cases"}</Link></article>
+        <article className={styles.route}><span>Route 01</span><h3>{hasOpenAppeals ? "Support a verified public appeal" : "Public appeals"}</h3><p>{appealsUnavailable ? "Appeal availability could not be checked. This does not mean there are no open appeals. Try again later or browse the latest published case information." : hasOpenAppeals ? `There ${choices.length === 1 ? "is" : "are"} currently ${choices.length} reviewed public ${choices.length === 1 ? "appeal" : "appeals"} accepting support. Review the context and remaining verified target before continuing to secure domestic INR checkout.` : "No reviewed appeal checkout is currently available here. Browse the public appeals for the latest published case information; checkout is offered only for individually verified, payable appeals."}</p>{hasOpenAppeals && <Link className="v2-button" href={CHECKOUT_ANCHOR}>Choose an appeal & give here</Link>}<Link className={hasOpenAppeals ? "v2-text-link" : "v2-button"} href="/appeals">{hasOpenAppeals ? "Review all verified appeals →" : "View appeals and completed cases"}</Link></article>
         <article className={styles.route}><span>Route 02</span><h3>Support education or another approved programme</h3><p>Programme availability and terms are shown on the Taleem page. School and college support starts with an enquiry and verification, not an automatic learner assignment. Choose the appropriate path before contributing.</p><Link className="v2-button v2-button--paper-secondary" href={TALEEM_ROUTE}>Explore Taleem sponsorship</Link><Link className="v2-text-link" href="/contact">Ask about programme giving →</Link></article>
       </div>
       {hasOpenAppeals && <AppealLandingCheckout appeals={choices} paymentDetails={paymentDetails} />}

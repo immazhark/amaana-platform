@@ -111,3 +111,23 @@ it("renders optional evidence after the giving controls", () => {
   expect(html.indexOf('id="choose-appeal-checkout"')).toBeGreaterThan(-1);
   expect(html.indexOf('id="synthetic-evidence"')).toBeGreaterThan(html.indexOf('id="choose-appeal-checkout"'));
 });
+
+describe("unavailable appeal eligibility", () => {
+  it.each([true, false])("withholds appeal checkout and respects the fund switch (%s)", fundGivingEnabled => {
+    const html = renderToStaticMarkup(<DonatePageView
+      choices={[choice("stale-synthetic")]}
+      appealsUnavailable
+      impactEvidence={null}
+      paymentDetails={paymentDetails}
+      fundGivingEnabled={fundGivingEnabled}
+    />);
+    expect(html).toContain("Appeal availability could not be checked.");
+    expect(html).toContain("This does not mean there are no open appeals.");
+    expect(html).not.toContain("choose-appeal-checkout");
+    expect(html).not.toContain("stale-synthetic");
+    expect(html).not.toContain("accepting gifts");
+    expect(html).toContain('href="/appeals"');
+    expect(html).toContain('href="/get-involved/sponsor-education"');
+    expect(html.includes('href="/give"')).toBe(fundGivingEnabled);
+  });
+});

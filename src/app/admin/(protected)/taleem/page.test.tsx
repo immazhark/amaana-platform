@@ -15,9 +15,9 @@ const counts = (over: Record<string, number> = {}) => ({
   asOf: "2026-11-22", maintainedPlaces: 26, occupiedPlaces: 25, vacantPlaces: 1, currentlySupportedStudents: 25,
   studentsSupportedSinceInception: 31, hifdhCompletionsInYear: 4, hifdhCompletionsAllTime: 6, ...over,
 });
-const render = async (roster: unknown, notice?: string) => {
+const render = async (roster: unknown, notice?: string, filters: { programmeFilter?: string | string[]; statusFilter?: string | string[]; placementFilter?: string | string[] } = {}) => {
   mocks.loadRoster.mockResolvedValue(roster);
-  return renderToStaticMarkup(await TaleemRosterPage({ searchParams: Promise.resolve({ notice }) }));
+  return renderToStaticMarkup(await TaleemRosterPage({ searchParams: Promise.resolve({ notice, ...filters }) }));
 };
 
 beforeEach(() => { vi.clearAllMocks(); mocks.requirePermission.mockResolvedValue({ id: "u" }); });
@@ -149,4 +149,36 @@ it("shows a private programme/status matrix and links unmatched occupied places 
   expect(html).toContain('href="#place-TP-BCDEFG"');
   expect(html).toContain("not funded capacity, verified programme impact or new public figures");
   expect(html).not.toContain("Assign this place");
+});
+
+describe("Taleem learner directory triage", () => {
+  const learners = [
+    { id: "l1", publicAlias: "TL-ABCDEFGH", fullName: "Synthetic Current Learner", status: "ACTIVE", programme: "NAZIRA", placeCode: "TP-ABCDEF", assignmentId: "a1", openAssignmentPlaceCode: "TP-ABCDEF", openAssignmentStartsOn: "2026-01-01", hasBlockingAssignment: true, completedHifdhOn: null },
+    { id: "l2", publicAlias: "TL-BCDEFGHJ", fullName: "Synthetic Pending Milestone", status: "GRADUATED", programme: "HIFDH", placeCode: null, assignmentId: null, openAssignmentPlaceCode: null, openAssignmentStartsOn: null, hasBlockingAssignment: false, completedHifdhOn: "2026-06-15", completionReview: { verified: false, supportAssociated: false } },
+  ];
+  const roster = { counts: counts(), learners, places: [{ id: "p1", placeCode: "TP-ABCDEF", status: "MAINTAINED", holderAlias: "TL-ABCDEFGH", assignmentId: "a1", hasBlockingAssignment: true }] };
+  it("filters only the learner directory, retaining full-roster counts and working reconciliation links", async () => {
+    const html = await render(roster, undefined, { programmeFilter: "NAZIRA", statusFilter: "ACTIVE", placementFilter: "CURRENT" });
+    expect(html).toContain("Showing 1 of 2 learner records");
+    expect(html).toContain("Synthetic Current Learner");
+    expect(html).not.toContain("Synthetic Pending Milestone");
+    expect(html).toContain('href="/admin/taleem#learner-TL-BCDEFGHJ"');
+    expect(html).toContain('href="/admin/taleem#learners-heading"');
+    expect(html).toContain("Published student baseline");
+    expect(html).toContain("Counts and reconciliation above always include the full roster.");
+    expect(html).toContain('name="programmeFilter"');
+    expect(html).toContain('name="statusFilter"');
+    expect(html).toContain('name="placementFilter"');
+    expect(mocks.loadRoster).toHaveBeenCalledOnce();
+  });
+  it("distinguishes no matches from an empty roster and ignores non-enumerated values", async () => {
+    const empty = await render(roster, undefined, { programmeFilter: "QAIDA" });
+    expect(empty).toContain("Showing 0 of 2 learner records");
+    expect(empty).toContain("No learners match these filters.");
+    expect(empty).not.toContain("No learners yet.");
+    const all = await render(roster, undefined, { programmeFilter: ["QAIDA", "HIFDH"], statusFilter: "PRIVATE_SYNTHETIC_FILTER" });
+    expect(all).toContain("Showing 2 of 2 learner records");
+    expect(all).not.toContain("PRIVATE_SYNTHETIC_FILTER");
+    expect(all).toContain('href="#learner-TL-BCDEFGHJ"');
+  });
 });

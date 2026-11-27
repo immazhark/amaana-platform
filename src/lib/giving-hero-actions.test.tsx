@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 import { FundGivingCheckout } from "@/components/fund-giving/fund-giving-checkout";
+import { fundGlyphs } from "@/components/fund-giving/fund-glyphs";
 import type { GiveFund } from "@/components/fund-giving/fund-copy";
 import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
 import { FUNDS_HERO_ACTIONS, FUND_CHOICE_ANCHOR, GIVE_HERO_ACTIONS } from "./giving-hero-actions";
@@ -23,7 +24,7 @@ describe("fund-giving hero actions", () => {
 
   it("the give page's first action lands on a real element in the checkout", () => {
     expect(GIVE_HERO_ACTIONS[0]?.href).toBe(FUND_CHOICE_ANCHOR);
-    const html = renderToStaticMarkup(<FundGivingCheckout funds={funds} copies={Object.fromEntries(funds.map(fund => [fund.slug, fundDonationFormCopy(fund)]))} paymentDetails={paymentDetails} feeBps={236} />);
+    const html = renderToStaticMarkup(<FundGivingCheckout funds={funds} glyphs={fundGlyphs(funds)} copies={Object.fromEntries(funds.map(fund => [fund.slug, fundDonationFormCopy(fund)]))} paymentDetails={paymentDetails} feeBps={236} />);
     expect(html).toContain(`id="${FUND_CHOICE_ANCHOR.slice(1)}"`);
   });
 

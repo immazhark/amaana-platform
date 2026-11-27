@@ -6,6 +6,7 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
 import { fundDonationFormCopy, type GiveFund } from "./fund-copy";
 import { FundGivingCheckout } from "./fund-giving-checkout";
+import { FundGlyph, fundGlyphs } from "./fund-glyphs";
 
 const funds: GiveFund[] = [
   { slug: "general", name: "General Fund", summary: "Used where the need is greatest.", zakatPolicy: "ACCEPTED", isGeneral: true },
@@ -17,7 +18,7 @@ const funds: GiveFund[] = [
 const paymentDetails = { upi: { id: "x@bank", qrImageUrl: null }, bank: null } as unknown as DonationPaymentDetails;
 const radios = (html: string) => (html.match(/<input[^>]*>/g) ?? []).filter(tag => tag.includes('name="fund"'));
 const checked = (html: string) => radios(html).filter(tag => tag.includes('checked=""')).map(tag => /value="([^"]+)"/.exec(tag)?.[1]);
-const render = (initialSlug?: string) => renderToStaticMarkup(<FundGivingCheckout funds={funds} copies={Object.fromEntries(funds.map(fund => [fund.slug, fundDonationFormCopy(fund)]))} initialSlug={initialSlug} paymentDetails={paymentDetails} feeBps={236} />);
+const render = (initialSlug?: string) => renderToStaticMarkup(<FundGivingCheckout funds={funds} glyphs={fundGlyphs(funds)} copies={Object.fromEntries(funds.map(fund => [fund.slug, fundDonationFormCopy(fund)]))} initialSlug={initialSlug} paymentDetails={paymentDetails} feeBps={236} />);
 
 describe("fund giving checkout", () => {
   it("offers every fund as a native radio in one named group, with the General Fund selected by default", () => {
@@ -27,6 +28,13 @@ describe("fund giving checkout", () => {
     expect(checked(html)).toEqual(["general"]);
     expect(html).toContain("<legend");
     expect(html).toContain("Choose where your gift goes");
+  });
+
+  it("renders the exact existing decorative glyphs supplied by the server, including unknown fund artwork", () => {
+    const allFunds = [...funds, { ...funds[0]!, slug: "future-fund", isGeneral: false }];
+    const html = renderToStaticMarkup(<FundGivingCheckout funds={allFunds} glyphs={fundGlyphs(allFunds)} copies={Object.fromEntries(allFunds.map(fund => [fund.slug, fundDonationFormCopy(fund)]))} paymentDetails={paymentDetails} feeBps={236} />);
+    for (const fund of allFunds) expect(html).toContain(renderToStaticMarkup(<FundGlyph slug={fund.slug} />));
+    expect(html.match(/<svg[^>]*aria-hidden="true"[^>]*focusable="false"/g)).toHaveLength(allFunds.length);
   });
 
   it("labels each fund's Zakat position visibly, not by colour alone", () => {
@@ -86,7 +94,7 @@ describe("fund donation form copy", () => {
 
 describe("seasonal campaign on the giving page", () => {
   const campaign = { slug: "eid-kits-2027", fundSlug: "eid-kits", title: "Eid Kits 2027", unitLabel: "kit", unitLabelPlural: "kits", unitPrice: 1500, maxUnits: 100, note: "Packed before Eid.", closesLabel: "24 February 2027" };
-  const withCampaign = (initialSlug?: string) => renderToStaticMarkup(<FundGivingCheckout funds={funds} copies={Object.fromEntries(funds.map(fund => [fund.slug, fundDonationFormCopy(fund)]))} campaigns={[campaign]} initialSlug={initialSlug} paymentDetails={paymentDetails} feeBps={236} />);
+  const withCampaign = (initialSlug?: string) => renderToStaticMarkup(<FundGivingCheckout funds={funds} glyphs={fundGlyphs(funds)} copies={Object.fromEntries(funds.map(fund => [fund.slug, fundDonationFormCopy(fund)]))} campaigns={[campaign]} initialSlug={initialSlug} paymentDetails={paymentDetails} feeBps={236} />);
 
   it("offers fixed-price units on the campaign's fund, with the price, the close date and the exact total", () => {
     const html = withCampaign("eid-kits");

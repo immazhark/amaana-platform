@@ -38,10 +38,10 @@ export default async function AdminQueuePage({ searchParams }: Props) {
   const decisions = report?.totals ?? null;
   const decisionCategories = report?.categories ?? null;
   const canApprove = hasPermission(user, "assistance.approve");
-  const [totalItems, grouped] = await Promise.all([
-    prisma.assistanceRequest.count({ where }),
-    prisma.assistanceRequest.groupBy({ by: ["status"], where: scope, _count: { _all: true } }),
-  ]);
+  const grouped = await prisma.assistanceRequest.groupBy({ by: ["status"], where: scope, _count: { _all: true } });
+  const counts = new Map(grouped.map(item => [item.status, item._count._all]));
+  // Pagination and status labels use the same grouped result. No separate count query.
+  const totalItems = selected ? (counts.get(selected) ?? 0) : grouped.reduce((sum, item) => sum + item._count._all, 0);
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
   const requests = await prisma.assistanceRequest.findMany({
     where,
@@ -60,7 +60,6 @@ export default async function AdminQueuePage({ searchParams }: Props) {
     skip: pagination.skip,
     take: pagination.pageSize,
   });
-  const counts = new Map(grouped.map(item => [item.status, item._count._all]));
   const viewQuery = view === "tests" ? { view: "tests" } : {};
   const sortQuery = oldestFirst ? { sort: "oldest" } : {};
   const statusQuery = selected ? { status: selected } : {};
