@@ -39,40 +39,6 @@ try {
     await prisma.assistanceVerification.deleteMany({where:{assistanceRequestId:approvalRequest.id}});
     approvalIds[key] = approvalRequest.id;
   }
-  // Opt-in private operational journeys, using only this already guarded disposable CI database.
-  // Distinct fixed references make retries idempotent and avoid changing the approval/rejection fixtures.
-  const workbenchIds = {};
-  if (process.env.AMAANA_OPERATIONAL_WORKBENCH_FIXTURES === 'true') {
-    const data = {...requestData,phone:'+910000000099',email:null,status:'UNDER_VERIFICATION',assignedToId:null,description:'Synthetic workbench history case; no real person or evidence.'};
-    const workbench = await prisma.assistanceRequest.upsert({where:{referenceNumber:'AMA-UI-WORKBENCH'},update:data,create:{referenceNumber:'AMA-UI-WORKBENCH',...data}});
-    workbenchIds.workbenchRequestId = workbench.id;
-    // A pair of non-captured, historical synthetic donations, isolated from the current finance/funnel cohort.
-    // No provider IDs, payment attempts, receipts or notifications are generated.
-    const historical = new Date('2020-01-02T00:00:00.000Z');
-    const paymentData = {appealId:appeal.id,donorName:'Synthetic workbench donor',donorEmail:'workbench@example.invalid',domesticConfirmedAt:historical,createdAt:historical,amount:'1',receiptTokenHash:hash('synthetic-workbench-only'),paymentMethod:'RAZORPAY',provider:null,providerOrderId:null,providerPaymentId:null,status:'CREATED'};
-    const payment = await prisma.donation.upsert({where:{referenceNumber:'AFD-2020-99000001'},update:paymentData,create:{referenceNumber:'AFD-2020-99000001',...paymentData}});
-    const otherPayment = await prisma.donation.upsert({where:{referenceNumber:'AFD-2020-99000002'},update:paymentData,create:{referenceNumber:'AFD-2020-99000002',...paymentData}});
-    workbenchIds.workbenchPaymentId = payment.id;
-    await prisma.paymentEvent.createMany({data:[
-      ...Array.from({length:51},(_,i)=>{
-        const suffix=String(i+1).padStart(2,'0');
-        return {id:'ui-workbench-payment-'+suffix,providerEventId:'synthetic-workbench-event-'+suffix,eventType:'payment.authorized',donationId:payment.id,processedAt:historical,payload:{synthetic:'PRIVATE_SYNTHETIC_EVENT_PAYLOAD'}};
-      }),
-      {id:'ui-workbench-payment-decoy',providerEventId:'synthetic-other-donation-event',eventType:'payment.authorized',donationId:otherPayment.id,processedAt:historical,payload:{synthetic:true}},
-    ],skipDuplicates:true});
-    const createdAt = new Date('2026-01-01T00:00:00.000Z');
-    await prisma.auditEvent.createMany({data:Array.from({length:51},(_,i)=>{
-      const suffix=String(i+1).padStart(2,'0');
-      return {id:'ui-workbench-history-'+suffix,actorId:user.id,action:'workbench_change_'+suffix,entityType:'AssistanceRequest',entityId:workbench.id,createdAt};
-    }),skipDuplicates:true});
-    const current = await prisma.taleemLearner.upsert({where:{publicAlias:'TL-WKBNCHAA'},update:{status:'ACTIVE'},create:{publicAlias:'TL-WKBNCHAA',fullName:'Synthetic Workbench Current Learner',status:'ACTIVE',provenance:'Isolated CI workbench'}});
-    const other = await prisma.taleemLearner.upsert({where:{publicAlias:'TL-WKBNCHAB'},update:{status:'GRADUATED'},create:{publicAlias:'TL-WKBNCHAB',fullName:'Synthetic Workbench Graduated Learner',status:'GRADUATED',provenance:'Isolated CI workbench'}});
-    const place = await prisma.taleemPlace.upsert({where:{placeCode:'TP-WKBCHA'},update:{status:'MAINTAINED'},create:{placeCode:'TP-WKBCHA',status:'MAINTAINED'}});
-    const startedOn = new Date('2020-01-01T00:00:00.000Z');
-    await prisma.taleemEnrolment.upsert({where:{id:'ui-workbench-enrolment-a'},update:{},create:{id:'ui-workbench-enrolment-a',learnerId:current.id,programme:'NAZIRA',startedOn}});
-    await prisma.taleemEnrolment.upsert({where:{id:'ui-workbench-enrolment-b'},update:{},create:{id:'ui-workbench-enrolment-b',learnerId:other.id,programme:'HIFDH',startedOn}});
-    await prisma.taleemPlaceAssignment.upsert({where:{id:'ui-workbench-assignment-a'},update:{},create:{id:'ui-workbench-assignment-a',learnerId:current.id,placeId:place.id,startedOn}});
-  }
   const donationData = {appealId:appeal.id,donorName:'Synthetic donor',donorEmail:'ui-audit@example.invalid',domesticConfirmedAt:now,amount:'100',receiptTokenHash:hash('synthetic-only'),paymentMethod:'DIRECT_UPI',provider:null,providerOrderId:null,providerPaymentId:null,status:'PENDING_VERIFICATION',transferReference:'UI-AUDIT-SYNTHETIC-ONLY',transferredAt:now};
   const donation = await prisma.donation.upsert({where:{referenceNumber:'AFD-UI-AUDIT'},update:donationData,create:{referenceNumber:'AFD-UI-AUDIT',...donationData}});
   const storyData = {title:'Synthetic editorial audit story',summary:'Disposable content for the article layout audit.',body:'This is synthetic editorial content, created only for layout and accessibility testing in a disposable database. No claim about Amaana programmes or beneficiaries is made.',status:'PUBLISHED',publishedAt:now,privacyApprovedAt:now};
@@ -103,5 +69,5 @@ try {
     prisma.story.findMany({where:{status:'PUBLISHED',privacyApprovedAt:{not:null}},select:{slug:true}}),
     prisma.faithContent.findMany({where:{status:'PUBLISHED',religiousReviewStatus:'VERIFIED',verifiedAt:{not:null},sourceCitation:{not:null}},select:{slug:true}}),
   ]);
-  process.stdout.write(JSON.stringify({...approvalIds,...workbenchIds,token,appealId:appeal.id,draftId:draft.id,requestId:request.id,rejectRequestId:rejectRequest.id,donationId:donation.id,publicRoutes:[...initiatives.map(i=>'/our-work/'+i.slug),...stories.map(i=>'/stories/'+i.slug),...faith.map(i=>'/faith-and-reflections/'+i.slug),'/appeals/synthetic-ui-audit','/donate/synthetic-ui-audit']}));
+  process.stdout.write(JSON.stringify({...approvalIds,token,appealId:appeal.id,draftId:draft.id,requestId:request.id,rejectRequestId:rejectRequest.id,donationId:donation.id,publicRoutes:[...initiatives.map(i=>'/our-work/'+i.slug),...stories.map(i=>'/stories/'+i.slug),...faith.map(i=>'/faith-and-reflections/'+i.slug),'/appeals/synthetic-ui-audit','/donate/synthetic-ui-audit']}));
 } finally { await prisma.$disconnect(); }

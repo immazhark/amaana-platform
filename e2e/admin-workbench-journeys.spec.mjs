@@ -8,12 +8,13 @@ let seed;
 test.skip(!isolated, 'Requires the disposable CI database fixture.');
 test.beforeAll(() => {
   if (!isolated) return;
-  seed = JSON.parse(execFileSync(process.execPath, ['scripts/seed-ui-route-audit.mjs'], {
+  seed = JSON.parse(execFileSync(process.execPath, ['scripts/seed-admin-workbench.mjs'], {
     cwd: process.env.AMAANA_APP_WORKSPACE ?? process.cwd(),
-    env: { ...process.env, AMAANA_UI_AUDIT_TARGET: 'isolated-ci', AMAANA_OPERATIONAL_WORKBENCH_FIXTURES: 'true' },
+    env: { ...process.env, AMAANA_UI_AUDIT_TARGET: 'isolated-ci' },
     encoding: 'utf8',
   }));
   expect(seed.workbenchRequestId).toEqual(expect.any(String));
+  expect(seed.workbenchPaymentId).toEqual(expect.any(String));
 });
 
 async function open(page, route) {
@@ -100,13 +101,13 @@ test('donation reviewer returns to the same filtered queue', async ({ page }) =>
   await page.setViewportSize({ width: 390, height: 844 });
   await open(page, '/admin/donations?status=PENDING_VERIFICATION&method=DIRECT_UPI&sort=oldest');
   const records = page.getByRole('region', { name: 'Donation records', exact: true });
-  await records.getByRole('link', { name: 'AFD-UI-AUDIT', exact: true }).click();
+  await records.getByRole('link', { name: 'AFD-UI-WORKBENCH', exact: true }).click();
   await expect(page).toHaveURL(/queueStatus=PENDING_VERIFICATION/);
   await expect(page.getByRole('heading', { name: 'Reconcile transfer' })).toBeVisible();
   const back = page.getByRole('link', { name: 'Return to donation queue' });
   await expect(back).toHaveAttribute('href', '/admin/donations?status=PENDING_VERIFICATION&method=DIRECT_UPI&sort=oldest');
   await back.click();
-  await expect(records.getByRole('link', { name: 'AFD-UI-AUDIT', exact: true })).toBeVisible();
+  await expect(records.getByRole('link', { name: 'AFD-UI-WORKBENCH', exact: true })).toBeVisible();
   await expect(page.getByRole('group', { name: 'Donation ordering' }).getByRole('link', { name: 'Oldest first' })).toHaveAttribute('aria-current', 'page');
 });
 
@@ -121,6 +122,7 @@ test('payment event history paginates tied timestamps without showing another do
   expect(await ids()).toEqual(expected.slice(0,50));
   await expect(history.getByText('synthetic-other-donation-event')).toHaveCount(0);
   await expect(page.getByText('PRIVATE_SYNTHETIC_EVENT_PAYLOAD')).toHaveCount(0);
+  expect(await page.content()).not.toContain('PRIVATE_SYNTHETIC_EVENT_PAYLOAD');
   await history.getByRole('link', { name: 'Older payment events' }).click();
   await expect(page).toHaveURL(/eventsBefore=/);
   await expect(rows).toHaveCount(1);
