@@ -27,21 +27,24 @@ export default async function FundSpendingPage({ searchParams }: Props) {
   const soleOperator = process.env.FUND_SPENDING_SOLE_OPERATOR === "true";
   const params = await searchParams;
   const { notice } = params;
-  const [funds, years] = await Promise.all([
-    prisma.fund.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }], select: { id: true, name: true } }),
-    prisma.fundDisbursement.groupBy({ by: ["financialYear"], orderBy: { financialYear: "desc" } }),
-  ]);
-  const where = spendingFilters(params, funds.map(fund => fund.id), years.map(year => year.financialYear));
-  const groups = await prisma.fundDisbursement.groupBy({ by: ["status"], where, _count: { _all: true }, _sum: { amount: true } });
-  const totals = summarizeSpending(groups);
-  const pagination = getAdminPagination(totals.totalItems, parseAdminPage(params.page));
-  const entries = await prisma.fundDisbursement.findMany({
-    where,
-    orderBy: [{ spentOn: "desc" }, { createdAt: "desc" }, { id: "desc" }],
-    skip: pagination.skip,
-    take: pagination.pageSize,
-    select: { id: true, pool: true, amount: true, spentOn: true, financialYear: true, title: true, status: true, voidReason: true, publicSummary: canRecord, createdById: canRecord, zakatEligibilityConfirmedAt: canRecord, fund: { select: { name: true } } },
-  });
+  const { funds, years, where, totals, pagination, entries } = await prisma.$transaction(async tx => {
+    const [funds, years] = await Promise.all([
+      tx.fund.findMany({ orderBy: [{ sortOrder: "asc" }, { name: "asc" }], select: { id: true, name: true } }),
+      tx.fundDisbursement.groupBy({ by: ["financialYear"], orderBy: { financialYear: "desc" } }),
+    ]);
+    const where = spendingFilters(params, funds.map(fund => fund.id), years.map(year => year.financialYear));
+    const groups = await tx.fundDisbursement.groupBy({ by: ["status"], where, _count: { _all: true }, _sum: { amount: true } });
+    const totals = summarizeSpending(groups);
+    const pagination = getAdminPagination(totals.totalItems, parseAdminPage(params.page));
+    const entries = await tx.fundDisbursement.findMany({
+      where,
+      orderBy: [{ spentOn: "desc" }, { createdAt: "desc" }, { id: "desc" }],
+      skip: pagination.skip,
+      take: pagination.pageSize,
+      select: { id: true, pool: true, amount: true, spentOn: true, financialYear: true, title: true, status: true, voidReason: true, publicSummary: canRecord, createdById: canRecord, zakatEligibilityConfirmedAt: canRecord, fund: { select: { name: true } } },
+    });
+    return { funds, years, where, totals, pagination, entries };
+  }, { isolationLevel: "RepeatableRead" });
   const selected = {
     fund: typeof where.fundId === "string" ? where.fundId : "",
     fy: typeof where.financialYear === "string" ? where.financialYear : "",
@@ -78,7 +81,7 @@ export default async function FundSpendingPage({ searchParams }: Props) {
     </section> : <p className="muted">Your account can view spending but cannot record it.</p>}
     <section className="admin-card" aria-labelledby="entries-heading">
       <h2 id="entries-heading">Spending history</h2>
-      <p className="muted">Review all recorded spending, including draft and void entries. Filter the history by financial year, fund, money pool or status. Totals cover every matching record, not just the displayed page. Void entries are excluded from recorded spending. These are application records, not bank statements.</p>
+      <p className="muted">Review all recorded spending, including draft and void entries. Filter the history by financial year, fund, money pool or status. Totals and this page of records come from the same database snapshot. Totals cover every matching record, not just the displayed page. Void entries are excluded from recorded spending. These are application records, not bank statements.</p>
       <form action={PATH} method="get" className="form-grid" aria-label="Filter spending history">
         <div className="field"><label htmlFor="review-fund">Fund</label><select id="review-fund" name="fund" defaultValue={selected.fund}><option value="">All funds</option>{funds.map(fund => <option key={fund.id} value={fund.id}>{fund.name}</option>)}</select></div>
         <div className="field"><label htmlFor="review-year">Financial year (India)</label><select id="review-year" name="fy" defaultValue={selected.fy}><option value="">All years</option>{years.map(year => <option key={year.financialYear} value={year.financialYear}>{year.financialYear}</option>)}</select></div>
