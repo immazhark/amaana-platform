@@ -17,7 +17,7 @@ vi.mock("@/lib/prisma", () => ({
 // The SQL contract is tested independently of Next's TTL storage.
 vi.mock("next/cache", () => ({ unstable_cache: (read: unknown) => read }));
 
-import { getHomepageAppeals } from "./public-content";
+import { getHomepageAppeals, getLiveRailAppeals } from "./public-content";
 
 const payableAppeal = {
   slug: "reviewed-live",
@@ -101,5 +101,53 @@ describe("homepage appeal SQL projection", () => {
     ]);
     expect((await getHomepageAppeals(1)).map(x => x.slug)).toEqual(["first"]);
     expect(mocks.findMany).toHaveBeenCalledOnce();
+  });
+});
+
+describe("site-wide live rail lean projection", () => {
+  beforeEach(() => {
+    mocks.findMany.mockReset().mockResolvedValue([]);
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-22T11:00:00.000Z"));
+  });
+  afterEach(() => vi.useRealTimers());
+
+  it("uses the same SQL eligibility and order, with only the seven needed fields", async () => {
+    mocks.findMany.mockResolvedValue([payableAppeal]);
+    await getHomepageAppeals();
+    await getLiveRailAppeals();
+    expect(mocks.findMany).toHaveBeenCalledTimes(2);
+    const [home, rail] = mocks.findMany.mock.calls.map(([query]) => query);
+    expect(rail.where).toEqual(home.where);
+    expect(rail.orderBy).toEqual(home.orderBy);
+    expect(rail.select).toEqual({
+      slug: true, title: true, summary: true, status: true,
+      goalAmount: true, amountRaised: true, closesAt: true,
+    });
+    expect(rail).not.toHaveProperty("take");
+    expect(home.select).toMatchObject({ category: true, beneficiaryLocation: true, coverImageUrl: true });
+  });
+
+  it("keeps the first four payable public candidates after the final guard", async () => {
+    mocks.findMany.mockResolvedValueOnce([
+      { ...payableAppeal, slug: "STAGING-test" },
+      { ...payableAppeal, slug: "expired", closesAt: new Date("2026-10-22T11:00:00.000Z") },
+      { ...payableAppeal, slug: "closed", status: "CLOSED" },
+      { ...payableAppeal, slug: "funded", amountRaised: "1000.00" },
+      { ...payableAppeal, slug: "unpayable", amountRaised: "999.50" },
+      ...Array.from({ length: 6 }, (_, index) => ({ ...payableAppeal, slug: "reviewed-" + index })),
+    ]);
+    expect((await getLiveRailAppeals()).map(appeal => appeal.slug)).toEqual(["reviewed-0", "reviewed-1", "reviewed-2", "reviewed-3"]);
+    expect(mocks.findMany).toHaveBeenCalledOnce();
+  });
+
+  it("reads again without caching and preserves malformed and failed result behavior", async () => {
+    mocks.findMany.mockResolvedValueOnce({ internal: "synthetic-private" })
+      .mockResolvedValueOnce([payableAppeal])
+      .mockRejectedValueOnce(new Error("synthetic failure"));
+    expect(await getLiveRailAppeals()).toEqual([]);
+    expect((await getLiveRailAppeals()).map(appeal => appeal.slug)).toEqual(["reviewed-live"]);
+    await expect(getLiveRailAppeals()).rejects.toThrow("synthetic failure");
+    expect(mocks.findMany).toHaveBeenCalledTimes(3);
   });
 });

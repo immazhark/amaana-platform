@@ -204,16 +204,9 @@ export async function getFeaturedFaithContent() {
   return result && isPublicFaithReviewComplete(result) ? result : null;
 }
 
-/**
- * Homepage-only projection.
- *
- * The homepage is intentionally dynamic, but it should not pull full initiative,
- * story, faith or appeal records when only a small subset is rendered. Keeping
- * this projection narrow lowers database work, serialization and server render
- * cost while preserving the publication/privacy gates used elsewhere.
- */
-async function readHomepageAppeals() {
-  const appeals = await prisma.appeal.findMany({
+/** Fresh eligibility query shared by the homepage and site-wide live rail. */
+function homepageAppealCandidates() {
+  return {
     // Read current eligibility: status and funding can change independently of a cache invalidation.
     where: {
       status: "PUBLISHED",
@@ -225,29 +218,38 @@ async function readHomepageAppeals() {
       ],
     },
     orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
-    select: {
-      slug: true,
-      title: true,
-      summary: true,
-      category: true,
-      beneficiaryLocation: true,
-      coverImageUrl: true,
-      status: true,
-      goalAmount: true,
-      amountRaised: true,
-      closesAt: true,
-    },
-  });
-
-  return (Array.isArray(appeals) ? appeals : []).filter(appeal => canExposePublicAppeal(appeal) && !isSyntheticStagingAppeal(appeal));
+  } satisfies Pick<Prisma.AppealFindManyArgs, "where" | "orderBy">;
 }
 
-export async function getHomepageAppeals(limit = 3) {
-  // Recheck the clock and payable amount after the fresh database read.
-  const publicAppeals = await readHomepageAppeals();
-  return publicAppeals
+const liveRailAppealSelect = {
+  slug: true, title: true, summary: true, status: true,
+  goalAmount: true, amountRaised: true, closesAt: true,
+} satisfies Prisma.AppealSelect;
+
+function eligibleHomepageAppeals<T extends Parameters<typeof canExposePublicAppeal>[0] & Parameters<typeof isAppealOpenForDonations>[0]>(appeals: T[], limit: number): T[] {
+  return (Array.isArray(appeals) ? appeals : [])
+    .filter(appeal => canExposePublicAppeal(appeal) && !isSyntheticStagingAppeal(appeal))
     .filter(appeal => isAppealOpenForDonations(appeal))
-    .slice(0, Math.min(20, Math.max(1, limit)));
+    .slice(0, limit);
+}
+
+/** Keep the homepage image and category projection separate from the live rail. */
+export async function getHomepageAppeals(limit = 3) {
+  const appeals = await prisma.appeal.findMany({
+    ...homepageAppealCandidates(),
+    select: { ...liveRailAppealSelect, category: true, beneficiaryLocation: true, coverImageUrl: true },
+  });
+  return eligibleHomepageAppeals(appeals, Math.min(20, Math.max(1, limit)));
+}
+
+/** The live rail never needs image, category or beneficiary location data. */
+export async function getLiveRailAppeals() {
+  const appeals = await prisma.appeal.findMany({
+    ...homepageAppealCandidates(),
+    select: liveRailAppealSelect,
+  });
+  // Limit after the final eligibility check: earlier candidates can be unpayable.
+  return eligibleHomepageAppeals(appeals, 4);
 }
 
 export async function getHomepagePublicContent() {
