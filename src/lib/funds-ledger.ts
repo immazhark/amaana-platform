@@ -7,7 +7,7 @@ const toPaise = (rupees: DecimalLike | null) => (rupees ? Math.round(rupees.mul(
 
 type Client = Prisma.TransactionClient;
 type Range = { start: Date; end: Date };
-export type LedgerScope = { fundId?: string; capturedIn?: Range; spentIn?: Range };
+export type LedgerScope = { fundId?: string; activeFundsOnly?: boolean; capturedIn?: Range; spentIn?: Range };
 
 const COUNTED = ["CAPTURED", "REFUNDED", "PENDING_VERIFICATION"] as const;
 
@@ -15,7 +15,11 @@ const COUNTED = ["CAPTURED", "REFUNDED", "PENDING_VERIFICATION"] as const;
 // Unrefunded gifts are summed in the database; gifts with a refund are read one by one, because a refund
 // returns the covered gateway fee first and that rule applies to each donation, not to an aggregate.
 export async function loadFundsLedger(client: Client, scope: LedgerScope = {}) {
+  // Public reports already display active funds only. Scope the underlying reads,
+  // not the private ledger or disbursement balance checks.
+  const activeFundScope = scope.activeFundsOnly === true ? { fund: { is: { status: "ACTIVE" as const } } } : {};
   const donationWhere: Prisma.DonationWhereInput = {
+    ...activeFundScope,
     status: { in: [...COUNTED] },
     ...(scope.fundId ? { fundId: scope.fundId } : {}),
     ...(scope.capturedIn ? { capturedAt: { gte: scope.capturedIn.start, lt: scope.capturedIn.end } } : {}),
@@ -33,6 +37,7 @@ export async function loadFundsLedger(client: Client, scope: LedgerScope = {}) {
     client.fundDisbursement.groupBy({
       by: ["fundId", "pool", "status"],
       where: {
+        ...activeFundScope,
         status: { in: ["DRAFT", "PUBLISHED"] },
         ...(scope.fundId ? { fundId: scope.fundId } : {}),
         ...(scope.spentIn ? { spentOn: { gte: scope.spentIn.start, lt: scope.spentIn.end } } : {}),

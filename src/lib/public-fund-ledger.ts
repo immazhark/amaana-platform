@@ -75,10 +75,10 @@ export async function getPublicFundLedger(range: FinancialYearRange) {
   // Keep annual and all-time totals and the published entries on one database snapshot.
   const [funds, inYear, toDate, published] = await prisma.$transaction(async tx => Promise.all([
     tx.fund.findMany({ where: { status: "ACTIVE" }, orderBy: [{ sortOrder: "asc" }, { name: "asc" }], select: { id: true, slug: true, name: true, summary: true, zakatPolicy: true } }),
-    loadFundsLedger(tx, { capturedIn: range, spentIn: range }),
-    loadFundsLedger(tx),
+    loadFundsLedger(tx, { activeFundsOnly: true, capturedIn: range, spentIn: range }),
+    loadFundsLedger(tx, { activeFundsOnly: true }),
     tx.fundDisbursement.findMany({
-      where: { status: "PUBLISHED", spentOn: { gte: range.start, lt: range.end } },
+      where: { fund: { is: { status: "ACTIVE" } }, status: "PUBLISHED", spentOn: { gte: range.start, lt: range.end } },
       orderBy: [{ spentOn: "desc" }, { createdAt: "desc" }],
       take: MAX_ENTRIES,
       select: { id: true, fundId: true, title: true, publicSummary: true, amount: true, spentOn: true, pool: true },

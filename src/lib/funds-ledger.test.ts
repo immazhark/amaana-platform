@@ -51,6 +51,20 @@ describe("loadFundsLedger", () => {
     expect(c.fundDisbursement.groupBy.mock.calls[0]?.[0].where).toMatchObject({ fundId: "fund_x", spentOn: { gte: start, lt: end }, status: { in: ["DRAFT", "PUBLISHED"] } });
   });
 
+  it("restricts all three reads to active fund relations only when explicitly requested", async () => {
+    const scoped = client({});
+    await loadFundsLedger(scoped as never, { activeFundsOnly: true });
+    for (const query of [scoped.donation.groupBy, scoped.donation.findMany, scoped.fundDisbursement.groupBy]) {
+      expect(query).toHaveBeenCalledOnce();
+      expect(query.mock.calls[0]?.[0].where.fund).toEqual({ is: { status: "ACTIVE" } });
+    }
+    const unrestricted = client({});
+    await loadFundsLedger(unrestricted as never);
+    for (const query of [unrestricted.donation.groupBy, unrestricted.donation.findMany, unrestricted.fundDisbursement.groupBy]) {
+      expect(query.mock.calls[0]?.[0].where).not.toHaveProperty("fund");
+    }
+  });
+
   it("never counts failed or rejected gifts and keeps pending bank/UPI claims out of received", async () => {
     const c = client({ unrefunded: [
       { fundId: "orphan", givingIntent: "GENERAL", status: "PENDING_VERIFICATION", _sum: { amount: dec(50) } },
