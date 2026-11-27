@@ -1,10 +1,9 @@
 import { PrismaClient } from '@prisma/client';
 import { createHash, randomBytes } from 'node:crypto';
 
-const database = new URL(process.env.DATABASE_URL ?? 'file://missing');
-if (process.env.CI !== 'true' || process.env.AMAANA_UI_AUDIT_TARGET !== 'isolated-ci' || database.protocol !== 'postgresql:' || database.hostname !== 'postgres' || database.pathname !== '/amaana') {
-  throw new Error('UI audit records may only be created in the disposable GitHub CI PostgreSQL service.');
-}
+import { assertDisposableUiAuditTarget } from './ui-audit-target.mjs';
+
+assertDisposableUiAuditTarget(process.env);
 const prisma = new PrismaClient();
 const hash = value => createHash('sha256').update(value).digest('hex');
 try {
