@@ -73,11 +73,33 @@ describe("what the page says", () => {
   it("omits the receipt number, fee and refund lines unless they apply, and shows them when they do", () => {
     const plain = shown({ receiptNumber: null });
     expect(plain.some(line => line.startsWith("Acknowledgement number"))).toBe(false);
-    expect(plain.some(line => line.startsWith("Refunded to you"))).toBe(false);
+    expect(plain.some(line => line.startsWith("Donation principal refunded"))).toBe(false);
+    expect(plain.some(line => line.startsWith("Donation principal retained"))).toBe(false);
     expect(plain.some(line => line.startsWith("Payment processing cost"))).toBe(false);
+    expect(plain.some(line => line.startsWith("Original total charged"))).toBe(false);
     const full = shown({ refundedAmount: 100, feeContributionAmount: 29.5 });
-    expect(full).toContain("Refunded to you: INR 100.00");
+    expect(full).toContain("Donation principal refunded: INR 100.00");
+    expect(full).toContain("Donation principal retained: INR 1,150.00");
     expect(full).toContain("Payment processing cost you chose to cover: INR 29.50");
+    expect(full).toContain("Original total charged: INR 1,279.50");
+    expect(full).toContain("Payment status: verified; donation partially refunded");
+    expect(full.join(" ")).toContain("Refunds return the covered fee first");
+    expect(full.some(line => line.startsWith("Refunded to you"))).toBe(false);
+  });
+
+  it("keeps the original fee, charge and principal amounts distinct to the paise", () => {
+    const covered = shown({ amount: 1250.05, feeContributionAmount: 29.51 });
+    expect(covered).toContain("Original total charged: INR 1,279.56");
+    expect(covered).toContain("Payment status: verified");
+    expect(covered.some(line => line.startsWith("Donation principal refunded"))).toBe(false);
+    const noFee = shown({ amount: 1250.05, refundedAmount: 100.04 });
+    expect(noFee).toContain("Donation principal refunded: INR 100.04");
+    expect(noFee).toContain("Donation principal retained: INR 1,150.01");
+    expect(noFee).toContain("Payment status: verified; donation partially refunded");
+    expect(noFee.some(line => line.startsWith("Original total charged"))).toBe(false);
+    const both = shown({ amount: 1250.05, feeContributionAmount: 29.51, refundedAmount: 100.04 });
+    expect(both).toContain("Original total charged: INR 1,279.56");
+    expect(both).toContain("Donation principal retained: INR 1,150.01");
   });
 
   it("never prints a name it cannot show correctly", () => {
@@ -141,7 +163,7 @@ describe("bounded multi-page acknowledgement layout", () => {
   it("paginates overflowing purpose text, preserves every entry and labels every page as an ordinary acknowledgement", () => {
     const purposeLines = Array.from({ length: 65 }, (_, i) =>
       "Purpose " + (i + 1) + ": Synthetic contribution record for approved programme activities.");
-    const input = { ...base, purposeLines };
+    const input = { ...base, feeContributionAmount: 29.5, refundedAmount: 100, purposeLines };
     const pages = acknowledgementPages(input);
     expect(pages.length).toBeGreaterThan(1);
     const joined = pages.flat().map(line => line.text).join(" ");

@@ -42,6 +42,18 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("financial-year ch
         expect(destination).toHaveLength(2);
         expect(keys.map(key => destination.reduce((sum, row) => sum + row[key], 0))).toEqual([12075, 500, 11575, 125, 1]);
         expect(destination.reduce((sum, row) => sum + row.draftPaise, 0)).toBe(999);
+        const cross = after.byDestinationAndChannel.filter(row => row.fundSlug === fund.slug);
+        expect(cross).toHaveLength(3);
+        for (const [paymentMethod, pool, expected] of [
+          ["RAZORPAY", "NON_ZAKAT", [10025, 500, 9525, 0, 0]],
+          ["DIRECT_UPI", "ZAKAT", [2050, 0, 2050, 0, 0]],
+          ["BANK_TRANSFER", "NON_ZAKAT", [0, 0, 0, 125, 1]],
+        ] as const) {
+          const row = cross.find(row => row.paymentMethod === paymentMethod && row.pool === pool);
+          if (!row) throw new Error("Missing synthetic destination/channel intersection");
+          expect(keys.map(key => row[key])).toEqual(expected);
+          expect(row).not.toHaveProperty("draftPaise");
+        }
         throw new Rollback();
       }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
     } catch (error) { if (!(error instanceof Rollback)) throw error; }

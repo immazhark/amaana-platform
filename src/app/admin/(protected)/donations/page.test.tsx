@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
   paymentCount: vi.fn(),
   paymentFind: vi.fn(),
   pendingReview: vi.fn(),
+  logServerError: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({ requirePermission: mocks.permission }));
@@ -28,6 +29,8 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 vi.mock("@/lib/pending-transfer-review", async importOriginal => ({ ...await importOriginal<typeof import("@/lib/pending-transfer-review")>(), loadPendingTransferReview: mocks.pendingReview }));
+
+vi.mock("@/lib/server-log", () => ({ logServerError: mocks.logServerError }));
 
 import DonationsPage from "./page";
 
@@ -325,5 +328,58 @@ describe("operational reconciliation exception drill-down", () => {
     expect(html).toContain("reference=invalid");
     expect(html).not.toContain("private@example.invalid");
     expect(html).not.toContain("private-bank-token");
+  });
+});
+
+describe("independent donation report failures", () => {
+  const record = () => [{
+    id: "synthetic-report-record", referenceNumber: "SYNTHETIC-REPORT-RECORD", donorName: "Synthetic donor", donorEmail: "synthetic@example.invalid",
+    givingIntent: "GENERAL", paymentMethod: "DIRECT_UPI", amount: money(250), refundedAmount: money(0), status: "CAPTURED",
+    createdAt: new Date("2026-11-10T00:00:00.000Z"), appeal: null, fund: null,
+  }];
+  it("keeps individual records and exception counts when reconciliation fails, without inventing financial totals", async () => {
+    mocks.donationTotalsQuery.mockRejectedValueOnce(new Error("PRIVATE_SYNTHETIC_DIAGNOSTIC"));
+    mocks.donationCount.mockResolvedValue(0);
+    mocks.donationFind.mockResolvedValue(record());
+    const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({}) }));
+    expect(html).toContain("SYNTHETIC-REPORT-RECORD");
+    expect(html).toContain("Financial summary temporarily unavailable");
+    expect(html).toContain("Payment channel report temporarily unavailable");
+    expect(html).toContain("REVIEW INCOMPLETE");
+    expect(html).not.toContain("HEALTHY");
+    expect(html).not.toContain("Gross captured: ₹0");
+    expect(html).not.toContain("Payment channel reconciliation totals");
+    expect(html).not.toContain("PRIVATE_SYNTHETIC_DIAGNOSTIC");
+    expect(mocks.logServerError).toHaveBeenCalledExactlyOnceWith("donation.reconciliation_report_unavailable");
+  });
+  it("keeps financial figures, known warnings and transfer drill-down when ancillary reports fail", async () => {
+    mocks.pendingReview.mockRejectedValueOnce(new Error("PRIVATE_SYNTHETIC_DIAGNOSTIC"));
+    mocks.donationGroups.mockImplementation(async (args: { by: string[] }) => {
+      if (args.by.includes("paymentMethod")) throw new Error("PRIVATE_SYNTHETIC_DIAGNOSTIC");
+      return [];
+    });
+    mocks.donationFind.mockResolvedValue(record());
+    const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({}) }));
+    expect(html).toContain("SYNTHETIC-REPORT-RECORD");
+    expect(html).toContain("Gross captured: ₹250");
+    expect(html).toContain("NEED ATTENTION");
+    expect(html).toContain("Transfer age report temporarily unavailable");
+    expect(html).toContain("Donation outcomes report temporarily unavailable");
+    expect(html).not.toContain("No donations were started in this period.");
+    expect(html).not.toContain("PRIVATE_SYNTHETIC_DIAGNOSTIC");
+    expect(html).toContain('href="/admin/donations?method=BANK_TRANSFER&amp;status=PENDING_VERIFICATION&amp;sort=oldest"');
+    expect(mocks.logServerError).toHaveBeenCalledTimes(2);
+    expect(mocks.logServerError).toHaveBeenCalledWith("donation.pending_transfer_report_unavailable");
+    expect(mocks.logServerError).toHaveBeenCalledWith("donation.outcomes_report_unavailable");
+  });
+  it("still propagates a failed core queue read rather than inventing an empty queue", async () => {
+    mocks.donationCount.mockRejectedValueOnce(new Error("core queue unavailable"));
+    await expect(DonationsPage({ searchParams: Promise.resolve({}) })).rejects.toThrow("core queue unavailable");
+    expect(mocks.donationFind).not.toHaveBeenCalled();
+  });
+  it("still propagates a failed critical event count rather than reporting health", async () => {
+    mocks.paymentCount.mockRejectedValueOnce(new Error("critical evidence unavailable"));
+    await expect(DonationsPage({ searchParams: Promise.resolve({}) })).rejects.toThrow("critical evidence unavailable");
+    expect(mocks.donationFind).not.toHaveBeenCalled();
   });
 });

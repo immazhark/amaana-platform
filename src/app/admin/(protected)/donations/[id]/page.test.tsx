@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   canReconcile: vi.fn(),
   findDonation: vi.fn(),
   evidence: vi.fn(),
+  logError: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({
@@ -14,6 +15,7 @@ vi.mock("@/lib/auth", () => ({
 }));
 vi.mock("@/lib/prisma", () => ({ prisma: { donation: { findUnique: mocks.findDonation } } }));
 vi.mock("@/lib/storage", () => ({ getDonationEvidenceUrl: mocks.evidence }));
+vi.mock("@/lib/server-log", () => ({ logServerError: mocks.logError }));
 vi.mock("../actions", () => ({ reconcileDonationAction: vi.fn(), reissueReceiptLinkAction: vi.fn() }));
 vi.mock("next/navigation", () => ({ notFound: () => { throw new Error("Not found"); } }));
 
@@ -212,20 +214,50 @@ describe("AF-R012 private donation-detail server authorization and reconciliatio
     }));
     mocks.evidence.mockResolvedValueOnce(null);
     const html = await renderDonation();
-    expect(html).toContain("Not supplied");
+    expect(html).toContain("<dt>Evidence</dt><dd>Evidence supplied; private link unavailable. Reload or contact an administrator.</dd>");
     expect(html).not.toContain("Open private evidence");
     expect(html).not.toContain("synthetic-private-evidence");
     expect(mocks.evidence).toHaveBeenCalledWith("synthetic-private-evidence", "synthetic-donation");
   });
 
-  it("does not render an unsigned evidence fallback when URL signing fails", async () => {
+  it("keeps the private donation record and existing bank review available when signing fails, without an unsigned fallback", async () => {
+    mocks.canReconcile.mockReturnValueOnce(true);
     mocks.findDonation.mockResolvedValueOnce(donation({
+      status: "PENDING_VERIFICATION",
       transferEvidenceKey: "synthetic-private-evidence",
     }));
-    mocks.evidence.mockRejectedValueOnce(new Error("Private evidence unavailable"));
-    await expect(renderDonation()).rejects.toThrow("Private evidence unavailable");
+    mocks.evidence.mockRejectedValueOnce(new Error("Synthetic private storage diagnostic"));
+    const html = await renderDonation();
+    expect(html).toContain("SYNTHETIC-IST-001");
+    expect(html).toContain("<dt>Evidence</dt><dd>Evidence supplied; private link unavailable. Reload or contact an administrator.</dd>");
+    expect(html).toContain("Verify against Amaana");
+    expect(html).toContain("Verify received transfer");
+    expect(html).not.toContain("Open private evidence");
+    expect(html).not.toContain("synthetic-private-evidence");
+    expect(html).not.toContain("Synthetic private storage diagnostic");
+    expect(mocks.logError).toHaveBeenCalledExactlyOnceWith("donation.detail_evidence_unavailable");
     expect(mocks.permission).toHaveBeenCalledWith("donation.view");
     expect(mocks.evidence).toHaveBeenCalledWith("synthetic-private-evidence", "synthetic-donation");
+  });
+
+  it("distinguishes absent evidence without calling storage", async () => {
+    const html = await renderDonation();
+    expect(html).toContain("<dt>Evidence</dt><dd>Not supplied</dd>");
+    expect(mocks.evidence).not.toHaveBeenCalled();
+    expect(mocks.logError).not.toHaveBeenCalled();
+  });
+
+  it("does not sign irrelevant transfer evidence on a Razorpay record", async () => {
+    mocks.findDonation.mockResolvedValueOnce(donation({
+      paymentMethod: "RAZORPAY",
+      transferEvidenceKey: "synthetic-private-evidence",
+    }));
+    const html = await renderDonation();
+    expect(html).toContain("Payment events");
+    expect(html).not.toContain("<dt>Evidence</dt>");
+    expect(html).not.toContain("synthetic-private-evidence");
+    expect(mocks.evidence).not.toHaveBeenCalled();
+    expect(mocks.logError).not.toHaveBeenCalled();
   });
 });
 

@@ -65,3 +65,17 @@ Initial external inspection observed 3, 4, 3, 6 and 4 linked stylesheets respect
 ## Ownership and release policy
 
 One active repository writer. No changes to Razorpay, donation status, case records, credentials, Cloudflare policy, tax or religious content are authorized by this measurement workflow. Keep the production Runtime SHA separate from a merged tooling-only Git SHA when Railway watch patterns intentionally skip a deployment.
+
+## Offline before/after comparison — AF-R047
+
+Capture both trusted, exact-build reports with `node scripts/report-route-bundles.mjs --json --compressed`, saving each to a separate local JSON file. Then run:
+
+```sh
+node scripts/compare-route-bundles.mjs baseline.json candidate.json
+```
+
+The comparator accepts complete Next.js 16 client-reference JS and CSS assignments with both uncompressed and level-9 gzip measurements. It matches App Router identities, verifies the reported public-route inventory and all four measurement lists, rejects missing/incompatible data or duplicate identities, and emits candidate-minus-baseline byte deltas plus explicit added/removed routes. Distinct filesystem entries with the same public label stay separate. A zero delta means only that the assigned bytes match, not identical content or transfer. Added/removed routes are never treated as zero-byte regressions or savings. This is offline engineering evidence, not a replacement for build budgets, observed network transfer, field Web Vitals or browser acceptance. Legacy combined reports without the required Next16 fields fail explicitly. Preserve source SHAs and build settings alongside both inputs. No automatic performance acceptance or route-level budget claim is made.
+
+## Exact-build CI evidence retention — AF-R047
+
+The production-build job retains the full `report.json` from the existing route reporter with `--json --compressed`, plus `source-sha.txt` from `git rev-parse HEAD` and `node-version.txt`. Only these three files are uploaded to the attempt-specific `route-bundle-evidence-<github.sha>-<run_attempt>` artifact for seven days. The checked-out SHA is the build identity; on a PR it can be a synthetic merge SHA, not necessarily the task branch head. Keep the run ID, PR head and checkout SHA together. The files contain route assignment measurements, not deployed runtime or field Web Vitals. No raw chunks, source maps, environment files, database records or logs are uploaded. The existing client secret scan, raw aggregate budgets and server smoke checks remain mandatory. Obtain both reports from comparable builds before using an offline comparator. This capture does not prove a byte reduction or route-level target acceptance.

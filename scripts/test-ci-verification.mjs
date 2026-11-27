@@ -52,3 +52,5 @@ test("cancelled selected job is rejected", () => check({ FAST: "cancelled" }, fa
 test("unknown job result is rejected", () => check({ BROWSER: "unknown" }, false));
 test("missing impact selection is rejected", () => check({ DATABASE_SELECTED: "" }, false));
 test("invalid impact selection is rejected on ready transition too", () => check({ APP_SELECTED: "invalid", EVENT_ACTION: "ready_for_review" }, false));
+
+import "./test-route-build-evidence.mjs";

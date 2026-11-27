@@ -1,0 +1,11 @@
+# Ordinary acknowledgement recovery — unpublished synthetic model
+
+AF-RECEIPTS / AF-DONOR engineering groundwork only. The existing private receipt route and authorized staff link reissue remain unchanged. No donor account, public recovery endpoint, proof verifier, email or real token is implemented here.
+
+The model accepts synthetic opaque identifiers only, a challenge snapshot, a caller-supplied verified-channel assertion, current receipt generation and explicit integer clock. It binds the assertion to the exact donation, subject, challenge and generation; evidence must be recorded no earlier than issuance and no later than the clock, and the challenge must be pending and strictly unexpired. Revoked, consumed, stale, malformed and mismatched inputs yield the same fixed denial result. The 15-minute maximum is a synthetic test bound, not a live policy. A successful decision proposes consuming the challenge and incrementing the version. It does not return a token, reference, subject or contact information. Inputs remain unchanged; expected time and space O(1) for bounded fixed-shape inputs.
+
+A proposal is not authorization. A caller can forge the assertion or repeat the same snapshot; only a future approved transactional caller can verify identity/channel ownership and proof authenticity, rate-limit starts and redemption, atomically consume the challenge and compare-and-set the current receipt generation, revoke old links, and handle failures without enumeration or secret disclosure. Neither the current version nor the challenge is persisted by this model.
+
+Before runtime work: review identity and recovery channels, generic responses and abuse limits, token entropy/hash storage and expiry, delivery and consent, atomic consumption/reissue including concurrent staff reissues, legacy links, audit minimization, retention, rollback and provider acceptance. Do not attach this model to a public route, worker, actual donation, private record, or messaging system. No production policy or authorization is granted.
+
+Test: `node --test scripts/test-receipt-recovery-model.mjs`. Node22 fail-first 0/6 before implementation; corrected 6/6, syntax checks passed. Required CI plan adds this command without removing existing checks.

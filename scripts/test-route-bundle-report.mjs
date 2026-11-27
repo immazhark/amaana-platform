@@ -1,3 +1,4 @@
+import "./test-route-bundle-comparison.mjs";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, symlinkSync } from "node:fs";

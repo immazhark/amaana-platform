@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getHomepageAppeals } from "@/lib/public-content";
+import { getLiveRailAppeals } from "@/lib/public-content";
 
 export const dynamic = "force-dynamic";
 
@@ -8,7 +8,7 @@ const liveHeaders = { "Cache-Control": "no-store" };
 
 export async function GET() {
   try {
-    const appeals = await getHomepageAppeals(4);
+    const appeals = await getLiveRailAppeals();
     const items = appeals.slice(0, 4).map(appeal => ({
       id: `appeal-${appeal.slug}`,
       kind: "appeal" as const,

@@ -1,18 +1,24 @@
-import { AssistanceStatus } from "@prisma/client";
+import { AppealCategory, AssistanceStatus } from "@prisma/client";
 
 type Filters = Record<string, string | string[] | undefined>;
-const keys = ["status", "view", "page", "sort", "assignment"] as const;
+const keys = ["status", "view", "page", "sort", "assignment", "category"] as const;
 const detailKey = (key: typeof keys[number]) => `queue${key[0]!.toUpperCase()}${key.slice(1)}`;
+
+export function assistanceQueueCategory(raw: unknown): AppealCategory | undefined {
+  return typeof raw === "string" && Object.values(AppealCategory).includes(raw as AppealCategory) ? raw as AppealCategory : undefined;
+}
 
 /** Navigation state only: never accept a caller-supplied return URL or staff ID. */
 function queueQuery(raw: Filters) {
   const query = new URLSearchParams();
   const { status, view, page, sort, assignment } = raw;
+  const category = assistanceQueueCategory(raw.category);
   if (typeof status === "string" && Object.values(AssistanceStatus).includes(status as AssistanceStatus)) query.set("status", status);
   if (view === "tests") query.set("view", view);
   if (typeof page === "string" && /^[1-9][0-9]{0,4}$/.test(page)) query.set("page", page);
   if (sort === "oldest") query.set("sort", sort);
   if (assignment === "mine" || assignment === "unassigned") query.set("assignment", assignment);
+  if (category) query.set("category", category);
   return query;
 }
 
