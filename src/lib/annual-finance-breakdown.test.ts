@@ -36,7 +36,54 @@ describe("annual payment channel breakdown", () => {
     await expect(load([row(null, { pendingPaise: 100n, pendingCount: 1n })]).result).rejects.toThrow("Missing annual finance payment method");
   });
   it("rejects overflow and unsupported payment methods", async () => {
-    await expect(load([row("RAZORPAY", { grossPaise: 9007199254740991n, retainedPaise: 9007199254740991n }), row("RAZORPAY", { grossPaise: 1n, retainedPaise: 1n })]).result).rejects.toBeInstanceOf(RangeError);
+    await expect(load([row("RAZORPAY", { grossPaise: 9007199254740991n, retainedPaise: 9007199254740991n }), row("BANK_TRANSFER", { grossPaise: 1n, retainedPaise: 1n })]).result).rejects.toBeInstanceOf(RangeError);
     await expect(load([row("UNKNOWN")]).result).rejects.toThrow("payment method");
+  });
+});
+
+describe("annual finance aggregate integrity", () => {
+  it.each([null, 0, "0", false, undefined])("rejects non-bigint aggregate counts: %s", async value => {
+    await expect(load([row("DIRECT_UPI", { pendingCount: value })]).result).rejects.toThrow("safe integer range");
+  });
+
+  it("rejects duplicate receipt and spending identities instead of double counting", async () => {
+    const gift = row("RAZORPAY", { grossPaise: 100n, retainedPaise: 100n });
+    const spend = row(null, { draftPaise: 20n });
+    for (const duplicate of [gift, spend]) {
+      await expect(load([duplicate, duplicate]).result).rejects.toThrow("Duplicate annual finance aggregate identity");
+    }
+  });
+
+  it.each([{ destination: "other" }, { fundSlug: null }, { pool: "GENERAL" }, { destination: "appeals", fundSlug: "synthetic" }])("rejects invalid destination and pool identities", async overrides => {
+    await expect(load([row("RAZORPAY", overrides)]).result).rejects.toThrow("Invalid annual finance aggregate identity");
+  });
+
+  it("rejects inconsistent principal and spending or claims assigned to an impossible channel", async () => {
+    await expect(load([row("RAZORPAY", { grossPaise: 100n, refundedPaise: 10n, retainedPaise: 89n })]).result).rejects.toThrow("Inconsistent annual finance refund totals");
+    await expect(load([row("DIRECT_UPI", { draftPaise: 1n })]).result).rejects.toThrow("Invalid annual finance spending channel");
+    await expect(load([row("BANK_TRANSFER", { publishedPaise: 1n })]).result).rejects.toThrow("Invalid annual finance spending channel");
+    await expect(load([row("RAZORPAY", { pendingPaise: 1n, pendingCount: 1n })]).result).rejects.toThrow("Invalid annual finance pending channel");
+    await expect(load([row(null, { destination: "appeals", fundSlug: null, draftPaise: 1n })]).result).rejects.toThrow("Invalid annual finance spending destination");
+  });
+
+  it("rejects report-wide overflow even when each destination and channel is safe", async () => {
+    const max = BigInt(Number.MAX_SAFE_INTEGER);
+    await expect(load([
+      row("RAZORPAY", { grossPaise: max, retainedPaise: max }),
+      row("BANK_TRANSFER", { fundSlug: "other", grossPaise: 1n, retainedPaise: 1n }),
+    ]).result).rejects.toBeInstanceOf(RangeError);
+  });
+
+  it("retains distinct valid joint rows, appeal receipts and fund spending", async () => {
+    const report = await load([
+      row("RAZORPAY", { grossPaise: 100n, refundedPaise: 10n, retainedPaise: 90n }),
+      row("BANK_TRANSFER", { pendingPaise: 200n, pendingCount: 1n }),
+      row(null, { draftPaise: 30n, publishedPaise: 40n }),
+      row("RAZORPAY", { destination: "appeals", fundSlug: null, pool: "ZAKAT", grossPaise: 100n, refundedPaise: 10n, retainedPaise: 90n }),
+    ]).result;
+    expect(report.destinations).toHaveLength(2);
+    expect(report.byDestinationAndChannel).toHaveLength(3);
+    expect(report.destinations[0]).toMatchObject({ retainedPaise: 90, draftPaise: 30, publishedPaise: 40 });
+    expect(report.channels[0]?.grossPaise).toBe(200);
   });
 });

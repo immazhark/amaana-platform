@@ -21,7 +21,7 @@ export type AnnualFinanceRow = {
 type RawRow = { paymentMethod: string | null } & Omit<AnnualFinanceRow, "grossPaise" | "refundedPaise" | "retainedPaise" | "pendingPaise" | "pendingCount" | "draftPaise" | "publishedPaise"> & Record<"grossPaise" | "refundedPaise" | "retainedPaise" | "pendingPaise" | "pendingCount" | "draftPaise" | "publishedPaise", bigint>;
 const safe = (value: bigint) => {
   const n = Number(value);
-  if (!Number.isSafeInteger(n) || n < 0) throw new RangeError("Finance review amount outside safe integer range");
+  if (typeof value !== "bigint" || !Number.isSafeInteger(n) || n < 0) throw new RangeError("Finance review amount outside safe integer range");
   return n;
 };
 
@@ -78,7 +78,21 @@ export async function loadAnnualFinanceBreakdown(client: Pick<Prisma.Transaction
   const destinations = new Map<string, Omit<RawRow, "paymentMethod">>();
   const channels = new Map<string, RawAmounts>();
   const byDestinationAndChannel: AnnualFinanceCrossRow[] = [];
+  const seen = new Set<string>();
+  const totals = empty();
+  if (!Array.isArray(rows)) throw new Error("Invalid annual finance aggregate");
   for (const row of rows) {
+    if (!row || (row.destination !== "appeals" && row.destination !== "fund") ||
+      (row.destination === "appeals" ? row.fundSlug !== null : typeof row.fundSlug !== "string" || !row.fundSlug) ||
+      (row.pool !== "ZAKAT" && row.pool !== "NON_ZAKAT")) throw new Error("Invalid annual finance aggregate identity");
+    const identity = JSON.stringify([row.destination, row.fundSlug, row.pool, row.paymentMethod]);
+    if (seen.has(identity)) throw new Error("Duplicate annual finance aggregate identity");
+    seen.add(identity);
+    addAmounts(totals, row);
+    if (row.grossPaise - row.refundedPaise !== row.retainedPaise) throw new Error("Inconsistent annual finance refund totals");
+    if (row.paymentMethod === null && row.destination !== "fund") throw new Error("Invalid annual finance spending destination");
+    if (row.paymentMethod !== null && (row.draftPaise !== 0n || row.publishedPaise !== 0n)) throw new Error("Invalid annual finance spending channel");
+    if (row.paymentMethod === "RAZORPAY" && (row.pendingPaise !== 0n || row.pendingCount !== 0n)) throw new Error("Invalid annual finance pending channel");
     const key = JSON.stringify([row.destination, row.fundSlug, row.pool]);
     let destination = destinations.get(key);
     if (!destination) {
@@ -97,6 +111,7 @@ export async function loadAnnualFinanceBreakdown(client: Pick<Prisma.Transaction
     if (!channel) { channel = empty(); channels.set(row.paymentMethod, channel); }
     addAmounts(channel, row);
   }
+  for (const field of amounts) safe(totals[field]);
   return {
     destinations: [...destinations.values()].map(row => ({ destination: row.destination, fundSlug: row.fundSlug, pool: row.pool,
       ...receipts(row), draftPaise: safe(row.draftPaise), publishedPaise: safe(row.publishedPaise) })),
