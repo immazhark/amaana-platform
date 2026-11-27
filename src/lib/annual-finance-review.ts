@@ -125,3 +125,16 @@ export function annualFinanceCrossCsv(label: string, rows: readonly AnnualFinanc
   const header = "financial_year,destination,fund_slug,pool,payment_method,capture_cohort_gross_inr,capture_cohort_cumulative_principal_refunded_inr,capture_cohort_retained_inr,pending_claims_created_inr,pending_claim_count";
   return [header, ...rows.map(row => [csvText(label), csvText(row.destination), csvText(row.fundSlug ?? ""), csvText(row.pool), csvText(row.paymentMethod), money(row.grossPaise), money(row.refundedPaise), money(row.retainedPaise), money(row.pendingPaise), row.pendingCount].join(","))].join("\r\n") + "\r\n";
 }
+
+/** Control totals over mutually exclusive destination rows. No extra query, no additional income. */
+export function annualFinanceControlTotals(rows: readonly AnnualFinanceRow[]) {
+  const total = empty();
+  for (const row of rows) {
+    for (const key of amounts) {
+      const value = row[key];
+      if (!Number.isSafeInteger(value) || value < 0) throw new RangeError("Invalid annual finance control amount");
+      total[key] += BigInt(value);
+    }
+  }
+  return { ...receipts(total), draftPaise: safe(total.draftPaise), publishedPaise: safe(total.publishedPaise) };
+}

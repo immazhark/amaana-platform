@@ -54,3 +54,5 @@ test("missing impact selection is rejected", () => check({ DATABASE_SELECTED: ""
 test("invalid impact selection is rejected on ready transition too", () => check({ APP_SELECTED: "invalid", EVENT_ACTION: "ready_for_review" }, false));
 
 import "./test-route-build-evidence.mjs";
+import "./test-ui-audit-target.mjs";
+import "./test-admin-workbench-donation-fixtures.mjs";
