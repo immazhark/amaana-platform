@@ -48,7 +48,7 @@ const residenceLabel = (value: string | null | undefined): string => {
 export default async function RequestDetailPage({ params, searchParams }: Props) {
   const user = await requirePermission("assistance.view");
   const { id } = await params;
-  const search = await (searchParams ?? Promise.resolve({}));
+  const search: Record<string, string | string[] | undefined> = await (searchParams ?? Promise.resolve({}));
   const returnFilters = assistanceReturnFilters(search);
   const queueHref = assistanceQueueHref(returnFilters);
   const queueContext = assistanceQueueContext(returnFilters);
