@@ -45,7 +45,7 @@ function compareAuxiliaryServices(reference, candidate, issue) {
     const allowedFields = new Set(Object.keys(baseline));
     const unexpected = Object.keys(service).filter(key => !allowedFields.has(key));
     if (unexpected.length) {
-      issue('unexpected-fields', 'Unexpected fields on auxiliary ' + service.name + ': ' + unexpected.join(', '));
+      issue('unexpected-fields', 'Unexpected fields in auxiliary service configuration');
     }
     for (const field of allowedFields) {
       if (!Object.hasOwn(service, field) || !stableEqual(service[field], baseline[field])) {
@@ -63,7 +63,7 @@ export function compareMigrationInventory(reference, candidate) {
   const issues = [];
   const issue = (code, message) => issues.push({ code, message });
   const unknown = Object.keys(candidate).filter(key => !allowedRoot.has(key));
-  if (unknown.length) issue('unexpected-fields', 'Unexpected top-level fields: ' + unknown.join(', '));
+  if (unknown.length) issue('unexpected-fields', 'Unexpected top-level inventory fields');
   if (candidate.environment !== reference.environment) issue('environment', 'Wrong target environment');
   if (!serviceNamesEqual(reference.serviceNames, candidate.serviceNames)) {
     issue('service-inventory', 'Service names differ, are missing, or repeat');
@@ -76,7 +76,7 @@ export function compareMigrationInventory(reference, candidate) {
   const expected = isRecord(reference.website) ? reference.website : {};
   const actual = isRecord(candidate.website) ? candidate.website : {};
   const unexpectedWebsite = Object.keys(actual).filter(key => !allowedWebsite.has(key));
-  if (unexpectedWebsite.length) issue('unexpected-fields', 'Unexpected website fields: ' + unexpectedWebsite.join(', '));
+  if (unexpectedWebsite.length) issue('unexpected-fields', 'Unexpected website configuration fields');
   for (const field of fields) {
     if (!Object.hasOwn(actual, field) || !stableEqual(actual[field], expected[field])) {
       issue('website.' + field, 'Website ' + field + ' differs from observed live configuration');

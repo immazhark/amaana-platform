@@ -6,6 +6,7 @@ import { rejectAssistanceRequest } from "./assistance-rejection-service";
 import { capacityUsed, capacityYearBounds, countedCaseWhere } from "./assistance-capacity";
 import { INDIVIDUAL_CASE_ANNUAL_CAPACITY } from "./assistance-policy";
 import { loadAssistanceDecisionBreakdown, loadAssistanceDecisionReport } from "./assistance-decision-report";
+import { closureTransitionQuery, lifecycleEvidence } from "./assistance-lifecycle-evidence";
 import { AssistanceApprovalError, approveAssistanceRequest, saveApprovalDraft, type ApprovalInput } from "./assistance-approval-service";
 
 // A real PostgreSQL test, deliberately unavailable to hosted and production DBs. Synthetic data only.
@@ -69,6 +70,25 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("assistance approv
     await prisma.assistanceVerification.deleteMany({ where: { assistanceRequestId: { in: requestIds } } });
     await prisma.assistanceRequest.deleteMany({ where: { id: { in: requestIds } } });
     await prisma.user.deleteMany({ where: { id: { in: [actorId, otherActorId] } } });
+  });
+
+  it("reads only the latest real closure transition, excluding note saves, wrong actions and other cases", async () => {
+    const [request, other] = await Promise.all([makeRequest({ status: "CLOSED", email: null }), makeRequest({ status: "CLOSED", email: null })]);
+    const timestamp = (offset: number) => new Date(request.createdAt.getTime() + offset * 1000);
+    const event = (entityId: string, action: string, metadata: Prisma.InputJsonObject, offset: number) => prisma.auditEvent.create({ data: {
+      entityId, entityType: "AssistanceRequest", action, metadata, actorId, createdAt: timestamp(offset),
+    } });
+    await event(request.id, "assistance.updated", { previousStatus: "APPROVED", status: "CLOSED" }, 1);
+    await event(request.id, "assistance.updated", { previousStatus: "CLOSED", status: "UNDER_VERIFICATION" }, 2);
+    await event(request.id, "assistance.updated", { previousStatus: "UNDER_VERIFICATION", status: "CLOSED" }, 3);
+    await event(request.id, "assistance.updated", { previousStatus: "CLOSED", status: "CLOSED" }, 4);
+    await event(request.id, "assistance.updated", { status: "CLOSED" }, 5);
+    await event(other.id, "assistance.updated", { previousStatus: "APPROVED", status: "CLOSED" }, 6);
+    await event(request.id, "assistance.assigned", { previousStatus: "APPROVED", status: "CLOSED" }, 7);
+    const rows = await prisma.auditEvent.findMany(closureTransitionQuery(request.id));
+    expect(rows).toEqual([{ createdAt: timestamp(3) }]);
+    expect(lifecycleEvidence(request, rows[0] ?? null).closure).toEqual({ kind: "recorded", at: timestamp(3) });
+    expect(lifecycleEvidence(request, rows[0] ?? null).deliveryEstablished).toBe(false);
   });
 
   it("17. records the completed verification and the approved status together, for each route", async () => {

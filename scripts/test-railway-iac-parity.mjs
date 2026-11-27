@@ -122,3 +122,14 @@ test('CLI rejects the superseded dormant worker configuration', () => {
 import './test-railway-iac-deployment-parity.mjs';
 
 import './test-railway-iac-identity-parity.mjs';
+
+
+test('rejects arbitrary private field names at every inventory level without echoing them', () => {
+  for (const select of [value => value, value => value.website, value => value.auxiliaryServices[0]]) {
+    const candidate = clone();
+    select(candidate)['PRIVATE_SYNTHETIC_KEY'] = 'PRIVATE_SYNTHETIC_VALUE';
+    const issues = compareMigrationInventory(reference, candidate);
+    assert.ok(issues.some(issue => issue.code === 'unexpected-fields'));
+    assert.doesNotMatch(JSON.stringify(issues), /PRIVATE_SYNTHETIC/);
+  }
+});

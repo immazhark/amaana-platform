@@ -7,6 +7,30 @@ const fields = ['version', 'currency', 'claims', 'application', 'movements', 'se
 const exact = (v, keys) => v !== null && typeof v === 'object' && !Array.isArray(v) &&
   Object.keys(v).length === keys.length && keys.every(k => Object.hasOwn(v, k));
 
+// Partition validated source amounts, not amounts from the other side of a match.
+// Outcome buckets are exclusive; settlement issues themselves may overlap.
+function partitionControlTotals(rows, results, outcomes, classify = row => row.outcome) {
+  if (rows.length !== results.length) throw new Error('Inconsistent control-total rows');
+  const empty = () => ({ count: 0, amountPaise: 0 });
+  const total = empty();
+  const byOutcome = Object.fromEntries(outcomes.map(outcome => [outcome, empty()]));
+  const include = (bucket, amountPaise) => {
+    bucket.count++;
+    bucket.amountPaise += amountPaise;
+    if (!Number.isSafeInteger(bucket.amountPaise)) throw new Error('Unsafe control total');
+  };
+  for (const [i, row] of rows.entries()) {
+    const result = results[i];
+    const outcome = classify(result);
+    if (result.id !== row.id || !Object.hasOwn(byOutcome, outcome)) {
+      throw new Error('Inconsistent control-total outcome');
+    }
+    include(total, row.amountPaise);
+    include(byOutcome[outcome], row.amountPaise);
+  }
+  return { total, byOutcome };
+}
+
 export function reviewCrossChannelCredits(input) {
   if (!exact(input, fields) || input.version !== 1 || input.currency !== 'INR') {
     throw new Error('Expected version 1 shared INR credit review batch');
@@ -66,12 +90,29 @@ export function reviewCrossChannelCredits(input) {
       creditMatches.size !== summary.directCandidateCount + summary.settlementCandidateCount) {
     throw new Error('Inconsistent shared-credit totals');
   }
+  const controlTotals = {
+    claims: partitionControlTotals(claims, claimResults,
+      ['candidate', 'cross_channel_conflict', 'ambiguous_reference', 'no_credit', 'amount_mismatch', 'date_mismatch']),
+    settlements: partitionControlTotals(settlements, settlementResults,
+      ['candidate', 'cross_channel_conflict', 'other_exception'], row => row.outcome === 'exception'
+        ? (row.issues.includes('cross_channel_conflict') ? 'cross_channel_conflict' : 'other_exception') : row.outcome),
+    credits: partitionControlTotals(credits, creditResults,
+      ['direct_candidate', 'settlement_candidate', 'cross_channel_conflict', 'ambiguous_reference', 'unmatched']),
+  };
+  const claimCandidate = controlTotals.claims.byOutcome.candidate;
+  const payoutCandidate = controlTotals.settlements.byOutcome.candidate;
+  if (controlTotals.claims.total.amountPaise !== direct.summary.claimPaise ||
+      controlTotals.credits.total.amountPaise !== summary.creditPaise ||
+      claimCandidate.count !== summary.directCandidateCount || claimCandidate.amountPaise !== summary.directCandidatePaise ||
+      payoutCandidate.count !== summary.settlementCandidateCount || payoutCandidate.amountPaise !== summary.settlementCandidatePaise) {
+    throw new Error('Inconsistent shared-credit control totals');
+  }
   // Reclassify against the final shared-credit decision, not the provider-only candidate.
   const matchedSettlementById = new Map(provider.applicationEvidence.filter(row => row.settlementId !== undefined).map(row => [row.id, row.settlementId]));
   return { version, currency, authoritative: false, claims: claimResults, settlements: settlementResults,
     credits: creditResults, unlinkedMovementIds: provider.unlinkedMovementIds,
     unmatchedApplicationIds: provider.unmatchedApplicationIds,
-    ...applicationEvidenceReport(application, matchedSettlementById, settlementResults), summary };
+    ...applicationEvidenceReport(application, matchedSettlementById, settlementResults), summary, controlTotals };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

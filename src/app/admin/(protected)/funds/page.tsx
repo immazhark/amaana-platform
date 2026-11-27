@@ -4,6 +4,7 @@ import { annualFinanceControlTotals, annualFinanceCrossCsv, annualFinanceCsv, fi
 import { formatINR } from "@/lib/appeals";
 import { getFundsLedger } from "@/lib/funds-ledger";
 import { loadTaleemSponsorshipReport } from "@/lib/taleem-sponsorship-report";
+import { summarizeTaleemSponsorship } from "@/lib/taleem-sponsorship-export";
 import { formatDonationReportINR } from "@/lib/donation-reconciliation-totals";
 import { TALEEM_CATALOGUE } from "@/content/taleem-catalogue";
 import { prisma } from "@/lib/prisma";
@@ -25,9 +26,12 @@ export default async function FundsLedgerPage({ searchParams }: Props) {
   const period = financeReviewPeriod(fy);
   const sponsorshipYear = typeof taleemFy === "string" && period.labels.includes(taleemFy) ? taleemFy : "all";
   const sponsorshipPeriod = sponsorshipYear === "all" ? undefined : financeReviewPeriod(sponsorshipYear);
-  const [{ funds, byFund, zakatAccount }, sponsorships, annualReport] = await Promise.all([
-    getFundsLedger(),
-    loadTaleemSponsorshipReport(prisma, sponsorshipPeriod).catch(() => {
+  const [ledger, sponsorshipReport, annualReport] = await Promise.all([
+    getFundsLedger().catch(() => {
+      logServerError("finance.funds_ledger_unavailable");
+      return null;
+    }),
+    loadTaleemSponsorshipReport(prisma, sponsorshipPeriod).then(rows => ({ rows, ...summarizeTaleemSponsorship(sponsorshipYear, rows) })).catch(() => {
       logServerError("finance.taleem_report_unavailable");
       return null;
     }),
@@ -41,10 +45,14 @@ export default async function FundsLedgerPage({ searchParams }: Props) {
   const annual = annualReport?.destinations ?? [];
   const channels = annualReport?.channels ?? [];
   const byDestinationAndChannel = annualReport?.byDestinationAndChannel ?? [];
+  const funds = ledger?.funds ?? [];
+  const byFund = ledger?.byFund;
   const fundNames = new Map(funds.map(fund => [fund.slug, fund.name]));
+  const sponsorships = sponsorshipReport?.rows ?? null;
+  const sponsorshipCsvHref = sponsorshipReport ? "data:text/csv;charset=utf-8," + encodeURIComponent(sponsorshipReport.csv) : undefined;
   const csvHref = annualReport ? "data:text/csv;charset=utf-8," + encodeURIComponent(annualFinanceCsv(period.label, annual)) : undefined;
   const crossCsvHref = annualReport ? "data:text/csv;charset=utf-8," + encodeURIComponent(annualFinanceCrossCsv(period.label, byDestinationAndChannel)) : undefined;
-  const appealTotals = byFund[APPEAL_BUCKET]?.total ?? EMPTY;
+  const appealTotals = byFund?.[APPEAL_BUCKET]?.total ?? EMPTY;
   return <>
     <div className="admin-heading">
       <div>
@@ -54,14 +62,15 @@ export default async function FundsLedgerPage({ searchParams }: Props) {
         <p className="muted">All giving reaches one bank account; this ledger separates it by fund. Received means verified and net of refunds. Transfers awaiting bank verification are shown separately and are never counted as received. Balance is received minus recorded spending.</p>
       </div>
     </div>
+    {!ledger ? <section className="admin-card" aria-labelledby="ledger-unavailable-heading"><h2 id="ledger-unavailable-heading">All-time funds and Zakat ledger</h2><p role="status">All-time ledger temporarily unavailable. No balance, fund or Zakat totals are shown for this ledger. Independently available financial-year and sponsorship reports remain below.</p></section> : <>
     <section className="admin-card" aria-labelledby="zakat-account-heading">
       <p className="eyebrow">Zakat account</p>
       <h2 id="zakat-account-heading">All Zakat received, across every fund and appeal</h2>
       <div className="card-grid">
-        <article className="card"><strong>{rupees(zakatAccount.receivedPaise)}</strong><p>Verified Zakat received (net of refunds)</p></article>
-        <article className="card"><strong>{rupees(zakatAccount.pendingPaise)}</strong><p>Zakat awaiting verification</p></article>
-        <article className="card"><strong>{rupees(zakatAccount.spentPaise)}</strong><p>Zakat disbursed from funds</p></article>
-        <article className="card"><strong>{rupees(zakatAccount.balancePaise)}</strong><p>Zakat balance still to distribute</p></article>
+        <article className="card"><strong>{rupees(ledger.zakatAccount.receivedPaise)}</strong><p>Verified Zakat received (net of refunds)</p></article>
+        <article className="card"><strong>{rupees(ledger.zakatAccount.pendingPaise)}</strong><p>Zakat awaiting verification</p></article>
+        <article className="card"><strong>{rupees(ledger.zakatAccount.spentPaise)}</strong><p>Zakat disbursed from funds</p></article>
+        <article className="card"><strong>{rupees(ledger.zakatAccount.balancePaise)}</strong><p>Zakat balance still to distribute</p></article>
       </div>
     </section>
     <section className="admin-card" aria-labelledby="fund-ledger-heading">
@@ -70,7 +79,7 @@ export default async function FundsLedgerPage({ searchParams }: Props) {
         <thead><tr><th scope="col">Fund</th><th scope="col">Received</th><th scope="col">Awaiting verification</th><th scope="col">Spent</th><th scope="col">Balance</th><th scope="col">Zakat balance</th></tr></thead>
         <tbody>
           {funds.map(fund => {
-            const totals = byFund[fund.id];
+            const totals = byFund?.[fund.id];
             return <tr key={fund.id}>
               <th scope="row">{fund.name}<br /><small>{ZAKAT_LABEL[fund.zakatPolicy]} · {fund.status}</small></th>
               <td>{rupees(totals?.total.receivedPaise ?? 0)}</td>
@@ -91,6 +100,7 @@ export default async function FundsLedgerPage({ searchParams }: Props) {
         </tbody>
       </table>
     </section>
+    </>}
     <section className="admin-card" aria-labelledby="annual-finance-heading">
       <h2 id="annual-finance-heading">Financial-year reconciliation review</h2>
       <p className="muted">Private application-record extract for accountant review. Indian financial year: 1 April to 31 March. Receipts are grouped by capture date; refunds are cumulative principal refunds as currently recorded for those receipts, not refund-date cash flows. Pending claims are grouped by creation date and are not receipts. Spending uses the recorded financial year; drafts and published entries are separate, voids excluded. Appeal spending and offline historical records are not included. Missing capture dates are excluded. These are not bank statements, statutory tax filings, audited accounts or tax certificates.</p>
@@ -150,15 +160,20 @@ export default async function FundsLedgerPage({ searchParams }: Props) {
       </form>
       <p><strong>{sponsorshipPeriod ? `FY ${sponsorshipPeriod.label}` : "All recorded dates"}</strong></p>
       <p className="muted">Programme-level gifts grouped by their original monthly rate and rate version. In a selected financial year, verified gifts use capture dates and pending claims use creation dates; missing capture dates are excluded. Refunds are cumulative for the selected gifts, not refund-date cash flows. Verified records include subsequently refunded gifts. Pending claims are not receipts. These amounts are not student assignments, fee obligations or recurring payment mandates. A quoted unit-month is one unit for one month at the recorded rate. Retained rate equivalents divide the retained principal of the cohort by that historical rate, with the exact remainder shown separately. They are arithmetic only, not allocated places, unspent balances, fee coverage dates or available sponsorship capacity.</p>
-      {sponsorships === null ? <p role="status">Taleem sponsorship report temporarily unavailable. No sponsorship totals are shown.</p> : sponsorships.length === 0 ? <p>{sponsorshipPeriod ? `No matching verified sponsorship gifts or pending claims for FY ${sponsorshipPeriod.label}.` : "No verified sponsorship gifts or pending claims recorded."}</p> : <div className="admin-table-wrap" role="region" aria-label="Taleem sponsorship totals" tabIndex={0}>
+      {sponsorships === null ? <p role="status">Taleem sponsorship report temporarily unavailable. No sponsorship totals are shown.</p> : sponsorships.length === 0 ? <p>{sponsorshipPeriod ? `No matching verified sponsorship gifts or pending claims for FY ${sponsorshipPeriod.label}.` : "No verified sponsorship gifts or pending claims recorded."}</p> : <>
+        <p><a className="button" href={sponsorshipCsvHref} download={`amaana-taleem-sponsorship-review-${sponsorshipYear}.csv`}>Download sponsorship reconciliation CSV</a></p>
+        <div className="admin-table-wrap" role="region" aria-label="Taleem sponsorship totals" tabIndex={0}>
         <table className="admin-table">
           <thead><tr><th scope="col">Programme and recorded rate</th><th scope="col">Verified records</th><th scope="col">Gross verified</th><th scope="col">Principal refunded</th><th scope="col">Net retained</th><th scope="col">Pending claims</th><th scope="col">Pending amount</th><th scope="col">Verified quoted unit-months</th><th scope="col">Retained whole rate equivalents</th><th scope="col">Retained remainder</th><th scope="col">Pending quoted unit-months</th></tr></thead>
           <tbody>{sponsorships.map(row => <tr key={JSON.stringify([row.programme, row.monthlyRate, row.rateVersion])}>
             <th scope="row">{TALEEM_CATALOGUE.programmes.find(programme => programme.id === row.programme)?.name ?? row.programme}<br /><small>{formatDonationReportINR(row.monthlyRate)} per unit/month · {row.rateVersion}</small></th>
             <td>{row.verifiedCount}</td><td>{formatDonationReportINR(row.grossCaptured)}</td><td>{formatDonationReportINR(row.principalRefunded)}</td><td>{formatDonationReportINR(row.netRetained)}</td><td>{row.pendingCount}</td><td>{formatDonationReportINR(row.pendingAmount)}</td><td>{row.verifiedQuotedUnitMonths}</td><td>{row.retainedWholeUnitMonths}</td><td>{formatDonationReportINR(row.retainedRemainder)}</td><td>{row.pendingQuotedUnitMonths}</td>
           </tr>)}</tbody>
+          {sponsorshipReport && <tfoot><tr><th scope="row">All cohorts · control total</th><td>{sponsorshipReport.totals.verifiedCount}</td><td>{formatDonationReportINR(sponsorshipReport.totals.grossPaise / 100)}</td><td>{formatDonationReportINR(sponsorshipReport.totals.refundedPaise / 100)}</td><td>{formatDonationReportINR(sponsorshipReport.totals.retainedPaise / 100)}</td><td>{sponsorshipReport.totals.pendingCount}</td><td>{formatDonationReportINR(sponsorshipReport.totals.pendingPaise / 100)}</td><td colSpan={4}>Not summed across programmes and historical rates</td></tr></tfoot>}
         </table>
-      </div>}
+      </div>
+      <p className="muted">Control totals sum the displayed cohorts once; they are not additional income or an accountant-approved statement. The export includes the reporting scope and historical rate for each cohort, with no donor or learner identities.</p>
+      </>}
     </section>
   </>;
 }

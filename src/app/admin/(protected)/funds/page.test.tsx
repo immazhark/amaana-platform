@@ -141,8 +141,39 @@ describe("independent private report availability", () => {
     expect(html).not.toContain("Download aggregate CSV");
     expect(mocks.log).toHaveBeenCalledExactlyOnceWith("finance.annual_report_unavailable");
   });
-  it("fails closed when the main ledger itself is unavailable", async () => {
-    mocks.ledger.mockRejectedValueOnce(new Error("synthetic ledger failure"));
-    await expect(render()).rejects.toThrow("synthetic ledger failure");
+  it("withholds failed all-time ledger balances without losing independently available reports", async () => {
+    mocks.ledger.mockRejectedValueOnce(new Error("PRIVATE_SYNTHETIC_LEDGER"));
+    mocks.annual.mockResolvedValueOnce({ destinations: [row], channels: [], byDestinationAndChannel: [] });
+    const html = await render();
+    expect(html).toContain("All-time ledger temporarily unavailable");
+    expect(html).not.toContain("All Zakat received");
+    expect(html).not.toContain("Zakat balance still to distribute");
+    expect(html).toContain("Download aggregate CSV");
+    expect(html).toContain("No verified sponsorship gifts or pending claims recorded.");
+    expect(html).not.toContain("PRIVATE_SYNTHETIC_LEDGER");
+    expect(mocks.log).toHaveBeenCalledExactlyOnceWith("finance.funds_ledger_unavailable");
+  });
+});
+
+describe("Taleem aggregate accountant export", () => {
+  const cohort = { programme: "qaida", monthlyRate: 900, rateVersion: "historic", verifiedCount: 2, grossCaptured: 1800, principalRefunded: 0.01, netRetained: 1799.99, pendingCount: 1, pendingAmount: 900, verifiedQuotedUnitMonths: 2, retainedWholeUnitMonths: 1, retainedRemainder: 899.99, pendingQuotedUnitMonths: 1 };
+  it("exports the selected scope and shows verified/pending controls without cross-rate unit totals", async () => {
+    mocks.report.mockResolvedValueOnce([cohort]);
+    const html = renderToStaticMarkup(await FundsLedgerPage({ searchParams: Promise.resolve({ fy: "2020-21", taleemFy: "2021-22" }) }));
+    expect(html).toContain('download="amaana-taleem-sponsorship-review-2021-22.csv"');
+    expect(html).toContain("Download sponsorship reconciliation CSV");
+    expect(html).toContain("All cohorts · control total");
+    expect(html).toContain("Not summed across programmes and historical rates");
+    expect(html).toContain("₹1,799.99");
+    expect(html).not.toContain("donorEmail");
+    expect(mocks.report).toHaveBeenCalledTimes(1);
+  });
+  it("withholds inconsistent cohorts rather than exposing a partial report or export", async () => {
+    mocks.report.mockResolvedValueOnce([{ ...cohort, retainedRemainder: 900 }]);
+    const html = renderToStaticMarkup(await FundsLedgerPage({ searchParams: Promise.resolve({ fy: "2020-21" }) }));
+    expect(html).toContain("Taleem sponsorship report temporarily unavailable");
+    expect(html).not.toContain("Download sponsorship reconciliation CSV");
+    expect(html).not.toContain("All cohorts · control total");
+    expect(mocks.log).toHaveBeenCalledExactlyOnceWith("finance.taleem_report_unavailable");
   });
 });
