@@ -125,6 +125,18 @@ export function visibleHomeSlides(config: HomeCarouselConfig, activeAppealSlugs:
   return config.slides.filter(s => s.status === 'PUBLISHED' && hasSafeHomeSlideLinks(s) && (!s.startsAt || Date.parse(s.startsAt) <= now.getTime()) && (!s.endsAt || Date.parse(s.endsAt) > now.getTime()) && (!s.appealSlug || activeAppealSlugs.has(s.appealSlug))).sort((a, b) => a.order - b.order || a.id.localeCompare(b.id));
 }
 
+/** Media for definitely ineligible configured slides is never rendered. Keep
+ * future schedules and competing appeal slides: they may become eligible
+ * before final composition after the database reads. */
+export function collectCarouselImageRequests(config: HomeCarouselConfig, activeAppealSlugs: ReadonlySet<string>, now = new Date()) {
+  const instant = now.getTime();
+  return config.slides.filter(slide =>
+    slide.status === 'PUBLISHED' && hasSafeHomeSlideLinks(slide)
+    && (!slide.endsAt || Date.parse(slide.endsAt) > instant)
+    && (!slide.appealSlug || activeAppealSlugs.has(slide.appealSlug)),
+  ).map(slide => slide.image);
+}
+
 /** Insert automatically sourced appeals once; custom linked slides take precedence. */
 export function composeHomeSlides(config: HomeCarouselConfig, appealSlides: HomeSlide[], now = new Date()) {
   const linked = new Set<string>();

@@ -17,7 +17,7 @@ import { ScrollCarousel } from "@/components/scroll-carousel";
 import { programmeCategories, programmes } from '@/lib/master-copy';
 import { ConfiguredHomeSlide } from "@/components/home-story-slide";
 import { getHomeCarouselConfig, getHomeCarouselImages } from "@/lib/home-carousel-data";
-import { composeHomeSlides, defaultHomeSlides } from "@/lib/home-carousel";
+import { collectCarouselImageRequests, composeHomeSlides, defaultHomeSlides } from "@/lib/home-carousel";
 import { HomeHighlights } from "@/components/home-highlights";
 import { programmeCategoryPath } from '@/lib/programme-category-routing';
 import { selectIdentityPublicImage } from '@/lib/public-media';
@@ -50,7 +50,7 @@ export default async function HomePage() {
   const [liveAppeals, discovery, { config }] = await Promise.all([getHomepageAppeals(20), getHomepageDiscoveryData(), getHomeCarouselConfig()]);
   const appeals = liveAppeals.slice(0, 3);
   const { images, coverByUrl } = await getHomeCarouselImages(
-    config.slides.map(slide => slide.image),
+    collectCarouselImageRequests(config, new Set(liveAppeals.map(appeal => appeal.slug))),
     liveAppeals.map(appeal => appeal.coverImageUrl),
   );
   const appealImages = liveAppeals.map(appeal =>

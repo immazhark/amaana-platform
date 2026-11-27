@@ -128,6 +128,40 @@ describe("public ledger consistent snapshot", () => {
     expect(report.rows[0]?.entries).toEqual([]);
   });
 
+  it("scopes both aggregate periods and filters inactive spending before the 500-entry limit", async () => {
+    const dec = (rupees: number) => ({ mul: (n: number) => ({ toNumber: () => rupees * n }) });
+    const entry = (id: string, fundId: string) => ({
+      id, fundId, title: "Synthetic spending", publicSummary: null, amount: dec(20), spentOn: new Date("2026-11-20"), pool: "ZAKAT",
+    });
+    const candidates = [...Array.from({ length: 500 }, (_, i) => entry(`inactive-${i}`, dates.id)), entry("active-entry", orphan.id)];
+    const scope = { is: { status: "ACTIVE" } };
+    const tx = {
+      fund: { findMany: vi.fn().mockResolvedValue([orphan]) },
+      donation: {
+        groupBy: vi.fn().mockResolvedValue([{ fundId: orphan.id, givingIntent: "ZAKAT", status: "CAPTURED", _sum: { amount: dec(100) } }]),
+        findMany: vi.fn().mockResolvedValue([{ fundId: orphan.id, givingIntent: "ZAKAT", status: "CAPTURED", amount: dec(100), refundedAmount: dec(30), feeContributionAmount: dec(10) }]),
+      },
+      fundDisbursement: {
+        groupBy: vi.fn().mockResolvedValue([{ fundId: orphan.id, pool: "ZAKAT", status: "PUBLISHED", _sum: { amount: dec(20) } }]),
+        findMany: vi.fn(async (args: { where: { fund?: { is?: { status?: string } } }; take: number }) =>
+          candidates.filter(row => args.where.fund?.is?.status !== "ACTIVE" || row.fundId === orphan.id).slice(0, args.take)),
+      },
+    };
+    mockPrisma.$transaction.mockImplementation(async (work: (client: typeof tx) => Promise<unknown>, options: { isolationLevel: string }) => {
+      expect(options.isolationLevel).toBe("RepeatableRead");
+      return work(tx);
+    });
+    const report = await getPublicFundLedger(range);
+    expect(report.totals).toEqual({ receivedPaise: 18_000, spentPaise: 2_000, heldPaise: 16_000 });
+    expect(report.rows[0]?.entries.map(row => row.id)).toEqual(["active-entry"]);
+    for (const query of [tx.donation.groupBy, tx.donation.findMany, tx.fundDisbursement.groupBy]) {
+      expect(query).toHaveBeenCalledTimes(2);
+      for (const [args] of query.mock.calls) expect(args.where.fund).toEqual(scope);
+    }
+    expect(tx.fundDisbursement.findMany).toHaveBeenCalledOnce();
+    expect(tx.fundDisbursement.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { fund: scope, status: "PUBLISHED", spentOn: { gte: range.start, lt: range.end } }, take: 500 }));
+  });
+
   it("preserves previously published spending and partial refunds", async () => {
     fixture("none", 30, "PUBLISHED");
     const report = await getPublicFundLedger(range);

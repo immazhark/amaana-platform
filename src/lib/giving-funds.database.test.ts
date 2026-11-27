@@ -326,6 +326,26 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("designated giving
     }, Prisma.TransactionIsolationLevel.RepeatableRead);
   });
 
+  it("scopes public fund reads without changing the unrestricted ledger", async () => {
+    await probe(async tx => {
+      const active = await fund(tx);
+      const inactive = await fund(tx, { status: "CLOSED" });
+      const owner = await user(tx);
+      const capturedAt = new Date("2026-11-10T06:00:00Z");
+      for (const destination of [active.id, inactive.id]) {
+        await tx.donation.create({ data: donation(destination, { status: "CAPTURED", capturedAt, amount: 100 }) });
+        await tx.donation.create({ data: donation(destination, { status: "CAPTURED", capturedAt, amount: 100, feeContributionAmount: 10, refundedAmount: 30 }) });
+        await tx.fundDisbursement.create({ data: { fundId: destination, createdById: owner.id, pool: "NON_ZAKAT", amount: 20, spentOn: new Date("2026-11-01"), financialYear: "2026-27", title: "Synthetic spend" } });
+      }
+      const scoped = await loadFundsLedger(tx, { activeFundsOnly: true });
+      const unscoped = await loadFundsLedger(tx);
+      expect(scoped.byFund[active.id]?.total).toMatchObject({ receivedPaise: 18_000, refundedPaise: 2_000, spentPaise: 2_000 });
+      expect(scoped.byFund[inactive.id]).toBeUndefined();
+      expect(unscoped.byFund[inactive.id]?.total).toMatchObject({ receivedPaise: 18_000, refundedPaise: 2_000, spentPaise: 2_000 });
+      expect(unscoped.byFund[active.id]).toEqual(scoped.byFund[active.id]);
+    });
+  });
+
   it("caps a recorded refund at the whole charge: the gift plus any covered gateway fee", async () => {
     const captured = new Date("2026-11-10T06:00:00Z");
     // No covered fee: the ceiling is the gift itself, exactly as before.
