@@ -211,3 +211,38 @@ describe("reviewer beneficiary residence evidence", () => {
     if (residence !== "OUTSIDE_SERVICE_AREA") expect(html).not.toContain("<dd>Outside the service area</dd>");
   });
 });
+
+describe("private support and closure evidence", () => {
+  const render = () => RequestDetailPage({ params: Promise.resolve({ id: "synthetic-request" }) }).then(renderToStaticMarkup);
+  it("distinguishes a closed appeal from delivery without an extra closure read", async () => {
+    mocks.request.mockResolvedValue({ ...request("CONVERTED_TO_APPEAL"), acceptedAt: new Date("2026-10-28T00:00:00Z"),
+      appealId: "synthetic-linked", appeal: { id: "synthetic-linked", title: "Synthetic appeal", status: "CLOSED" },
+    });
+    const html = await render();
+    expect(html).toContain("Support and closure evidence");
+    expect(html).toContain("<dt>Linked appeal status</dt><dd>Closed</dd>");
+    expect(html).toContain("Request is not currently Closed");
+    expect(html).toContain("Not established by these records.");
+    expect(html).toContain("Completed approval verification needs review.");
+    expect(mocks.history).toHaveBeenCalledOnce();
+    expect(html).not.toContain('href="/admin/appeals/synthetic-linked"');
+  });
+  it("uses only the recorded transition for closed requests", async () => {
+    mocks.request.mockResolvedValue({ ...request("CLOSED"), updatedAt: new Date("2026-11-26T00:00:00Z") });
+    mocks.history.mockResolvedValueOnce([]).mockResolvedValueOnce([{ createdAt: new Date("2026-11-01T18:30:00Z") }]);
+    const html = await render();
+    expect(html).toContain("Latest recorded transition to Closed</dt><dd>2/11/2026");
+    expect(html).toContain("Not established by these records.");
+    expect(mocks.history).toHaveBeenCalledTimes(2);
+    expect(mocks.history.mock.calls[1]?.[0]).toMatchObject({ where: { entityType: "AssistanceRequest", entityId: "synthetic-request", action: "assistance.updated" }, select: { createdAt: true }, take: 1 });
+  });
+  it("distinguishes a missing transition from an unavailable read and keeps the review usable", async () => {
+    mocks.request.mockResolvedValue(request("CLOSED"));
+    expect(await render()).toContain("No reliable closure transition on record");
+    mocks.history.mockResolvedValueOnce([]).mockRejectedValueOnce(new Error("PRIVATE_SYNTHETIC_DIAGNOSTIC"));
+    const html = await render();
+    expect(html).toContain("Closure evidence temporarily unavailable");
+    expect(html).toContain("Review and decision");
+    expect(html).not.toContain("PRIVATE_SYNTHETIC_DIAGNOSTIC");
+  });
+});

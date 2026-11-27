@@ -1,9 +1,12 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ requirePermission: vi.fn(), loadRoster: vi.fn() }));
+const mocks = vi.hoisted(() => ({ requirePermission: vi.fn(), loadRoster: vi.fn(), history: vi.fn(), log: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ requirePermission: mocks.requirePermission }));
 vi.mock("@/lib/taleem-roster-service", () => ({ loadRoster: mocks.loadRoster }));
+vi.mock("@/lib/prisma", () => ({ prisma: {} }));
+vi.mock("@/lib/server-log", () => ({ logServerError: mocks.log }));
+vi.mock("@/lib/taleem-roster-history", async importOriginal => ({ ...await importOriginal<typeof import("@/lib/taleem-roster-history")>(), loadTaleemHistory: mocks.history }));
 vi.mock("./actions", () => {
   const noop = async () => undefined;
   return { assignLearnerAction: noop, confirmHifdhEvidenceAction: noop, createLearnerAction: noop, createPlaceAction: noop, endAssignmentAction: noop, recordHifdhCompletionAction: noop, setLearnerStatusAction: noop, setPlaceStatusAction: noop, startEnrolmentAction: noop };
@@ -15,12 +18,12 @@ const counts = (over: Record<string, number> = {}) => ({
   asOf: "2026-11-22", maintainedPlaces: 26, occupiedPlaces: 25, vacantPlaces: 1, currentlySupportedStudents: 25,
   studentsSupportedSinceInception: 31, hifdhCompletionsInYear: 4, hifdhCompletionsAllTime: 6, ...over,
 });
-const render = async (roster: unknown, notice?: string, filters: { programmeFilter?: string | string[]; statusFilter?: string | string[]; placementFilter?: string | string[] } = {}) => {
+const render = async (roster: unknown, notice?: string, filters: { programmeFilter?: string | string[]; statusFilter?: string | string[]; placementFilter?: string | string[]; historyLearner?: string | string[]; programmeBefore?: string | string[]; assignmentBefore?: string | string[] } = {}) => {
   mocks.loadRoster.mockResolvedValue(roster);
   return renderToStaticMarkup(await TaleemRosterPage({ searchParams: Promise.resolve({ notice, ...filters }) }));
 };
 
-beforeEach(() => { vi.clearAllMocks(); mocks.requirePermission.mockResolvedValue({ id: "u" }); });
+beforeEach(() => { vi.clearAllMocks(); mocks.requirePermission.mockResolvedValue({ id: "u" }); mocks.history.mockResolvedValue({ enrolments: [], assignments: [] }); });
 
 describe("Taleem roster admin page", () => {
   it("requires the approver permission before loading anything", async () => {
@@ -28,6 +31,7 @@ describe("Taleem roster admin page", () => {
     await expect(render({ counts: counts(), learners: [], places: [] })).rejects.toThrow("/admin/forbidden");
     expect(mocks.requirePermission).toHaveBeenCalledWith("assistance.approve");
     expect(mocks.loadRoster).not.toHaveBeenCalled();
+    expect(mocks.history).not.toHaveBeenCalled();
   });
 
   it("shows each count as its own labelled figure and never one combined number", async () => {
@@ -180,5 +184,43 @@ describe("Taleem learner directory triage", () => {
     expect(all).toContain("Showing 2 of 2 learner records");
     expect(all).not.toContain("PRIVATE_SYNTHETIC_FILTER");
     expect(all).toContain('href="#learner-TL-BCDEFGHJ"');
+  });
+});
+
+describe("private learner programme and place history", () => {
+  const learner = { id: "l1", publicAlias: "TL-ABCDEFGH", fullName: "Synthetic Learner", status: "ACTIVE", programme: "HIFDH", placeCode: null, assignmentId: null, openAssignmentPlaceCode: null, openAssignmentStartsOn: null, hasBlockingAssignment: false, completedHifdhOn: null };
+  const roster = { counts: counts(), learners: [learner], places: [] };
+  it("does not load history until selected and preserves roster filters", async () => {
+    const html = await render(roster, undefined, { programmeFilter: "HIFDH" });
+    expect(mocks.history).not.toHaveBeenCalled();
+    expect(html).toContain('href="/admin/taleem?programmeFilter=HIFDH&amp;historyLearner=TL-ABCDEFGH#learner-history-heading"');
+  });
+  it("rejects unknown, repeated and malformed selections and cursors without echoing them", async () => {
+    for (const query of [{ historyLearner: "PRIVATE_SYNTHETIC" }, { historyLearner: ["TL-ABCDEFGH"] }, { historyLearner: "TL-ABCDEFGH", programmeBefore: "PRIVATE_SYNTHETIC" }]) {
+      const html = await render(roster, undefined, query);
+      expect(html).not.toContain("PRIVATE_SYNTHETIC");
+      expect(mocks.history).not.toHaveBeenCalled();
+    }
+  });
+  it("renders recorded past and scheduled periods and exposes independent older-page links", async () => {
+    const enrolments = Array.from({ length: 26 }, (_, i) => ({ id: "p"+i, programme: "HIFDH", startedOn: new Date(Date.UTC(2025, 0, 26-i)), endedOn: new Date(Date.UTC(2025, 0, 26-i)) }));
+    mocks.history.mockResolvedValueOnce({ enrolments, assignments: [{ id: "a1", startedOn: new Date("2026-11-23"), endedOn: null, place: { placeCode: "TP-ABCDEF" } }] });
+    const html = await render(roster, undefined, { historyLearner: "TL-ABCDEFGH", programmeFilter: "HIFDH" });
+    expect(mocks.history).toHaveBeenCalledExactlyOnceWith(expect.anything(), "l1", null, null);
+    expect(html).toContain("Learner programme and place history — TL-ABCDEFGH");
+    expect(html).toContain("Scheduled");
+    expect(html).toContain("Ended");
+    expect(html).toContain("TP-ABCDEF");
+    expect(html).toContain("programmeBefore=2025-01-02%7Ep24");
+    expect(html).not.toContain("2025-01-01");
+    expect(html).not.toContain("Older place periods");
+  });
+  it("keeps the roster available when history cannot be read", async () => {
+    mocks.history.mockRejectedValueOnce(new Error("PRIVATE_SYNTHETIC"));
+    const html = await render(roster, undefined, { historyLearner: "TL-ABCDEFGH" });
+    expect(html).toContain("Learner history temporarily unavailable");
+    expect(html).toContain("Synthetic Learner");
+    expect(html).not.toContain("PRIVATE_SYNTHETIC");
+    expect(mocks.log).toHaveBeenCalledWith("taleem.history_unavailable");
   });
 });

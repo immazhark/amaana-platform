@@ -17,6 +17,7 @@ import { assistanceCaseHref, assistanceQueueContext, assistanceQueueHref, assist
 import { prisma } from "@/lib/prisma";
 import { logServerError } from "@/lib/server-log";
 import { caseHistoryHref, caseHistoryPage, caseHistoryQuery, parseCaseHistoryBoundary } from "@/lib/assistance-case-history";
+import { closureTransitionQuery, lifecycleEvidence } from "@/lib/assistance-lifecycle-evidence";
 import { assignRequest, convertToAppeal, updateRequestWithFeedback } from "./actions";
 import { approveRequestAction, approveRequestWithFeedback, saveReviewProgressWithFeedback } from "./approval-actions";
 import { rejectRequestAction } from "./rejection-actions";
@@ -101,6 +102,13 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
     orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 5,
   });
 
+  const closureTransition = request.status === "CLOSED" ? await prisma.auditEvent.findMany(closureTransitionQuery(id)).then(rows => rows[0] ?? null).catch(() => {
+    logServerError("assistance.closure_evidence_unavailable");
+    return undefined;
+  }) : null;
+  const lifecycle = lifecycleEvidence(request, closureTransition);
+  const evidenceDate = (date: Date | null) => date ? date.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) : "Not recorded or inconsistent";
+  const lifecycleGapLabels = { acceptance: "Formal acceptance date needs review.", verification: "Completed approval verification needs review.", appeal_link: "Linked appeal record needs review." } as const;
   const currentAssigneeUnavailable = Boolean(request.assignedToId && !staff.some(member => member.id === request.assignedToId));
   const converted = request.status === "CONVERTED_TO_APPEAL" || Boolean(request.appealId);
   // Approving and rejecting are their own actions, so APPROVED and REJECTED are offered here only to show the state a request is already in.
@@ -146,6 +154,7 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
       <a href="#case-assignment-heading">Assign reviewer</a>
       {approvalOpen && <a href="#request-more-heading">Missing information</a>}
       <a href="#review-heading">Review verification</a>
+      <a href="#case-lifecycle-heading">Support and closure evidence</a>
       {rejection !== "unknown" && <a href="#reject-heading">Rejection section</a>}
       <a href="#audit-history-heading">Recorded changes</a>
       <a href="#assistance-workflow-guide">Workflow guide</a>
@@ -321,6 +330,23 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
           </div>}
         </section>
 
+        <section className="card" aria-labelledby="case-lifecycle-heading">
+          <h2 id="case-lifecycle-heading">Support and closure evidence</h2>
+          <p className="muted">These are separate recorded facts. Formal acceptance, a completed review, an appeal status and a closed request are not proof that assistance was delivered.</p>
+          <dl className="details">
+            <div><dt>Current request status</dt><dd>{label(request.status)}</dd></div>
+            <div><dt>Formal acceptance on record</dt><dd>{evidenceDate(lifecycle.acceptedAt)}</dd></div>
+            <div><dt>Recorded verification completion</dt><dd>{evidenceDate(lifecycle.verificationCompletedAt)}</dd></div>
+            <div><dt>Saved support route</dt><dd>{lifecycle.route}</dd></div>
+            <div><dt>Linked appeal status</dt><dd>{lifecycle.appealState}</dd></div>
+            <div><dt>Latest recorded transition to Closed</dt><dd>{lifecycle.closure.kind === "recorded" ? evidenceDate(lifecycle.closure.at) : lifecycle.closure.kind === "unavailable" ? "Closure evidence temporarily unavailable" : lifecycle.closure.kind === "missing" ? "No reliable closure transition on record" : "Request is not currently Closed"}</dd></div>
+            <div className="full"><dt>Delivery confirmation</dt><dd>Not established by these records. Review independently verified delivery evidence and any remaining obligations.</dd></div>
+          </dl>
+          {lifecycle.gaps.length > 0 && <div><h3>Evidence gaps to review</h3><ul>{lifecycle.gaps.map(gap => <li key={gap}>{lifecycleGapLabels[gap]}</li>)}</ul></div>}
+          <p className="muted">Before closing a case, record the support actually delivered or the reason it ended, any outstanding commitments, and where authorised staff can verify private evidence. Do not publish documents, imply a payment was made, or infer a date from a note edit. This panel does not certify disbursement or change status.</p>
+          {request.appeal && hasPermission(user, "appeal.view") && <p><Link href={`/admin/appeals/${request.appeal.id}`}>Review linked appeal separately</Link></p>}
+        </section>
+
         <section className="card">
           <h2 id="audit-history-heading">Audit history</h2>
           {history === null ? <p role="status" className="muted">Audit history temporarily unavailable. This does not mean there are no recorded changes. You can continue reviewing this request.</p> : history.events.length ? <>
@@ -413,6 +439,7 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
         <li><strong>2. If information is missing, request it privately.</strong> Use Request additional information, list the exact missing items in the private note, change the status to Documents requested, then contact the applicant through a verified private channel. The standard status email is not the detailed request. Once received and verified, resume verification.</li>
         <li><strong>3. Decide: approve or reject.</strong> Approval requires confirmed need, reviewed evidence, verified amount, payment destination, checked other funding, a verification summary and a Zakat decision. Public fundraising also requires a target and separately resolved disclosure permissions. Internal notes and assignment are optional. To reject, use Reject request with a private reason and explicit confirmation; approval fields are not required.</li>
         <li><strong>4. Prepare public fundraising only when approved for that route.</strong> Create a draft appeal and separately review the public story, consent, privacy-safe media and payment eligibility. Publishing the appeal is a distinct decision; approval alone never transfers funds or opens fundraising.</li>
+        <li><strong>5. Follow up and close with evidence.</strong> Review the Support and closure evidence section. Confirm actual delivery or why support ended, outstanding commitments and any linked appeal status separately. Closing collection or recording a closed request alone does not establish that assistance was delivered.</li>
       </ol>
     </section>
   </>;
