@@ -2,6 +2,7 @@ import type { Prisma } from "@prisma/client";
 import { cache } from "react";
 import { getAppealCoverMediaIssues } from "@/lib/appeal-cover-media";
 import { prisma } from "@/lib/prisma";
+import { logServerError } from "@/lib/server-log";
 import { isAppealOpenForDonations } from "@/lib/appeals";
 import { canExposeAppealArchive } from "@/lib/appeal-update-publication";
 import { canExposePublicAppeal, canExposeSyntheticStagingContent } from "@/lib/public-environment";
@@ -173,7 +174,7 @@ export const getHomepageDiscoveryData = cache(async () => {
     primaryMetricLabel: true,
   } satisfies Prisma.InitiativeSelect;
 
-  const [featuredInitiatives, fieldInitiatives, causes, publishedProgrammeRecords] = await Promise.all([
+  const [featuredResult, fieldResult, causeResult, programmeResult] = await Promise.allSettled([
     prisma.initiative.findMany({
       where: {
         status: "PUBLISHED",
@@ -226,6 +227,17 @@ export const getHomepageDiscoveryData = cache(async () => {
       select: { slug: true },
     }),
   ]);
+
+  // Omit only the failed projection. Never infer publication or log database details.
+  const available = <T,>(result: PromiseSettledResult<T[]>, source: "featured-outcomes" | "field-outcomes" | "cause-artwork" | "programme-publication"): T[] => {
+    if (result.status === "fulfilled") return result.value;
+    logServerError("homepage.discovery_read_unavailable", { source });
+    return [];
+  };
+  const featuredInitiatives = available(featuredResult, "featured-outcomes");
+  const fieldInitiatives = available(fieldResult, "field-outcomes");
+  const causes = available(causeResult, "cause-artwork");
+  const publishedProgrammeRecords = available(programmeResult, "programme-publication");
 
   // A malformed projection must not interrupt the entire public homepage.
   // The independent SQL publication/cause and identity-media gates stay intact.
