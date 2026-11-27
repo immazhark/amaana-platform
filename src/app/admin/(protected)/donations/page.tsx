@@ -83,11 +83,14 @@ export default async function DonationsPage({ searchParams }: Props) {
       _count: { _all: true },
     }),
     // Aggregate counts only: no donor row, amount, reference or contact detail leaves the database for this card.
-    readDonationReport(async () => summariseDonationFunnel(await prisma.donation.groupBy({
-      by: ["paymentMethod", "status"],
-      where: { createdAt: { gte: funnelSince() } },
-      _count: { _all: true },
-    })), () => logServerError("donation.outcomes_report_unavailable")),
+    readDonationReport(async () => {
+      const groups = await prisma.donation.groupBy({
+        by: ["paymentMethod", "status"],
+        where: { createdAt: { gte: funnelSince() } },
+        _count: { _all: true },
+      });
+      return summariseDonationFunnel(groups);
+    }, () => logServerError("donation.outcomes_report_unavailable")),
     readDonationReport(() => loadPendingTransferReview(prisma), () => logServerError("donation.pending_transfer_report_unavailable")),
   ]);
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
