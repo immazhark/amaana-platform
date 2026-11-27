@@ -330,6 +330,27 @@ jobs:
       - name: Report App Router route-level JavaScript and CSS
         run: npm run audit:route-bundles -- --compressed
 
+      - name: Capture exact-build route bundle evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/amaana-route-evidence"
+          mkdir -p "$evidence"
+          node scripts/report-route-bundles.mjs --json --compressed > "$evidence/report.json"
+          git rev-parse HEAD > "$evidence/source-sha.txt"
+          node --version > "$evidence/node-version.txt"
+
+      - name: Upload exact-build route bundle evidence
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: route-bundle-evidence-${{ github.sha }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/amaana-route-evidence/report.json
+            ${{ runner.temp }}/amaana-route-evidence/source-sha.txt
+            ${{ runner.temp }}/amaana-route-evidence/node-version.txt
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Enforce production bundle budgets
         shell: bash
         run: |
