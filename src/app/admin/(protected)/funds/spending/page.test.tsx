@@ -1,9 +1,9 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ requirePermission: vi.fn(), hasPermission: vi.fn(), funds: vi.fn(), groups: vi.fn(), entries: vi.fn() }));
+const mocks = vi.hoisted(() => ({ requirePermission: vi.fn(), hasPermission: vi.fn(), funds: vi.fn(), groups: vi.fn(), entries: vi.fn(), transaction: vi.fn(), directRead: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ requirePermission: mocks.requirePermission, hasPermission: mocks.hasPermission }));
-vi.mock("@/lib/prisma", () => ({ prisma: { fund: { findMany: mocks.funds }, fundDisbursement: { groupBy: mocks.groups, findMany: mocks.entries } } }));
+vi.mock("@/lib/prisma", () => ({ prisma: { $transaction: mocks.transaction, fund: { findMany: mocks.directRead }, fundDisbursement: { groupBy: mocks.directRead, findMany: mocks.directRead } } }));
 vi.mock("../actions", () => {
   const noop = async () => undefined;
   return { publishDisbursementAction: noop, recordDisbursementAction: noop, voidDisbursementAction: noop };
@@ -24,6 +24,8 @@ beforeEach(() => {
     { status: "VOID", _count: { _all: 2 }, _sum: { amount: money(7.01) } },
   ]);
   mocks.entries.mockResolvedValue([]);
+  mocks.directRead.mockRejectedValue(new Error("Read outside the spending snapshot"));
+  mocks.transaction.mockImplementation(async callback => callback({ fund: { findMany: mocks.funds }, fundDisbursement: { groupBy: mocks.groups, findMany: mocks.entries } }));
 });
 
 afterEach(() => vi.unstubAllEnvs());
@@ -36,6 +38,8 @@ describe("private spending history", () => {
     expect(mocks.funds).not.toHaveBeenCalled();
     expect(mocks.groups).not.toHaveBeenCalled();
     expect(mocks.entries).not.toHaveBeenCalled();
+    expect(mocks.transaction).not.toHaveBeenCalled();
+    expect(mocks.directRead).not.toHaveBeenCalled();
   });
 
   it("shows totals across matching pages and retains filters with stable pagination", async () => {
@@ -104,4 +108,39 @@ describe("private draft publication review", () => {
     expect(html).not.toContain("synthetic-maker-private-id");
     expect(html).not.toContain(">Publish</button>");
   });
+});
+
+
+it("uses a single repeatable-read snapshot for filters, totals and the bounded records", async () => {
+  const before = { id: "synthetic-draft", pool: "NON_ZAKAT", amount: money(100), spentOn: new Date("2026-11-01T00:00:00Z"), financialYear: "2026-27", title: "Synthetic snapshot entry", status: "DRAFT", voidReason: null, fund: { name: "Synthetic fund" } };
+  const after = { ...before, status: "VOID", voidReason: "Synthetic concurrent void" };
+  let current: typeof before | typeof after = before;
+  mocks.transaction.mockImplementationOnce(async (callback, options) => {
+    expect(options).toEqual({ isolationLevel: "RepeatableRead" });
+    const snapshot = current;
+    return callback({
+      fund: { findMany: mocks.funds },
+      fundDisbursement: {
+        groupBy: async (args: { by: string[] }) => {
+          if (args.by.includes("financialYear")) return [{ financialYear: "2026-27" }];
+          current = after;
+          return [{ status: snapshot.status, _count: { _all: 1 }, _sum: { amount: snapshot.amount } }];
+        },
+        findMany: async () => [snapshot],
+      },
+    });
+  });
+  const html = renderToStaticMarkup(await FundSpendingPage({ searchParams: Promise.resolve({}) }));
+  expect(current.status).toBe("VOID");
+  expect(mocks.transaction).toHaveBeenCalledOnce();
+  expect(mocks.directRead).not.toHaveBeenCalled();
+  expect(html).toContain("<strong>₹100</strong><p>Draft spending</p>");
+  expect(html).toContain("<td>DRAFT</td>");
+  expect(html).not.toContain("Synthetic concurrent void");
+  expect(html).toContain("Page 1 of 1 · 1 records");
+});
+it("fails closed rather than displaying zero or partial totals when the snapshot fails", async () => {
+  mocks.transaction.mockRejectedValueOnce(new Error("Synthetic snapshot unavailable"));
+  await expect(FundSpendingPage({ searchParams: Promise.resolve({}) })).rejects.toThrow("Synthetic snapshot unavailable");
+  expect(mocks.directRead).not.toHaveBeenCalled();
 });

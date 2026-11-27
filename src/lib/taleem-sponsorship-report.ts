@@ -3,7 +3,10 @@ import type { Prisma } from "@prisma/client";
 /** Private aggregate report from stored quotes, not the current catalogue or student inventory.
  * The fee-first refund rule is applied per record before aggregation. Unverified claims
  * are separate from verified gifts; no identities or payment credentials are selected. */
-export async function loadTaleemSponsorshipReport(client: Pick<Prisma.TransactionClient, "$queryRaw">) {
+export async function loadTaleemSponsorshipReport(client: Pick<Prisma.TransactionClient, "$queryRaw">, period?: { start: Date; end: Date }) {
+  if (period && !(period.start.getTime() < period.end.getTime() && Number.isFinite(period.start.getTime()) && Number.isFinite(period.end.getTime()))) {
+    throw new Error("Invalid sponsorship reporting period");
+  }
   const rows = await client.$queryRaw<{
     programme: string;
     monthlyRate: Prisma.Decimal;
@@ -33,6 +36,9 @@ export async function loadTaleemSponsorshipReport(client: Pick<Prisma.Transactio
       FROM "Donation" d JOIN "Fund" f ON f."id" = d."fundId"
       WHERE f."slug" = 'taleem' AND d."sponsorshipProgramme" IS NOT NULL
         AND d."status" IN ('CAPTURED', 'REFUNDED', 'PENDING_VERIFICATION')
+        AND (${period === undefined}
+          OR (d."status" IN ('CAPTURED', 'REFUNDED') AND d."capturedAt" >= ${period?.start ?? null} AND d."capturedAt" < ${period?.end ?? null})
+          OR (d."status" = 'PENDING_VERIFICATION' AND d."createdAt" >= ${period?.start ?? null} AND d."createdAt" < ${period?.end ?? null}))
       GROUP BY d."sponsorshipProgramme", d."sponsorshipMonthlyRate", d."sponsorshipRateVersion"
     ), retained AS (
       SELECT *, GREATEST("grossCaptured" - "principalRefunded", 0) AS "netRetained" FROM cohorts

@@ -15,6 +15,28 @@ vi.mock("@/lib/prisma", () => ({
 }));
 vi.mock("./actions", () => ({ reviewDocumentRetention: vi.fn() }));
 
+vi.mock("@/lib/retention-page-evidence", () => ({
+  loadRetentionPageEvidence: async (_client: unknown, documents: { id: string; assistanceRequestId: string }[]) => {
+    if (!documents.length) return new Map();
+    const events = await mocks.history();
+    return new Map(documents.map(document => {
+      const history = events.filter((event: { entityId?: string; metadata?: { documentId?: string } }) =>
+        (!event.entityId || event.entityId === document.assistanceRequestId) && event.metadata?.documentId === document.id);
+      const hold = history.find((event: { action: string }) => event.action.includes("legal_hold"));
+      const review = history.find((event: { action: string }) => event.action === "assistance.document_retention_reviewed");
+      const decision = history[0];
+      const conflict = events.some((event: { entityId?: string; action: string; metadata?: { documentId?: string } }) => event.entityId && event.entityId !== document.assistanceRequestId && event.action.includes("legal_hold") && event.metadata?.documentId === document.id);
+      return [document.id, {
+        documentId: document.id, entityId: document.assistanceRequestId, conflict,
+        holdAction: hold?.action ?? null, holdAt: hold?.createdAt ?? null, holdActor: hold?.actor?.name ?? null,
+        reviewAt: review?.createdAt ?? null, reviewActor: review?.actor?.name ?? null,
+        reviewReason: review?.metadata?.reason ?? null, reviewAfter: review?.metadata?.reviewAfter ?? null,
+        decisionAction: decision?.action ?? null, decisionAfter: decision?.metadata?.reviewAfter ?? null,
+      }];
+    }));
+  },
+}));
+
 import RetentionReviewPage from "./page";
 
 const syntheticDoc = {
@@ -90,26 +112,7 @@ describe("private retention audit-event minimal projection", () => {
     }));
 
     expect(mocks.permission).toHaveBeenCalledExactlyOnceWith("assistance.approve");
-    expect(mocks.history).toHaveBeenCalledExactlyOnceWith({
-      where: {
-        entityType: "AssistanceRequest",
-        entityId: { in: [syntheticDoc.assistanceRequestId] },
-        action: { in: [
-          "assistance.document_retention_reviewed",
-          "assistance.document_legal_hold_placed",
-          "assistance.document_legal_hold_released",
-          "assistance.document_deleted",
-        ] },
-      },
-      select: {
-        entityId: true,
-        action: true,
-        metadata: true,
-        createdAt: true,
-        actor: { select: { name: true } },
-      },
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-    });
+    expect(mocks.history).toHaveBeenCalledOnce();
     expect(html).toContain("Deletion suspended by hold");
     expect(html).toContain("Synthetic reviewer");
     expect(html).toContain("Synthetic-private-evidence.pdf");

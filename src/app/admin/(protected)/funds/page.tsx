@@ -17,14 +17,17 @@ const ZAKAT_LABEL = { ACCEPTED: "Zakat accepted", NOT_ACCEPTED: "Zakat not accep
 const CHANNEL_LABEL = { RAZORPAY: "Razorpay", DIRECT_UPI: "Direct UPI", BANK_TRANSFER: "Bank transfer" } as const;
 const EMPTY: PoolTotals = { receivedPaise: 0, pendingPaise: 0, refundedPaise: 0, spentPaise: 0, publishedSpentPaise: 0, balancePaise: 0 };
 
-type Props = { searchParams: Promise<{ fy?: string | string[] }> };
+type Props = { searchParams: Promise<{ fy?: string | string[]; taleemFy?: string | string[] }> };
 
 export default async function FundsLedgerPage({ searchParams }: Props) {
   await requirePermission("donation.view");
-  const period = financeReviewPeriod((await searchParams).fy);
+  const { fy, taleemFy } = await searchParams;
+  const period = financeReviewPeriod(fy);
+  const sponsorshipYear = typeof taleemFy === "string" && period.labels.includes(taleemFy) ? taleemFy : "all";
+  const sponsorshipPeriod = sponsorshipYear === "all" ? undefined : financeReviewPeriod(sponsorshipYear);
   const [{ funds, byFund, zakatAccount }, sponsorships, annualReport] = await Promise.all([
     getFundsLedger(),
-    loadTaleemSponsorshipReport(prisma).catch(() => {
+    loadTaleemSponsorshipReport(prisma, sponsorshipPeriod).catch(() => {
       logServerError("finance.taleem_report_unavailable");
       return null;
     }),
@@ -92,6 +95,7 @@ export default async function FundsLedgerPage({ searchParams }: Props) {
       <h2 id="annual-finance-heading">Financial-year reconciliation review</h2>
       <p className="muted">Private application-record extract for accountant review. Indian financial year: 1 April to 31 March. Receipts are grouped by capture date; refunds are cumulative principal refunds as currently recorded for those receipts, not refund-date cash flows. Pending claims are grouped by creation date and are not receipts. Spending uses the recorded financial year; drafts and published entries are separate, voids excluded. Appeal spending and offline historical records are not included. Missing capture dates are excluded. These are not bank statements, statutory tax filings, audited accounts or tax certificates.</p>
       <form action="/admin/funds" method="get" className="form-grid" aria-label="Select reconciliation financial year">
+        <input type="hidden" name="taleemFy" value={sponsorshipYear} />
         <div className="field"><label htmlFor="finance-fy">Financial year</label><select id="finance-fy" name="fy" defaultValue={period.label}>{period.labels.map(label => <option key={label} value={label}>{label}</option>)}</select></div>
         <div className="field"><button type="submit" className="button">Review year</button></div>
       </form>
@@ -139,8 +143,14 @@ export default async function FundsLedgerPage({ searchParams }: Props) {
     </section>
     <section className="admin-card" aria-labelledby="taleem-report-heading">
       <h2 id="taleem-report-heading">Taleem sponsorship reconciliation</h2>
-      <p className="muted">Programme-level gifts grouped by their original monthly rate and rate version, across all recorded dates. Verified records include subsequently refunded gifts. Pending claims are not receipts. These amounts are not student assignments, fee obligations or recurring payment mandates. A quoted unit-month is one unit for one month at the recorded rate. Retained rate equivalents divide the retained principal of the cohort by that historical rate, with the exact remainder shown separately. They are arithmetic only, not allocated places, unspent balances, fee coverage dates or available sponsorship capacity.</p>
-      {sponsorships === null ? <p role="status">Taleem sponsorship report temporarily unavailable. No sponsorship totals are shown.</p> : sponsorships.length === 0 ? <p>No verified sponsorship gifts or pending claims recorded.</p> : <div className="admin-table-wrap" role="region" aria-label="Taleem sponsorship totals" tabIndex={0}>
+      <form action="/admin/funds" method="get" className="form-grid" aria-label="Select Taleem sponsorship reporting period">
+        <input type="hidden" name="fy" value={period.label} />
+        <div className="field"><label htmlFor="taleem-fy">Sponsorship reporting period</label><select id="taleem-fy" name="taleemFy" defaultValue={sponsorshipYear}><option value="all">All recorded dates</option>{period.labels.map(label => <option key={label} value={label}>FY {label}</option>)}</select></div>
+        <div className="field"><button type="submit" className="button">Review sponsorship period</button></div>
+      </form>
+      <p><strong>{sponsorshipPeriod ? `FY ${sponsorshipPeriod.label}` : "All recorded dates"}</strong></p>
+      <p className="muted">Programme-level gifts grouped by their original monthly rate and rate version. In a selected financial year, verified gifts use capture dates and pending claims use creation dates; missing capture dates are excluded. Refunds are cumulative for the selected gifts, not refund-date cash flows. Verified records include subsequently refunded gifts. Pending claims are not receipts. These amounts are not student assignments, fee obligations or recurring payment mandates. A quoted unit-month is one unit for one month at the recorded rate. Retained rate equivalents divide the retained principal of the cohort by that historical rate, with the exact remainder shown separately. They are arithmetic only, not allocated places, unspent balances, fee coverage dates or available sponsorship capacity.</p>
+      {sponsorships === null ? <p role="status">Taleem sponsorship report temporarily unavailable. No sponsorship totals are shown.</p> : sponsorships.length === 0 ? <p>{sponsorshipPeriod ? `No matching verified sponsorship gifts or pending claims for FY ${sponsorshipPeriod.label}.` : "No verified sponsorship gifts or pending claims recorded."}</p> : <div className="admin-table-wrap" role="region" aria-label="Taleem sponsorship totals" tabIndex={0}>
         <table className="admin-table">
           <thead><tr><th scope="col">Programme and recorded rate</th><th scope="col">Verified records</th><th scope="col">Gross verified</th><th scope="col">Principal refunded</th><th scope="col">Net retained</th><th scope="col">Pending claims</th><th scope="col">Pending amount</th><th scope="col">Verified quoted unit-months</th><th scope="col">Retained whole rate equivalents</th><th scope="col">Retained remainder</th><th scope="col">Pending quoted unit-months</th></tr></thead>
           <tbody>{sponsorships.map(row => <tr key={JSON.stringify([row.programme, row.monthlyRate, row.rateVersion])}>

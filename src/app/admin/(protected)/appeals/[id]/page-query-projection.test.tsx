@@ -12,7 +12,7 @@ const verification = {
 };
 function record() {
   return {
-    id: "synthetic-appeal", title: "Synthetic appeal", slug: "synthetic-appeal", category: "OTHER", status: "PUBLISHED", goalAmount: "100",
+    id: "synthetic-appeal", title: "Synthetic appeal", slug: "synthetic-appeal", category: "OTHER", status: "PUBLISHED", goalAmount: "100", amountRaised: "20", closesAt: null,
     summary: "Synthetic public summary", story: "Synthetic public story", updatedAt: new Date("2026-10-27T00:00:00Z"),
     updates: [{ id: "synthetic-update", title: "Synthetic update", content: "Synthetic update content", isPublic: false, author: { name: "Synthetic author" } }],
     assistanceRequest: { referenceNumber: "SYNTHETIC-REQUEST", verification },
@@ -130,6 +130,8 @@ it("fetches only displayed Appeal editor fields and approved update-list fields"
       summary: true,
       story: true,
       goalAmount: true,
+      amountRaised: true,
+      closesAt: true,
       coverImageUrl: true,
       isFeatured: true,
       featuredOrder: true,
@@ -142,4 +144,29 @@ it("fetches only displayed Appeal editor fields and approved update-list fields"
   expect(html).toContain("Synthetic appeal");
   expect(html).toContain("Synthetic update content");
   expect(html).toContain("Appeal editor");
+});
+
+
+it("shows collection eligibility and a closure review independently of publication status", async () => {
+  const html = await render();
+  expect(html).toContain("Collection and closure review");
+  expect(html).toContain("Eligible for checkout");
+  expect(html).toContain("Current remaining checkout limit");
+  expect(html).toContain("₹80");
+  expect(html).toContain("not a bank statement or evidence of disbursement");
+  expect(html).toContain("CLOSED ends the appeal");
+});
+it.each([
+  { status: "CLOSED", amountRaised: "20", closesAt: null },
+  { status: "PUBLISHED", amountRaised: "100", closesAt: null },
+  { status: "PUBLISHED", amountRaised: "20", closesAt: new Date("2000-01-01T00:00:00Z") },
+  { status: "PUBLISHED", amountRaised: "99.99", closesAt: null },
+  { status: "PAUSED", amountRaised: "20", closesAt: null },
+])("does not present a checkout limit for an ineligible appeal ($status)", async state => {
+  mocks.appeal.mockResolvedValueOnce({ ...record(), ...state });
+  const html = await render();
+  expect(html).toContain("Not eligible for checkout");
+  expect(html).toContain("<dt>Current remaining checkout limit</dt><dd>Not available</dd>");
+  if (state.status === "CLOSED") expect(html).toContain("This appeal is closed.");
+  if (state.status === "PUBLISHED") expect(html).toContain("Published but not eligible for checkout");
 });
