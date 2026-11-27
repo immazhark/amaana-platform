@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
+import { logServerError } from "@/lib/server-log";
 import { canRenderPublicMedia } from "@/lib/public-media";
 
 const SPONSORSHIP_MEDIA_CANDIDATE_LIMIT = 8;
@@ -47,5 +48,19 @@ export const getSponsorEducationHeroMedia = cache(async () => {
     return candidates.find(canRenderPublicMedia) ?? null;
   } catch {
     return null;
+  }
+});
+
+/** Only the link destination's publication state is needed; never read the
+ * full initiative, its media, appeals, stories or religious content here. */
+export const isPublishedTaleemDestination = cache(async () => {
+  try {
+    return Boolean(await prisma.initiative.findFirst({
+      where: { slug: "taleem", status: "PUBLISHED", cause: { status: "PUBLISHED" } },
+      select: { slug: true },
+    }));
+  } catch {
+    logServerError("sponsorship.taleem_destination_unavailable");
+    return false;
   }
 });
