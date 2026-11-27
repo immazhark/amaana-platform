@@ -97,7 +97,7 @@ export default async function FundsLedgerPage({ searchParams }: Props) {
       </form>
       {!annualReport ? <p role="status">Financial-year report temporarily unavailable. No totals or CSV are shown for this report; other available ledger sections are independent.</p> : annual.length === 0 ? <p>No matching application records for {period.label}. This does not establish zero foundation activity.</p> : <>
         <p><a className="button" href={csvHref} download={`amaana-application-finance-review-${period.label}.csv`}>Download aggregate CSV for review</a></p>
-        <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Financial-year reconciliation review">
+        <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Financial-year destination totals">
           <table className="admin-table">
             <thead><tr><th scope="col">Destination / pool</th><th scope="col">Gross verified</th><th scope="col">Cumulative principal refunded</th><th scope="col">Retained principal</th><th scope="col">Pending claims</th><th scope="col">Pending amount</th><th scope="col">Fund drafts</th><th scope="col">Fund published spending</th></tr></thead>
             <tbody>{annual.map(row => <tr key={JSON.stringify([row.destination, row.fundSlug, row.pool])}>

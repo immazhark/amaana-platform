@@ -59,6 +59,10 @@ describe("annual finance review", () => {
     const html = renderToStaticMarkup(await FundsLedgerPage({ searchParams: Promise.resolve({ fy: "2020-21" }) }));
     expect(mocks.annual).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ label: "2020-21", start: new Date("2020-03-31T18:30:00Z"), end: new Date("2021-03-31T18:30:00Z") }));
     expect(html).toContain("amaana-application-finance-review-2020-21.csv");
+    expect(html).toContain('aria-labelledby="annual-finance-heading"');
+    expect(html).toContain('id="annual-finance-heading">Financial-year reconciliation review</h2>');
+    expect(html).toContain('role="region" aria-label="Financial-year destination totals"');
+    expect(html).not.toContain('aria-label="Financial-year reconciliation review"');
     expect(html).toContain("₹100.01");
     expect(html).toContain("not refund-date cash flows");
     expect(html).toContain("not bank statements, statutory tax filings");

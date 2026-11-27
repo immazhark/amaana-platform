@@ -71,7 +71,9 @@ test('case history traverses equal timestamps without overlap and preserves queu
 test('financial-year control totals reconcile rendered destination rows and keep exports aggregate-only', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await open(page, '/admin/funds');
-  const region = page.getByRole('region', { name: 'Financial-year reconciliation review', exact: true });
+  const review = page.getByRole('region', { name: 'Financial-year reconciliation review', exact: true });
+  await expect(review).toBeVisible();
+  const region = review.getByRole('region', { name: 'Financial-year destination totals', exact: true });
   await expect(region).toBeVisible();
   const totals = await region.evaluate(node => {
     const parse = (text, count) => {
