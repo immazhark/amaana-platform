@@ -3,6 +3,9 @@ import { TALEEM_FACTS, TALEEM_HIFDH_COMPLETIONS } from "@/content/taleem-facts";
 import { filterRosterLearners, rosterLearnerFilters, rosterReview } from "@/lib/taleem-roster-review";
 import { loadRoster } from "@/lib/taleem-roster-service";
 import { parseCalendarDate } from "@/lib/taleem-roster-rules";
+import { prisma } from "@/lib/prisma";
+import { logServerError } from "@/lib/server-log";
+import { historyBoundary, historyHref, historyPage, historyPeriodState, loadTaleemHistory, selectHistoryLearner } from "@/lib/taleem-roster-history";
 import {
   assignLearnerAction, confirmHifdhEvidenceAction, createLearnerAction, createPlaceAction, endAssignmentAction, recordHifdhCompletionAction,
   setLearnerStatusAction, setPlaceStatusAction, startEnrolmentAction,
@@ -10,7 +13,7 @@ import {
 
 export const dynamic = "force-dynamic";
 
-type Props = { searchParams: Promise<{ notice?: string; programmeFilter?: string | string[]; statusFilter?: string | string[]; placementFilter?: string | string[] }> };
+type Props = { searchParams: Promise<{ notice?: string; programmeFilter?: string | string[]; statusFilter?: string | string[]; placementFilter?: string | string[]; historyLearner?: string | string[]; programmeBefore?: string | string[]; assignmentBefore?: string | string[] }> };
 
 const PROGRAMME_LABEL = { QAIDA: "Qaida", NAZIRA: "Nazira", HIFDH: "Hifdh" } as const;
 const LEARNER_STATUS_LABEL = { ACTIVE: "Active", ON_BREAK: "On break", LEFT: "Left", GRADUATED: "Graduated" } as const;
@@ -21,12 +24,24 @@ const todayInIndia = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ko
 
 export default async function TaleemRosterPage({ searchParams }: Props) {
   await requirePermission("assistance.approve");
-  const { notice, ...requestedFilters } = await searchParams;
+  const { notice, historyLearner, programmeBefore: rawProgrammeBefore, assignmentBefore: rawAssignmentBefore, ...requestedFilters } = await searchParams;
   const filters = rosterLearnerFilters(requestedFilters);
   const filtered = Object.values(filters).some(value => value !== "ALL");
   const today = todayInIndia();
   const roster = await loadRoster(parseCalendarDate(today) ?? new Date());
   const { counts } = roster;
+  const selectedHistory = selectHistoryLearner(roster.learners, historyLearner);
+  const programmeBefore = historyBoundary(rawProgrammeBefore);
+  const assignmentBefore = historyBoundary(rawAssignmentBefore);
+  const invalidHistoryPage = (rawProgrammeBefore !== undefined && !programmeBefore) || (rawAssignmentBefore !== undefined && !assignmentBefore);
+  const history = selectedHistory && !invalidHistoryPage ? await loadTaleemHistory(prisma, selectedHistory.id, programmeBefore, assignmentBefore).catch(() => {
+    logServerError("taleem.history_unavailable");
+    return null;
+  }) : null;
+  const programmeHistory = history ? historyPage(history.enrolments) : null;
+  const assignmentHistory = history ? historyPage(history.assignments) : null;
+  const historyDay = parseCalendarDate(counts.asOf) ?? new Date();
+  const dayLabel = (date: Date | null) => date ? date.toISOString().slice(0, 10) : "No end recorded";
   const vacant = roster.places.filter(place => place.status === "MAINTAINED" && place.holderAlias === null && !place.hasBlockingAssignment);
   const baseline = TALEEM_FACTS.sponsoredStudents;
   const review = rosterReview(roster.learners, roster.places);
@@ -116,6 +131,26 @@ export default async function TaleemRosterPage({ searchParams }: Props) {
       </form>
     </section>
 
+    {historyLearner !== undefined && <section className="card" aria-labelledby="learner-history-heading">
+      <h2 id="learner-history-heading">Learner programme and place history{selectedHistory ? ` — ${selectedHistory.publicAlias}` : ""}</h2>
+      <p><a href={historyHref(filters)}>Return to learner directory</a></p>
+      {!selectedHistory ? <p role="status">No learner history matches this selection.</p> : invalidHistoryPage ? <p role="status">Invalid history page. <a href={historyHref(filters, selectedHistory.publicAlias)}>Return to latest history</a></p> : !programmeHistory || !assignmentHistory ? <p role="status">Learner history temporarily unavailable. This does not mean there are no records.</p> : <>
+        <p className="muted">Private recorded periods, newest start date first. Each list displays up to 25 periods. End dates are inclusive. Period state is relative to {counts.asOf}, not proof of funding or verified attendance. This view does not edit records or change published figures.</p>
+        <h3>Programme history</h3>
+        {programmeHistory.rows.length ? <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Learner programme history"><table>
+          <thead><tr><th scope="col">Programme</th><th scope="col">From</th><th scope="col">Through</th><th scope="col">Period state</th></tr></thead>
+          <tbody>{programmeHistory.rows.map(row => <tr key={row.id}><th scope="row">{PROGRAMME_LABEL[row.programme]}</th><td>{dayLabel(row.startedOn)}</td><td>{dayLabel(row.endedOn)}</td><td>{historyPeriodState(row, historyDay)}</td></tr>)}</tbody>
+        </table></div> : <p>{programmeBefore ? "No older programme periods in this page." : "No programme periods recorded."}</p>}
+        <p>{programmeBefore && <a href={historyHref(filters, selectedHistory.publicAlias, null, assignmentBefore)}>Latest programme periods</a>} {programmeHistory.older && <a href={historyHref(filters, selectedHistory.publicAlias, programmeHistory.older, assignmentBefore)}>Older programme periods</a>}</p>
+        <h3>Sponsored place history</h3>
+        {assignmentHistory.rows.length ? <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Learner sponsored place history"><table>
+          <thead><tr><th scope="col">Place</th><th scope="col">From</th><th scope="col">Through</th><th scope="col">Period state</th></tr></thead>
+          <tbody>{assignmentHistory.rows.map(row => <tr key={row.id}><th scope="row">{row.place.placeCode}</th><td>{dayLabel(row.startedOn)}</td><td>{dayLabel(row.endedOn)}</td><td>{historyPeriodState(row, historyDay)}</td></tr>)}</tbody>
+        </table></div> : <p>{assignmentBefore ? "No older place periods in this page." : "No sponsored place periods recorded."}</p>}
+        <p>{assignmentBefore && <a href={historyHref(filters, selectedHistory.publicAlias, programmeBefore, null)}>Latest place periods</a>} {assignmentHistory.older && <a href={historyHref(filters, selectedHistory.publicAlias, programmeBefore, assignmentHistory.older)}>Older place periods</a>}</p>
+      </>}
+    </section>}
+
     <section className="card" aria-labelledby="learners-heading">
       <h2 id="learners-heading">Learners</h2>
       <form action="/admin/taleem#learners-heading" method="get" className="form-grid" aria-label="Filter private learner records">
@@ -133,6 +168,7 @@ export default async function TaleemRosterPage({ searchParams }: Props) {
       <p className="muted">Showing {visibleLearners.length} of {roster.learners.length} learner records. Counts and reconciliation above always include the full roster.</p>
       {roster.learners.length === 0 ? <p className="muted">No learners yet.</p> : visibleLearners.length === 0 ? <p className="muted">No learners match these filters.</p> : visibleLearners.map(learner => <details key={learner.id} id={`learner-${learner.publicAlias}`} className="card">
         <summary><strong>{learner.fullName}</strong> <small>{learner.publicAlias} · {LEARNER_STATUS_LABEL[learner.status]} · {learner.programme ? PROGRAMME_LABEL[learner.programme] : "No programme recorded"} · {learner.placeCode ?? "No place today"}{learner.openAssignmentStartsOn && learner.openAssignmentStartsOn > counts.asOf ? ` · Scheduled from ${learner.openAssignmentStartsOn}: ${learner.openAssignmentPlaceCode ?? "place recorded"}` : ""}{learner.completedHifdhOn ? ` · Hifdh completion recorded ${learner.completedHifdhOn}` : ""}</small></summary>
+        <p><a href={historyHref(filters, learner.publicAlias)}>Review programme and place history</a></p>
         <form action={setLearnerStatusAction} className="form-grid">
           <input type="hidden" name="learnerId" value={learner.id} />
           <div className="field"><label htmlFor={`lstatus-${learner.id}`}>Status</label><select id={`lstatus-${learner.id}`} name="status" defaultValue={learner.status}>{Object.entries(LEARNER_STATUS_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></div>
