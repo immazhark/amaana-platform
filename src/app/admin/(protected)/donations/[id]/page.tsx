@@ -6,6 +6,7 @@ import { formatINR } from "@/lib/appeals";
 import { donationIntentLabel } from "@/lib/donation-intent";
 import { prisma } from "@/lib/prisma";
 import { getDonationEvidenceUrl } from "@/lib/storage";
+import { logServerError } from "@/lib/server-log";
 import { reconcileDonationAction, reissueReceiptLinkAction } from "../actions";
 import { AdminActionFeedbackForm } from "@/components/admin-action-feedback-form";
 
@@ -58,9 +59,17 @@ export default async function DonationDetailPage({ params }: Props) {
   });
   if (!donation) notFound();
   const canReconcile = hasPermission(user, "donation.reconcile");
-  const evidenceUrl = donation.transferEvidenceKey ? await getDonationEvidenceUrl(donation.transferEvidenceKey, donation.id) : null;
-  const { amount, coveredFee, totalReturned, donationRefunded, netRetained } = donationRecordAmounts(donation);
   const direct = donation.paymentMethod !== "RAZORPAY";
+  let evidenceUrl: string | null = null;
+  if (direct && donation.transferEvidenceKey) {
+    try {
+      evidenceUrl = await getDonationEvidenceUrl(donation.transferEvidenceKey, donation.id);
+    } catch {
+      logServerError("donation.detail_evidence_unavailable");
+    }
+  }
+  const evidenceUnavailable = Boolean(donation.transferEvidenceKey) && !evidenceUrl;
+  const { amount, coveredFee, totalReturned, donationRefunded, netRetained } = donationRecordAmounts(donation);
 
   return <>
     <div className="admin-heading"><div><p className="eyebrow">{donation.referenceNumber}</p><h1>{formatDonationReportINR(amount)}</h1><p className="muted">{donation.appeal?.title ?? donation.fund?.name ?? "—"}</p></div><span className="status-badge">{donation.status}</span></div>
@@ -69,7 +78,7 @@ export default async function DonationDetailPage({ params }: Props) {
         <div><dt>Donor</dt><dd>{donation.donorName}</dd></div><div><dt>Public anonymity</dt><dd>{donation.isAnonymous ? "Anonymous" : "Name may be shown"}</dd></div>
         <div><dt>Email</dt><dd>{donation.donorEmail}</dd></div><div><dt>Phone</dt><dd>{donation.donorPhone ?? "Not supplied"}</dd></div>
         <div><dt>Giving intention</dt><dd>{donationIntentLabel(donation.givingIntent)}</dd></div>{donation.sponsorshipProgramme && donation.sponsorshipUnits && donation.sponsorshipMonths && donation.sponsorshipMonthlyRate && <div><dt>Programme sponsorship</dt><dd>{TALEEM_CATALOGUE.programmes.find(item => item.id === donation.sponsorshipProgramme)?.name ?? donation.sponsorshipProgramme}: {donation.sponsorshipUnits} {donation.sponsorshipUnits === 1 ? "unit" : "units"} × {donation.sponsorshipMonths} {donation.sponsorshipMonths === 1 ? "month" : "months"} × {formatINR(donation.sponsorshipMonthlyRate.toNumber())} a month (rate version {donation.sponsorshipRateVersion})</dd></div>}<div><dt>Payment method</dt><dd>{methodLabel(donation.paymentMethod)}</dd></div>
-        {direct ? <><div><dt>Transfer reference / UTR</dt><dd>{donation.transferReference}</dd></div><div><dt>Transfer date</dt><dd>{formatDateTime(donation.transferredAt)}</dd></div><div><dt>Evidence</dt><dd>{evidenceUrl ? <a href={evidenceUrl} target="_blank" rel="noreferrer">Open private evidence<span className="sr-only"> (opens in a new tab)</span></a> : "Not supplied"}</dd></div><div><dt>Reconciled by</dt><dd>{donation.reconciledBy?.name ?? "Pending"}</dd></div><div><dt>Reconciliation notes</dt><dd>{donation.reconciliationNotes ?? "Pending"}</dd></div></> : <><div><dt>Razorpay order</dt><dd>{donation.providerOrderId}</dd></div><div><dt>Razorpay payment</dt><dd>{donation.providerPaymentId ?? "Pending"}</dd></div></>}
+        {direct ? <><div><dt>Transfer reference / UTR</dt><dd>{donation.transferReference}</dd></div><div><dt>Transfer date</dt><dd>{formatDateTime(donation.transferredAt)}</dd></div><div><dt>Evidence</dt><dd>{evidenceUrl ? <a href={evidenceUrl} target="_blank" rel="noreferrer">Open private evidence<span className="sr-only"> (opens in a new tab)</span></a> : evidenceUnavailable ? "Evidence supplied; private link unavailable. Reload or contact an administrator." : "Not supplied"}</dd></div><div><dt>Reconciled by</dt><dd>{donation.reconciledBy?.name ?? "Pending"}</dd></div><div><dt>Reconciliation notes</dt><dd>{donation.reconciliationNotes ?? "Pending"}</dd></div></> : <><div><dt>Razorpay order</dt><dd>{donation.providerOrderId}</dd></div><div><dt>Razorpay payment</dt><dd>{donation.providerPaymentId ?? "Pending"}</dd></div></>}
         <div><dt>Acknowledgement</dt><dd>{donation.receiptNumber ?? "Pending"}</dd></div><div><dt>Donation amount</dt><dd>{formatDonationReportINR(amount)}</dd></div>{coveredFee > 0 && <div><dt>Covered processing fee</dt><dd>{formatDonationReportINR(coveredFee)}</dd></div>}<div><dt>Total returned (including any fee)</dt><dd>{formatDonationReportINR(totalReturned)}</dd></div><div><dt>Donation refunded</dt><dd>{formatDonationReportINR(donationRefunded)}</dd></div><div><dt>Net retained</dt><dd>{formatDonationReportINR(netRetained)}</dd></div>
         <div><dt>Created</dt><dd>{formatDateTime(donation.createdAt)}</dd></div><div><dt>Captured</dt><dd>{formatDateTime(donation.capturedAt)}</dd></div><div><dt>Failed</dt><dd>{formatDateTime(donation.failedAt)}</dd></div><div><dt>Fully refunded</dt><dd>{formatDateTime(donation.refundedAt)}</dd></div>
       </dl></section>
