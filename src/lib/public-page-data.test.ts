@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   initiativeFindMany: vi.fn(),
   causeFindMany: vi.fn(),
   appealFindMany: vi.fn(),
+  logServerError: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -15,6 +16,8 @@ vi.mock("@/lib/prisma", () => ({
     appeal: { findMany: mocks.appealFindMany, fields: { goalAmount: 'appeal.goalAmount' } },
   },
 }));
+
+vi.mock("@/lib/server-log", () => ({ logServerError: mocks.logServerError }));
 
 import {
   getAppealsIndexData,
@@ -38,6 +41,7 @@ describe("public page gallery media query contracts", () => {
     mocks.causeFindMany.mockReset();
     mocks.causeFindMany.mockResolvedValue([]);
     mocks.appealFindMany.mockReset().mockResolvedValue([]);
+    mocks.logServerError.mockReset();
   });
 
   it("uses one request-cached lookup identity for metadata, programmes and general pages", () => {
@@ -124,6 +128,37 @@ describe("public page gallery media query contracts", () => {
     }
     expect(mocks.initiativeFindMany.mock.calls[0]?.[0].where)
       .toHaveProperty("mediaAssets.some");
+  });
+
+  it.each(["featured-outcomes", "field-outcomes", "cause-artwork", "programme-publication"] as const)("isolates failed homepage read %s without losing healthy reviewed projections", async source => {
+    const featured = { slug: "synthetic-feature", title: "Synthetic feature", primaryMetric: "2", primaryMetricLabel: "units" };
+    const field = { slug: "synthetic-field", title: "Synthetic field", primaryMetric: "3", primaryMetricLabel: "units" };
+    const causes = [{ slug: "synthetic-cause", initiatives: [{ mediaAssets: [] }] }];
+    const error = new Error("PRIVATE_SYNTHETIC_DIAGNOSTIC");
+    const queue = (mock: typeof mocks.initiativeFindMany, name: string, value: unknown) => {
+      if (source === name) mock.mockRejectedValueOnce(error);
+      else mock.mockResolvedValueOnce(value);
+    };
+    queue(mocks.initiativeFindMany, "featured-outcomes", [featured]);
+    queue(mocks.initiativeFindMany, "field-outcomes", [field]);
+    queue(mocks.causeFindMany, "cause-artwork", causes);
+    queue(mocks.initiativeFindMany, "programme-publication", [{ slug: "eid-gift-kits" }]);
+    const result = await getHomepageDiscoveryData();
+    expect(result.initiatives).toEqual([...(source === "featured-outcomes" ? [] : [featured]), ...(source === "field-outcomes" ? [] : [field])]);
+    expect(result.causes).toEqual(source === "cause-artwork" ? [] : causes);
+    expect(result.publishedProgrammeSlugs).toEqual(source === "programme-publication" ? [] : ["eid-gift-kits"]);
+    expect(mocks.initiativeFindMany).toHaveBeenCalledTimes(3);
+    expect(mocks.causeFindMany).toHaveBeenCalledTimes(1);
+    expect(mocks.logServerError).toHaveBeenCalledExactlyOnceWith("homepage.discovery_read_unavailable", { source });
+    expect(JSON.stringify(mocks.logServerError.mock.calls)).not.toContain("PRIVATE_SYNTHETIC");
+  });
+
+  it("fails closed on total homepage discovery failure without inventing publication", async () => {
+    mocks.initiativeFindMany.mockRejectedValue(new Error("PRIVATE_SYNTHETIC_DIAGNOSTIC"));
+    mocks.causeFindMany.mockRejectedValue(new Error("PRIVATE_SYNTHETIC_DIAGNOSTIC"));
+    expect(await getHomepageDiscoveryData()).toEqual({ initiatives: [], causes: [], publishedProgrammeSlugs: [] });
+    expect(mocks.logServerError).toHaveBeenCalledTimes(4);
+    expect(JSON.stringify(mocks.logServerError.mock.calls)).not.toContain("PRIVATE_SYNTHETIC");
   });
 
   it("ignores malformed homepage projection rows without losing reviewed programmes", async () => {

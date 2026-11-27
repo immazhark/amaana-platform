@@ -6,6 +6,7 @@ import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { adminRecordView, assistanceAdminWhere } from "@/lib/admin-record-visibility";
 import { hasPermission, permissionKeys, requireAuthenticatedUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { logServerError } from "@/lib/server-log";
 import { assistanceWorkload } from "@/lib/assistance-workload";
 import { assistanceCaseHref } from "@/lib/assistance-queue-navigation";
 import { DECISION_COHORT_DAYS, loadAssistanceDecisionBreakdown } from "@/lib/assistance-decision-report";
@@ -28,7 +29,12 @@ export default async function AdminQueuePage({ searchParams }: Props) {
   const mineOnly = requestedAssignment === "mine";
   const scope = { ...assistanceAdminWhere(view), ...(unassignedOnly ? { assignedToId: null } : mineOnly ? { assignedToId: user.id } : {}) };
   const where = { ...scope, ...(selected ? { status: selected } : {}) };
-  const [used, paused, workload, { totals: decisions, categories: decisionCategories }] = await Promise.all([capacityUsed(prisma), isIntakePaused(prisma), assistanceWorkload(prisma, assistanceAdminWhere(view), user.id), loadAssistanceDecisionBreakdown(prisma, view)]);
+  const [used, paused, workload, report] = await Promise.all([capacityUsed(prisma), isIntakePaused(prisma), assistanceWorkload(prisma, assistanceAdminWhere(view), user.id), loadAssistanceDecisionBreakdown(prisma, view).catch(() => {
+    logServerError("assistance.decision_report_unavailable");
+    return null;
+  })]);
+  const decisions = report?.totals ?? null;
+  const decisionCategories = report?.categories ?? null;
   const canApprove = hasPermission(user, "assistance.approve");
   const [totalItems, grouped] = await Promise.all([
     prisma.assistanceRequest.count({ where }),
@@ -110,7 +116,7 @@ export default async function AdminQueuePage({ searchParams }: Props) {
     <section className="admin-card" aria-labelledby="decision-report-heading">
       <h2 id="decision-report-heading">Recorded decision turnaround</h2>
       <p className="muted">Requests received in the last {DECISION_COHORT_DAYS} days in the selected record view, before queue filters. Time is measured from receipt to the earliest recorded approval or rejection evidence. This is not first-review time, case resolution, disbursement, or a promised response time. Reopened cases retain their recorded decision history. Older or missing evidence cannot be inferred.</p>
-      {decisions.received === 0 ? <p>No requests in this receipt cohort.</p> : <>
+      {decisions === null ? <p role="status">Report temporarily unavailable. This is not a zero count. You can continue reviewing requests above.</p> : decisions.received === 0 ? <p>No requests in this receipt cohort.</p> : <>
         <p><strong>{decisions.recorded} of {decisions.received}</strong> requests have recorded decision evidence.</p>
         <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Recorded decision turnaround counts">
           <table className="admin-table">
@@ -129,7 +135,7 @@ export default async function AdminQueuePage({ searchParams }: Props) {
     <section className="admin-card" aria-labelledby="verification-report-heading">
       <h2 id="verification-report-heading">Recorded verification activity</h2>
       <p className="muted">Same {DECISION_COHORT_DAYS}-day receipt cohort as the decision report. Measured to the earliest saved verification record or verification audit event. A saved record does not establish a completed review, first human contact or a response-time commitment. Missing evidence does not establish that nobody reviewed the case.</p>
-      {decisions.received === 0 ? <p>No requests in this receipt cohort.</p> : <>
+      {decisions === null ? <p role="status">Report temporarily unavailable. This is not a zero count. You can continue reviewing requests above.</p> : decisions.received === 0 ? <p>No requests in this receipt cohort.</p> : <>
         <p><strong>{decisions.verificationRecorded} of {decisions.received}</strong> requests have saved verification evidence.</p>
         <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Recorded verification activity counts">
           <table className="admin-table">
@@ -147,7 +153,7 @@ export default async function AdminQueuePage({ searchParams }: Props) {
     <section className="admin-card" aria-labelledby="decision-category-heading">
       <h2 id="decision-category-heading">Request categories and evidence coverage</h2>
       <p className="muted">Same {DECISION_COHORT_DAYS}-day receipt cohort and selected record view. Compare demand and saved evidence by requested category, not confirmed need or priority. Missing decision and verification counts can overlap. No response-time commitment is implied.</p>
-      {decisionCategories.length === 0 ? <p>No requests in this receipt cohort.</p> : <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Request category evidence coverage">
+      {decisionCategories === null ? <p role="status">Report temporarily unavailable. This is not a zero count. You can continue reviewing requests above.</p> : decisionCategories.length === 0 ? <p>No requests in this receipt cohort.</p> : <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Request category evidence coverage">
         <table className="admin-table">
           <thead><tr><th scope="col">Requested category</th><th scope="col">Received</th><th scope="col">Recorded decision</th><th scope="col">Open, no decision</th><th scope="col">Other, no decision</th><th scope="col">Saved verification</th><th scope="col">No verification evidence</th></tr></thead>
           <tbody>{decisionCategories.map(row => <tr key={row.category}>
