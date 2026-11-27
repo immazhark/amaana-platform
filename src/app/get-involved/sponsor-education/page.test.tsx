@@ -3,8 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ section: vi.fn(), hero: vi.fn(), initiative: vi.fn(), enquiry: vi.fn() }));
 vi.mock("@/components/taleem-sponsorship/taleem-sponsorship-section", () => ({ TaleemSponsorshipSection: mocks.section }));
-vi.mock("@/lib/sponsorship-media", () => ({ getSponsorEducationHeroMedia: mocks.hero }));
-vi.mock("@/lib/public-page-data", () => ({ getInitiativePageData: mocks.initiative }));
+vi.mock("@/lib/sponsorship-media", () => ({ getSponsorEducationHeroMedia: mocks.hero, isPublishedTaleemDestination: mocks.initiative }));
 vi.mock("@/components/sponsorship-enquiry", () => ({ SponsorshipEnquiry: ({ preferences }: { preferences: Record<string, string | string[] | undefined> }) => { mocks.enquiry(preferences); return <section id="sponsorship-enquiry">Enquiry form</section>; } }));
 
 import SponsorEducationPage from "./page";
@@ -17,7 +16,7 @@ describe("sponsor-education page while the programme form is open", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mocks.hero.mockResolvedValue(null);
-    mocks.initiative.mockResolvedValue({ slug: "taleem" });
+    mocks.initiative.mockResolvedValue(true);
     mocks.section.mockResolvedValue(<section id="programme-sponsorship">Programme form</section>);
   });
 
@@ -61,7 +60,7 @@ describe("sponsor-education page while the programme form is closed or unavailab
   beforeEach(() => {
     vi.resetAllMocks();
     mocks.hero.mockResolvedValue(null);
-    mocks.initiative.mockResolvedValue({ slug: "taleem" });
+    mocks.initiative.mockResolvedValue(true);
     mocks.section.mockResolvedValue(null);
   });
 
@@ -72,5 +71,36 @@ describe("sponsor-education page while the programme form is closed or unavailab
     expect(html).toContain("path=hifdh&amp;support=discuss#sponsorship-enquiry");
     expect(html).toContain("path=nazira&amp;support=discuss#sponsorship-enquiry");
     expect(html).not.toContain("Give to a Taleem programme");
+  });
+});
+
+describe("independent sponsorship reads", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    mocks.hero.mockResolvedValue(null);
+    mocks.initiative.mockResolvedValue(true);
+    mocks.section.mockResolvedValue(null);
+  });
+
+  it("starts optional hero and publication reads before the programme lookup completes", async () => {
+    let resolveSection: (value: null) => void = () => {};
+    mocks.section.mockReturnValueOnce(new Promise<null>(resolve => { resolveSection = resolve; }));
+    const pending = render({ programme: "nazira" });
+    await Promise.resolve();
+    await Promise.resolve();
+    const started = [mocks.hero.mock.calls.length, mocks.initiative.mock.calls.length];
+    resolveSection(null);
+    const html = await pending;
+    expect(started).toEqual([1, 1]);
+    expect(html).toContain('href="/our-work/taleem"');
+    expect(mocks.section).toHaveBeenCalledOnce();
+  });
+
+  it("keeps the enquiry available and links to published work if the Taleem destination is unavailable", async () => {
+    mocks.initiative.mockResolvedValue(false);
+    const html = await render();
+    expect(html).toContain('href="/our-work"');
+    expect(html).not.toContain('href="/our-work/taleem"');
+    expect(html).toContain('id="sponsorship-enquiry"');
   });
 });
