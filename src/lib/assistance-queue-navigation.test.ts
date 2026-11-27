@@ -48,3 +48,31 @@ describe("assistance action return context", () => {
     expect(assistanceActionReturnHref(href, new FormData())).toBe(href);
   });
 });
+
+describe("requested-category queue navigation", () => {
+  it.each(["MEDICAL", "EDUCATION", "LIVELIHOOD", "FOOD_HARDSHIP", "HOUSING", "EMERGENCY", "OTHER"])("retains %s through case and action links", category => {
+    const filters = { status: "SUBMITTED", view: "tests", page: "3", sort: "oldest", assignment: "mine", category };
+    const detail = new URL(assistanceCaseHref("synthetic", filters), "https://example.test");
+    expect(detail.searchParams.get("queueCategory")).toBe(category);
+    const returned = assistanceReturnFilters(Object.fromEntries(detail.searchParams));
+    expect(returned).toEqual(filters);
+    const form = new FormData();
+    for (const [key, value] of Object.entries(assistanceQueueContext(returned))) form.append(key, value);
+    const result = new URL(assistanceActionReturnHref("/admin/requests/synthetic?reject=done#review", form), "https://example.test");
+    expect(result.searchParams.get("reject")).toBe("done");
+    expect(result.hash).toBe("#review");
+    expect(result.searchParams.get("queueCategory")).toBe(category);
+    expect(assistanceQueueHref(assistanceReturnFilters(Object.fromEntries(result.searchParams)))).toBe(assistanceQueueHref(filters));
+  });
+  it.each(["medical", "__proto__", "https://evil.test", "PRIVATE_SYNTHETIC", ["MEDICAL"], ["MEDICAL", "OTHER"]])("rejects invalid category %j", category => {
+    expect(assistanceQueueHref({ category })).toBe("/admin");
+    expect(assistanceReturnFilters({ queueCategory: category })).toEqual({});
+  });
+  it("ignores repeated category and unrelated form data", () => {
+    const form = new FormData();
+    form.append("queueCategory", "MEDICAL");
+    form.append("queueCategory", "OTHER");
+    form.append("reason", "PRIVATE_SYNTHETIC");
+    expect(assistanceActionReturnHref("/admin/requests/synthetic#review", form)).toBe("/admin/requests/synthetic#review");
+  });
+});
