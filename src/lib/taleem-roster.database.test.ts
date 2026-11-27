@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { prisma } from "./prisma";
+import { historyPage, loadTaleemHistory } from "./taleem-roster-history";
 import {
   RosterError, assignLearner, confirmHifdhEvidence, createLearner, createPlace, endAssignment, loadRoster, recordHifdhCompletion, setLearnerStatus, setPlaceStatus, startEnrolment,
 } from "./taleem-roster-service";
@@ -74,6 +75,31 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("Taleem roster Pos
       ["QAIDA", "2024-01-01", "2024-12-31"], ["NAZIRA", "2025-01-01", "2025-12-31"], ["HIFDH", "2026-01-01", null],
     ]);
     expect(await prisma.taleemLearner.count({ where: { provenance: tag, id: person.id } })).toBe(1);
+  });
+
+  it("reads bounded programme and place history for only the selected learner", async () => {
+    const [person, other] = await Promise.all([learner(), learner()]);
+    const [first, second] = await Promise.all([place(), place()]);
+    await prisma.taleemEnrolment.createMany({ data: Array.from({ length: 26 }, (_, i) => ({
+      learnerId: person.id, programme: i % 2 ? "NAZIRA" as const : "QAIDA" as const,
+      startedOn: new Date(Date.UTC(2025, 0, i + 1)), endedOn: new Date(Date.UTC(2025, 0, i + 1)),
+    })) });
+    await startEnrolment(other.id, "HIFDH", "2026-01-01", actorId);
+    const assignment = await assignLearner(first.id, person.id, "2025-01-01", actorId);
+    await endAssignment(assignment.id, "2025-12-31", "PRIVATE_SYNTHETIC_REASON", actorId);
+    await assignLearner(second.id, person.id, "2026-01-01", actorId);
+    await assignLearner(first.id, other.id, "2026-01-01", actorId);
+    const latest = await loadTaleemHistory(prisma, person.id, null, null);
+    expect(latest).not.toBeNull();
+    const programme = historyPage(latest!.enrolments);
+    expect(programme.rows).toHaveLength(25);
+    expect(programme.rows[0]?.startedOn.toISOString().slice(0, 10)).toBe("2025-01-26");
+    expect(programme.older?.startedOn.toISOString().slice(0, 10)).toBe("2025-01-02");
+    expect(latest!.assignments.map(row => row.place.placeCode)).toEqual([second.placeCode, first.placeCode]);
+    expect(JSON.stringify(latest)).not.toContain("PRIVATE_SYNTHETIC_REASON");
+    const older = await loadTaleemHistory(prisma, person.id, programme.older, latest!.assignments[0]!);
+    expect(older?.enrolments.map(row => row.startedOn.toISOString().slice(0, 10))).toEqual(["2025-01-01"]);
+    expect(older?.assignments.map(row => row.place.placeCode)).toEqual([first.placeCode]);
   });
 
   it("refuses the same programme twice and a programme that starts before the current one began", async () => {
