@@ -11,6 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { getDonationImpactHighlights } from "@/lib/public-page-data";
 import { logServerError } from "@/lib/server-log";
 import { FundGivingCheckout } from "@/components/fund-giving/fund-giving-checkout";
+import { FundGlyph } from "@/components/fund-giving/fund-glyphs";
 import { VerifiedImpactStrip } from "@/components/verified-impact-strip";
 
 afterEach(() => { vi.unstubAllEnvs(); vi.resetAllMocks(); });
@@ -50,13 +51,15 @@ async function articleChildren() {
   const outer = Page({ searchParams: Promise.resolve({ fund: "general" }) }) as ReactElement<{ children: ReactNode }>;
   const content = deferred(outer.props.children);
   const article = await content.type(content.props) as ReactElement<{ children: ReactNode }>;
-  return Children.toArray(article.props.children).filter(isValidElement) as ReactElement<{ children?: ReactNode; fallback?: ReactNode; initialSlug?: string }>[];
+  return Children.toArray(article.props.children).filter(isValidElement) as ReactElement<{ children?: ReactNode; fallback?: ReactNode; initialSlug?: string; glyphs?: Record<string, ReactNode> }>[];
 }
 
 async function evidenceChild() {
   const children = await articleChildren();
   expect(children[0]?.type).toBe(FundGivingCheckout);
   expect(children[0]?.props.initialSlug).toBe("general");
+  const artwork = children[0]?.props.glyphs?.general;
+  expect(isValidElement(artwork) && artwork.type === FundGlyph).toBe(true);
   expect(children[1]?.type).toBe(Suspense);
   expect(children[1]?.props.fallback).toBeNull();
   expect(getDonationImpactHighlights).not.toHaveBeenCalled();

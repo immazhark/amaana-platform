@@ -1,10 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { DonationMethods } from "@/components/donation-methods";
 import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
 import { zakatNoticeForFund } from "@/lib/giving-funds";
-import { FundGlyph } from "./fund-glyphs";
 import type { CampaignSelection } from "@/lib/fund-campaign";
 import type { GiveCampaign, GiveFund } from "./fund-copy";
 import type { DonationFormCopy } from "@/components/donation-form-copy";
@@ -16,12 +15,12 @@ const MAX_GIFT_RUPEES = 1_000_000; // mirrors the server limit; the server enfor
 
 const rupees = (amount: number) => `₹${amount.toLocaleString("en-IN")}`;
 
-function FundCard({ fund, index, selected, locked, onSelect }: { fund: GiveFund; index: number; selected: boolean; locked: boolean; onSelect: (slug: string) => void }) {
+function FundCard({ fund, index, selected, locked, onSelect, glyph }: { fund: GiveFund; index: number; selected: boolean; locked: boolean; onSelect: (slug: string) => void; glyph: ReactNode }) {
   const tagId = `fund-tag-${fund.slug}`;
   return (
     <label className={styles.card} data-selected={selected} data-locked={locked} style={{ "--i": index } as CSSProperties}>
       <input type="radio" name="fund" value={fund.slug} className={styles.radio} checked={selected} disabled={locked} aria-describedby={tagId} onChange={() => onSelect(fund.slug)} />
-      <span className={styles.glyph}><FundGlyph slug={fund.slug} /></span>
+      <span className={styles.glyph}>{glyph}</span>
       <span className={styles.cardBody}>
         <strong className={styles.cardName}>{fund.name}</strong>
         <span className={styles.cardSummary}>{fund.summary}</span>
@@ -34,7 +33,7 @@ function FundCard({ fund, index, selected, locked, onSelect }: { fund: GiveFund;
 
 /** Donor chooses a designated fund, then pays through the same hardened checkout forms the appeals use.
  * The server re-validates the fund, the Zakat rule and every amount; nothing here is trusted. */
-export function FundGivingCheckout({ funds, copies, initialSlug, paymentDetails, feeBps, campaigns = [] }: { copies: Record<string, DonationFormCopy>; funds: readonly GiveFund[]; initialSlug?: string; paymentDetails: DonationPaymentDetails; feeBps: number; campaigns?: readonly GiveCampaign[] }) {
+export function FundGivingCheckout({ funds, copies, glyphs, initialSlug, paymentDetails, feeBps, campaigns = [] }: { copies: Record<string, DonationFormCopy>; glyphs: Record<string, ReactNode>; funds: readonly GiveFund[]; initialSlug?: string; paymentDetails: DonationPaymentDetails; feeBps: number; campaigns?: readonly GiveCampaign[] }) {
   const primary = useMemo(() => funds.filter(fund => fund.slug !== RUNNING_COSTS_SLUG), [funds]);
   const running = useMemo(() => funds.filter(fund => fund.slug === RUNNING_COSTS_SLUG), [funds]);
   const fallback = funds.find(fund => fund.isGeneral) ?? funds[0];
@@ -88,11 +87,11 @@ export function FundGivingCheckout({ funds, copies, initialSlug, paymentDetails,
       <fieldset className={styles.fieldset} disabled={locked}>
         <legend className={styles.legend}><span className={styles.eyebrow}>Step 1</span><span id="give-fund-heading" className={styles.heading}>Choose where your gift goes</span></legend>
         <div className={styles.grid}>
-          {primary.map((fund, index) => <FundCard key={fund.slug} fund={fund} index={index} selected={fund.slug === selected.slug} locked={locked} onSelect={select} />)}
+          {primary.map((fund, index) => <FundCard key={fund.slug} fund={fund} index={index} selected={fund.slug === selected.slug} locked={locked} onSelect={select} glyph={glyphs[fund.slug]} />)}
         </div>
         {running.length > 0 && <div className={styles.running}>
           <p className={styles.runningNote}>Prefer to keep the work itself running? Administration and recurring costs have their own fund, kept separate from every cause above.</p>
-          <div className={styles.grid}>{running.map((fund, index) => <FundCard key={fund.slug} fund={fund} index={primary.length + index} selected={fund.slug === selected.slug} locked={locked} onSelect={select} />)}</div>
+          <div className={styles.grid}>{running.map((fund, index) => <FundCard key={fund.slug} fund={fund} index={primary.length + index} selected={fund.slug === selected.slug} locked={locked} onSelect={select} glyph={glyphs[fund.slug]} />)}</div>
         </div>}
       </fieldset>
 

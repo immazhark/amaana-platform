@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { CanonicalArticle } from "@/components/canonical-article";
 import { FundGivingCheckout } from "@/components/fund-giving/fund-giving-checkout";
+import { fundGlyphs } from "@/components/fund-giving/fund-glyphs";
 import type { GiveCampaign, GiveFund } from "@/components/fund-giving/fund-copy";
 import { PublicRouteLoading } from "@/components/public-route-loading";
 import { VerifiedImpactStrip } from "@/components/verified-impact-strip";
@@ -81,7 +82,7 @@ async function GiveContent({ fundParam }: { fundParam: Promise<{ fund?: string |
         { title: "Domestic donations only", paragraphs: [complianceCopy.domestic, complianceCopy.tax] },
       ]}
     >
-      <FundGivingCheckout funds={funds} copies={Object.fromEntries(funds.map(fund => [fund.slug, fundDonationFormCopy(fund)]))} campaigns={campaigns} initialSlug={initialSlug} paymentDetails={getDonationPaymentDetails()} feeBps={feeEstimateBasisPoints()} />
+      <FundGivingCheckout funds={funds} glyphs={fundGlyphs(funds)} copies={Object.fromEntries(funds.map(fund => [fund.slug, fundDonationFormCopy(fund)]))} campaigns={campaigns} initialSlug={initialSlug} paymentDetails={getDonationPaymentDetails()} feeBps={feeEstimateBasisPoints()} />
       <Suspense fallback={null}><GiveImpactEvidence /></Suspense>
     </CanonicalArticle>
   );

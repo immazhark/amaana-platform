@@ -23,3 +23,8 @@ export function FundGlyph({ slug }: { slug: string }) {
     </svg>
   );
 }
+
+/** Prepare decorative SVG nodes in the server caller, not the interactive checkout. */
+export function fundGlyphs(funds: readonly { slug: string }[]): Record<string, ReactNode> {
+  return Object.fromEntries(funds.map(fund => [fund.slug, <FundGlyph key={fund.slug} slug={fund.slug} />]));
+}
