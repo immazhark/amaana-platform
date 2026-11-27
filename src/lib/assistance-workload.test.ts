@@ -20,11 +20,15 @@ describe("assistance workload", () => {
       row("SUBMITTED", "synthetic-other", 1, "2026-11-21T12:00:00Z"),
       row("DOCUMENTS_REQUESTED", "synthetic-reviewer", 1, "2026-11-23T13:00:00Z"),
       row("UNDER_VERIFICATION", "synthetic-other", 2, "2026-11-25T12:00:00Z"),
+      row("APPROVED", "synthetic-reviewer", 2, "2026-11-16T12:00:00Z"),
+      row("APPROVED", "synthetic-other", 1, "2026-11-15T12:00:00Z"),
+      row("CONVERTED_TO_APPEAL", null, 3, "2026-11-14T12:00:00Z"),
+      row("CLOSED", null, 7, "2026-11-01T12:00:00Z"),
     ]);
     const result = await assistanceWorkload({ assistanceRequest: { groupBy } } as never, scope, "synthetic-reviewer", now);
     expect(groupBy).toHaveBeenCalledExactlyOnceWith({
       by: ["status", "assignedToId"],
-      where: { ...scope, status: { in: ["SUBMITTED", "DOCUMENTS_REQUESTED", "UNDER_VERIFICATION"] } },
+      where: { ...scope, status: { in: ["SUBMITTED", "DOCUMENTS_REQUESTED", "UNDER_VERIFICATION", "APPROVED", "CONVERTED_TO_APPEAL"] } },
       _count: { _all: true }, _min: { createdAt: true },
     });
     expect(result).toEqual({
@@ -33,6 +37,10 @@ describe("assistance workload", () => {
         { status: "SUBMITTED", total: { count: 6, oldestAgeDays: 8 }, mine: { count: 2, oldestAgeDays: 6 }, unassigned: { count: 3, oldestAgeDays: 8 } },
         { status: "DOCUMENTS_REQUESTED", total: { count: 1, oldestAgeDays: 2 }, mine: { count: 1, oldestAgeDays: 2 }, unassigned: { count: 0, oldestAgeDays: null } },
         { status: "UNDER_VERIFICATION", total: { count: 2, oldestAgeDays: 1 }, mine: { count: 0, oldestAgeDays: null }, unassigned: { count: 0, oldestAgeDays: null } },
+      ],
+      followUpStages: [
+        { status: "APPROVED", total: { count: 3, oldestAgeDays: 11 }, mine: { count: 2, oldestAgeDays: 10 }, unassigned: { count: 0, oldestAgeDays: null } },
+        { status: "CONVERTED_TO_APPEAL", total: { count: 3, oldestAgeDays: 12 }, mine: { count: 0, oldestAgeDays: null }, unassigned: { count: 3, oldestAgeDays: 12 } },
       ],
     });
     expect(JSON.stringify(result)).not.toContain("synthetic-reviewer");
@@ -43,7 +51,8 @@ describe("assistance workload", () => {
     const result = await assistanceWorkload({ assistanceRequest: { groupBy: async () => [] } } as never, scope, "synthetic-reviewer", now);
     expect(result).toMatchObject({ submitted: 0, oldestSubmittedAgeDays: null, openUnassigned: 0, openMine: 0, open: 0 });
     expect(result.stages).toHaveLength(3);
-    for (const stage of result.stages) {
+    expect(result.followUpStages).toHaveLength(2);
+    for (const stage of [...result.stages, ...result.followUpStages]) {
       expect(stage.total).toEqual({ count: 0, oldestAgeDays: null });
       expect(stage.mine).toEqual({ count: 0, oldestAgeDays: null });
       expect(stage.unassigned).toEqual({ count: 0, oldestAgeDays: null });

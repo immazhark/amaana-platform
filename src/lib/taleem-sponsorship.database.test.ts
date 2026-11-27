@@ -133,6 +133,36 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("Taleem sponsorshi
     expect(result[1]).toMatchObject({ programme: "qaida", monthlyRate: 1000, verifiedCount: 3, grossCaptured: 3000, principalRefunded: 1100, netRetained: 1900, pendingCount: 1, pendingAmount: 3000, verifiedQuotedUnitMonths: 3, retainedWholeUnitMonths: 1, retainedRemainder: 900, pendingQuotedUnitMonths: 3 });
   });
 
+  it("filters sponsorship cohorts by capture or claim creation time at exact IST financial-year boundaries", async () => {
+    const result = await probe(async tx => {
+      const taleem = await tx.fund.findUniqueOrThrow({ where: { slug: "taleem" } });
+      const version = `fy-${prefix}`;
+      const start = new Date("2025-03-31T18:30:00Z");
+      const end = new Date("2026-03-31T18:30:00Z");
+      const before = new Date(start.getTime() - 1);
+      const last = new Date(end.getTime() - 1);
+      const gift = (over: Partial<Prisma.DonationUncheckedCreateInput>) => tx.donation.create({ data: donation({
+        fundId: taleem.id, amount: 1000, status: "CAPTURED", capturedAt: start, createdAt: before,
+        sponsorshipProgramme: "qaida", sponsorshipUnits: 1, sponsorshipMonths: 1,
+        sponsorshipMonthlyRate: 1000, sponsorshipRateVersion: version, ...over,
+      }) });
+      await gift({ capturedAt: before });
+      await gift({ feeContributionAmount: 12, refundedAmount: 112 });
+      await gift({ status: "REFUNDED", capturedAt: last, feeContributionAmount: 12, refundedAmount: 1012, refundedAt: end });
+      await gift({ capturedAt: end });
+      for (const day of [before, start, end]) {
+        await gift({ status: "PENDING_VERIFICATION", capturedAt: null, createdAt: day, transferredAt: day,
+          paymentMethod: "DIRECT_UPI", provider: null, providerOrderId: null, transferReference: next() });
+      }
+      const [all, selected] = await Promise.all([loadTaleemSponsorshipReport(tx), loadTaleemSponsorshipReport(tx, { start, end })]);
+      return { all: all.filter(row => row.rateVersion === version), selected: selected.filter(row => row.rateVersion === version) };
+    }, Prisma.TransactionIsolationLevel.RepeatableRead);
+    expect(result.all).toHaveLength(1);
+    expect(result.all[0]).toMatchObject({ verifiedCount: 4, pendingCount: 3, grossCaptured: 4000, netRetained: 2900 });
+    expect(result.selected).toHaveLength(1);
+    expect(result.selected[0]).toMatchObject({ verifiedCount: 2, pendingCount: 1, grossCaptured: 2000, principalRefunded: 1100, netRetained: 900, pendingAmount: 1000, verifiedQuotedUnitMonths: 2, pendingQuotedUnitMonths: 1, retainedWholeUnitMonths: 0, retainedRemainder: 900 });
+  });
+
   it("reconciles duration-weighted quotes and exact retained equivalents without allocating students", async () => {
     const result = await probe(async tx => {
       const taleem = await tx.fund.findUniqueOrThrow({ where: { slug: "taleem" } });
