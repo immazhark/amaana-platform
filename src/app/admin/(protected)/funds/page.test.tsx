@@ -1,7 +1,8 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ permission: vi.fn(), ledger: vi.fn(), report: vi.fn(), annual: vi.fn() }));
+const mocks = vi.hoisted(() => ({ permission: vi.fn(), ledger: vi.fn(), report: vi.fn(), annual: vi.fn(), log: vi.fn() }));
+vi.mock("@/lib/server-log", () => ({ logServerError: mocks.log }));
 vi.mock("@/lib/auth", () => ({ requirePermission: mocks.permission }));
 vi.mock("@/lib/prisma", () => ({ prisma: {} }));
 vi.mock("@/lib/funds-ledger", () => ({ getFundsLedger: mocks.ledger }));
@@ -79,5 +80,45 @@ describe("annual finance review", () => {
     expect(html).not.toContain("Download destination and channel CSV");
     expect(html).toContain("No matching receipt or claim intersections for this year.");
     expect(html).toContain("No matching receipt or direct claim records for this year.");
+  });
+});
+
+describe("independent private report availability", () => {
+  const render = async () => renderToStaticMarkup(await FundsLedgerPage({ searchParams: Promise.resolve({ fy: "2020-21" }) }));
+  const row = { destination: "fund", fundSlug: "taleem", pool: "NON_ZAKAT", grossPaise: 101, refundedPaise: 1, retainedPaise: 100, pendingPaise: 200, pendingCount: 1, draftPaise: 12, publishedPaise: 30 };
+  it("shows annual control totals and keeps annual export available when sponsorship reporting fails", async () => {
+    mocks.report.mockRejectedValueOnce(new Error("PRIVATE_SYNTHETIC_REPORT"));
+    mocks.annual.mockResolvedValueOnce({ destinations: [row, { ...row, fundSlug: "other" }], channels: [], byDestinationAndChannel: [] });
+    const html = await render();
+    expect(html).toContain("Taleem sponsorship report temporarily unavailable");
+    expect(html).toContain("Download aggregate CSV");
+    expect(html).toContain('<th scope="row">All destinations · control total</th><td>₹2.02</td><td>₹0.02</td><td>₹2</td><td>2</td><td>₹4</td><td>₹0.24</td><td>₹0.6</td>');
+    expect(html).not.toContain("PRIVATE_SYNTHETIC_REPORT");
+    expect(mocks.log).toHaveBeenCalledExactlyOnceWith("finance.taleem_report_unavailable");
+    expect(mocks.annual).toHaveBeenCalledTimes(1);
+  });
+  it("does not display empty or downloadable annual reports on failure, preserving the other ledger sections", async () => {
+    mocks.annual.mockRejectedValueOnce(new Error("PRIVATE_SYNTHETIC_ANNUAL"));
+    const html = await render();
+    expect(html).toContain("Financial-year report temporarily unavailable");
+    expect(html).toContain("Payment-channel report temporarily unavailable");
+    expect(html).toContain("Destination and channel report temporarily unavailable");
+    expect(html).not.toContain("Download aggregate CSV");
+    expect(html).not.toContain("No matching application records");
+    expect(html).not.toContain("PRIVATE_SYNTHETIC_ANNUAL");
+    expect(html).toContain("All Zakat received");
+    expect(html).toContain("No verified sponsorship gifts or pending claims recorded.");
+    expect(mocks.log).toHaveBeenCalledExactlyOnceWith("finance.annual_report_unavailable");
+  });
+  it("withholds all annual sections if aggregate control totals overflow", async () => {
+    mocks.annual.mockResolvedValueOnce({ destinations: [{ ...row, grossPaise: Number.MAX_SAFE_INTEGER }, row], channels: [], byDestinationAndChannel: [] });
+    const html = await render();
+    expect(html).toContain("Financial-year report temporarily unavailable");
+    expect(html).not.toContain("Download aggregate CSV");
+    expect(mocks.log).toHaveBeenCalledExactlyOnceWith("finance.annual_report_unavailable");
+  });
+  it("fails closed when the main ledger itself is unavailable", async () => {
+    mocks.ledger.mockRejectedValueOnce(new Error("synthetic ledger failure"));
+    await expect(render()).rejects.toThrow("synthetic ledger failure");
   });
 });
