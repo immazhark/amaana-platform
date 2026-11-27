@@ -319,3 +319,30 @@ it("keeps the filtered reviewer queue context on case links and prioritises reco
   expect(html.indexOf('aria-labelledby="decision-report-heading"')).toBeGreaterThan(html.indexOf('aria-label="Assistance request pagination"'));
   expect(html.indexOf('aria-labelledby="verification-report-heading"')).toBeGreaterThan(html.indexOf('aria-labelledby="decision-report-heading"'));
 });
+
+describe("assistance queue requested-category triage", () => {
+  it("narrows list, counts and reviewer workload without changing the reporting cohort or annual capacity", async () => {
+    mocks.count.mockResolvedValue(101);
+    mocks.findMany.mockResolvedValue([{ id: "synthetic-request", referenceNumber: "SYNTHETIC-CATEGORY", applicantName: "Synthetic applicant", city: "Synthetic city", category: "MEDICAL", status: "SUBMITTED", assignedTo: null, _count: { documents: 0 }, createdAt: new Date("2026-11-09T00:00:00Z") }]);
+    const html = renderToStaticMarkup(await AdminQueuePage({ searchParams: Promise.resolve({ view: "tests", category: "MEDICAL", status: "SUBMITTED", assignment: "mine", sort: "oldest", page: "2" }) }));
+    const scope = { referenceNumber: "AF-STAGING-ACCEPTANCE", category: "MEDICAL", assignedToId: "synthetic-operator" };
+    expect(mocks.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { ...scope, status: "SUBMITTED" }, skip: 50, take: 50 }));
+    expect(mocks.groupBy).toHaveBeenCalledWith({ by: ["status"], where: scope, _count: { _all: true } });
+    expect(mocks.groupBy).toHaveBeenCalledWith({ by: ["status", "assignedToId"], where: { referenceNumber: "AF-STAGING-ACCEPTANCE", category: "MEDICAL", status: { in: ["SUBMITTED", "DOCUMENTS_REQUESTED", "UNDER_VERIFICATION"] } }, _count: { _all: true }, _min: { createdAt: true } });
+    expect(mocks.decisions).toHaveBeenCalledExactlyOnceWith(expect.anything(), "tests");
+    expect(html).toContain("annual capacity remains foundation-wide");
+    expect(html).toContain("before queue filters, including category");
+    expect(html).toContain('href="/admin/requests/synthetic-request?queueStatus=SUBMITTED&amp;queueView=tests&amp;queuePage=2&amp;queueSort=oldest&amp;queueAssignment=mine&amp;queueCategory=MEDICAL"');
+    expect(html).toContain("category=MEDICAL&amp;status=SUBMITTED&amp;page=3");
+    expect(html).toContain("aria-label=\"Requested assistance category\"");
+    expect(html).toMatch(/<a[^>]*aria-current="page"[^>]*>MEDICAL<\/a>/);
+  });
+
+  it.each([undefined, "medical", "PRIVATE_SYNTHETIC", ["MEDICAL"], ["MEDICAL", "OTHER"]].map(category => ({ category })))("ignores unsupported category $category without reflection", async ({ category }) => {
+    mocks.findMany.mockResolvedValue([]);
+    const html = renderToStaticMarkup(await AdminQueuePage({ searchParams: Promise.resolve({ category }) }));
+    expect(mocks.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { referenceNumber: { not: "AF-STAGING-ACCEPTANCE" } } }));
+    expect(html).not.toContain("PRIVATE_SYNTHETIC");
+    expect(html).toMatch(/<a[^>]*aria-current="page"[^>]*>All categories<\/a>/);
+  });
+});

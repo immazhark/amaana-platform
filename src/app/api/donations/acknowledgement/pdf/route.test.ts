@@ -76,8 +76,12 @@ describe("acknowledgement PDF download", () => {
   it("shows a partial refund and the covered fee, and still acknowledges the remaining gift", async () => {
     mocks.findUnique.mockResolvedValue(donation({ refundedAmount: decimal(129.5), feeContributionAmount: decimal(29.5) }));
     const body = await pdfText(await post());
-    expect(body).toContain("Refunded to you: INR 100.00");
+    expect(body).toContain("Donation principal refunded: INR 100.00");
+    expect(body).toContain("Donation principal retained: INR 1,150.00");
     expect(body).toContain("Payment processing cost you chose to cover: INR 29.50");
+    expect(body).toContain("Original total charged: INR 1,279.50");
+    expect(body).toContain("Payment status: verified; donation partially refunded");
+    expect(body).not.toContain("Refunded to you:");
   });
 
   it("gives no document for a payment that is pending, failed or fully refunded, and says nothing about why", async () => {

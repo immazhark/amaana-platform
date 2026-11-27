@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildSponsorshipEnquiry, parseSponsorshipEnquiry, SPONSORSHIP_PATHS } from "./sponsorship-enquiry";
+import { buildSponsorshipEnquiry, parseSponsorshipEnquiry, INSTITUTIONAL_SPONSORSHIP_PATHS, SPONSORSHIP_PATHS } from "./sponsorship-enquiry";
 
 describe("fixed-category sponsorship enquiries", () => {
   it.each(Object.keys(SPONSORSHIP_PATHS))("prepares a reviewable %s enquiry", path => {
@@ -43,5 +43,38 @@ describe("campaign-attributed sponsorship reviews", () => {
     ]) {
       expect(parseSponsorshipEnquiry(query)).toBeNull();
     }
+  });
+});
+
+describe("institutional support enquiries", () => {
+  it.each(["teacher-day", "teacher-evening", "imam", "muadhin", "learning-facilities"] as const)("prepares %s without establishing funding or payment", path => {
+    const choice = parseSponsorshipEnquiry({ path, support: "ongoing", privateName: "yes" });
+    expect(choice).not.toBeNull();
+    const result = buildSponsorshipEnquiry(choice!);
+    const url = new URL(result.href);
+    expect(url.pathname).toBe("amaanafoundation24@gmail.com");
+    expect(url.searchParams.get("subject")).toBe("Amaana Taleem - Institutional support enquiry");
+    expect(url.searchParams.get("body")).toBe(result.body);
+    expect(result.body).toContain(INSTITUTIONAL_SPONSORSHIP_PATHS[path]);
+    expect(result.body).toContain("does not establish an institutional funding commitment");
+    expect(result.body).toContain("each contribution decided separately");
+    expect(result.body).toContain("does not reserve a student placement or authorize a payment or recurring charge");
+    expect(result.body).toContain("Please keep my name out of public recognition");
+  });
+
+  it("does not change the learner enquiry subject or imply institutional funding", () => {
+    const result = buildSponsorshipEnquiry({ path: "hifdh", support: "once", privateName: false });
+    expect(new URL(result.href).searchParams.get("subject")).toBe("Amaana Taleem - Education sponsorship enquiry");
+    expect(result.body).not.toContain("institutional funding commitment");
+  });
+
+  it.each([
+    { path: "teacher-day", support: "ongoing", amount: "10000" },
+    { path: ["imam", "muadhin"], support: "once" },
+    { path: "teacher-day", support: "automatic" },
+    { path: "teacher-evening", support: "once", student: "PRIVATE_SYNTHETIC" },
+    { path: "imam\nBcc:x", support: "once" },
+  ])("rejects unsupported institutional preferences", input => {
+    expect(parseSponsorshipEnquiry(input)).toBeNull();
   });
 });

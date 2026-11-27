@@ -8,6 +8,8 @@ import { donationIntentLabel } from "@/lib/donation-intent";
 import { donationExceptionFilter, donationExceptionWhere } from "@/lib/donation-exception-review";
 import { formatDonationReportINR, loadDonationReconciliationReport } from "@/lib/donation-reconciliation-totals";
 import { prisma } from "@/lib/prisma";
+import { readDonationReport } from "@/lib/read-donation-report";
+import { logServerError } from "@/lib/server-log";
 import { donationOperationalState } from "@/lib/operational-signals";
 import { donationReviewFilters, loadPendingTransferReview } from "@/lib/pending-transfer-review";
 
@@ -45,9 +47,9 @@ export default async function DonationsPage({ searchParams }: Props) {
     ...(selectedIntent ? { givingIntent: selectedIntent } : {}),
   };
 
-  const [totalItems, reconciliation, unmatchedCriticalEventCount, unmatchedCriticalEvents, missingAcknowledgements, refundedWithoutCompletionTime, statusGroups, intentGroups, funnelGroups, pendingReview] = await Promise.all([
+  const [totalItems, reconciliation, unmatchedCriticalEventCount, unmatchedCriticalEvents, missingAcknowledgements, refundedWithoutCompletionTime, statusGroups, intentGroups, funnel, pendingReview] = await Promise.all([
     prisma.donation.count({ where }),
-    loadDonationReconciliationReport(prisma),
+    readDonationReport(() => loadDonationReconciliationReport(prisma), () => logServerError("donation.reconciliation_report_unavailable")),
     prisma.paymentEvent.count({
       where: {
         donationId: null,
@@ -81,14 +83,16 @@ export default async function DonationsPage({ searchParams }: Props) {
       _count: { _all: true },
     }),
     // Aggregate counts only: no donor row, amount, reference or contact detail leaves the database for this card.
-    prisma.donation.groupBy({
-      by: ["paymentMethod", "status"],
-      where: { createdAt: { gte: funnelSince() } },
-      _count: { _all: true },
-    }),
-    loadPendingTransferReview(prisma),
+    readDonationReport(async () => {
+      const groups = await prisma.donation.groupBy({
+        by: ["paymentMethod", "status"],
+        where: { createdAt: { gte: funnelSince() } },
+        _count: { _all: true },
+      });
+      return summariseDonationFunnel(groups);
+    }, () => logServerError("donation.outcomes_report_unavailable")),
+    readDonationReport(() => loadPendingTransferReview(prisma), () => logServerError("donation.pending_transfer_report_unavailable")),
   ]);
-  const funnel = summariseDonationFunnel(funnelGroups);
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
   const donations = await prisma.donation.findMany({
     where,
@@ -113,7 +117,7 @@ export default async function DonationsPage({ searchParams }: Props) {
 
   const statusCounts = new Map(statusGroups.map(item => [item.status, item._count._all]));
   const intentCounts = new Map(intentGroups.map(item => [item.givingIntent, item._count._all]));
-  const { grossCaptured, refunded, netRetained, pendingCount: pendingDirectTransfers } = reconciliation.totals;
+  const totals = reconciliation?.totals;
   const operational = donationOperationalState({
     unmatchedCriticalEvents: unmatchedCriticalEventCount,
     missingAcknowledgements,
@@ -165,10 +169,10 @@ export default async function DonationsPage({ searchParams }: Props) {
       <div>
         <p className="eyebrow">Reconciliation</p>
         <h1>Donations</h1>
-        <p className="lead">
-          Gross captured: {formatDonationReportINR(grossCaptured)} · Refunded: {formatDonationReportINR(refunded)} · Net retained: {formatDonationReportINR(netRetained)}
+        {totals ? <p className="lead">
+          Gross captured: {formatDonationReportINR(totals.grossCaptured)} · Refunded: {formatDonationReportINR(totals.refunded)} · Net retained: {formatDonationReportINR(totals.netRetained)}
           <small className="muted"> (Donation amounts only; returned processing fees excluded.)</small>
-        </p>
+        </p> : <p role="status">Financial summary temporarily unavailable. Do not interpret this as zero receipts or refunds. Individual records remain below.</p>}
       </div>
     </div>
     <section className="admin-card" aria-labelledby="donation-health-heading" style={{ marginBottom: "1.25rem" }}>
@@ -178,10 +182,10 @@ export default async function DonationsPage({ searchParams }: Props) {
           <h2 id="donation-health-heading">Operational signals</h2>
           <p className="muted">These counters flag reconciliation and acknowledgement invariants that need review even when payment infrastructure itself is reachable. They are global and may overlap; they do not count distinct affected donations.</p>
         </div>
-        <span className="status-badge">{operational.status === "healthy" ? "HEALTHY" : `${operational.attention} NEED ATTENTION`}</span>
+        <span className="status-badge">{operational.status === "attention" ? `${operational.attention} NEED ATTENTION` : !totals || !pendingReview ? "REVIEW INCOMPLETE" : "HEALTHY"}</span>
       </div>
       <div className="card-grid">
-        <article className="card"><strong>{pendingDirectTransfers}</strong><p>Direct UPI/bank transfers awaiting statement verification</p></article>
+        <article className="card"><strong>{totals?.pendingCount ?? "Unavailable"}</strong><p>Direct UPI/bank transfers awaiting statement verification</p></article>
         <article className="card"><strong>{operational.unmatchedCriticalEvents}</strong><p>Unmatched critical payment events</p>{unmatchedCriticalEvents.length > 0 && <Link href="#unmatched-payment-events">Review latest unmatched events</Link>}</article>
         <article className="card"><strong>{operational.missingAcknowledgements}</strong><p>Captured/refunded donations without acknowledgement numbers</p>{operational.missingAcknowledgements > 0 && <Link href={{ pathname: "/admin/donations", query: { issue: "missing-acknowledgement", sort: "oldest" } }}>Review missing acknowledgements, oldest first</Link>}</article>
         <article className="card"><strong>{operational.refundedWithoutCompletionTime}</strong><p>Refunded donations missing completion time</p>{operational.refundedWithoutCompletionTime > 0 && <Link href={{ pathname: "/admin/donations", query: { issue: "missing-refund-time", sort: "oldest" } }}>Review missing refund times, oldest first</Link>}</article>
@@ -190,7 +194,7 @@ export default async function DonationsPage({ searchParams }: Props) {
     <section className="admin-card" aria-labelledby="payment-channel-heading" style={{ marginBottom: "1.25rem" }}>
       <h2 id="payment-channel-heading">Payment channel reconciliation</h2>
       <p className="muted">All recorded donations, independent of the list filters. Verified principal excludes processing fees; unverified transfer claims are not receipts. These application totals are not bank balances or provider settlement statements.</p>
-      <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Payment channel reconciliation totals">
+      {!reconciliation ? <p role="status">Payment channel report temporarily unavailable. Review individual records before relying on any totals.</p> : <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Payment channel reconciliation totals">
         <table>
           <thead><tr><th scope="col">Payment channel</th><th scope="col">Gross verified</th><th scope="col">Principal refunded</th><th scope="col">Net retained</th><th scope="col">Unverified claims</th><th scope="col">Claim amount</th></tr></thead>
           <tbody>{Object.values(DonationPaymentMethod).map(channel => {
@@ -204,14 +208,14 @@ export default async function DonationsPage({ searchParams }: Props) {
               <td>{formatDonationReportINR(row?.pendingAmount ?? 0)}</td>
             </tr>;
           })}</tbody>
-          <tfoot><tr><th scope="row">All channels</th><td>{formatDonationReportINR(grossCaptured)}</td><td>{formatDonationReportINR(refunded)}</td><td>{formatDonationReportINR(netRetained)}</td><td>{pendingDirectTransfers}</td><td>{formatDonationReportINR(reconciliation.totals.pendingAmount)}</td></tr></tfoot>
+          <tfoot><tr><th scope="row">All channels</th><td>{formatDonationReportINR(reconciliation.totals.grossCaptured)}</td><td>{formatDonationReportINR(reconciliation.totals.refunded)}</td><td>{formatDonationReportINR(reconciliation.totals.netRetained)}</td><td>{reconciliation.totals.pendingCount}</td><td>{formatDonationReportINR(reconciliation.totals.pendingAmount)}</td></tr></tfoot>
         </table>
-      </div>
+      </div>}
     </section>
     <section className="admin-card" aria-labelledby="pending-review-heading" style={{ marginBottom: "1.25rem" }}>
       <h2 id="pending-review-heading">Direct-transfer review workbench</h2>
       <p className="muted">All pending UPI and bank-transfer claims, independent of the list filters. Age is time since the claim was submitted, not the bank credit date or a promised verification time. Review the independent bank credit before deciding; these claims are not receipts.</p>
-      <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Pending transfer claim age">
+      {pendingReview === null ? <div><p role="status">Transfer age report temporarily unavailable. No count can be inferred. Review the original claims.</p><div className="filter-row">{(["DIRECT_UPI", "BANK_TRANSFER"] as const).map(method => <Link key={method} href={{ pathname: "/admin/donations", query: { method, status: "PENDING_VERIFICATION", sort: "oldest" } }}>Review {PAYMENT_METHOD_LABELS[method]} claims</Link>)}</div></div> : <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Pending transfer claim age">
         <table>
           <thead><tr><th scope="col">Method</th><th scope="col">Under 24 hours</th><th scope="col">1–7 days</th><th scope="col">Over 7 days</th><th scope="col">Future timestamp</th><th scope="col">Review queue</th></tr></thead>
           <tbody>{pendingReview.map(row => <tr key={row.paymentMethod}>
@@ -220,9 +224,9 @@ export default async function DonationsPage({ searchParams }: Props) {
             <td>{row.total ? <Link href={{ pathname: "/admin/donations", query: { method: row.paymentMethod, status: "PENDING_VERIFICATION", sort: "oldest" } }}>{row.total} pending, oldest first</Link> : "0"}</td>
           </tr>)}</tbody>
         </table>
-      </div>
+      </div>}
     </section>
-    <AdminDonationFunnel rows={funnel} windowDays={FUNNEL_WINDOW_DAYS} />
+    {funnel === null ? <section className="card" aria-labelledby="donation-funnel-unavailable-heading"><h2 id="donation-funnel-unavailable-heading">Donation outcomes, last {FUNNEL_WINDOW_DAYS} days</h2><p role="status">Donation outcomes report temporarily unavailable. This does not mean no donations were started.</p></section> : <AdminDonationFunnel rows={funnel} windowDays={FUNNEL_WINDOW_DAYS} />}
     {unmatchedCriticalEvents.length > 0 && <section className="admin-card" id="unmatched-payment-events" aria-labelledby="unmatched-payment-events-heading" style={{ marginBottom: "1.25rem" }}>
       <div className="admin-heading">
         <div>

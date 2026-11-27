@@ -9,6 +9,7 @@ import { programmeBySlug } from "@/lib/master-copy";
 import { getSponsorEducationHeroMedia } from "@/lib/sponsorship-media";
 import { getInitiativePageData } from "@/lib/public-page-data";
 import { sponsorshipHrefForSlug } from "@/lib/taleem-sponsorship-link";
+import { INSTITUTIONAL_SPONSORSHIP_PATHS } from "@/lib/sponsorship-enquiry";
 import { TALEEM_HERO_SENTENCE } from "@/content/taleem-facts";
 import "./sponsor-education.css";
 
@@ -56,9 +57,25 @@ export default async function SponsorEducationPage({ searchParams = Promise.reso
 
         <section className="taleem-school" aria-labelledby="child-education-title"><div className="v2-shell taleem-school-grid"><div><p className="v2-section-label">School and college</p><h2 id="child-education-title">Sponsor a Student’s School or College Education</h2></div><div><p className="taleem-school-lead">Developing pathway — verified school and college education support.</p><p>Amaana Taleem Initiative is designed to extend educational assistance to verified students from financially vulnerable households whose schooling or college education may be at risk because of fees or other essential academic costs. Support under this pathway will be matched to a clearly identified educational need, with verification and responsible follow-through before assistance is provided.</p><a className="v2-button" href={enquiryHref("school")}>Ask about school or college sponsorship</a></div></div></section>
 
+        <section className="v2-shell taleem-programme" aria-labelledby="institutional-support-title">
+          <SectionHeading eyebrow="Institutional support" title="Support the learning environment." id="institutional-support-title" subtitle="Discuss teaching and essential facilities separately from learner sponsorship. Amaana must confirm the purpose, current need and cost before any commitment." />
+          <div className="taleem-islamic-grid">
+            <article className="taleem-path">
+              <h3>Teaching support</h3>
+              <p>Discuss support for daytime Qur’anic learning or post-Maghrib teaching.</p>
+              {(["teacher-day", "teacher-evening"] as const).map(path => <a key={path} href={enquiryHref(path)}>Ask about {INSTITUTIONAL_SPONSORSHIP_PATHS[path]} <span aria-hidden="true">↗</span></a>)}
+            </article>
+            <article className="taleem-path">
+              <h3>Learning facilities and services</h3>
+              <p>Discuss support for institutional services, learning materials and utilities. Each need is reviewed separately.</p>
+              {(["imam", "muadhin", "learning-facilities"] as const).map(path => <a key={path} href={enquiryHref(path)}>Ask about {INSTITUTIONAL_SPONSORSHIP_PATHS[path]} <span aria-hidden="true">↗</span></a>)}
+            </article>
+          </div>
+        </section>
+
         <SponsorshipEnquiry preferences={enquiryPreferences} />
 
-        <section className="v2-shell taleem-process" aria-labelledby="process-title"><SectionHeading eyebrow={<>How it works</>} title={<>A clear path from interest to support.</>} subtitle={<>Sponsorship begins with a conversation, not an assumption about a student’s circumstances.</>} id="process-title" /><ol><li><span>01</span><div><h3>Choose a path</h3><p>Tell Amaana which education route you are interested in supporting.</p></div></li><li><span>02</span><div><h3>Review the available need</h3><p>The team confirms the learner, institution and current sponsorship scope.</p></div></li><li><span>03</span><div><h3>Confirm your support</h3><p>You receive the relevant details and can decide whether to proceed.</p></div></li><li><span>04</span><div><h3>Follow responsibly</h3><p>Updates are shared in a way that protects the dignity and privacy of the student.</p></div></li></ol></section>
+        <section className="v2-shell taleem-process" aria-labelledby="process-title"><SectionHeading eyebrow={<>How it works</>} title={<>A clear path from interest to support.</>} subtitle={<>Sponsorship begins with a conversation, not an assumption about a student’s circumstances.</>} id="process-title" /><ol><li><span>01</span><div><h3>Choose a path</h3><p>Tell Amaana which education route you are interested in supporting.</p></div></li><li><span>02</span><div><h3>Review the available need</h3><p>The team confirms the current learner or institutional support scope.</p></div></li><li><span>03</span><div><h3>Confirm your support</h3><p>You receive the relevant details and can decide whether to proceed.</p></div></li><li><span>04</span><div><h3>Follow responsibly</h3><p>Updates are shared in a way that protects the dignity and privacy of the student.</p></div></li></ol></section>
       </div>
 
       <section className="taleem-closing"><div className="v2-shell"><div><p className="v2-section-label">Start here</p><h2>Which learning journey would you like to support?</h2></div><div className="v2-hero-actions"><a className="v2-button" href={enquiryHref("discuss")}>Contact Amaana about sponsorship</a><Link className="v2-text-link" href={taleemHref}>{taleemClosingLabel}</Link></div></div></section>

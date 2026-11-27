@@ -125,9 +125,16 @@ export function acknowledgementPages(input: AcknowledgementPdfInput): Draw[][] {
   add(nameShown ? `Donor: ${nameShown}` : "Donor: the name on your private record (not shown in this format)");
   y -= 8;
   add(`Contribution received: ${rupees(input.amount)}`, 13, true, 22);
-  if (input.feeContributionAmount > 0) add(`Payment processing cost you chose to cover: ${rupees(input.feeContributionAmount)}`);
-  if (input.refundedAmount > 0) add(`Refunded to you: ${rupees(input.refundedAmount)}`);
-  add("Payment status: verified");
+  if (input.feeContributionAmount > 0) {
+    add(`Payment processing cost you chose to cover: ${rupees(input.feeContributionAmount)}`);
+    add(`Original total charged: ${rupees(Math.round((input.amount + input.feeContributionAmount) * 100) / 100)}`);
+    add("Refunds return the covered fee first. Donation principal excludes that fee.");
+  }
+  if (input.refundedAmount > 0) {
+    add(`Donation principal refunded: ${rupees(input.refundedAmount)}`);
+    add(`Donation principal retained: ${rupees(Math.round((input.amount - input.refundedAmount) * 100) / 100)}`);
+  }
+  add(input.refundedAmount > 0 ? "Payment status: verified; donation partially refunded" : "Payment status: verified");
   y -= 8;
   add("Purpose", 12, true, 20);
   for (const line of input.purposeLines) add(line);

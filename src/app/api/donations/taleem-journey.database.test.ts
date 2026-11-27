@@ -164,8 +164,15 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("Taleem programme 
     expect(body).toContain("not Form 10BE");
     expect(body).not.toContain(token);
     expect(body).not.toContain("approved-2026-11");
-    if (refunded) expect(body).toContain("Refunded to you: INR 1,000.00");
-    else expect(body).not.toContain("Refunded to you:");
+    if (refunded) {
+      expect(body).toContain("Donation principal refunded: INR 1,000.00");
+      expect(body).toContain("Donation principal retained: INR 5,000.00");
+      expect(body).toContain("Payment status: verified; donation partially refunded");
+    } else {
+      expect(body).not.toContain("Donation principal refunded:");
+      expect(body).not.toContain("Donation principal retained:");
+    }
+    expect(body).not.toContain("Refunded to you:");
     return body;
   }
 

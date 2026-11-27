@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ requirePermission: vi.fn(), hasPermission: vi.fn(), funds: vi.fn(), groups: vi.fn(), entries: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ requirePermission: mocks.requirePermission, hasPermission: mocks.hasPermission }));
@@ -14,6 +14,7 @@ import FundSpendingPage from "./page";
 const money = (amount: number) => ({ toNumber: () => amount });
 beforeEach(() => {
   vi.resetAllMocks();
+  vi.stubEnv("FUND_SPENDING_SOLE_OPERATOR", "false");
   mocks.requirePermission.mockResolvedValue({ id: "synthetic-viewer" });
   mocks.hasPermission.mockReturnValue(false);
   mocks.funds.mockResolvedValue([{ id: "f1", name: "Synthetic fund" }]);
@@ -24,6 +25,8 @@ beforeEach(() => {
   ]);
   mocks.entries.mockResolvedValue([]);
 });
+
+afterEach(() => vi.unstubAllEnvs());
 
 describe("private spending history", () => {
   it("denies access before any fund or spending query", async () => {
@@ -57,5 +60,48 @@ describe("private spending history", () => {
     expect(mocks.entries).toHaveBeenCalledWith(expect.objectContaining({ where: { status: "VOID" }, skip: 0, take: 50 }));
     expect(html).toContain("<strong>₹0</strong><p>Recorded spending (draft and published)</p>");
     expect(html).toContain("<strong>₹7.01</strong><p>Void entries (excluded from spending)</p>");
+  });
+});
+
+describe("private draft publication review", () => {
+  const entry = (overrides: Record<string, unknown> = {}) => ({
+    id: "synthetic-entry", pool: "ZAKAT", amount: money(100), spentOn: new Date("2026-11-01T00:00:00.000Z"),
+    financialYear: "2026-27", title: "Synthetic food support", status: "DRAFT", voidReason: null,
+    publicSummary: "Distributed essential food supplies.", createdById: "synthetic-maker-private-id",
+    zakatEligibilityConfirmedAt: new Date("2026-11-01T00:00:00.000Z"), fund: { name: "Synthetic fund" }, ...overrides,
+  });
+  const render = async () => renderToStaticMarkup(await FundSpendingPage({ searchParams: Promise.resolve({}) }));
+  it("shows the actual proposed public summary and reviewer evidence without disclosing the recorder id", async () => {
+    mocks.hasPermission.mockReturnValue(true);
+    mocks.entries.mockResolvedValue([entry()]);
+    const html = await render();
+    expect(html).toContain("Draft publication review");
+    expect(html).toContain("Distributed essential food supplies.");
+    expect(html).toContain("Recorded by another staff member");
+    expect(html).toContain("Zakat eligibility confirmation recorded");
+    expect(html).toContain("not a new eligibility decision");
+    expect(html).not.toContain("synthetic-maker-private-id");
+    expect(mocks.entries).toHaveBeenCalledWith(expect.objectContaining({ select: expect.objectContaining({ publicSummary: true, createdById: true, zakatEligibilityConfirmedAt: true }) }));
+  });
+  it("withholds suspect summary and distinguishes default maker-checker from configured exception", async () => {
+    mocks.hasPermission.mockReturnValue(true);
+    mocks.entries.mockResolvedValue([entry({ createdById: "synthetic-viewer", publicSummary: "Email private@example.invalid", zakatEligibilityConfirmedAt: null })]);
+    const html = await render();
+    expect(html).toContain("Another staff member must publish");
+    expect(html).toContain("Public summary not ready");
+    expect(html).toContain("Zakat eligibility confirmation not recorded");
+    expect(html).not.toContain("private@example.invalid");
+    expect(html).not.toContain("configured sole-operator exception applies");
+    vi.stubEnv("FUND_SPENDING_SOLE_OPERATOR", "true");
+    expect(await render()).toContain("configured sole-operator exception applies");
+  });
+  it("keeps review fields out of the view-only projection and does not render the preview or actions", async () => {
+    mocks.entries.mockResolvedValue([entry()]);
+    const html = await render();
+    expect(mocks.entries).toHaveBeenCalledWith(expect.objectContaining({ select: expect.objectContaining({ publicSummary: false, createdById: false, zakatEligibilityConfirmedAt: false }) }));
+    expect(html).not.toContain("Draft publication review");
+    expect(html).not.toContain("Distributed essential food supplies.");
+    expect(html).not.toContain("synthetic-maker-private-id");
+    expect(html).not.toContain(">Publish</button>");
   });
 });
