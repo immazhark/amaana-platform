@@ -3,6 +3,7 @@ import { Prisma } from "@prisma/client";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { prisma } from "@/lib/prisma";
 import { financeReviewPeriod, loadAnnualFinanceBreakdown } from "./annual-finance-review";
+import { donationExceptionWhere, loadVerifiedEvidenceCounts } from "./donation-exception-review";
 
 class Rollback extends Error {}
 describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("financial-year channel snapshot PostgreSQL", () => {
@@ -11,6 +12,36 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("financial-year ch
     if (!["localhost", "127.0.0.1", "[::1]"].includes(url.hostname) || url.pathname !== "/amaana") throw new Error("Financial-year tests require isolated loopback amaana database");
   });
   afterAll(async () => { await prisma.$disconnect(); });
+  it("reconciles missing capture and acknowledgement counts against the review predicates and annual exclusion", async () => {
+    const prefix = randomUUID().replaceAll("-", "").slice(0, 16);
+    let i = 0;
+    const next = () => prefix + i++;
+    const period = financeReviewPeriod("2026-27", new Date("2026-11-27"));
+    try {
+      await prisma.$transaction(async tx => {
+        const before = await loadVerifiedEvidenceCounts(tx);
+        const fund = await tx.fund.create({ data: { slug: "t-" + next(), name: "Synthetic", summary: "Synthetic isolated test", status: "ACTIVE" } });
+        const gift = (over: Partial<Prisma.DonationUncheckedCreateInput>) => tx.donation.create({ data: {
+          referenceNumber: "AFD-" + next(), fundId: fund.id, donorName: "Synthetic", donorEmail: "synthetic@example.test",
+          provider: "razorpay", providerOrderId: "order_" + next(), domesticConfirmedAt: period.start, amount: 100,
+          receiptTokenHash: "0".repeat(64), status: "CAPTURED", capturedAt: period.start, createdAt: period.start, ...over,
+        } });
+        await gift({ capturedAt: null, receiptNumber: "AFR-" + next() });
+        await gift({ capturedAt: null });
+        await gift({ receiptNumber: "AFR-" + next() });
+        await gift({ status: "FAILED", capturedAt: null });
+        const after = await loadVerifiedEvidenceCounts(tx);
+        expect(after.missingAcknowledgements - before.missingAcknowledgements).toBe(1);
+        expect(after.missingCaptureTimes - before.missingCaptureTimes).toBe(2);
+        expect(await tx.donation.count({ where: { fundId: fund.id, AND: [donationExceptionWhere("missing-capture-time")] } })).toBe(2);
+        expect(await tx.donation.count({ where: { fundId: fund.id, AND: [donationExceptionWhere("missing-acknowledgement")] } })).toBe(1);
+        const annual = await loadAnnualFinanceBreakdown(tx, period);
+        expect(annual.destinations.filter(row => row.fundSlug === fund.slug).reduce((sum, row) => sum + row.grossPaise, 0)).toBe(10000);
+        throw new Rollback();
+      }, { isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead });
+    } catch (error) { if (!(error instanceof Rollback)) throw error; }
+  });
+
   it("reconciles channel and destination deltas with fee-first refunds and no spending attribution", async () => {
     const prefix = randomUUID().replaceAll("-", "").slice(0, 16);
     let i = 0;

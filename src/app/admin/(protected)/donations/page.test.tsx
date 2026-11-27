@@ -46,7 +46,7 @@ beforeEach(() => {
   mocks.permission.mockResolvedValue({ id: "synthetic-donation-viewer" });
   mocks.donationCount.mockResolvedValue(1);
   mocks.donationAggregate.mockResolvedValue({
-    _sum: { amount: money(250), refundedAmount: money(0) },
+    _count: { _all: 2, receiptNumber: 1, capturedAt: 1 },
   });
   mocks.donationTotalsQuery.mockResolvedValue([reportRow(null, 250, 0), reportRow("RAZORPAY", 250, 0)]);
   mocks.donationGroups.mockResolvedValue([]);
@@ -87,6 +87,7 @@ describe("admin donation list IST dates", () => {
     mocks.permission.mockRejectedValueOnce(new Error("donation.view permission required"));
     await expect(DonationsPage({ searchParams: Promise.resolve({}) })).rejects.toThrow("donation.view permission required");
     expect(mocks.donationCount).not.toHaveBeenCalled();
+    expect(mocks.donationAggregate).not.toHaveBeenCalled();
     expect(mocks.donationTotalsQuery).not.toHaveBeenCalled();
     expect(mocks.donationFind).not.toHaveBeenCalled();
     expect(mocks.paymentFind).not.toHaveBeenCalled();
@@ -209,7 +210,7 @@ describe("admin donation summary excludes refunded processing fees", () => {
     // the second refunds INR 7 including INR 2 covered fee. Only INR 5
     // reduces the donations themselves.
     mocks.donationFind.mockResolvedValue([]);
-    mocks.donationAggregate.mockResolvedValue({ _sum: { amount: money(200), refundedAmount: money(12) } });
+    mocks.donationAggregate.mockResolvedValue({ _count: { _all: 2, receiptNumber: 2, capturedAt: 2 } });
     mocks.donationTotalsQuery.mockResolvedValue([reportRow(null, 200, 5), reportRow("RAZORPAY", 200, 5)]);
     const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({}) }));
     expect(html).toContain("Gross captured: ₹200");
@@ -249,7 +250,8 @@ describe("private payment channel reconciliation", () => {
     const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({ method: "BANK_TRANSFER", status: "PENDING_VERIFICATION", intent: "SADAQAH", page: "2" }) }));
     const where = { paymentMethod: "BANK_TRANSFER", status: "PENDING_VERIFICATION", givingIntent: "SADAQAH" };
     expect(mocks.donationFind).toHaveBeenCalledWith(expect.objectContaining({ where, skip: 50, take: 50 }));
-    expect(mocks.donationCount).toHaveBeenCalledTimes(2);
+    expect(mocks.donationCount).toHaveBeenCalledTimes(1);
+    expect(mocks.donationAggregate).toHaveBeenCalledOnce();
     expect(mocks.donationGroups).toHaveBeenCalledWith({ by: ["status", "givingIntent"], where: { paymentMethod: "BANK_TRANSFER" }, _count: { _all: true } });
     expect(mocks.donationGroups).toHaveBeenCalledTimes(2); // joint filters and global outcome cohort
     expect(html).toContain("Page 2 of 3 · 101 records");
@@ -284,7 +286,8 @@ describe("direct transfer review workbench", () => {
     const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({ reference: "afd-2026-12345678", status: "PENDING_VERIFICATION", method: "BANK_TRANSFER", sort: "oldest" }) }));
     expect(mocks.donationFind).toHaveBeenCalledWith(expect.objectContaining({ where: { referenceNumber: "AFD-2026-12345678", status: "PENDING_VERIFICATION", paymentMethod: "BANK_TRANSFER" }, orderBy: [{ createdAt: "asc" }, { id: "asc" }] }));
     expect(mocks.donationGroups).toHaveBeenCalledWith({ by: ["status", "givingIntent"], where: { referenceNumber: "AFD-2026-12345678", paymentMethod: "BANK_TRANSFER" }, _count: { _all: true } });
-    expect(mocks.donationCount).toHaveBeenCalledTimes(2);
+    expect(mocks.donationCount).toHaveBeenCalledTimes(1);
+    expect(mocks.donationAggregate).toHaveBeenCalledOnce();
     expect(html).toContain("reference=AFD-2026-12345678");
     expect(html).toContain("sort=oldest");
     expect(html).toContain("Clear reference lookup");
@@ -307,11 +310,13 @@ describe("operational reconciliation exception drill-down", () => {
     const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({}) }));
     expect(html).toContain('href="/admin/donations?issue=missing-acknowledgement&amp;sort=oldest"');
     expect(html).toContain('href="/admin/donations?issue=missing-refund-time&amp;sort=oldest"');
+    expect(html).toContain('href="/admin/donations?issue=missing-capture-time&amp;sort=oldest"');
     expect(html).toContain("may overlap; they do not count distinct affected donations");
   });
   it.each([
     ["missing-acknowledgement", { status: { in: ["CAPTURED", "REFUNDED"] }, receiptNumber: null }],
     ["missing-refund-time", { status: "REFUNDED", refundedAt: null }],
+    ["missing-capture-time", { status: { in: ["CAPTURED", "REFUNDED"] }, capturedAt: null }],
   ] as const)("intersects %s with existing filters and uses the same predicate for global counts", async (issue, predicate) => {
     mocks.donationFind.mockResolvedValue([]);
     const status = issue === "missing-refund-time" ? "REFUNDED" : "CAPTURED";
@@ -322,8 +327,10 @@ describe("operational reconciliation exception drill-down", () => {
     const scope = { paymentMethod: "BANK_TRANSFER", referenceNumber: "AFD-2026-12345678", AND: [predicate] };
     const where = { ...scope, status, givingIntent: "SADAQAH" };
     expect(mocks.donationFind).toHaveBeenCalledWith(expect.objectContaining({ where, orderBy: [{ createdAt: "asc" }, { id: "asc" }], skip: 50, take: 50 }));
-    expect(mocks.donationCount).toHaveBeenCalledTimes(2);
-    expect(mocks.donationCount).toHaveBeenCalledWith({ where: predicate });
+    expect(mocks.donationCount).toHaveBeenCalledTimes(1);
+    expect(mocks.donationAggregate).toHaveBeenCalledOnce();
+    expect(mocks.donationCount).toHaveBeenCalledWith({ where: { status: "REFUNDED", refundedAt: null } });
+    expect(mocks.donationAggregate).toHaveBeenCalledWith({ where: { status: { in: ["CAPTURED", "REFUNDED"] } }, _count: { _all: true, receiptNumber: true, capturedAt: true } });
     expect(mocks.donationGroups).toHaveBeenCalledWith({ by: ["status", "givingIntent"], where: scope, _count: { _all: true } });
     expect(html).toContain(`name="issue" value="${issue}"`);
     expect(html).toContain(`issue=${issue}&amp;page=3`);
@@ -351,6 +358,7 @@ describe("independent donation report failures", () => {
   it("keeps individual records and exception counts when reconciliation fails, without inventing financial totals", async () => {
     mocks.donationTotalsQuery.mockRejectedValueOnce(new Error("PRIVATE_SYNTHETIC_DIAGNOSTIC"));
     mocks.donationCount.mockResolvedValue(0);
+    mocks.donationAggregate.mockResolvedValue({ _count: { _all: 2, receiptNumber: 2, capturedAt: 2 } });
     mocks.donationFind.mockResolvedValue(record());
     const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({}) }));
     expect(html).toContain("SYNTHETIC-REPORT-RECORD");
@@ -410,7 +418,8 @@ describe("joint scoped donation counts", () => {
     expect(mocks.donationFind).toHaveBeenCalledWith(expect.objectContaining({ where: { ...scope, status: "CAPTURED" }, skip: 0, take: 50 }));
     expect(html).toContain("Page 1 of 1 · 0 records");
     expect(html).toContain("REFUNDED (60)");
-    expect(mocks.donationCount).toHaveBeenCalledTimes(2);
+    expect(mocks.donationCount).toHaveBeenCalledTimes(1);
+    expect(mocks.donationAggregate).toHaveBeenCalledOnce();
   });
 });
 
@@ -419,4 +428,17 @@ it("carries validated status, method, sort and clamped page into a private recor
   mocks.donationFind.mockResolvedValueOnce([{ id: "synthetic-navigation", referenceNumber: "AFD-2026-12345678", donorName: "Synthetic donor", donorEmail: "synthetic@example.invalid", givingIntent: "GENERAL", paymentMethod: "DIRECT_UPI", amount: money(100), refundedAmount: money(0), status: "PENDING_VERIFICATION", createdAt: new Date("2026-11-27T00:00:00Z"), appeal: null, fund: null }]);
   const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({ status: "PENDING_VERIFICATION", method: "DIRECT_UPI", sort: "oldest", page: "99" }) }));
   expect(html).toContain('href="/admin/donations/synthetic-navigation?queueStatus=PENDING_VERIFICATION&amp;queueMethod=DIRECT_UPI&amp;queueSort=oldest&amp;queuePage=2"');
+});
+
+it("surfaces missing capture evidence even when all other operational counters are clear", async () => {
+  mocks.donationCount.mockResolvedValue(0);
+  mocks.paymentCount.mockResolvedValue(0);
+  mocks.donationAggregate.mockResolvedValue({ _count: { _all: 5, receiptNumber: 5, capturedAt: 3 } });
+  mocks.donationFind.mockResolvedValue([]);
+  const html = renderToStaticMarkup(await DonationsPage({ searchParams: Promise.resolve({ issue: "missing-capture-time" }) }));
+  expect(html).toContain("2 NEED ATTENTION");
+  expect(html).toContain("excluded from financial-year receipt reports");
+  expect(html).toContain("They cannot be assigned to a financial year from the available capture evidence");
+  expect(html).not.toContain(">HEALTHY<");
+  expect(mocks.donationFind).toHaveBeenCalledWith(expect.objectContaining({ where: { AND: [{ status: { in: ["CAPTURED", "REFUNDED"] }, capturedAt: null }] } }));
 });

@@ -37,10 +37,17 @@ describe("operational signal derivation", () => {
     expect(donationOperationalState({
       unmatchedCriticalEvents: 1,
       missingAcknowledgements: 2,
+      missingCaptureTimes: 0,
       refundedWithoutCompletionTime: 1,
     })).toMatchObject({
       attention: 4,
       status: "attention",
     });
   });
+});
+
+it("requires reconciliation attention for missing capture times alone", () => {
+  expect(donationOperationalState({
+    unmatchedCriticalEvents: 0, missingAcknowledgements: 0, missingCaptureTimes: 2, refundedWithoutCompletionTime: 0,
+  })).toMatchObject({ attention: 2, missingCaptureTimes: 2, status: "attention" });
 });
