@@ -35,7 +35,10 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
     prisma.assistanceDocument.count({ where }),
     prisma.assistanceDocument.count(),
     prisma.assistanceDocument.count({ where: terminalWhere }),
-    loadRetentionScheduleSummary(prisma, today),
+    loadRetentionScheduleSummary(prisma, today).catch(() => {
+      logServerError("retention.schedule_summary_unavailable");
+      return null;
+    }),
   ]);
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
   const documents = await prisma.assistanceDocument.findMany({
@@ -88,6 +91,7 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
     <section className="admin-card" aria-labelledby="retention-schedule-heading" style={{ marginBottom: "2rem" }}>
       <h2 id="retention-schedule-heading">Retention review reminders</h2>
       <p className="muted">All stored assistance documents, independent of the list filter. Review dates are Indian calendar days. The latest recorded retain or hold decision supplies its reminder, not a statutory deletion deadline. Held documents may also need review; a due reminder never releases a hold or authorises deletion.</p>
+      {schedule === null ? <p role="status">Retention reminders temporarily unavailable. The document list remains available for read-only review. Refresh before recording a decision.</p> : <>
       <div className="admin-media-readiness">
         <div><strong>{schedule.due}</strong><small>Review due today or earlier</small></div>
         <div><strong>{schedule.upcoming}</strong><small>Upcoming review date</small></div>
@@ -97,6 +101,7 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
         <div><strong>{schedule.held}</strong><small>Under hold (overlaps reminder categories)</small></div>
       </div>
       <p className="muted">{schedule.total} documents in the reminder snapshot. Check the reminder beside each file below. The existing list order and filters are unchanged.</p>
+      </>}
     </section>
 
     <section className="admin-card">
@@ -109,7 +114,7 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
       </div>
       {documents.length === 0 ? <p className="empty-state">No private assistance documents match this view.</p> : <div className="admin-media-list">{documents.map(document => {
         const current = evidence?.get(document.id);
-        const reviewBlocked = !current || current.conflict;
+        const reviewBlocked = schedule === null || !current || current.conflict;
         const held = current?.holdAction === "assistance.document_legal_hold_placed";
         const reminderDate = current?.decisionAfter;
         const reminder = classifyRetentionSchedule(Boolean(current?.decisionAction), reminderDate, today);
@@ -130,7 +135,7 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
             </>}
           </div>
 
-          {current && !current.conflict && <form action={reviewDocumentRetention} className="form-grid admin-media-edit">
+          {current && !reviewBlocked && <form action={reviewDocumentRetention} className="form-grid admin-media-edit">
             <input type="hidden" name="documentId" value={document.id}/>
             <input type="hidden" name="expectedHoldAction" value={current.holdAction ?? ""}/>
             <input type="hidden" name="expectedHoldCreatedAt" value={current.holdAt?.toISOString() ?? ""}/>

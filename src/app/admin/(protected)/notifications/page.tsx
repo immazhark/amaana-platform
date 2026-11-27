@@ -5,6 +5,7 @@ import { hasPermission, requirePermission } from "@/lib/auth";
 import { enqueueControlledEmailAcceptance, requeueFailedNotification } from "./actions";
 import { prisma } from "@/lib/prisma";
 import { notificationOperationalState } from "@/lib/operational-signals";
+import { logServerError } from "@/lib/server-log";
 import { notificationIssueWhere, notificationIssueFilter, notificationQueueOrder } from "@/lib/notification-review-queue";
 
 type Props = { searchParams: Promise<{ status?: string | string[]; page?: string | string[]; issue?: string | string[] }> };
@@ -40,15 +41,21 @@ export default async function NotificationOperationsPage({ searchParams }: Props
     ? selected ? { AND: [filter.where, { status: selected }] } : filter.where
     : selected ? { status: selected } : undefined;
 
-  const [grouped, staleProcessing, overdueDue, terminalFailures] = await Promise.all([
+  const [grouped, operational] = await Promise.all([
     prisma.notification.groupBy({ by: ["status"], where: filter.where, _count: { _all: true } }),
-    prisma.notification.count({ where: notificationIssueWhere("stale-processing", now) }),
-    prisma.notification.count({ where: notificationIssueWhere("overdue", now) }),
-    prisma.notification.count({ where: notificationIssueWhere("terminal", now) }),
+    Promise.all([
+      prisma.notification.count({ where: notificationIssueWhere("stale-processing", now) }),
+      prisma.notification.count({ where: notificationIssueWhere("overdue", now) }),
+      prisma.notification.count({ where: notificationIssueWhere("terminal", now) }),
+    ]).then(([staleProcessing, overdueDue, terminalFailures]) =>
+      notificationOperationalState({ staleProcessing, overdueDue, terminalFailures }),
+    ).catch(() => {
+      logServerError("notifications.operational_summary_unavailable");
+      return null;
+    }),
   ]);
   const counts = new Map(grouped.map(item => [item.status, item._count._all]));
   const totalItems = selected ? counts.get(selected) ?? 0 : grouped.reduce((sum, item) => sum + item._count._all, 0);
-  const operational = notificationOperationalState({ staleProcessing, overdueDue, terminalFailures });
 
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
   const notifications = await prisma.notification.findMany({
@@ -99,13 +106,13 @@ export default async function NotificationOperationsPage({ searchParams }: Props
             Queue degradation is tracked separately from infrastructure readiness so a healthy server cannot hide stuck or terminal email delivery.
           </p>
         </div>
-        <span className="status-badge">{operational.status === "healthy" ? "HEALTHY" : `${operational.attention} NEED ATTENTION`}</span>
+        <span className="status-badge">{operational === null ? "UNAVAILABLE" : operational.status === "healthy" ? "HEALTHY" : `${operational.attention} NEED ATTENTION`}</span>
       </div>
-      <div className="card-grid">
+      {operational === null ? <p role="status">Operational signals temporarily unavailable. The delivery records below remain available; their presence does not establish delivery health.</p> : <div className="card-grid">
         <article className="card"><strong>{operational.staleProcessing}</strong><p>Processing longer than 15 minutes</p>{operational.staleProcessing > 0 && <Link href={{ pathname: "/admin/notifications", query: { issue: "stale-processing" } }}>Review stuck processing jobs</Link>}</article>
         <article className="card"><strong>{operational.overdueDue}</strong><p>Due email jobs overdue by 15+ minutes</p>{operational.overdueDue > 0 && <Link href={{ pathname: "/admin/notifications", query: { issue: "overdue" } }}>Review overdue email jobs</Link>}</article>
         <article className="card"><strong>{operational.terminalFailures}</strong><p>Terminal failures requiring manual review</p>{operational.terminalFailures > 0 && <Link href={{ pathname: "/admin/notifications", query: { issue: "terminal" } }}>Review terminal failures</Link>}</article>
-      </div>
+      </div>}
     </section>
 
     {canManageNotifications && (

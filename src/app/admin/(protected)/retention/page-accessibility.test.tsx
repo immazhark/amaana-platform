@@ -2,8 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
 const mocks = vi.hoisted(() => ({
-  permission: vi.fn(), count: vi.fn(), documents: vi.fn(), events: vi.fn(), schedule: vi.fn(),
+  permission: vi.fn(), count: vi.fn(), documents: vi.fn(), events: vi.fn(), schedule: vi.fn(), log: vi.fn(),
 }));
+vi.mock("@/lib/server-log", () => ({ logServerError: mocks.log }));
 vi.mock("@/lib/auth", () => ({ requirePermission: mocks.permission }));
 vi.mock("@/lib/prisma", () => ({ prisma: {
   assistanceDocument: { count: mocks.count, findMany: mocks.documents },
@@ -237,4 +238,23 @@ it("withholds the conflicting document form and never displays another case's ev
   expect(html).not.toContain("foreign-case-marker");
   expect(html).not.toContain("Foreign reviewer");
   expect([...html.matchAll(/<form\b/g)]).toHaveLength(1);
+});
+
+
+it("keeps private document evidence readable but withholds decisions when reminder summary fails", async () => {
+  mocks.schedule.mockRejectedValueOnce(new Error("synthetic private diagnostic"));
+  const html = renderToStaticMarkup(await RetentionReviewPage({ searchParams: Promise.resolve({}) }));
+  expect(html).toContain("Retention reminders temporarily unavailable");
+  expect(html).toContain("synthetic-1.pdf");
+  expect(html).toContain("synthetic-2.pdf");
+  expect(html).toContain("REVIEW BLOCKED");
+  expect(html).not.toContain("documents in the reminder snapshot");
+  expect(html).not.toContain("Record retention decision");
+  expect(html).not.toContain("synthetic private diagnostic");
+  expect(mocks.log).toHaveBeenCalledExactlyOnceWith("retention.schedule_summary_unavailable");
+});
+it("does not substitute an empty retention list when mandatory document counts fail", async () => {
+  mocks.count.mockRejectedValueOnce(new Error("synthetic count failure"));
+  await expect(RetentionReviewPage({ searchParams: Promise.resolve({}) })).rejects.toThrow("synthetic count failure");
+  expect(mocks.documents).not.toHaveBeenCalled();
 });

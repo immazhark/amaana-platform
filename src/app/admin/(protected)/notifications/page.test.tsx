@@ -1,7 +1,8 @@
 import { beforeEach, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 
-const mocks = vi.hoisted(() => ({ permission: vi.fn(), allowed: vi.fn(), count: vi.fn(), groups: vi.fn(), find: vi.fn() }));
+const mocks = vi.hoisted(() => ({ permission: vi.fn(), allowed: vi.fn(), count: vi.fn(), groups: vi.fn(), find: vi.fn(), log: vi.fn() }));
+vi.mock("@/lib/server-log", () => ({ logServerError: mocks.log }));
 vi.mock("@/lib/auth", () => ({ requirePermission: mocks.permission, hasPermission: mocks.allowed }));
 vi.mock("@/lib/prisma", () => ({ prisma: { notification: { count: mocks.count, groupBy: mocks.groups, findMany: mocks.find } } }));
 vi.mock("./actions", () => ({ enqueueControlledEmailAcceptance: vi.fn(), requeueFailedNotification: vi.fn() }));
@@ -76,5 +77,26 @@ it("denies a viewer before any notification reads", async () => {
   await expect(NotificationOperationsPage({ searchParams: Promise.resolve({ issue: "terminal" }) })).rejects.toThrow("Permission denied");
   expect(mocks.count).not.toHaveBeenCalled();
   expect(mocks.groups).not.toHaveBeenCalled();
+  expect(mocks.find).not.toHaveBeenCalled();
+});
+
+
+it.each([0, 1, 2])("keeps the notification list available when operational count %i fails", async failureIndex => {
+  for (let i = 0; i < failureIndex; i++) mocks.count.mockResolvedValueOnce(1);
+  mocks.count.mockRejectedValueOnce(new Error("synthetic private diagnostic"));
+  const html = await render(row("FAILED"));
+  expect(html).toContain("Operational signals temporarily unavailable");
+  expect(html).toContain("UNAVAILABLE");
+  expect(html).toContain("Synthetic operation");
+  expect(html).not.toContain("HEALTHY");
+  expect(html).not.toContain("NEED ATTENTION");
+  expect(html).not.toContain("Processing longer than 15 minutes");
+  expect(html).not.toContain("synthetic private diagnostic");
+  expect(mocks.log).toHaveBeenCalledExactlyOnceWith("notifications.operational_summary_unavailable");
+  expect(mocks.find).toHaveBeenCalledOnce();
+});
+it("does not substitute an empty list when mandatory grouped counts fail", async () => {
+  mocks.groups.mockRejectedValueOnce(new Error("synthetic grouped query failure"));
+  await expect(NotificationOperationsPage({ searchParams: Promise.resolve({}) })).rejects.toThrow("synthetic grouped query failure");
   expect(mocks.find).not.toHaveBeenCalled();
 });
