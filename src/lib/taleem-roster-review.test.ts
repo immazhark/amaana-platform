@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { milestoneConfirmationPlan, rosterReview } from "./taleem-roster-review";
+import { filterRosterLearners, milestoneConfirmationPlan, rosterLearnerFilters, rosterReview } from "./taleem-roster-review";
 
 const learner = (publicAlias: string, programme: string | null, placeCode: string | null, extra: Partial<Parameters<typeof rosterReview>[0][number]> = {}) =>
   ({ publicAlias, programme, placeCode, status: "ACTIVE", hasBlockingAssignment: placeCode !== null, completedHifdhOn: null, completionReview: null, ...extra });
@@ -75,5 +75,31 @@ describe("private programme and status reconciliation", () => {
     expect(review.programmeStatus.at(-1)).toEqual({ programme: "UNCLASSIFIED", active: 0, onBreak: 0, inactive: 0, unknownStatus: 1 });
     expect(review.naziraHifdhStudents).toBe(0);
     expect(review.placeConflicts).toEqual(["b"]);
+  });
+});
+
+describe("Taleem learner directory filters", () => {
+  const records = [
+    learner("current", "NAZIRA", "p1"),
+    learner("reserved", "NAZIRA", null, { hasBlockingAssignment: true }),
+    learner("vacant", "QAIDA", null),
+    learner("completed", "HIFDH", null, { status: "GRADUATED" }),
+    learner("unclassified", null, null, { status: "ON_BREAK" }),
+  ];
+  it("intersects programme, status and placement, preserving the original records and order", () => {
+    expect(filterRosterLearners(records, rosterLearnerFilters({ programmeFilter: "NAZIRA", statusFilter: "ACTIVE", placementFilter: "RESERVED" }))).toEqual([records[1]]);
+    expect(filterRosterLearners(records, rosterLearnerFilters({ programmeFilter: "NAZIRA" }))).toEqual(records.slice(0, 2));
+    expect(records).toHaveLength(5);
+  });
+  it("distinguishes today's holder, future bookings, unassigned and unclassified learners", () => {
+    expect(filterRosterLearners(records, rosterLearnerFilters({ placementFilter: "CURRENT" }))).toEqual([records[0]]);
+    expect(filterRosterLearners(records, rosterLearnerFilters({ placementFilter: "UNASSIGNED" }))).toEqual(records.slice(2));
+    expect(filterRosterLearners(records, rosterLearnerFilters({ programmeFilter: "UNCLASSIFIED", statusFilter: "ON_BREAK" }))).toEqual([records[4]]);
+  });
+  it("does not reflect arbitrary input, repeated values or partial matches", () => {
+    const filters = rosterLearnerFilters({ programmeFilter: ["HIFDH", "QAIDA"], statusFilter: "PRIVATE_SYNTHETIC_NAME", placementFilter: "current" });
+    expect(filters).toEqual({ programme: "ALL", status: "ALL", placement: "ALL" });
+    expect(filterRosterLearners(records, filters)).toEqual(records);
+    expect(filterRosterLearners(records, rosterLearnerFilters({ programmeFilter: "QAIDA", statusFilter: "GRADUATED" }))).toEqual([]);
   });
 });

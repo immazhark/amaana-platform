@@ -1,6 +1,6 @@
 import { requirePermission } from "@/lib/auth";
 import { TALEEM_FACTS, TALEEM_HIFDH_COMPLETIONS } from "@/content/taleem-facts";
-import { rosterReview } from "@/lib/taleem-roster-review";
+import { filterRosterLearners, rosterLearnerFilters, rosterReview } from "@/lib/taleem-roster-review";
 import { loadRoster } from "@/lib/taleem-roster-service";
 import { parseCalendarDate } from "@/lib/taleem-roster-rules";
 import {
@@ -10,7 +10,7 @@ import {
 
 export const dynamic = "force-dynamic";
 
-type Props = { searchParams: Promise<{ notice?: string }> };
+type Props = { searchParams: Promise<{ notice?: string; programmeFilter?: string | string[]; statusFilter?: string | string[]; placementFilter?: string | string[] }> };
 
 const PROGRAMME_LABEL = { QAIDA: "Qaida", NAZIRA: "Nazira", HIFDH: "Hifdh" } as const;
 const LEARNER_STATUS_LABEL = { ACTIVE: "Active", ON_BREAK: "On break", LEFT: "Left", GRADUATED: "Graduated" } as const;
@@ -21,13 +21,16 @@ const todayInIndia = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Ko
 
 export default async function TaleemRosterPage({ searchParams }: Props) {
   await requirePermission("assistance.approve");
-  const { notice } = await searchParams;
+  const { notice, ...requestedFilters } = await searchParams;
+  const filters = rosterLearnerFilters(requestedFilters);
+  const filtered = Object.values(filters).some(value => value !== "ALL");
   const today = todayInIndia();
   const roster = await loadRoster(parseCalendarDate(today) ?? new Date());
   const { counts } = roster;
   const vacant = roster.places.filter(place => place.status === "MAINTAINED" && place.holderAlias === null && !place.hasBlockingAssignment);
   const baseline = TALEEM_FACTS.sponsoredStudents;
   const review = rosterReview(roster.learners, roster.places);
+  const visibleLearners = filterRosterLearners(roster.learners, filters);
   const reviewGroups = [
     { label: "Maintained places available for assignment", values: review.assignableVacancies, target: "place" },
     { label: "Vacant today but already reserved", values: review.reservedVacancies, target: "place" },
@@ -85,7 +88,7 @@ export default async function TaleemRosterPage({ searchParams }: Props) {
       <p className="muted">Review groups can overlap. A vacancy does not establish available funding; a review prompt does not change a learner, place, or public figure.</p>
       {reviewGroups.map(group => <details key={group.label}>
         <summary>{group.label}: <strong>{group.values.length}</strong></summary>
-        {group.values.length ? <ul>{group.values.map(reference => <li key={reference}><a href={`#${group.target}-${reference}`}>{reference}</a></li>)}</ul> : <p className="muted">None recorded in this group.</p>}
+        {group.values.length ? <ul>{group.values.map(reference => <li key={reference}><a href={`${filtered && group.target === "learner" ? "/admin/taleem" : ""}#${group.target}-${reference}`}>{reference}</a></li>)}</ul> : <p className="muted">None recorded in this group.</p>}
       </details>)}
     </section>
 
@@ -115,7 +118,20 @@ export default async function TaleemRosterPage({ searchParams }: Props) {
 
     <section className="card" aria-labelledby="learners-heading">
       <h2 id="learners-heading">Learners</h2>
-      {roster.learners.length === 0 ? <p className="muted">No learners yet.</p> : roster.learners.map(learner => <details key={learner.id} id={`learner-${learner.publicAlias}`} className="card">
+      <form action="/admin/taleem#learners-heading" method="get" className="form-grid" aria-label="Filter private learner records">
+        <div className="field"><label htmlFor="roster-programme-filter">Programme</label><select id="roster-programme-filter" name="programmeFilter" defaultValue={filters.programme}>
+          <option value="ALL">All programmes</option>{Object.entries(PROGRAMME_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}<option value="UNCLASSIFIED">No recorded programme</option>
+        </select></div>
+        <div className="field"><label htmlFor="roster-status-filter">Learner status</label><select id="roster-status-filter" name="statusFilter" defaultValue={filters.status}>
+          <option value="ALL">All statuses</option>{Object.entries(LEARNER_STATUS_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+        </select></div>
+        <div className="field"><label htmlFor="roster-placement-filter">Place assignment</label><select id="roster-placement-filter" name="placementFilter" defaultValue={filters.placement}>
+          <option value="ALL">All assignments</option><option value="CURRENT">Place recorded today</option><option value="RESERVED">Future assignment only</option><option value="UNASSIGNED">No current or future assignment</option>
+        </select></div>
+        <div className="field full"><button className="button" type="submit">Apply learner filters</button>{filtered && <> <a href="/admin/taleem#learners-heading">Clear filters</a></>}</div>
+      </form>
+      <p className="muted">Showing {visibleLearners.length} of {roster.learners.length} learner records. Counts and reconciliation above always include the full roster.</p>
+      {roster.learners.length === 0 ? <p className="muted">No learners yet.</p> : visibleLearners.length === 0 ? <p className="muted">No learners match these filters.</p> : visibleLearners.map(learner => <details key={learner.id} id={`learner-${learner.publicAlias}`} className="card">
         <summary><strong>{learner.fullName}</strong> <small>{learner.publicAlias} · {LEARNER_STATUS_LABEL[learner.status]} · {learner.programme ? PROGRAMME_LABEL[learner.programme] : "No programme recorded"} · {learner.placeCode ?? "No place today"}{learner.openAssignmentStartsOn && learner.openAssignmentStartsOn > counts.asOf ? ` · Scheduled from ${learner.openAssignmentStartsOn}: ${learner.openAssignmentPlaceCode ?? "place recorded"}` : ""}{learner.completedHifdhOn ? ` · Hifdh completion recorded ${learner.completedHifdhOn}` : ""}</small></summary>
         <form action={setLearnerStatusAction} className="form-grid">
           <input type="hidden" name="learnerId" value={learner.id} />
