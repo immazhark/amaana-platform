@@ -64,3 +64,33 @@ export function milestoneConfirmationPlan(current: Evidence & { completedOn: str
   if (verified === current.verified && supportAssociated === current.supportAssociated) return { kind: "unchanged" };
   return { kind: "update", verified, supportAssociated };
 }
+
+const rosterProgrammeFilters = ["QAIDA", "NAZIRA", "HIFDH", "UNCLASSIFIED"] as const;
+const rosterStatusFilters = ["ACTIVE", "ON_BREAK", "LEFT", "GRADUATED"] as const;
+const rosterPlacementFilters = ["CURRENT", "RESERVED", "UNASSIGNED"] as const;
+
+function rosterFilterValue<T extends string>(value: unknown, choices: readonly T[]): T | "ALL" {
+  return choices.find(choice => choice === value) ?? "ALL";
+}
+
+/** Fixed non-identifying GET values only. Repeated or unknown inputs are ignored. */
+export function rosterLearnerFilters(input: { programmeFilter?: unknown; statusFilter?: unknown; placementFilter?: unknown }) {
+  return {
+    programme: rosterFilterValue(input.programmeFilter, rosterProgrammeFilters),
+    status: rosterFilterValue(input.statusFilter, rosterStatusFilters),
+    placement: rosterFilterValue(input.placementFilter, rosterPlacementFilters),
+  };
+}
+
+/** Filter only the learner directory, not the full-roster aggregates or assignment availability. */
+export function filterRosterLearners<T extends Pick<ReviewLearner, "programme" | "status" | "placeCode" | "hasBlockingAssignment">>(
+  learners: readonly T[], filters: ReturnType<typeof rosterLearnerFilters>,
+): T[] {
+  return learners.filter(learner => {
+    const programme = learner.programme ?? "UNCLASSIFIED";
+    const placement = learner.placeCode !== null ? "CURRENT" : learner.hasBlockingAssignment ? "RESERVED" : "UNASSIGNED";
+    return (filters.programme === "ALL" || filters.programme === programme)
+      && (filters.status === "ALL" || filters.status === learner.status)
+      && (filters.placement === "ALL" || filters.placement === placement);
+  });
+}

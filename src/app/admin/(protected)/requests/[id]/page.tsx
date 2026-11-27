@@ -15,6 +15,8 @@ import { parseRejectionNotice, rejectionDraftCookieName, rejectionDraftFromCooki
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { assistanceCaseHref, assistanceQueueContext, assistanceQueueHref, assistanceReturnFilters } from "@/lib/assistance-queue-navigation";
 import { prisma } from "@/lib/prisma";
+import { logServerError } from "@/lib/server-log";
+import { caseHistoryHref, caseHistoryPage, caseHistoryQuery, parseCaseHistoryBoundary } from "@/lib/assistance-case-history";
 import { assignRequest, convertToAppeal, updateRequestWithFeedback } from "./actions";
 import { approveRequestAction, approveRequestWithFeedback, saveReviewProgressWithFeedback } from "./approval-actions";
 import { rejectRequestAction } from "./rejection-actions";
@@ -46,7 +48,7 @@ const residenceLabel = (value: string | null | undefined): string => {
 export default async function RequestDetailPage({ params, searchParams }: Props) {
   const user = await requirePermission("assistance.view");
   const { id } = await params;
-  const search = await (searchParams ?? Promise.resolve({}));
+  const search: Record<string, string | string[] | undefined> = await (searchParams ?? Promise.resolve({}));
   const returnFilters = assistanceReturnFilters(search);
   const queueHref = assistanceQueueHref(returnFilters);
   const queueContext = assistanceQueueContext(returnFilters);
@@ -60,7 +62,8 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
   const approvalDraftName = approvalProblems.some(problem => problem.endsWith("_format")) ? approvalDraftCookieName(id) : null;
   const amountDraft = approvalDraftName ? approvalAmountDraftFromCookie((await cookies()).get(approvalDraftName)?.value) : { verifiedNeedAmount: "", approvedPublicTarget: "" };
   const draftReason = draftName ? rejectionDraftFromCookie((await cookies()).get(draftName)?.value) : "";
-  const [request, staff, history] = await Promise.all([
+  const historyBoundary = parseCaseHistoryBoundary(search.historyBefore);
+  const [request, staff, historyRows] = await Promise.all([
     prisma.assistanceRequest.findUnique({
       where: { id },
       include: {
@@ -84,9 +87,13 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     }),
-    prisma.auditEvent.findMany({ where: { entityType: "AssistanceRequest", entityId: id }, select: { id: true, action: true, createdAt: true, actor: { select: { name: true } } }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] }),
+    prisma.auditEvent.findMany(caseHistoryQuery(id, historyBoundary)).catch(() => {
+      logServerError("assistance.case_history_unavailable");
+      return null;
+    }),
   ]);
   if (!request) notFound();
+  const history = historyRows === null ? null : caseHistoryPage(historyRows);
   // A shared phone number or email is a prompt for human judgement, never proof of a duplicate or of anything else.
   const possibleDuplicates = await prisma.assistanceRequest.findMany({
     where: { id: { not: id }, OR: [{ phone: request.phone }, ...(request.email ? [{ email: request.email }] : [])] },
@@ -133,6 +140,16 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
     </div>
 
     <Link className="button secondary" href={queueHref}>Return to assistance queue</Link>
+    <nav className="filter-row" aria-label="Case review sections">
+      <a href="#request-details-heading">Read intake</a>
+      <a href="#private-documents-heading">Check evidence</a>
+      <a href="#case-assignment-heading">Assign reviewer</a>
+      {approvalOpen && <a href="#request-more-heading">Missing information</a>}
+      <a href="#review-heading">Review verification</a>
+      {rejection !== "unknown" && <a href="#reject-heading">Rejection section</a>}
+      <a href="#audit-history-heading">Recorded changes</a>
+      <a href="#assistance-workflow-guide">Workflow guide</a>
+    </nav>
     <div className="admin-detail-grid">
       <div className="grid">
         <details className="card">
@@ -148,7 +165,7 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
         </details>
 
         <section className="card">
-          <h2>Request details</h2>
+          <h2 id="request-details-heading">Request details</h2>
           <dl className="details">
             <div><dt>Phone</dt><dd>{request.phone}</dd></div>
             <div><dt>Email</dt><dd>{request.email ?? "Not supplied"}</dd></div>
@@ -159,7 +176,7 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
         </section>
 
         <section className="card">
-          <h2>Private documents</h2>
+          <h2 id="private-documents-heading">Private documents</h2>
           {request.documents.length ? <ul className="document-list">{request.documents.map(document => <li key={document.id}><a href={`/admin/documents/${document.id}`} target="_blank" rel="noreferrer">{document.originalName}<span className="sr-only"> (opens in a new tab)</span></a><small>{document.mimeType} · {(document.sizeBytes / 1048576).toFixed(2)} MB</small></li>)}</ul> : <p className="muted">No documents were submitted.</p>}
         </section>
 
@@ -305,14 +322,21 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
         </section>
 
         <section className="card">
-          <h2>Audit history</h2>
-          {history.length ? <ol className="history">{history.map(event => <li key={event.id}><strong>{event.action.replaceAll("_", " ")}</strong><span>{event.actor.name} · {event.createdAt.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</span></li>)}</ol> : <p className="muted">No changes recorded yet.</p>}
+          <h2 id="audit-history-heading">Audit history</h2>
+          {history === null ? <p role="status" className="muted">Audit history temporarily unavailable. This does not mean there are no recorded changes. You can continue reviewing this request.</p> : history.events.length ? <>
+            <p className="muted">Showing {history.events.length} {historyBoundary ? "older" : "most recent"} recorded changes, newest first.</p>
+            <ol className="history">{history.events.map(event => <li key={event.id}><strong>{event.action.replaceAll("_", " ")}</strong><span>{event.actor.name} · {event.createdAt.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</span></li>)}</ol>
+          </> : <p className="muted">{historyBoundary ? "No older changes on this page." : "No changes recorded yet."}</p>}
+          {(historyBoundary || history?.older) && <nav className="filter-row" aria-label="Case audit history navigation">
+            {historyBoundary && <a href={caseHistoryHref(id, returnFilters)}>Newest changes</a>}
+            {history?.older && <a href={caseHistoryHref(id, returnFilters, history.older)}>Older changes</a>}
+          </nav>}
         </section>
       </div>
 
       <aside className="grid">
         <section className="card">
-          <h2>Assignment</h2>
+          <h2 id="case-assignment-heading">Assignment</h2>
           <form action={assignRequest} className="field">
             <input type="hidden" name="id" value={id}/>
             <input type="hidden" name="expectedUpdatedAt" value={request.updatedAt.toISOString()}/>

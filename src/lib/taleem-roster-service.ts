@@ -214,13 +214,14 @@ export type RosterView = {
 /** Everything the admin roster shows, as of a date. Private: names appear here and nowhere public. */
 export async function loadRoster(asOf: Date = new Date()): Promise<RosterView> {
   const day = new Date(Date.UTC(asOf.getUTCFullYear(), asOf.getUTCMonth(), asOf.getUTCDate()));
-  const [learners, places, assignments, enrolments, milestones] = await Promise.all([
+  // All five private projections describe one database snapshot, not five independently committed states.
+  const [learners, places, assignments, enrolments, milestones] = await prisma.$transaction([
     prisma.taleemLearner.findMany({ orderBy: { createdAt: "asc" }, select: { id: true, publicAlias: true, fullName: true, status: true } }),
     prisma.taleemPlace.findMany({ orderBy: { createdAt: "asc" }, select: { id: true, placeCode: true, status: true } }),
     prisma.taleemPlaceAssignment.findMany({ select: { id: true, placeId: true, learnerId: true, startedOn: true, endedOn: true } }),
     prisma.taleemEnrolment.findMany({ where: { startedOn: { lte: day }, OR: [{ endedOn: null }, { endedOn: { gte: day } }] }, select: { learnerId: true, programme: true } }),
     prisma.taleemMilestone.findMany({ select: { learnerId: true, completedOn: true, supportAssociated: true, verifiedAt: true } }),
-  ]);
+  ], { isolationLevel: "RepeatableRead" });
   const counts = rosterCounts({
     places: places.map(place => ({ id: place.id, status: place.status })),
     assignments,

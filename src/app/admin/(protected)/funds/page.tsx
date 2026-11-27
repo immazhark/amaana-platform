@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { requirePermission } from "@/lib/auth";
-import { annualFinanceCrossCsv, annualFinanceCsv, financeReviewPeriod, loadAnnualFinanceBreakdown } from "@/lib/annual-finance-review";
+import { annualFinanceControlTotals, annualFinanceCrossCsv, annualFinanceCsv, financeReviewPeriod, loadAnnualFinanceBreakdown } from "@/lib/annual-finance-review";
 import { formatINR } from "@/lib/appeals";
 import { getFundsLedger } from "@/lib/funds-ledger";
 import { loadTaleemSponsorshipReport } from "@/lib/taleem-sponsorship-report";
 import { formatDonationReportINR } from "@/lib/donation-reconciliation-totals";
 import { TALEEM_CATALOGUE } from "@/content/taleem-catalogue";
 import { prisma } from "@/lib/prisma";
+import { logServerError } from "@/lib/server-log";
 import { APPEAL_BUCKET, type PoolTotals } from "@/lib/giving-funds";
 
 export const dynamic = "force-dynamic";
@@ -21,10 +22,25 @@ type Props = { searchParams: Promise<{ fy?: string | string[] }> };
 export default async function FundsLedgerPage({ searchParams }: Props) {
   await requirePermission("donation.view");
   const period = financeReviewPeriod((await searchParams).fy);
-  const [{ funds, byFund, zakatAccount }, sponsorships, { destinations: annual, channels, byDestinationAndChannel }] = await Promise.all([getFundsLedger(), loadTaleemSponsorshipReport(prisma), loadAnnualFinanceBreakdown(prisma, period)]);
+  const [{ funds, byFund, zakatAccount }, sponsorships, annualReport] = await Promise.all([
+    getFundsLedger(),
+    loadTaleemSponsorshipReport(prisma).catch(() => {
+      logServerError("finance.taleem_report_unavailable");
+      return null;
+    }),
+    loadAnnualFinanceBreakdown(prisma, period).then(report => ({
+      ...report, totals: annualFinanceControlTotals(report.destinations),
+    })).catch(() => {
+      logServerError("finance.annual_report_unavailable");
+      return null;
+    }),
+  ]);
+  const annual = annualReport?.destinations ?? [];
+  const channels = annualReport?.channels ?? [];
+  const byDestinationAndChannel = annualReport?.byDestinationAndChannel ?? [];
   const fundNames = new Map(funds.map(fund => [fund.slug, fund.name]));
-  const csvHref = "data:text/csv;charset=utf-8," + encodeURIComponent(annualFinanceCsv(period.label, annual));
-  const crossCsvHref = "data:text/csv;charset=utf-8," + encodeURIComponent(annualFinanceCrossCsv(period.label, byDestinationAndChannel));
+  const csvHref = annualReport ? "data:text/csv;charset=utf-8," + encodeURIComponent(annualFinanceCsv(period.label, annual)) : undefined;
+  const crossCsvHref = annualReport ? "data:text/csv;charset=utf-8," + encodeURIComponent(annualFinanceCrossCsv(period.label, byDestinationAndChannel)) : undefined;
   const appealTotals = byFund[APPEAL_BUCKET]?.total ?? EMPTY;
   return <>
     <div className="admin-heading">
@@ -48,7 +64,7 @@ export default async function FundsLedgerPage({ searchParams }: Props) {
     <section className="admin-card" aria-labelledby="fund-ledger-heading">
       <h2 id="fund-ledger-heading">By fund</h2>
       <table className="admin-table">
-        <thead><tr><th scope="col">Fund</th><th scope="col">Received</th><th scope="col">Awaiting verification</th><th scope="col">Spent</th><th scope="col">Balance</th><th scope="col">Of which Zakat</th></tr></thead>
+        <thead><tr><th scope="col">Fund</th><th scope="col">Received</th><th scope="col">Awaiting verification</th><th scope="col">Spent</th><th scope="col">Balance</th><th scope="col">Zakat balance</th></tr></thead>
         <tbody>
           {funds.map(fund => {
             const totals = byFund[fund.id];
@@ -79,7 +95,7 @@ export default async function FundsLedgerPage({ searchParams }: Props) {
         <div className="field"><label htmlFor="finance-fy">Financial year</label><select id="finance-fy" name="fy" defaultValue={period.label}>{period.labels.map(label => <option key={label} value={label}>{label}</option>)}</select></div>
         <div className="field"><button type="submit" className="button">Review year</button></div>
       </form>
-      {annual.length === 0 ? <p>No matching application records for {period.label}. This does not establish zero foundation activity.</p> : <>
+      {!annualReport ? <p role="status">Financial-year report temporarily unavailable. No totals or CSV are shown for this report; other available ledger sections are independent.</p> : annual.length === 0 ? <p>No matching application records for {period.label}. This does not establish zero foundation activity.</p> : <>
         <p><a className="button" href={csvHref} download={`amaana-application-finance-review-${period.label}.csv`}>Download aggregate CSV for review</a></p>
         <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Financial-year reconciliation review">
           <table className="admin-table">
@@ -89,14 +105,16 @@ export default async function FundsLedgerPage({ searchParams }: Props) {
               <td>{formatDonationReportINR(row.grossPaise / 100)}</td><td>{formatDonationReportINR(row.refundedPaise / 100)}</td><td>{formatDonationReportINR(row.retainedPaise / 100)}</td><td>{row.pendingCount}</td><td>{formatDonationReportINR(row.pendingPaise / 100)}</td>
               <td>{row.destination === "fund" ? formatDonationReportINR(row.draftPaise / 100) : "—"}</td><td>{row.destination === "fund" ? formatDonationReportINR(row.publishedPaise / 100) : "—"}</td>
             </tr>)}</tbody>
+            <tfoot><tr><th scope="row">All destinations · control total</th><td>{formatDonationReportINR(annualReport.totals.grossPaise / 100)}</td><td>{formatDonationReportINR(annualReport.totals.refundedPaise / 100)}</td><td>{formatDonationReportINR(annualReport.totals.retainedPaise / 100)}</td><td>{annualReport.totals.pendingCount}</td><td>{formatDonationReportINR(annualReport.totals.pendingPaise / 100)}</td><td>{formatDonationReportINR(annualReport.totals.draftPaise / 100)}</td><td>{formatDonationReportINR(annualReport.totals.publishedPaise / 100)}</td></tr></tfoot>
           </table>
         </div>
+        <p className="muted">Control totals sum the destination rows once. Spending includes recorded fund entries only; the totals are not bank balances or a complete cash-flow statement.</p>
       </>}
     </section>
     <section className="admin-card" aria-labelledby="annual-channel-heading">
       <h2 id="annual-channel-heading">Payment channels · FY {period.label}</h2>
       <p className="muted">The same financial-year receipt and pending-claim snapshot, grouped by payment channel rather than destination. Spending is not attributed to a channel. These are application records, not settlement or bank statements; pending claims are not receipts.</p>
-      {channels.length === 0 ? <p>No matching receipt or direct claim records for this year. This does not establish zero foundation activity.</p> : <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Financial-year payment channel reconciliation">
+      {!annualReport ? <p role="status">Payment-channel report temporarily unavailable.</p> : channels.length === 0 ? <p>No matching receipt or direct claim records for this year. This does not establish zero foundation activity.</p> : <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Financial-year payment channel reconciliation">
         <table className="admin-table">
           <thead><tr><th scope="col">Payment channel</th><th scope="col">Gross verified</th><th scope="col">Cumulative principal refunded</th><th scope="col">Retained principal</th><th scope="col">Pending claims</th><th scope="col">Pending amount</th></tr></thead>
           <tbody>{channels.map(row => <tr key={row.paymentMethod}><th scope="row">{CHANNEL_LABEL[row.paymentMethod]}</th><td>{formatDonationReportINR(row.grossPaise / 100)}</td><td>{formatDonationReportINR(row.refundedPaise / 100)}</td><td>{formatDonationReportINR(row.retainedPaise / 100)}</td><td>{row.pendingCount}</td><td>{formatDonationReportINR(row.pendingPaise / 100)}</td></tr>)}</tbody>
@@ -106,7 +124,7 @@ export default async function FundsLedgerPage({ searchParams }: Props) {
     <section className="admin-card" aria-labelledby="annual-cross-heading">
       <h2 id="annual-cross-heading">Payment-channel reconciliation by destination and pool</h2>
       <p className="muted">FY {period.label}. Use this joint breakdown to match the destination and channel summaries above. These rows represent the same receipts and claims, not additional income. No spending, bank credit or settlement is inferred.</p>
-      {byDestinationAndChannel.length === 0 ? <p>No matching receipt or claim intersections for this year.</p> : <>
+      {!annualReport ? <p role="status">Destination and channel report temporarily unavailable.</p> : byDestinationAndChannel.length === 0 ? <p>No matching receipt or claim intersections for this year.</p> : <>
         <p><a className="button" href={crossCsvHref} download={`amaana-application-channel-review-${period.label}.csv`}>Download destination and channel CSV</a></p>
         <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Financial-year destination and channel reconciliation">
           <table className="admin-table">
@@ -122,7 +140,7 @@ export default async function FundsLedgerPage({ searchParams }: Props) {
     <section className="admin-card" aria-labelledby="taleem-report-heading">
       <h2 id="taleem-report-heading">Taleem sponsorship reconciliation</h2>
       <p className="muted">Programme-level gifts grouped by their original monthly rate and rate version, across all recorded dates. Verified records include subsequently refunded gifts. Pending claims are not receipts. These amounts are not student assignments, fee obligations or recurring payment mandates. A quoted unit-month is one unit for one month at the recorded rate. Retained rate equivalents divide the retained principal of the cohort by that historical rate, with the exact remainder shown separately. They are arithmetic only, not allocated places, unspent balances, fee coverage dates or available sponsorship capacity.</p>
-      {sponsorships.length === 0 ? <p>No verified sponsorship gifts or pending claims recorded.</p> : <div className="admin-table-wrap" role="region" aria-label="Taleem sponsorship totals" tabIndex={0}>
+      {sponsorships === null ? <p role="status">Taleem sponsorship report temporarily unavailable. No sponsorship totals are shown.</p> : sponsorships.length === 0 ? <p>No verified sponsorship gifts or pending claims recorded.</p> : <div className="admin-table-wrap" role="region" aria-label="Taleem sponsorship totals" tabIndex={0}>
         <table className="admin-table">
           <thead><tr><th scope="col">Programme and recorded rate</th><th scope="col">Verified records</th><th scope="col">Gross verified</th><th scope="col">Principal refunded</th><th scope="col">Net retained</th><th scope="col">Pending claims</th><th scope="col">Pending amount</th><th scope="col">Verified quoted unit-months</th><th scope="col">Retained whole rate equivalents</th><th scope="col">Retained remainder</th><th scope="col">Pending quoted unit-months</th></tr></thead>
           <tbody>{sponsorships.map(row => <tr key={JSON.stringify([row.programme, row.monthlyRate, row.rateVersion])}>
