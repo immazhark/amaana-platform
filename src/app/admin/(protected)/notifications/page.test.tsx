@@ -45,3 +45,36 @@ it("does not format the terminal retry sentinel as a real delivery date", async 
   expect(html).toContain("Manual attention required");
   expect(html).not.toContain("9999");
 });
+
+it("derives filtered pagination from the same grouped status counts without an extra count query", async () => {
+  mocks.groups.mockResolvedValueOnce([{ status: "FAILED", _count: { _all: 51 } }, { status: "PENDING", _count: { _all: 7 } }]);
+  const html = renderToStaticMarkup(await NotificationOperationsPage({ searchParams: Promise.resolve({ status: "FAILED", page: "99" }) }));
+  expect(mocks.count).toHaveBeenCalledTimes(3);
+  expect(mocks.find).toHaveBeenCalledWith(expect.objectContaining({ where: { status: "FAILED" }, skip: 50, take: 50 }));
+  expect(html).toContain("Page 2 of 2 · 51 records");
+  expect(html).toContain("FAILED (51)");
+});
+it.each(["stale-processing", "overdue", "terminal"] as const)("uses the identical %s predicate in the signal count and filtered list", async issue => {
+  const html = renderToStaticMarkup(await NotificationOperationsPage({ searchParams: Promise.resolve({ issue, status: "FAILED" }) }));
+  const scope = mocks.groups.mock.calls[0]![0].where;
+  expect(mocks.count.mock.calls.map(call => call[0].where)).toContainEqual(scope);
+  expect(mocks.find).toHaveBeenCalledWith(expect.objectContaining({ where: { AND: [scope, { status: "FAILED" }] }, skip: 0, take: 50 }));
+  expect(html).toContain("Delivery exception review");
+  expect(html).toContain("Clear exception review");
+  expect(html).toContain("Review terminal failures");
+  expect(html).not.toContain("<form");
+});
+it("preserves only an invalid marker for unsupported repeated review selectors", async () => {
+  const html = renderToStaticMarkup(await NotificationOperationsPage({ searchParams: Promise.resolve({ issue: ["overdue", "private@example.invalid"] }) }));
+  expect(mocks.groups).toHaveBeenCalledWith(expect.objectContaining({ where: { id: { in: [] } } }));
+  expect(mocks.find).toHaveBeenCalledWith(expect.objectContaining({ where: { id: { in: [] } } }));
+  expect(html).toContain("Unsupported review filter. No notifications were matched.");
+  expect(html).not.toContain("private@example.invalid");
+});
+it("denies a viewer before any notification reads", async () => {
+  mocks.permission.mockRejectedValueOnce(new Error("Permission denied"));
+  await expect(NotificationOperationsPage({ searchParams: Promise.resolve({ issue: "terminal" }) })).rejects.toThrow("Permission denied");
+  expect(mocks.count).not.toHaveBeenCalled();
+  expect(mocks.groups).not.toHaveBeenCalled();
+  expect(mocks.find).not.toHaveBeenCalled();
+});

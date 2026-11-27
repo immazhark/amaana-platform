@@ -4,14 +4,10 @@ import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { enqueueControlledEmailAcceptance, requeueFailedNotification } from "./actions";
 import { prisma } from "@/lib/prisma";
-import {
-  NOTIFICATION_OVERDUE_MS,
-  NOTIFICATION_STALE_PROCESSING_MS,
-  TERMINAL_NOTIFICATION_SCHEDULE,
-  notificationOperationalState,
-} from "@/lib/operational-signals";
+import { notificationOperationalState } from "@/lib/operational-signals";
+import { notificationIssueWhere, notificationIssueFilter, notificationQueueOrder } from "@/lib/notification-review-queue";
 
-type Props = { searchParams: Promise<{ status?: string; page?: string }> };
+type Props = { searchParams: Promise<{ status?: string | string[]; page?: string | string[]; issue?: string | string[] }> };
 
 const statusOrder = [
   NotificationStatus.FAILED,
@@ -34,47 +30,24 @@ function deliveryScheduleLabel(status: NotificationStatus, scheduledFor: Date, s
 export default async function NotificationOperationsPage({ searchParams }: Props) {
   const user = await requirePermission("notification.view");
   const canManageNotifications = hasPermission(user, "notification.manage");
-  const { status, page: pageParam } = await searchParams;
-  const selected = Object.values(NotificationStatus).includes(status as NotificationStatus)
+  const { status, page: pageParam, issue: issueParam } = await searchParams;
+  const selected = typeof status === "string" && Object.values(NotificationStatus).includes(status as NotificationStatus)
     ? status as NotificationStatus
     : undefined;
-  const where = selected ? { status: selected } : undefined;
   const now = new Date();
-  const staleProcessingBefore = new Date(now.getTime() - NOTIFICATION_STALE_PROCESSING_MS);
-  const overdueBefore = new Date(now.getTime() - NOTIFICATION_OVERDUE_MS);
+  const filter = notificationIssueFilter(issueParam, now);
+  const where = filter.where
+    ? selected ? { AND: [filter.where, { status: selected }] } : filter.where
+    : selected ? { status: selected } : undefined;
 
-  const [totalItems, grouped, staleProcessing, overdueDue, terminalFailures] = await Promise.all([
-    prisma.notification.count({ where }),
-    prisma.notification.groupBy({
-      by: ["status"],
-      _count: { _all: true },
-    }),
-    prisma.notification.count({
-      where: {
-        channel: "EMAIL",
-        status: NotificationStatus.PROCESSING,
-        updatedAt: { lt: staleProcessingBefore },
-      },
-    }),
-    prisma.notification.count({
-      where: {
-        channel: "EMAIL",
-        status: { in: [NotificationStatus.PENDING, NotificationStatus.FAILED] },
-        attempts: { lt: 5 },
-        scheduledFor: { lt: overdueBefore },
-      },
-    }),
-    prisma.notification.count({
-      where: {
-        channel: "EMAIL",
-        status: NotificationStatus.FAILED,
-        OR: [
-          { attempts: { gte: 5 } },
-          { scheduledFor: { gte: TERMINAL_NOTIFICATION_SCHEDULE } },
-        ],
-      },
-    }),
+  const [grouped, staleProcessing, overdueDue, terminalFailures] = await Promise.all([
+    prisma.notification.groupBy({ by: ["status"], where: filter.where, _count: { _all: true } }),
+    prisma.notification.count({ where: notificationIssueWhere("stale-processing", now) }),
+    prisma.notification.count({ where: notificationIssueWhere("overdue", now) }),
+    prisma.notification.count({ where: notificationIssueWhere("terminal", now) }),
   ]);
+  const counts = new Map(grouped.map(item => [item.status, item._count._all]));
+  const totalItems = selected ? counts.get(selected) ?? 0 : grouped.reduce((sum, item) => sum + item._count._all, 0);
   const operational = notificationOperationalState({ staleProcessing, overdueDue, terminalFailures });
 
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
@@ -98,15 +71,14 @@ export default async function NotificationOperationsPage({ searchParams }: Props
       assistanceRequest: { select: { referenceNumber: true } },
       donation: { select: { referenceNumber: true } },
     },
-    orderBy: [{ status: "asc" }, { createdAt: "desc" }, { id: "desc" }],
+    orderBy: notificationQueueOrder(filter.issue),
     skip: pagination.skip,
     take: pagination.pageSize,
   });
 
-  const counts = new Map(grouped.map(item => [item.status, item._count._all]));
   const pageHref = (targetPage: number) => ({
     pathname: "/admin/notifications",
-    query: { ...(selected ? { status: selected } : {}), page: targetPage },
+    query: { ...(selected ? { status: selected } : {}), ...filter.query, page: targetPage },
   });
 
   return <>
@@ -130,9 +102,9 @@ export default async function NotificationOperationsPage({ searchParams }: Props
         <span className="status-badge">{operational.status === "healthy" ? "HEALTHY" : `${operational.attention} NEED ATTENTION`}</span>
       </div>
       <div className="card-grid">
-        <article className="card"><strong>{operational.staleProcessing}</strong><p>Processing longer than 15 minutes</p></article>
-        <article className="card"><strong>{operational.overdueDue}</strong><p>Due email jobs overdue by 15+ minutes</p></article>
-        <article className="card"><strong>{operational.terminalFailures}</strong><p>Terminal failures requiring manual review</p></article>
+        <article className="card"><strong>{operational.staleProcessing}</strong><p>Processing longer than 15 minutes</p>{operational.staleProcessing > 0 && <Link href={{ pathname: "/admin/notifications", query: { issue: "stale-processing" } }}>Review stuck processing jobs</Link>}</article>
+        <article className="card"><strong>{operational.overdueDue}</strong><p>Due email jobs overdue by 15+ minutes</p>{operational.overdueDue > 0 && <Link href={{ pathname: "/admin/notifications", query: { issue: "overdue" } }}>Review overdue email jobs</Link>}</article>
+        <article className="card"><strong>{operational.terminalFailures}</strong><p>Terminal failures requiring manual review</p>{operational.terminalFailures > 0 && <Link href={{ pathname: "/admin/notifications", query: { issue: "terminal" } }}>Review terminal failures</Link>}</article>
       </div>
     </section>
 
@@ -150,11 +122,16 @@ export default async function NotificationOperationsPage({ searchParams }: Props
       </section>
     )}
 
+    {(filter.issue || filter.invalid) && <section className="admin-card" aria-labelledby="notification-review-heading">
+      <h2 id="notification-review-heading">Delivery exception review</h2>
+      {filter.invalid ? <p role="status">Unsupported review filter. No notifications were matched.</p> : <p role="status">{filter.issue === "overdue" ? "Oldest scheduled jobs first." : "Oldest attention first by last update."} Status counts below apply to this review filter. Review the record before deciding whether retry is appropriate; opening this queue does not send anything.</p>}
+      <Link href={{ pathname: "/admin/notifications", query: selected ? { status: selected } : {} }}>Clear exception review</Link>
+    </section>}
     <div className="filter-row" role="group" aria-label="Notification status filter">
       <strong>Status:</strong>
-      <Link href="/admin/notifications" aria-current={!selected ? "page" : undefined}>All</Link>
+      <Link href={{ pathname: "/admin/notifications", query: filter.query }} aria-current={!selected ? "page" : undefined}>All</Link>
       {statusOrder.map(item => (
-        <Link key={item} href={"/admin/notifications?status=" + item} aria-current={selected === item ? "page" : undefined}>
+        <Link key={item} href={{ pathname: "/admin/notifications", query: { status: item, ...filter.query } }} aria-current={selected === item ? "page" : undefined}>
           {item} ({counts.get(item) ?? 0})
         </Link>
       ))}
