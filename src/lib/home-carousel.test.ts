@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { HomeCarouselValidationError, HOME_ARTWORK_SRC, composeHomeSlides, defaultHomeConfig, defaultHomeSlides, parseHomeConfig, safeHomeHref, validateHomeSlide, visibleHomeSlides } from './home-carousel';
+import { HomeCarouselValidationError, HOME_ARTWORK_SRC, collectCarouselImageRequests, composeHomeSlides, defaultHomeConfig, defaultHomeSlides, parseHomeConfig, safeHomeHref, validateHomeSlide, visibleHomeSlides } from './home-carousel';
 const now = new Date('2026-10-03T18:00:00Z');
 const origin = defaultHomeSlides[0];
 const eid = defaultHomeSlides[1];
@@ -154,5 +154,46 @@ describe('homepage CTA identity integrity', () => {
     '/about#mission',
   ])('keeps reviewed canonical public navigation %s', href => {
     expect(safeHomeHref(href)).toBe(href);
+  });
+});
+
+describe('homepage media request scope', () => {
+  const active = new Set(['live']);
+  const config = (slides: typeof defaultHomeSlides) => ({ slides, appealPosition: 1 });
+
+  it('omits draft, expired and inactive linked images while retaining current and future images', () => {
+    const slides = [
+      { ...origin, image: 'asset:active' },
+      { ...eid, image: 'asset:draft', status: 'DRAFT' as const },
+      { ...medical, image: 'asset:expired', endsAt: now.toISOString() },
+      { ...taleem, image: 'asset:future', startsAt: '2026-10-04T00:00:00Z' },
+      { ...origin, id: 'closed', image: 'asset:closed', appealSlug: 'closed' },
+      { ...origin, id: 'linked', image: 'asset:linked', appealSlug: 'live' },
+    ];
+    expect(collectCarouselImageRequests(config(slides), active, now)).toEqual(['asset:active', 'asset:future', 'asset:linked']);
+  });
+
+  it('withholds media requests for unsafe legacy primary or enabled secondary destinations', () => {
+    const slides = [
+      { ...origin, image: 'asset:private', primaryHref: '/admin' },
+      { ...eid, image: 'asset:receipt', secondaryHref: '/donations/receipt' },
+      { ...medical, image: 'asset:unused-secondary', secondaryLabel: '', secondaryHref: '/admin' },
+    ];
+    expect(collectCarouselImageRequests(config(slides), active, now)).toEqual(['asset:unused-secondary']);
+  });
+
+  it('keeps competing scheduled alternatives so final composition can cross a time boundary', () => {
+    const boundary = '2026-10-03T18:00:01.000Z';
+    const first = { ...origin, id: 'first', image: 'asset:first', appealSlug: 'live', endsAt: boundary };
+    const second = { ...eid, id: 'second', image: 'asset:second', appealSlug: 'live', startsAt: boundary };
+    const automatic = { ...origin, id: 'automatic', appealSlug: 'live' };
+    const stored = config([first, second]);
+    expect(collectCarouselImageRequests(stored, active, now)).toEqual(['asset:first', 'asset:second']);
+    expect(composeHomeSlides(stored, [automatic], now)).toEqual([first]);
+    expect(composeHomeSlides(stored, [automatic], new Date(boundary))).toEqual([second]);
+  });
+
+  it('does not request any configured images for entirely excluded slides', () => {
+    expect(collectCarouselImageRequests(config([{ ...origin, status: 'DRAFT', image: 'asset:draft' }]), active, now)).toEqual([]);
   });
 });

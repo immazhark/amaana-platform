@@ -18,7 +18,7 @@ vi.mock("@/lib/public-page-data", () => ({
 vi.mock("next/cache", () => ({ unstable_cache: (read: () => unknown) => read }));
 
 import { getHomeCarouselConfig, getHomeCarouselImages } from "./home-carousel-data";
-import { composeHomeSlides, defaultHomeConfig } from "./home-carousel";
+import { collectCarouselImageRequests, composeHomeSlides, defaultHomeConfig, defaultHomeSlides } from "./home-carousel";
 
 it("keeps legacy destinations editable while public composition withholds the affected slides", async () => {
   const config = structuredClone(defaultHomeConfig);
@@ -99,6 +99,17 @@ describe("homepage reviewed media batching", () => {
     expect(result.images.size).toBe(0);
     expect(result.coverByUrl.size).toBe(0);
     expect(mocks.reviewMediaBatch).toHaveBeenCalledOnce();
+  });
+
+  it("avoids both media queries when only excluded configured assets exist", async () => {
+    const template = defaultHomeSlides[0];
+    if (!template) throw new Error("Expected canonical fallback slide");
+    const config = { slides: [{ ...template, status: "DRAFT" as const, image: "asset:draft" }], appealPosition: 0 };
+    const result = await getHomeCarouselImages(collectCarouselImageRequests(config, new Set()), []);
+    expect(result.images.size).toBe(0);
+    expect(result.coverByUrl.size).toBe(0);
+    expect(mocks.findMedia).not.toHaveBeenCalled();
+    expect(mocks.reviewMediaBatch).not.toHaveBeenCalled();
   });
 
   it("returns empty maps without querying media when neither carousel nor appeals use image URLs", async () => {
