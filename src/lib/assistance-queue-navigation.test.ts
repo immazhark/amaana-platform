@@ -64,7 +64,7 @@ describe("requested-category queue navigation", () => {
     expect(result.searchParams.get("queueCategory")).toBe(category);
     expect(assistanceQueueHref(assistanceReturnFilters(Object.fromEntries(result.searchParams)))).toBe(assistanceQueueHref(filters));
   });
-  it.each(["medical", "__proto__", "https://evil.test", "PRIVATE_SYNTHETIC", ["MEDICAL"], ["MEDICAL", "OTHER"]])("rejects invalid category %j", category => {
+  it.each(["medical", "__proto__", "https://evil.test", "PRIVATE_SYNTHETIC", ["MEDICAL"], ["MEDICAL", "OTHER"]].map(category => ({ category })))("rejects invalid category $category", ({ category }) => {
     expect(assistanceQueueHref({ category })).toBe("/admin");
     expect(assistanceReturnFilters({ queueCategory: category })).toEqual({});
   });

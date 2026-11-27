@@ -338,7 +338,7 @@ describe("assistance queue requested-category triage", () => {
     expect(html).toMatch(/<a[^>]*aria-current="page"[^>]*>MEDICAL<\/a>/);
   });
 
-  it.each([undefined, "medical", "PRIVATE_SYNTHETIC", ["MEDICAL"], ["MEDICAL", "OTHER"]])("ignores unsupported category %j without reflection", async category => {
+  it.each([undefined, "medical", "PRIVATE_SYNTHETIC", ["MEDICAL"], ["MEDICAL", "OTHER"]].map(category => ({ category })))("ignores unsupported category $category without reflection", async ({ category }) => {
     mocks.findMany.mockResolvedValue([]);
     const html = renderToStaticMarkup(await AdminQueuePage({ searchParams: Promise.resolve({ category }) }));
     expect(mocks.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: { referenceNumber: { not: "AF-STAGING-ACCEPTANCE" } } }));
