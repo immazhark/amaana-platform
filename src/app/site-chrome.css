@@ -281,3 +281,23 @@
   }
   .amaana-live-cta{grid-column:auto;grid-row:auto}
 }
+
+/* Use available text space, not just physical viewport width, for compact rails. */
+.amaana-reminder-inner{container-type:inline-size}
+@media(max-width:900px){
+  .amaana-reminder-content strong,.amaana-live-content strong{overflow-wrap:anywhere}
+  .amaana-reminder-source,.amaana-live-actions,.amaana-live-actions a{min-width:0;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+  .amaana-live-actions{flex-wrap:wrap}
+}
+@container(max-width:20rem){
+  .amaana-reminder-lane,.amaana-live-lane{grid-template-columns:minmax(0,1fr);align-items:start;gap:.25rem;padding-block:.4rem}
+  .amaana-reminder-content,.amaana-live-content{grid-template-columns:minmax(0,1fr);gap:.25rem}
+  .amaana-reminder-source,.amaana-live-actions{grid-column:1;grid-row:auto;justify-self:start}
+  .amaana-live-actions{justify-content:flex-start}
+  .amaana-live-cta{grid-column:auto;grid-row:auto}
+}
+/* Let the official lockup move to two rows when enlarged text needs more space. */
+.site-footer .footer-brand-lockup{flex-wrap:wrap}
+.site-footer .footer-brand-copy{min-width:0;max-width:100%}
+.site-footer .footer-brand-mark{flex-shrink:0}
+@media(max-width:600px){.site-footer .footer-grid-v2{grid-template-columns:minmax(0,1fr)}}
