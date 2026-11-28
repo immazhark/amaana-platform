@@ -175,3 +175,8 @@
   .shell:global(#programme-sponsorship) .units input { width: min(4.5rem, 84px); }
   .shell:global(#programme-sponsorship) .panel button { padding-inline: clamp(8px, 2vw, 1.2rem); border-radius: var(--af-radius-md); }
 }
+
+/* Native navigation to the selected fund's review, without opening checkout. */
+.reviewLink { display: inline-flex; align-items: center; max-inline-size: 100%; min-height: 44px; margin: 0 0 .85rem; padding: .25rem 0; color: var(--af-color-navy-700); font-weight: 700; text-decoration: underline; text-underline-offset: .2em; overflow-wrap: anywhere; }
+.reviewLink:focus-visible, .reviewTarget:focus { outline: 3px solid var(--af-color-focus); outline-offset: 3px; }
+.reviewTarget { scroll-margin-top: calc(var(--af-chrome-height, 4.5rem) + 1rem); }
