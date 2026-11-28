@@ -64,3 +64,9 @@
   color: var(--af-color-muted);
   font-weight: 600;
 }
+
+/* Fit step labels to the space available inside the form, including enlarged text. */
+.progress{container-type:inline-size;min-width:0}
+.progress ol>li{min-width:0}
+@container (max-width:29rem){.progress ol{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@container (max-width:14.5rem){.progress ol{grid-template-columns:minmax(0,1fr)}}
