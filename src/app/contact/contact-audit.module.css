@@ -1,19 +1,19 @@
 .privacy{padding:clamp(1.5rem,4vw,2.5rem);border:1px solid var(--af-color-border);border-radius:1rem;background:var(--af-color-surface)}
 .socialSection{padding-block:clamp(2.5rem,5vw,4rem)}
-.socialGrid{display:grid;gap:2rem}
+.socialGrid{display:grid;grid-template-columns:minmax(0,1fr);gap:2rem}
 .socialLinks.socialLinks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
-.socialLinks a{display:flex;align-items:center;gap:1rem;min-height:6rem;padding:1.25rem;border:1px solid var(--af-color-border);border-radius:1rem;background:var(--af-color-surface);color:var(--af-color-navy-950);transition:border-color .2s,box-shadow .2s,transform .2s}
+.socialLinks a{display:flex;align-items:center;gap:clamp(.4rem,2vw,1rem);min-width:0;min-height:6rem;padding:clamp(.5rem,2.5vw,1.25rem);border:1px solid var(--af-color-border);border-radius:1rem;background:var(--af-color-surface);color:var(--af-color-navy-950);transition:border-color .2s,box-shadow .2s,transform .2s}
 .socialIcon{display:grid;place-items:center;flex-shrink:0;width:2.75rem;height:2.75rem;border-radius:.75rem;background:var(--af-color-gold-soft);color:var(--af-color-blue-600)}
 .socialIcon svg{width:1.5rem;height:1.5rem;fill:none;stroke:currentColor;stroke-width:1.5}
 .socialIcon :global(.social-icon-fill){fill:currentColor;stroke:none}
 .socialIcon :global(.social-icon-cutout){fill:var(--af-color-gold-soft);stroke:none}
 .socialCopy{display:flex;flex-direction:column;gap:.25rem;min-width:0}
-.socialCopy>span{font-size:.85rem;color:var(--af-color-muted)}
+.socialCopy>span{overflow-wrap:anywhere;font-size:.85rem;color:var(--af-color-muted)}
 .socialCopy strong{font-size:.95rem;font-weight:600;overflow-wrap:anywhere}
-.socialLinks i{margin-left:auto;font-style:normal;color:var(--af-color-blue-600)}
+.socialLinks i{flex-shrink:0;margin-left:auto;font-style:normal;color:var(--af-color-blue-600)}
 .socialLinks a:is(:hover,:focus-visible){border-color:var(--af-color-gold-ink);box-shadow:0 .5rem 1.25rem rgb(15 23 42 / 7%);transform:translateY(-2px)}
 .socialLinks a:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:4px}
-@media(max-width:900px){.socialLinks.socialLinks{grid-template-columns:1fr}.socialLinks a{min-height:5rem}}
+@media(max-width:900px){.socialLinks.socialLinks{grid-template-columns:minmax(0,1fr)}.socialLinks a{min-height:5rem}}
 @media(prefers-reduced-motion:reduce){.socialLinks a{transition:none}.socialLinks a:is(:hover,:focus-visible){transform:none}}
 .contactRoutes{display:grid;gap:.75rem}
 .contactRoutes a{display:flex;align-items:center;gap:1rem;min-height:3.5rem;color:var(--af-color-blue-600);font-size:1rem;font-weight:600;text-decoration:none;overflow-wrap:anywhere}
@@ -21,3 +21,11 @@
 .contactRoutes small{display:block;margin-bottom:.2rem;color:var(--af-color-navy-950);font-size:.75rem;font-weight:700;letter-spacing:.04em}
 .contactRoutes a:hover{color:var(--af-color-gold-ink);text-decoration:underline;text-underline-offset:.25em}
 .contactRoutes a:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:4px}
+/* Give long account handles the full row when text needs more space. */
+.socialLinks{container-type:inline-size}
+@container(max-width:17rem){
+  .socialLinks a{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.5rem;padding-inline:clamp(8px,2.5vw,.75rem)}
+  .socialIcon{grid-column:1;grid-row:1;width:2rem;height:2rem}
+  .socialLinks i{grid-column:2;grid-row:1}
+  .socialCopy{grid-column:1/-1;grid-row:2}
+}
