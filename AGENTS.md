@@ -1,5 +1,9 @@
 # Amaana Platform — Agent Working Agreement
 
+## Permanent design and engineering directive
+
+At the beginning of every development session, read and follow [docs/directives/MASTER-DESIGN-ENGINEERING-DIRECTIVE.md](docs/directives/MASTER-DESIGN-ENGINEERING-DIRECTIVE.md) in full, alongside the existing startup/coordination requirements. Use [the living traceability matrix](docs/qa/DESIGN-IMPLEMENTATION.md) and [the reconciled execution prompt](docs/directives/MASTER-DESIGN-EXECUTION-PROMPT.md). This owner-authorized permanent programme supplements the existing architecture, factual/privacy locks, single-writer protocol and stricter security/release gates. Material amendments require documented owner authorization; do not silently weaken or remove it.
+
 This repository may be implemented alternately by Codex, ChatGPT and Claude Code. Only **one implementation agent may write to the repository at a time**.
 
 Before making any repo change, every agent MUST read:

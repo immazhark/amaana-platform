@@ -14,8 +14,8 @@ type AppealSearchFormProps = {
 export function AppealSearchForm({ query, invalid, active }: AppealSearchFormProps) {
   return (
     <>
-      <form key={query} className={`form-grid ${styles.form}`} method="get" action="/appeals#current-appeals" aria-label="Search active appeals">
-        <label className="field" htmlFor="appeal-search">Search active appeals<input id="appeal-search" name="q" type="search" maxLength={80} defaultValue={query} aria-invalid={invalid || undefined} aria-describedby={invalid ? "appeal-search-help appeal-search-error" : "appeal-search-help"} /></label>
+      <form key={query} className={`form-grid ${styles.form}`} method="get" action="/appeals#current-appeals" role="search" aria-label="Search active appeals">
+        <label className="field" htmlFor="appeal-search">Search active appeals<input id="appeal-search" name="q" type="search" enterKeyHint="search" maxLength={80} defaultValue={query} aria-invalid={invalid || undefined} aria-describedby={invalid ? "appeal-search-help appeal-search-error" : "appeal-search-help"} /></label>
         <button className="v2-button" type="submit">Find appeals</button>
         {active && <Link className="v2-text-link" href="/appeals#current-appeals">Clear appeal search</Link>}
       </form>
