@@ -59,3 +59,41 @@ test('mobile support action, companion dock and back-to-top control remain colli
   expect(overlaps(supportBox, backBox), 'Support action overlaps Back to top').toBe(false);
   expect(overlaps(companionBox, backBox), 'Bottom-right companion dock overlaps Back to top').toBe(false);
 });
+
+for (const width of [320, 360, 375, 390, 391, 414, 430, 760]) {
+  test(`mobile support action reflows at ${width}px with enlarged text`, async ({ page }) => {
+    await openFixture(page);
+    await page.setViewportSize({ width, height: 844 });
+    await page.evaluate(() => {
+      const root = document.documentElement;
+      root.style.fontSize = `${parseFloat(getComputedStyle(root).fontSize) * 2}px`;
+    });
+    await page.evaluate(() => document.fonts.ready);
+    const support = page.getByRole('complementary', { name: 'Quick support action' });
+    const action = support.getByRole('link', { name: 'Support this appeal' });
+    await action.focus();
+    await expect(action).toBeFocused();
+    const geometry = await action.evaluate(element => {
+      const bounds = element.getBoundingClientRect();
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      const text = range.getBoundingClientRect();
+      const bar = element.closest('aside').getBoundingClientRect();
+      const style = getComputedStyle(element);
+      const focusMargin = parseFloat(style.outlineWidth) + parseFloat(style.outlineOffset);
+      return {
+        left: bounds.left,
+        right: bounds.right,
+        viewport: document.documentElement.clientWidth,
+        focusMargin,
+        textFits: text.left >= bounds.left - 1 && text.right <= bounds.right + 1,
+        barHeight: bar.height,
+        reserved: parseFloat(getComputedStyle(document.querySelector('main')).paddingBottom),
+      };
+    });
+    expect(geometry.left).toBeGreaterThanOrEqual(geometry.focusMargin - 1);
+    expect(geometry.right + geometry.focusMargin).toBeLessThanOrEqual(geometry.viewport + 1);
+    expect(geometry.textFits).toBe(true);
+    expect(geometry.barHeight).toBeLessThanOrEqual(geometry.reserved + 1);
+  });
+}
