@@ -7,9 +7,10 @@
 @media(max-width:760px){
 :global(body):has(.root) :global(main){padding-bottom:calc(4.8rem + env(safe-area-inset-bottom))}
 :global(body):has(.root) :global(.amaana-companion){bottom:calc(4.8rem + max(8px,env(safe-area-inset-bottom)))!important}
-:global(body):has(.root) :global(.amaana-companion-panel){bottom:calc(4.8rem + max(8px,env(safe-area-inset-bottom)) + 100px)!important;max-height:calc(100dvh - 4.8rem - 148px)!important}
+:global(body):has(.root) :global(.amaana-companion-panel){--panel-bottom:calc(4.8rem + max(8px,env(safe-area-inset-bottom)) + 4.4rem)}
 :global(body):has(.root) :global(.amaana-back-to-top){bottom:calc(4.8rem + 8rem + env(safe-area-inset-bottom))!important}
 }
+@media(max-width:640px){:global(body):has(.root) :global(.amaana-companion-panel){--panel-bottom:calc(4.8rem + max(8px,env(safe-area-inset-bottom)) + 3.4rem)}}
 @media(min-width:761px){.root{display:none}}
 @media(max-width:390px){.inner{grid-template-columns:minmax(0,1fr)}.context{display:none}.action{width:100%}}
 @container (max-width:22.875rem){.inner{grid-template-columns:minmax(0,1fr)}.context{display:none}.action{width:100%}}

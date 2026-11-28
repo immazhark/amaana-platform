@@ -97,3 +97,39 @@ for (const width of [320, 360, 375, 390, 391, 414, 430, 760]) {
     expect(geometry.barHeight).toBeLessThanOrEqual(geometry.reserved + 1);
   });
 }
+
+// The appeal bar must not override the Companion's bounded panel geometry.
+for (const [width, height, scales] of [[320, 844, [1, 2]], [390, 844, [1, 2]], [640, 844, [1, 2]], [641, 844, [1, 2]], [760, 844, [1, 2]], [760, 480, [1]]]) {
+  test(`expanded Companion clears the appeal bar and site chrome at ${width}x${height}`, async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await openFixture(page);
+    await page.setViewportSize({ width, height });
+    const dock = page.locator('.amaana-companion-dock button');
+    const panel = page.locator('#amaana-companion-panel');
+    for (const scale of scales) {
+      await page.evaluate(async scale => {
+        const root = document.documentElement;
+        root.style.removeProperty('font-size');
+        root.style.fontSize = `${parseFloat(getComputedStyle(root).fontSize) * scale}px`;
+        await document.fonts.ready;
+      }, scale);
+      await dock.click();
+      await expect(panel).toBeVisible();
+      await expect.poll(() => panel.evaluate(node => {
+        const header = document.querySelector('.site-header');
+        const dock = document.querySelector('.amaana-companion-dock');
+        const support = document.querySelector('aside[aria-label="Quick support action"]');
+        if (!header || !dock || !support) return false;
+        const bounds = node.getBoundingClientRect();
+        return bounds.top >= Math.max(0, header.getBoundingClientRect().bottom) - 1 &&
+          bounds.bottom <= dock.getBoundingClientRect().top - 5 &&
+          dock.getBoundingClientRect().bottom <= support.getBoundingClientRect().top - 5 &&
+          bounds.height >= 44;
+      }), `panel clearance at ${scale * 100}% text`).toBe(true);
+      await expect(panel.getByRole('button', { name: 'Close companion', exact: true })).toBeInViewport();
+      await page.keyboard.press('Escape');
+      await expect(panel).toHaveCount(0);
+      await expect(dock).toBeFocused();
+    }
+  });
+}
