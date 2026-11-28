@@ -61,3 +61,10 @@
 Working queues: `ACTIVE_CODE` (one atomic implementation writer), `READY_TO_REVIEW`, `OWNER_DECISION`, `INDEPENDENT_QA`, `BLOCKED_EXTERNAL`, `CLOSED_WITH_LIVE_EVIDENCE`. Concurrent *investigation* across all 26 not-started items is allowed; do not concurrently mutate unrelated code and call it progress.
 
 The status at the end of a working session must name real completed source changes, the open PRs with risk tiers, verified versus unverified outcomes, exactly what decision is needed from the owner and the next three ranked implementation actions. Maintain direct ASD-STE100 wording; no praise or filler.
+
+
+## Permanent design programme — owner supplement, 28 November 2026 IST
+
+Read and follow [the complete 19-section owner directive](directives/MASTER-DESIGN-ENGINEERING-DIRECTIVE.md) at session startup. [The reconciled execution prompt](directives/MASTER-DESIGN-EXECUTION-PROMPT.md) applies it to the existing Next.js architecture; [the living matrix](qa/DESIGN-IMPLEMENTATION.md) records requirement-level applicability, source and evidence. Use the established [brand/design-system authority](../AMAANA_BRAND_FOUNDATION.md), not a competing restack or palette. Research, design, implement, render, critique, refine, optimize and verify in bounded passes. Keep existing stricter budgets and checks. No visual score without rendered evidence.
+
+The owner's current project instructions grant routine task-branch commits, draft PRs, ready-state promotion and protected SHA-guarded merges after required acceptance; this is the current authorization over the older per-PR “merge it” wording above. It does not authorize high-risk auth/RBAC/payment/webhook/secret/schema/checkout-CSP changes, consequential live infrastructure, migrations/backfills, messages, cron activation or actual financial actions. Those keep their scoped approval boundaries. The new design programme authorizes immediate safe incremental implementation, rather than another planning-only stop. Deferred Lighthouse/axe/runtime measurements remain UNVERIFIED and never waive required release gates.

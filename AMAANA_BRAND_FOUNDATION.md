@@ -66,3 +66,25 @@ Current visual language:
 **Verified Amaana blue/gold anchors + deep derived ink/navy + warm editorial neutrals + authentic photography.**
 
 This document supersedes earlier wording that described `#466FAA` and `#E0B318` as provisional working values pending archive extraction.
+
+
+## Permanent design-system contract — 28 November 2026 IST
+
+This file is the existing equivalent of DESIGN.md. It remains the brand/design authority; do not create a second competing palette or design-system document. Read the [permanent owner directive](docs/directives/MASTER-DESIGN-ENGINEERING-DIRECTIVE.md) and apply the [traceability matrix](docs/qa/DESIGN-IMPLEMENTATION.md).
+
+Amaana-specific direction: dignified humanitarian editorial composition, authentic evidence, clear stewardship and restrained motion. “Trust, made visible” describes the trust objective; it does not replace the previously approved Living Amanah identity or supplied copy. Primary journeys are domestic giving, assistance, education enquiries and private operational review. Do not borrow the other projects' bakery/commerce/wedding direction.
+
+| Foundation | Existing implementation authority | Rule |
+|---|---|---|
+| Semantic palette, spacing, shape, type, measure and motion tokens | src/app/globals.css | Consume existing --af-* tokens; preserve blue #466FAA, gold #E0B318, canvas #faf6ec and surface #fffdf8. These are source values, not contrast certification. |
+| Fonts and app shell | src/app/layout.tsx | Preserve approved display/body faces, font loading and zoom. Display caps do not justify uppercase body text. |
+| Brand expression and editorial layout | src/app/brand.css; src/app/brand-expression.css; src/app/v2.css | Extend coherent incumbent composition; no generic card-grid makeover. |
+| Button/form semantics | src/components/appeal-search-form.tsx and its CSS module; donation components | Visible labels, native controls/GET where appropriate, explicit mobile keyboard intent, truthful errors and stable state. |
+| Figures | donation-form.module.css; taleem-fees.module.css; fund-ledger/public-fund-ledger.module.css | Localized currency and tabular numbers where comparison benefits. Never change authoritative amounts for visual alignment. |
+| Motion | globals.css tokens; src/components/site-motion.tsx | Existing fast/medium tokens are 160/250ms. Prefer CSS transform/opacity, interruption and reduced-motion fallbacks. No navigation delay or scroll hijack. |
+| Imagery | src/lib/image-placeholder.ts; src/components/public-media.tsx | Existing bounded blurred WebP is the BlurHash-equivalent. Keep public eligibility/revocation gates and reviewed authentic derivatives; consent alone does not exempt redaction. |
+| Mobile fixed controls | src/components/mobile-support-bar.module.css | Preserve safe-area offsets and 44–48px targets; verify sticky overlap, keyboard focus and actual devices before acceptance. |
+
+Review the full interaction state set for each component: default, hover, focus, pressed/selected, disabled, loading, empty, error and success where applicable. Keep nested radii geometrically consistent; continuous corners are optional progressive enhancement. Do not add a library for native keyboard hints, balanced text or tabular numerals.
+
+Required critique: primary user outcome, 320–430px reading/touch/keyboard use, 768/1024/1440px composition, typography rhythm, state clarity, factual dignity and performance cost. Compare before/after rendered states where available; record UNVERIFIED where the owner deferred runtime access. Internal 95/100 target is not a score to assign without evidence. A proven security, functional or significant accessibility failure blocks release regardless of aesthetics.
