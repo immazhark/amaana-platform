@@ -64,3 +64,14 @@ describe("AF-R083 landing-page donation selection", () => {
     expect(renderToStaticMarkup(<AppealLandingCheckout appeals={[]} paymentDetails={paymentDetails}/>)).toBe("");
   });
 });
+
+
+it("provides a truthful no-script recovery path without offering another payment destination", () => {
+  const markup = renderToStaticMarkup(<AppealLandingCheckout appeals={appeals} paymentDetails={paymentDetails}/>);
+  const notice = markup.match(/<noscript>([\s\S]*?)<\/noscript>/)?.[1] ?? "";
+  expect(notice).toContain("Interactive payment options require JavaScript.");
+  expect(notice).toContain('href="/contact"');
+  expect(notice).toContain('href="/donation-policy"');
+  expect(notice).toContain("currently approved donation options");
+  expect(notice).not.toMatch(/<form|<input|upi:|rzp_|@bank|@upi/);
+});

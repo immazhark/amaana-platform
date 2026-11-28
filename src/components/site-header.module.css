@@ -4,6 +4,7 @@
   max-height:calc(100vh - var(--af-chrome-height) - 3rem);
   max-height:calc(100dvh - var(--af-chrome-height) - 3rem);
   scrollbar-color:var(--af-color-gold-ink) var(--af-color-surface);
+  scroll-padding-block:6px;
 }
 :global(html):has(body.af-menu-lock),:global(html):has(body.af-navigation-lock),:global(body.af-menu-lock),:global(body.af-navigation-lock){overflow:hidden}
 @media(max-width:1020px){
@@ -12,4 +13,14 @@
 @media(min-width:1021px){
   .backdrop:global(.mobile-menu-backdrop),
   .header:global(.site-header) :global(.mobile-menu.open){display:none}
+}
+
+/* Keep a full focused link visible in short windows at enlarged text sizes. */
+@media(max-width:1020px) and (max-height:480px){
+  .header:global(.site-header) :global(.mobile-menu.open){
+    max-height:calc(100vh - var(--af-chrome-height) - 12px);
+    max-height:calc(100dvh - var(--af-chrome-height) - 12px);
+  }
+  .header:global(.site-header) :global(.mobile-menu.open .mobile-menu-inner a:not(.button)){min-height:44px;padding-block:.4rem;line-height:1.25}
+  .header:global(.site-header) :global(.mobile-menu.open .mobile-menu-primary a){font-size:clamp(1.15rem,6vw,2rem)}
 }

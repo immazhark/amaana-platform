@@ -73,3 +73,14 @@ describe("Taleem sponsorship configurator", () => {
     expect(text()).toMatch(/Zakat is never moved to a different purpose without your permission/);
   });
 });
+
+
+it("provides a truthful no-script recovery path without offering another payment destination", () => {
+  const markup = html();
+  const notice = markup.match(/<noscript>([\s\S]*?)<\/noscript>/)?.[1] ?? "";
+  expect(notice).toContain("Interactive payment options require JavaScript.");
+  expect(notice).toContain('href="/contact"');
+  expect(notice).toContain('href="/donation-policy"');
+  expect(notice).toContain("currently approved donation options");
+  expect(notice).not.toMatch(/<form|<input|upi:|rzp_|@bank|@upi/);
+});

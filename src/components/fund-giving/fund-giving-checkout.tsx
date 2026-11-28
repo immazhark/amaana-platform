@@ -1,5 +1,7 @@
 "use client";
 
+import { GivingNoScriptNotice } from "@/components/giving-no-script-notice";
+
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { DonationMethods } from "@/components/donation-methods";
 import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
@@ -84,8 +86,10 @@ export function FundGivingCheckout({ funds, copies, glyphs, initialSlug, payment
 
   return (
     <section id="choose-fund" className={styles.shell} aria-labelledby="give-fund-heading">
+      <GivingNoScriptNotice />
       <fieldset className={styles.fieldset} disabled={locked}>
         <legend className={styles.legend}><span className={styles.eyebrow}>Step 1</span><span id="give-fund-heading" className={styles.heading}>Choose where your gift goes</span></legend>
+        <a className={styles.reviewLink} href="#fund-review">Review selected fund</a>
         <div className={styles.grid}>
           {primary.map((fund, index) => <FundCard key={fund.slug} fund={fund} index={index} selected={fund.slug === selected.slug} locked={locked} onSelect={select} glyph={glyphs[fund.slug]} />)}
         </div>
@@ -97,7 +101,7 @@ export function FundGivingCheckout({ funds, copies, glyphs, initialSlug, payment
 
       <p className="sr-only" role="status" aria-live="polite">Selected fund: {selected.name}. {ZAKAT_TAG[selected.zakatPolicy]}.</p>
       <div key={selected.slug} className={styles.panel}>
-        <p className={styles.panelTitle}>{selected.name}</p>
+        <p id="fund-review" tabIndex={-1} className={`${styles.panelTitle} ${styles.reviewTarget}`}>{selected.name}</p>
         <p>{selected.summary}</p>
         {campaign && <fieldset className={styles.campaign} disabled={locked}>
           <legend className={styles.campaignTitle}>{campaign.title}</legend>

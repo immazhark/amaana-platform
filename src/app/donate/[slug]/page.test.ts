@@ -11,7 +11,10 @@ vi.mock("@/components/donation-methods", () => ({ DonationMethods: (props: { max
   mocks.methods(props);
   return createElement("div", { "data-maximum": props.maxAmount });
 } }));
-vi.mock("@/components/page-hero", () => ({ PageHero: ({ visual }: { visual: ReactNode }) => visual }));
+vi.mock("@/components/page-hero", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/components/page-hero")>(),
+  PageHero: ({ visual }: { visual: ReactNode }) => visual,
+}));
 import DonatePage from "./page";
 
 const appeal = { id: "synthetic", slug: "synthetic", title: "Synthetic appeal", status: "PUBLISHED", closesAt: null, zakatEligible: false };
@@ -20,13 +23,17 @@ beforeEach(() => vi.resetAllMocks());
 
 describe("exact donation page bounds", () => {
   it.each([
-    { raised: "0.01", goal: "2.01", expected: 2, donation: "2" },
-    { raised: "0.01", goal: "10.01", expected: 10, donation: "10" },
-    { raised: "0.30", goal: "400.01", expected: 399.71, donation: "399" },
-  ])("passes exact $expected remaining rupees to both payment methods", async ({ raised, goal, expected, donation }) => {
+    { raised: "0.01", goal: "2.01", expected: 2, donation: "2", display: "₹2" },
+    { raised: "0.01", goal: "10.01", expected: 10, donation: "10", display: "₹10" },
+    { raised: "0.30", goal: "400.01", expected: 399.71, donation: "399", display: "₹399.71" },
+    { raised: "0.22", goal: "123457.00", expected: 123456.78, donation: "123456", display: "₹1,23,456.78" },
+  ])("passes exact $expected remaining rupees to both payment methods", async ({ raised, goal, expected, donation, display }) => {
     mocks.getDonationPageData.mockResolvedValue({ ...appeal, amountRaised: raised, goalAmount: goal });
     const html = renderToStaticMarkup(await DonatePage(params));
     expect(html).toContain(`data-maximum="${expected}"`);
+    const stat = html.match(/<div class="page-hero__stat-row"><b>(.*?)<\/b><small>(.*?)<\/small><\/div>/);
+    expect(stat?.[1]).toBe(display.replaceAll(",", ",<wbr/>"));
+    expect(stat?.[2]).toBe("remaining verified need · domestic INR only");
     const maximum = mocks.methods.mock.calls[0]?.[0].maxAmount;
     expect(maximum).toBe(expected);
     expect(donationAmountValidationMessage(donation, maximum < 10 ? maximum : 10, maximum)).toBe("");

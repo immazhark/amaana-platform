@@ -57,3 +57,5 @@
 @media(max-width:620px){.bankDetails{grid-template-columns:1fr}.paymentCard{padding:1rem}.form{gap:.8rem}}
 @media(max-width:480px){.upiRow{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:.75rem;row-gap:.35rem}.upiRow > div{display:contents}.upiRow strong{grid-column:1;grid-row:1}.upiRow .copyButton{grid-column:2;grid-row:1}.upiRow code{grid-column:1 / -1;grid-row:2}}
 @media(prefers-reduced-motion:reduce){.copyButton{transition:none}}
+.form :global(.form-error){scroll-margin-top:calc(var(--af-chrome-height, 4.5rem) + 1rem)}
+.form :global(.form-error):focus{outline:3px solid var(--af-color-focus);outline-offset:3px}

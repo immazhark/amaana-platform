@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DonationMethods } from "@/components/donation-methods";
 import { donationFormCopy } from "@/components/donation-form-copy";
-import { PageHero } from "@/components/page-hero";
+import { PageHero, PageHeroStat } from "@/components/page-hero";
 import { formatCheckoutRemainingINR, getDonationCheckoutRemainingAmount } from "@/lib/donation-checkout-balance";
 import { getDonationPageData } from "@/lib/public-page-data";
 import { getDonationPaymentDetails } from "@/lib/donation-payment-details";
@@ -36,7 +36,7 @@ export default async function DonatePage({ params }: Props) {
       actions={[{label:"Return to the appeal",href:`/appeals/${appeal.slug}`,secondary:true},{label:"Continue to donation form",href:"#donation-form"}]}
       visual={(
         <div className="page-hero__visual-fallback page-hero__visual-fallback--stats">
-          <span>Supporting</span><strong>{appeal.title}</strong><div className="page-hero__stat-row"><b>{formatCheckoutRemainingINR(remainingAmount)}</b><small>remaining verified need · domestic INR only</small></div><i />
+          <span>Supporting</span><strong>{appeal.title}</strong><PageHeroStat value={formatCheckoutRemainingINR(remainingAmount)} label="remaining verified need · domestic INR only" /><i />
         </div>
       )}
     />

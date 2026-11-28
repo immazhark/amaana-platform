@@ -1,0 +1,12 @@
+import { notFound } from "next/navigation";
+import { PageHero, PageHeroStat } from "@/components/page-hero";
+import { formatCheckoutRemainingINR } from "@/lib/donation-checkout-balance";
+
+export const dynamic = "force-dynamic";
+
+export default function HeroAmountFixture() {
+  if (process.env.AMAANA_BROWSER_ACCEPTANCE !== "true") notFound();
+  return <div className="v2-home v2-donate-page">
+    {[126000, 1000000.50, 999999999.99].map((amount, index) => <PageHero key={amount} variant="level2" eyebrow="Synthetic acceptance" title="Give with clarity." titleAs={index === 0 ? "h1" : "p"} description={<p>Isolated typography fixture; no real appeal or payment.</p>} visual={<div className="page-hero__visual-fallback page-hero__visual-fallback--stats"><span>Supporting</span><strong>Example appeal</strong><PageHeroStat value={formatCheckoutRemainingINR(amount)} label="remaining verified need · domestic INR only" /><i /></div>} />)}
+  </div>;
+}

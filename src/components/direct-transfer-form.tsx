@@ -15,6 +15,16 @@ import { CopyIcon } from "./donation-interface-icons";
 
 type Method = "DIRECT_UPI" | "BANK_TRANSFER";
 
+// Focus recovery only when the donor has not moved to another control.
+function focusTransferError(node: HTMLDivElement | null) {
+  if (!node) return;
+  const active = node.ownerDocument.activeElement;
+  if (active === node.ownerDocument.body || active === node.closest("form")?.querySelector('button[type="submit"]')) {
+    node.focus({ preventScroll: true });
+    node.scrollIntoView({ block: "start", behavior: "instant" });
+  }
+}
+
 export function DirectTransferForm({ appealId, fundSlug, extraFields, campaign, sponsorship, maxAmount, method, paymentDetails, onLockChange, copy }: { appealId?: string; fundSlug?: string; extraFields?: ReactNode; campaign?: CampaignSelection; sponsorship?: SponsorshipSelection; maxAmount: number; method: Method; paymentDetails: DonationPaymentDetails; onLockChange: (locked: boolean) => void; copy: DonationFormCopy["direct"] }) {
   const styles = copy.classes;
   const router = useRouter();
@@ -134,7 +144,7 @@ export function DirectTransferForm({ appealId, fundSlug, extraFields, campaign, 
       {copyFeedback?.method === method ? copyFeedback.text : ""}
     </p>
     <form onSubmit={submit} className={`form-grid ${styles.form}`} aria-busy={busy}>
-      {error && <div className="form-error field full" role="alert">{error}</div>}
+      {error && <div ref={focusTransferError} tabIndex={-1} className="form-error field full" role="alert">{error}</div>}
       <div className="field"><label htmlFor={`direct-name-${method}`}>Full name</label><input id={`direct-name-${method}`} name="donorName" autoComplete="name" minLength={2} required disabled={locked}/></div>
       <div className="field"><label htmlFor={`direct-email-${method}`}>Email</label><input id={`direct-email-${method}`} name="donorEmail" type="email" autoComplete="email" required disabled={locked}/></div>
       <div className="field"><label htmlFor={`direct-phone-${method}`}>Phone <span className="muted">optional</span></label><input id={`direct-phone-${method}`} name="donorPhone" type="tel" autoComplete="tel" disabled={locked}/></div>
