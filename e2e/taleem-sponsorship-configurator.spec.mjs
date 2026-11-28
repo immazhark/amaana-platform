@@ -233,7 +233,40 @@ for (const widths of [[320, 360, 390, 430], [576, 768, 1024, 1440]]) {
           const parent = container.getBoundingClientRect();
           const name = element.getAttribute('aria-label') || element.textContent.trim() || element.tagName;
           if (bounds.left < parent.left - 1 || bounds.right > parent.right + 1 || bounds.right > document.documentElement.clientWidth + 1) failures.push(`${name}: outside container`);
-          if (element.scrollWidth > element.clientWidth + 1 && !element.matches('input')) failures.push(`${name}: clipped`);
+          if (!element.matches('input')) {
+            // scrollWidth includes non-text paint/layout extents; inspect the actual text fragments.
+            const walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT);
+            for (let text = walker.nextNode(); text; text = walker.nextNode()) {
+              if (!text.textContent.trim()) continue;
+              const range = document.createRange();
+              range.selectNodeContents(text);
+              const rects = Array.from(range.getClientRects()).filter(rect => rect.width > 0 && rect.height > 0);
+              if (!rects.length || rects.some(rect => rect.left < bounds.left - 1 || rect.right > bounds.right + 1)) {
+                failures.push(`${name}: text outside control (scroll/client ${element.scrollWidth}/${element.clientWidth})`);
+              }
+              for (let ancestor = text.parentElement; ancestor; ancestor = ancestor.parentElement) {
+                const style = getComputedStyle(ancestor);
+                const clipX = style.overflowX !== 'visible';
+                const clipY = style.overflowY !== 'visible';
+                if (clipX || clipY) {
+                  const box = ancestor.getBoundingClientRect();
+                  const left = box.left + ancestor.clientLeft;
+                  const top = box.top + ancestor.clientTop;
+                  if (rects.some(rect => (clipX && (rect.left < left - 1 || rect.right > left + ancestor.clientWidth + 1)) ||
+                    (clipY && (rect.top < top - 1 || rect.bottom > top + ancestor.clientHeight + 1)))) {
+                    failures.push(`${name}: clipped text by ${ancestor.tagName}`);
+                    break;
+                  }
+                }
+                if (ancestor === section) break;
+              }
+            }
+            const radio = element.querySelector('input[type="radio"]');
+            if (radio) {
+              const box = radio.getBoundingClientRect();
+              if (!box.width || !box.height || box.left < bounds.left - 1 || box.right > bounds.right + 1) failures.push(`${name}: radio outside control`);
+            }
+          }
           if (element.matches('label, button') && bounds.height < 44) failures.push(`${name}: small target`);
         }
         return failures;

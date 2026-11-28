@@ -21,9 +21,10 @@ for (const widths of [[320, 360, 390, 430], [576, 768, 1024, 1440]]) {
         await document.fonts.ready;
       });
       const target = page.locator('input[name="fund"][value="foundation-operations"]');
-      await target.check({ force: true });
       await target.focus();
       await expect(target).toBeFocused();
+      await page.keyboard.press('Space');
+      await expect(target).toBeChecked();
       await expect(page.locator('input[name="fund"]:checked')).toHaveCount(1);
       await expect(page.getByRole('status').filter({ hasText: 'Selected fund: Foundation Operations Fund.' })).toHaveCount(1);
       const failures = await cards.evaluateAll(items => {
