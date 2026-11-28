@@ -1,5 +1,7 @@
 "use client";
 
+import { GivingNoScriptNotice } from "@/components/giving-no-script-notice";
+
 import { getDonationAmountPresets, getWholeRupeeCheckoutRange, updateDonationAmountValidity } from "@/lib/donation-amount-input";
 
 import Script from "next/script";
@@ -290,6 +292,7 @@ export function DonationForm({ appealId, fundSlug, feeBps, extraFields, campaign
   }
 
   return <>
+    <GivingNoScriptNotice />
     <Script
       src="https://checkout.razorpay.com/v1/checkout.js"
       strategy="lazyOnload"

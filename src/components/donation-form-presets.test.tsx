@@ -33,3 +33,14 @@ describe("AF-R083 secure donation amount shortcuts", () => {
     expect(markup).not.toContain("Use ₹");
   });
 });
+
+
+it("provides a truthful no-script recovery path without offering another payment destination", () => {
+  const markup = renderToStaticMarkup(<DonationForm appealId="synthetic" appealTitle="Synthetic appeal" maxAmount={900} copy={donationFormCopy(false)} />);
+  const notice = markup.match(/<noscript>([\s\S]*?)<\/noscript>/)?.[1] ?? "";
+  expect(notice).toContain("Interactive payment options require JavaScript.");
+  expect(notice).toContain('href="/contact"');
+  expect(notice).toContain('href="/donation-policy"');
+  expect(notice).toContain("currently approved donation options");
+  expect(notice).not.toMatch(/<form|<input|upi:|rzp_|@bank|@upi/);
+});
