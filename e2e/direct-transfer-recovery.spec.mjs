@@ -296,3 +296,55 @@ test("same-tick method clicks cannot replace a direct-transfer claim already bei
   await expect(page.getByRole("button", { name: "Verification follow-up required" })).toBeDisabled();
   expect(calls).toBe(1);
 });
+
+// A delayed synthetic response proves focus recovery after the submitting button loses focus.
+for (const outcome of [
+  { status: 400, elsewhere: false, name: "known rejection" },
+  { status: 503, elsewhere: false, name: "uncertain result" },
+  { status: 400, elsewhere: true, name: "donor moved focus" },
+]) {
+  test(`direct transfer error focus: ${outcome.name}`, async ({ page }) => {
+    let release;
+    const gate = new Promise(resolve => { release = resolve; });
+    let calls = 0;
+    await page.route("**/api/donations/direct-transfer", async route => {
+      calls++;
+      await gate;
+      await route.fulfill({ status: outcome.status, contentType: "application/json", body: '{"error":"Check the transfer reference."}' });
+    });
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await prepareDirectTransfer(page);
+    const submit = page.getByRole("button", { name: "Submit transfer for verification" });
+    const other = page.getByRole("button", { name: "Copy UPI ID" });
+    try {
+      await submit.focus();
+      await page.keyboard.press("Enter");
+      await expect.poll(() => calls).toBe(1);
+      await expect(page.getByRole("button", { name: "Submitting for verification…" })).toBeDisabled();
+      if (outcome.elsewhere) {
+        await other.focus();
+        await expect(other).toBeFocused();
+      }
+    } finally {
+      release();
+    }
+    const alert = page.locator(".v2-donation-form .form-error[role='alert']");
+    await expect(alert).toHaveAttribute("tabindex", "-1");
+    if (outcome.elsewhere) await expect(other).toBeFocused();
+    else {
+      await expect(alert).toBeFocused();
+      await expect(alert).toBeInViewport();
+    }
+    if (outcome.status === 503) {
+      await expect(alert).toContainText("Do not submit the same UTR again");
+      await expect(page.getByRole("button", { name: "Verification follow-up required" })).toBeDisabled();
+      await expect(page.getByRole("button", { name: "Bank transfer" })).toBeDisabled();
+    } else {
+      await expect(alert).toHaveText("Check the transfer reference.");
+      await expect(submit).toBeEnabled();
+    }
+    await expect(page.getByLabel("UTR / transaction reference")).toHaveValue("UTRTEST9000123");
+    expect(calls).toBe(1);
+  });
+}
