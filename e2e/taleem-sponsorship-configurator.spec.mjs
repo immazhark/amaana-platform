@@ -197,3 +197,57 @@ for (const width of [360, 390, 768, 1280]) {
     expect(open.violations.filter(v => ['serious', 'critical'].includes(v.impact))).toEqual([]);
   });
 }
+
+for (const widths of [[320, 360, 390, 430], [576, 768, 1024, 1440]]) {
+  test(`Taleem sponsorship controls reflow at enlarged text at ${widths.join(', ')}px`, async ({ page }) => {
+    await prepare(page);
+    let paymentRequests = 0;
+    await page.route('**/api/donations/**', route => {
+      paymentRequests++;
+      return route.abort('failed');
+    });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: widths[0], height: 900 });
+    expect((await page.goto(PAGE)).ok()).toBe(true);
+    const region = page.getByRole('region', { name: 'Sponsor a Taleem programme.' });
+    await choose(page, { programme: 'Hifdh — Day Scholar', months: '12 months' });
+    const units = region.getByLabel('Number of units');
+    await units.fill('50');
+    await units.blur();
+    await expect(total(page)).toHaveText('50 units × 12 months × ₹1,500 = ₹9,00,000');
+    for (const width of widths) {
+      await page.setViewportSize({ width, height: 900 });
+      await page.evaluate(async () => {
+        const root = document.documentElement;
+        root.style.removeProperty('font-size');
+        root.style.fontSize = `${parseFloat(getComputedStyle(root).fontSize) * 2}px`;
+        await document.fonts.ready;
+      });
+      const failures = await region.evaluate(section => {
+        const failures = [];
+        const controls = section.querySelectorAll('legend, label:has(input[type="radio"]), input:not([type="radio"]), button, #programme-total');
+        for (const element of controls) {
+          const bounds = element.getBoundingClientRect();
+          if (!bounds.width || !bounds.height) continue;
+          const container = element.closest('fieldset') || section;
+          const parent = container.getBoundingClientRect();
+          const name = element.getAttribute('aria-label') || element.textContent.trim() || element.tagName;
+          if (bounds.left < parent.left - 1 || bounds.right > parent.right + 1 || bounds.right > document.documentElement.clientWidth + 1) failures.push(`${name}: outside container`);
+          if (element.scrollWidth > element.clientWidth + 1 && !element.matches('input')) failures.push(`${name}: clipped`);
+          if (element.matches('label, button') && bounds.height < 44) failures.push(`${name}: small target`);
+        }
+        return failures;
+      });
+      expect(failures, `enlarged text at ${width}px`).toEqual([]);
+      await expect(region.getByRole('radio', { name: 'Hifdh — Day Scholar' })).toBeChecked();
+      await expect(region.getByRole('radio', { name: '12 months', exact: true })).toBeChecked();
+      await expect(region.getByRole('button', { name: 'Give ₹9,00,000 to Hifdh — Day Scholar' })).toBeVisible();
+      await expect(region.getByRole('button', { name: 'More units' })).toBeDisabled();
+      await region.getByRole('button', { name: 'Fewer units' }).focus();
+      await expect(region.getByRole('button', { name: 'Fewer units' })).toBeFocused();
+    }
+    await page.keyboard.press('Enter');
+    await expect(total(page)).toHaveText('49 units × 12 months × ₹1,500 = ₹8,82,000');
+    expect(paymentRequests).toBe(0);
+  });
+}

@@ -157,3 +157,21 @@
   .card[data-selected="true"] { border-color: Highlight; outline: 2px solid Highlight; }
   .check::after { border-color: CanvasText; }
 }
+
+/* Keep sponsorship controls inside their available space when text is enlarged. */
+.shell:global(#programme-sponsorship) { grid-template-columns: minmax(0, 1fr); overflow-wrap: anywhere; }
+.shell:global(#programme-sponsorship) .legend, .shell:global(#programme-sponsorship) .campaignTitle { max-inline-size: 100%; }
+.shell:global(#programme-sponsorship) .campaign { grid-template-columns: minmax(0, 1fr); }
+.shell:global(#programme-sponsorship) .mode { max-inline-size: 100%; }
+.shell:global(#programme-sponsorship) .mode span { min-inline-size: 0; }
+.shell:global(#programme-sponsorship) .total { flex-basis: min(100%, 12rem); min-inline-size: 0; }
+.shell:global(#programme-sponsorship) .panel { grid-template-columns: minmax(0, 1fr); }
+.shell:global(#programme-sponsorship) .panel button { max-inline-size: 100%; white-space: normal; }
+@media (max-width: 35.99rem) {
+  .shell:global(#programme-sponsorship), .shell:global(#programme-sponsorship) .campaign, .shell:global(#programme-sponsorship) .panel { padding-inline: clamp(12px, 3vw, 1.1rem); }
+  .shell:global(#programme-sponsorship) .mode { padding-inline: clamp(8px, 2vw, .95rem); gap: .3rem; border-radius: var(--af-radius-md); }
+  .shell:global(#programme-sponsorship) .stepper { gap: 6px; }
+  .shell:global(#programme-sponsorship) .step { width: clamp(44px, 12vw, 2.75rem); height: clamp(44px, 12vw, 2.75rem); }
+  .shell:global(#programme-sponsorship) .units input { width: min(4.5rem, 84px); }
+  .shell:global(#programme-sponsorship) .panel button { padding-inline: clamp(8px, 2vw, 1.2rem); border-radius: var(--af-radius-md); }
+}
