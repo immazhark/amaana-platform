@@ -1,5 +1,7 @@
 "use client";
 
+import { GivingNoScriptNotice } from "@/components/giving-no-script-notice";
+
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { DonationMethods } from "@/components/donation-methods";
 import type { DonationFormCopy } from "@/components/donation-form-copy";
@@ -50,6 +52,7 @@ export function TaleemSponsorshipConfigurator({ fund, offer, copy, paymentDetail
 
   return (
     <section id="programme-sponsorship" className={classes.shell} aria-labelledby="programme-sponsorship-heading">
+      <GivingNoScriptNotice />
       <fieldset className={classes.fieldset} disabled={locked}>
         {head}
         {intro}

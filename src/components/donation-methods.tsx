@@ -1,5 +1,7 @@
 "use client";
 
+import { GivingNoScriptNotice } from "@/components/giving-no-script-notice";
+
 import Link from "next/link";
 import { useCallback, useRef, useState, type ReactNode } from "react";
 import { getWholeRupeeCheckoutRange } from "@/lib/donation-amount-input";
@@ -81,6 +83,7 @@ export function AppealLandingCheckout({ appeals, paymentDetails }: {
     <span className="v2-section-label">Currently reviewed giving destinations</span>
     <h2 className="v2-section-title" id="choose-appeal-checkout-title">{single ? "Give to this verified appeal." : "Choose an appeal and give on this page."}</h2>
     <p className={styles.landingLead}>{single ? "The remaining need shown is verified. " : "Each appeal has its own verified remaining need. Review the case before selecting a destination. "}The payment server checks the latest approval and balance again before any online order.</p>
+    <GivingNoScriptNotice />
     <div className={styles.appealGrid} role="group" aria-label={single ? "Reviewed appeal" : "Choose a reviewed appeal"}>
       {eligible.map(appeal => <div key={appeal.id} className={styles.appealItem}>
         {single ? <div className={`${styles.appealCard} ${styles.appealCardSelected}`}>

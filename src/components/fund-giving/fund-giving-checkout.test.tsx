@@ -129,3 +129,14 @@ describe("seasonal campaign on the giving page", () => {
     expect(withCampaign("eid-kits")).toContain("Zakat is not accepted for this fund");
   });
 });
+
+
+it("provides a truthful no-script recovery path without offering another payment destination", () => {
+  const markup = render();
+  const notice = markup.match(/<noscript>([\s\S]*?)<\/noscript>/)?.[1] ?? "";
+  expect(notice).toContain("Interactive payment options require JavaScript.");
+  expect(notice).toContain('href="/contact"');
+  expect(notice).toContain('href="/donation-policy"');
+  expect(notice).toContain("currently approved donation options");
+  expect(notice).not.toMatch(/<form|<input|upi:|rzp_|@bank|@upi/);
+});
