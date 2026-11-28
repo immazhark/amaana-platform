@@ -11,4 +11,4 @@
 @media(prefers-reduced-motion:reduce){.amaana-back-to-top{transition:none}.amaana-back-to-top:hover{transform:none}}
 
 /* UI/UX audit: monetary and metric values must stay intact. */
-.v2-appeal-progress-meta strong,.v2-appeal-progress-meta span,.v2-appeal-donation-panel>div:first-child strong,.page-hero__stat-row b,.v3-proof-item strong{white-space:nowrap!important;overflow-wrap:normal!important;word-break:normal!important;font-variant-numeric:tabular-nums}
+.v2-appeal-progress-meta strong,.v2-appeal-progress-meta span,.v2-appeal-donation-panel>div:first-child strong,.v3-proof-item strong{white-space:nowrap!important;overflow-wrap:normal!important;word-break:normal!important;font-variant-numeric:tabular-nums}

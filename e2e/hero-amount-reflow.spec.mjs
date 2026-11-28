@@ -35,12 +35,15 @@ for (const widths of [[320, 360, 390, 430], [576, 768, 1024, 1440]]) {
           const fits = rect => rect.left >= bounds.left - 1 && rect.right <= bounds.right + 1 && rect.top >= bounds.top - 1 && rect.bottom <= bounds.bottom + 1 && rect.left >= panel.left - 1 && rect.right <= panel.right + 1;
           return {
             amount: value.textContent,
+            whiteSpace: getComputedStyle(value).whiteSpace,
+            overflowWrap: getComputedStyle(value).overflowWrap,
+            numeric: getComputedStyle(value).fontVariantNumeric,
             label: label.textContent,
             breaks: value.querySelectorAll('wbr').length,
             fits: digits.length > 0 && labels.length > 0 && digits.every(fits) && labels.every(fits) && !digits.some(digit => labels.some(text => digit.left < text.right && digit.right > text.left && digit.top < text.bottom && digit.bottom > text.top)),
           };
         }));
-        expect(geometry, `${width}px / ${scale * 100}%`).toEqual(amounts.map(amount => ({ amount, label: 'remaining verified need · domestic INR only', breaks: amount.split(',').length - 1, fits: true })));
+        expect(geometry, `${width}px / ${scale * 100}%`).toEqual(amounts.map(amount => ({ amount, label: 'remaining verified need · domestic INR only', breaks: amount.split(',').length - 1, whiteSpace: 'normal', overflowWrap: 'anywhere', numeric: 'tabular-nums', fits: true })));
       }
     }
     expect(financialRequests).toBe(0);
