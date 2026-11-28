@@ -53,7 +53,23 @@ for (const widths of [[320, 360, 390, 430], [576, 768, 1024, 1440]]) {
             const textRects = rects(element);
             if (!textRects.length || textRects.some(r => r.left < bounds.left - 1 || r.right > bounds.right + 1 || r.top < bounds.top - 1 || r.bottom > bounds.bottom + 1)) failures.push(`${element.textContent}: text outside card`);
             if (textRects.some(r => r.right > checkBounds.left && r.left < checkBounds.right && r.bottom > checkBounds.top && r.top < checkBounds.bottom)) failures.push(`${element.textContent}: selection indicator overlap`);
-            if (element.scrollWidth > element.clientWidth + 1 || element.scrollHeight > element.clientHeight + 1) failures.push(`${element.textContent}: clipped text`);
+            // A font's line-box metrics can extend beyond its client height without clipping.
+            // Keep horizontal overflow detection, and check vertical overflow where paint is clipped.
+            if (element.scrollWidth > element.clientWidth + 1) failures.push(`${element.textContent}: horizontal text overflow`);
+            for (let ancestor = element; ancestor && ancestor !== card; ancestor = ancestor.parentElement) {
+              const style = getComputedStyle(ancestor);
+              const clipX = style.overflowX !== 'visible';
+              const clipY = style.overflowY !== 'visible';
+              if (!clipX && !clipY) continue;
+              const box = ancestor.getBoundingClientRect();
+              const left = box.left + ancestor.clientLeft;
+              const top = box.top + ancestor.clientTop;
+              if (textRects.some(r => (clipX && (r.left < left - 1 || r.right > left + ancestor.clientWidth + 1)) ||
+                (clipY && (r.top < top - 1 || r.bottom > top + ancestor.clientHeight + 1)))) {
+                failures.push(`${element.textContent}: clipped text`);
+                break;
+              }
+            }
           }
         }
         return failures;

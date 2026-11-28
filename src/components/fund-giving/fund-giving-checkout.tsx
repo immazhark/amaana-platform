@@ -1,5 +1,7 @@
 "use client";
 
+import { GivingNoScriptNotice } from "@/components/giving-no-script-notice";
+
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { DonationMethods } from "@/components/donation-methods";
 import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
@@ -84,6 +86,7 @@ export function FundGivingCheckout({ funds, copies, glyphs, initialSlug, payment
 
   return (
     <section id="choose-fund" className={styles.shell} aria-labelledby="give-fund-heading">
+      <GivingNoScriptNotice />
       <fieldset className={styles.fieldset} disabled={locked}>
         <legend className={styles.legend}><span className={styles.eyebrow}>Step 1</span><span id="give-fund-heading" className={styles.heading}>Choose where your gift goes</span></legend>
         <a className={styles.reviewLink} href="#fund-review">Review selected fund</a>
