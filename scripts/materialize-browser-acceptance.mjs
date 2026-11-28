@@ -46,6 +46,7 @@ const routes = [
   "portfolio",
   "impact-typography",
   "section-layout",
+  "hero-amount",
 ];
 
 for (const route of routes) {

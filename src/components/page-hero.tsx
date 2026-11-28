@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import Link from "next/link";
 import { isPrivateRoute } from "@/lib/public-routing";
 
@@ -77,6 +77,11 @@ function HeroActionLink({ action }: { action: HeroAction }) {
   }
 
   return <Link className={className} href={action.href}>{action.label}</Link>;
+}
+
+/** Soft breaks preserve the formatted value and keep Indian digit groups readable. */
+export function PageHeroStat({ value, label }: { value: string; label: string }) {
+  return <div className="page-hero__stat-row"><b>{value.split(/(?<=,)/).map((group, index) => <Fragment key={index}>{index > 0 && <wbr />}{group}</Fragment>)}</b><small>{label}</small></div>;
 }
 
 export function PageHero({
